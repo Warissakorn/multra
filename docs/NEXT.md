@@ -56,11 +56,13 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - Done: `progressionFactor` returns its limit, 0, at P = 1; the `if` in `node_suggestions.cpp`
     is on its own line.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
-  - A start page with *Open example* and recent files; the palette opens icons-only below 1500 px.
-  - `four-leg-signalised` shows no LOS and no Node analysis: add a section or Node with inputs.
-  - Results has twelve tabs in one strip; group by level and hide tabs with no data.
-  - The "paths that cross pass through each other" line should be a Problems row per crossing.
-  - The batch page leaves about 200 px empty above its note, cutting the movement table.
+  - Done (D497–D499): Results by level, *File → Open example* with an empty-drawing hint, one
+    Problems row per unprotected crossing, and the batch page's blank band. **Owner's look:**
+    OWNER_SITTING B45, [images](images/ui-review-d497/).
+  - **Next (owner's choice, 2026-11-10): a new shipped example, not `four-leg-signalised`**, that
+    shows LOS and the HCM table out of the box: a Node, travel-time sections and Node analysis
+    inputs, built by a `tools/` builder as D492's was, with a row in `data/examples.json`.
+  - Left: a start page and recent files; the palette opens icons-only below 1500 px (D432).
 - **Process:**
   - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged
     seconds after opening).

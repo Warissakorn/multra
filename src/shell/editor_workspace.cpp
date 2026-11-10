@@ -2,6 +2,8 @@
 #include <algorithm>
 #include "editor_window.hpp"
 #include "object_export.hpp"
+#include "example_menu.hpp"
+#include "../editor/path.hpp"
 #include "utdf_export_dialog.hpp"
 #include "image_export.hpp"
 #include "editor_interaction.hpp"
@@ -122,6 +124,19 @@ void EditorWindow::buildWorkspace() {
     auto* files=findChild<QToolBar*>("editorFiles");
     for(const auto* key:{"editorRecover","editorEmbedCatalogs"})files->removeAction(actions_.at(key));
     menu("editorFileMenu",{"editorNew","editorOpen","editorSave","editorSaveAs","","editorRecover","editorEmbedCatalogs","editorExportImage"});
+    // D498: the shipped examples, read from data/examples.json each time the menu opens so
+    // it follows the language. An example opens untitled: Save must never write into the installed data.
+    auto* examples=new QMenu(this);examples->setObjectName("editorOpenExample");texts_["editorOpenExample"]=examples;
+    findChild<QMenu*>("editorFileMenu")->insertMenu(actions_.at("editorSave"),examples);
+    const auto fillExamples=[this,examples]{
+        try {
+            fillExampleMenu(*examples,loadExampleProjects(data_),language_->currentData().toString(),[this](const std::filesystem::path& file){
+                if(!confirmDiscard())return;
+                try{openFile(displayPath(file));file_.clear();loadSideFiles();refresh();}catch(const std::exception& e){showError(e);}
+            });
+        } catch(const std::exception& e){examples->clear();showError(e);}
+    };
+    connect(examples,&QMenu::aboutToShow,this,fillExamples);fillExamples();
     auto* exports=new QMenu(this);exports->setObjectName("editorExportObjects");texts_["editorExportObjects"]=exports;
     findChild<QMenu*>("editorFileMenu")->addMenu(exports);
     for(const auto& [key,table]:{std::pair{"editorExportLinks",ObjectTable::links},

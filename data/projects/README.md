@@ -18,5 +18,8 @@ counts, and no result from them is a claim about a real road (PRINCIPLES rule 4)
 | `lateral-lab.traffic.json` | A development bed for lateral behaviour, not a study: four scenes (timed lane change, lane drop, 150 m weave, keep-left with a mixed fleet) and the only shipped project whose behaviours carry the lateral keys, as lab placeholders (D457, [LATERAL_LAB](../../docs/reference/LATERAL_LAB.md)) | Left-hand | `tools/lateral_lab_network.hpp` → `multra-lateral-fixture` (takes the data directory first) |
 | `macro-four-step.traffic.json` | The Macro level end to end, not a study: four zones around a town (two-way radial arterials through a centre, a faster ring road), owning its trip rates, gravity deterrence, transit minutes, car/transit logit, AM period factors and a `four-step` procedure. Run it with `multra-cli --project data/projects/macro-four-step.traffic.json --procedure four-step`, or *Procedure* in Results; congestion splits West → East between the arterials and the ring | Left-hand | `tools/macro_example_network.hpp` → `multra-macro-example` (takes the data directory first) |
 
+The editor's *File → Open example* menu reads `data/examples.json`: add a row there, with its
+name and purpose in English and Thai, for every project added here (`example-menu-ui` fails otherwise).
+
 Regenerate from the repository root, for example
 `./build/headless/bin/multra-four-leg-fixture data/projects/four-leg-signalised.traffic.json`.

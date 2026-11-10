@@ -143,12 +143,12 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
    attributes, *Trip-rate sets…* (import `tests/data/trip-generation/trip-rates/example-4-1.json`) and the *Trip generation* page; layout ok?
    M10.3 D2 (D474): *Deterrence sets…*, *Cost matrices…* and the *Trip distribution* page (import `tests/data/trip-distribution/`'s sets). M10.4 E2 (D479): the *Mode choice* page, *Mode choice sets…* (import `tests/data/trip-distribution/mode-choice/hand.json`), *Period factors…* and *Write OD matrices*, then Run Macro on the period. M10.4 N1 (D481): *Mode choice sets…* → *Nests…* (add `foot` with `walk`, φ 0.5; try φ 1.5). D4 (D482): import `deterrence/hand-destination.json` and check the *Trip distribution* note. D485: *Procedure* page: add a procedure in *Procedures…*, run it, turn a step off. *Owner:*
 
-43. **Micro's M6 gate and the level order** (listed 2026-11-10, D493). D380: a finer level's gate does not
-   close before the coarser level's it depends on. M6's Micro benchmarks take counted volumes, not a
-   Macro or Meso result. May the Micro M6 gate close before the M10 and M11 gates? *Owner:*
+43. **Micro's M6 gate and the level order** (listed 2026-11-10, D493, D380). M6's Micro benchmarks take
+   counted volumes, not a Macro or Meso result. May the Micro M6 gate close before the M10 and M11 gates? *Owner:*
 
 44. **Random streams per input** (listed 2026-11-10, D496). [INPUT_STREAMS §7](../reference/INPUT_STREAMS.md#7-the-owners-choices):
    choices 1–4 (default for new documents, hashed traits, paired comparison, before or after M6). *Owner:*
+45. **UI review fixes** (listed 2026-11-10, D497–D499; [images](../images/ui-review-d497/)). On Windows: Results by level, *File → Open example*, a batch's tables under its note, Problems' crossing rows. Layout ok? *Owner:*
 
 ## C — Run view (the 125 % screen)
 

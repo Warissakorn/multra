@@ -273,7 +273,7 @@ void EditorWindow::refreshRun(){
     if(const auto e=actions_.find("editorCancelSeeds");e!=actions_.end())e->second->setEnabled(batchRunning());
     runSpeed_->setEnabled(!runIdentity_.until.active);
     runSeed_->setAccessibleName(text("seed"));runSpeed_->setAccessibleName(text("speed"));
-    if(!runSnapshot_){runInfo_->setText(text("editorRunReady"));runInfo_->setAccessibleDescription({});return;}
+    if(!runSnapshot_){runInfo_->setText(text(history_.document().network.links.empty()?"editorEmptyHint":"editorRunReady"));runInfo_->setAccessibleDescription({});return;}
     // All diagnostic figures wrap above the canvas; their interpretation is in the Shortcuts dialog (F1).
     runInfo_->setAccessibleDescription(text("editorRunStatusNote"));
     const auto summary=runSummary_.summary();

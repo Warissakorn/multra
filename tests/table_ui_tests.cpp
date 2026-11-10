@@ -231,9 +231,13 @@ int main(int argc,char** argv) {
         require(links->horizontalHeaderItem(1)->text()==QString::fromUtf8("ชื่อ"),"Thai Name column header missing");
         require(links->horizontalHeaderItem(2)->text()==QString::fromUtf8("จำนวนเลน"),"Thai column header missing");
         action(w,"editorRecheck");
-        // M1 resolves the real catalogs before checking; a valid fixture has no findings.
-        require(problems->rowCount()==1 && problems->item(0,1)->text().isEmpty(),"Valid catalog-backed scenario reported a problem");
-        require(!problems->item(0,0)->text().isEmpty(),"Thai no-problems message missing");
+        // M1 resolves the real catalogs before checking; a valid fixture has no refusal. Its two roads
+        // cross with no conflict area, so D499's advisory is the only kind of row there is.
+        require(problems->rowCount()>=1,"The unprotected crossing is not listed");
+        for(int row=0;row<problems->rowCount();++row) {
+            require(problems->item(row,0)->text()==QString::fromUtf8("ข้อสังเกต"),"Valid catalog-backed scenario reported a problem");
+            require(problems->item(row,1)->text().startsWith(QString::fromUtf8("ถนนสองเส้นนี้ตัดกัน")),"Thai crossing advisory missing");
+        }
         if (argc>2) require(w.grab().save(QString::fromUtf8(argv[2])),"Screenshot failed");
         std::cout<<"Object tables, multi-selection, delete-many, diagnostics and jump-to-object passed\n";
         return 0;

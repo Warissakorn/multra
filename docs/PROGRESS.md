@@ -5,6 +5,34 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-10 — UI review: Results by level, Open example, crossing rows, the batch band (D497–D499)
+
+- **Owner:** chose four of the UI review's five proposals; the fifth (an example that shows LOS and
+  the HCM table) is to be a new shipped project, next, not a change to `four-leg-signalised`.
+- **The batch band (a bug):** `refreshBatch` hid the single run's two tables but not the frame
+  around them, which kept half the page. The frame goes with them. `batch-run-ui` failed on the
+  new row before the fix.
+- **D497, Results by level:** a picker at the head of the Results toolbar shows Micro, Meso, Macro
+  or Node (HCM); tabs are ordered by level, Macro in the study chain's order. Parking lots and
+  Nodes leave the strip while the project has none; a one-tab level shows no strip. Making any tab
+  current picks its level, so every existing jump (`setCurrentWidget`) works unchanged
+  (`results_levels.*`). Found while testing: Qt makes the next tab shown the current one while the
+  current tab is hidden, so the current tab is set first.
+- **D498, File → Open example:** `data/examples.json` lists the seven projects with names and
+  purposes in both languages; an example opens untitled. An empty drawing's status line points at
+  the Link tool and the menu (`example_menu.*`).
+- **D499, crossing rows:** Check runnability adds one advisory per place where two roads cross with
+  no conflict area, from `automaticConflicts` and `conflictGroups`; selecting it selects a road.
+  In the shell only: `runDiagnostics`, the CLI and readiness are unchanged.
+- **Tests:** new `example-menu-ui`, `crossing-problem-ui`; rows added to `results-tabs-ui` and
+  `batch-run-ui`. `tables-ui` asserted "no findings" on `crossing.json`, which has an unprotected
+  crossing: it now asserts that every row is that advisory. `src/shell/CMakeLists.txt` gains
+  `multra_ui_test` and five registrations use it (the file was at 500 lines).
+- **Seen in the window** (Linux, 1440 × 900): [images](images/ui-review-d497/). The run view's
+  protection line gained one short sentence and wraps to two lines at this width.
+- **Verified:** Linux only. Desktop build and ctest 314/314; headless `check` passes (ctest 204/204,
+  architecture, docs, file sizes). Windows and high DPI are the owner's look (B45).
+
 ## 2026-11-10 — Engine review: the tick's phases split; streams contract (D495, D496)
 
 - **Owner:** "ทำต่อ ข้อเสนอของรีวิว engine"; on random streams chose the contract first, code later.
@@ -151,19 +179,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Measured (Linux, 4 cores):** tree >30 GB → 7.3 GB, `bin/` 23.6 → 1.2 GB; touching
   `src/shell/node_analysis_panel.cpp` 2m00 → 8.3 s (median of 3). Clean build ≈14 min, as before.
 - **Verified:** desktop ctest 308/308, the three checks; the release preset still configures static.
-
-## 2026-11-07 — Run view: no dock relayout per Step (D487)
-
-- **Owner:** ran /optimize-program on everything and chose the recommended plan.
-- **Cause (callgrind):** 41.6 % of a Run view's instructions were `ReflowLabel::sizeHint`/
-  `minimumSizeHint` from a whole-dock relayout every Step. gdb on the LayoutRequests found two
-  triggers: `refreshRun` set the Run action's text and a new icon every Step, and the D463
-  Properties summary called `updateGeometry()` on every LayoutRequest of its content.
-- **D487:** both now act only on a change: the Run action when Run/Pause (or the translated text)
-  differs, and the summary when its `sizeHint()` moved.
-- **Measured (Linux, Release, offscreen):** `multra-run-view-benchmark` M2.6 6000 2000, back to back,
-  median of 3: 32.9 → 19.2 s (−42 %). Either fix alone: summary −14 %, Run action within noise.
-- **Verified:** desktop ctest 308/308 and the three checks, Linux only. Windows look of the
-  Properties summary and the Run/Pause button not checked.
-- **Guard (same day):** `run-presentation-ui` counts LayoutRequests on the window and its docks over
-  200 Steps of `crossing.json` and fails above 20; measured 0 with D487 and 800 with it reverted.

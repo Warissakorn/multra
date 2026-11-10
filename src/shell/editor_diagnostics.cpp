@@ -2,6 +2,8 @@
 #include "table_grid.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/macro_run.hpp"
+#include "../model/network/right_of_way.hpp"
+#include <set>
 #include <QComboBox>
 #include <QToolButton>
 #include <QHBoxLayout>
@@ -51,8 +53,19 @@ void EditorWindow::buildDiagnostics() {
 void EditorWindow::recheck() {
     const auto sources=studyAreaSources(); // S5.5a (D331)
     const auto level=static_cast<ReadinessLevel>(readinessLevel_->currentData().toInt());
-    if (level==ReadinessLevel::micro) diagnostics_=runDiagnostics(history_.document(),data_,&sources);
-    else diagnostics_.clear();
+    if (level==ReadinessLevel::micro) {
+        diagnostics_=runDiagnostics(history_.document(),data_,&sources);
+        // D499: one advisory per place where two roads cross and nobody has authored an area. Such a
+        // crossing is passive (M3.2.4c): it compiles to nothing and vehicles pass through each other.
+        // Here, on demand, not in runDiagnostics: the CLI's and readiness's rows stay as they are.
+        const auto& n=history_.document().network;
+        const auto automatic=automaticConflicts(n);
+        std::set<std::string> passive;
+        for (const auto& a : automatic) if (a.kind==ConflictKind::crossing) passive.insert(a.key);
+        for (const auto& g : conflictGroups(n,automatic))
+            if (std::any_of(g.automaticKeys.begin(),g.automaticKeys.end(),[&](const auto& key){ return passive.contains(key); }))
+                diagnostics_.push_back({"UNPROTECTED_CROSSING",g.key,g.firstOwner+" \u00d7 "+g.secondOwner,g.firstOwner,DiagnosticSeverity::advisory});
+    } else diagnostics_.clear();
     readiness_.clear();
     for (auto& r : readiness(history_.document(),data_,level,readinessPeriod_->currentData().toString().toStdString(),&sources))
         if (level!=ReadinessLevel::micro || r.code.rfind("SEAM_",0)==0 || r.code=="MICRO_GENERATED_IN_AREA") // Micro's others are diagnostics_

@@ -2,6 +2,22 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-07 — Run view: no dock relayout per Step (D487)
+
+- **Owner:** ran /optimize-program on everything and chose the recommended plan.
+- **Cause (callgrind):** 41.6 % of a Run view's instructions were `ReflowLabel::sizeHint`/
+  `minimumSizeHint` from a whole-dock relayout every Step. gdb on the LayoutRequests found two
+  triggers: `refreshRun` set the Run action's text and a new icon every Step, and the D463
+  Properties summary called `updateGeometry()` on every LayoutRequest of its content.
+- **D487:** both now act only on a change: the Run action when Run/Pause (or the translated text)
+  differs, and the summary when its `sizeHint()` moved.
+- **Measured (Linux, Release, offscreen):** `multra-run-view-benchmark` M2.6 6000 2000, back to back,
+  median of 3: 32.9 → 19.2 s (−42 %). Either fix alone: summary −14 %, Run action within noise.
+- **Verified:** desktop ctest 308/308 and the three checks, Linux only. Windows look of the
+  Properties summary and the Run/Pause button not checked.
+- **Guard (same day):** `run-presentation-ui` counts LayoutRequests on the window and its docks over
+  200 Steps of `crossing.json` and fails above 20; measured 0 with D487 and 800 with it reverted.
+
 ## 2026-11-06 — Docs: the decision record split every 200 IDs (D486)
 
 - **Owner:** ran /optimize-program on docs and AI context, and chose the split by 200 IDs, with the

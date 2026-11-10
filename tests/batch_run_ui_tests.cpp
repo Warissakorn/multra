@@ -75,6 +75,9 @@ int main(int argc, char** argv) {
         require(!exportCsv->isEnabled() && refuses([&] { w.resultsCsv(); }), "Export offered part way through a batch");
         waitForBatch(w);
         require(w.batchResult().has_value(), "The finished batch shows no result");
+        // The single run's tables give their place to the batch: their emptied frame took half the
+        // page and left a blank band above the batch note (review of 2026-11-10).
+        require(item<QWidget>(w, "editorMovementTables")->isHidden(), "The single-run frame still takes room beside a batch");
         const auto snapshot = compileDocument(w.history().document(), data);
         const auto spec = evaluationSpec(w.history().document(), snapshot, data);
         const auto runs = multra::runSeeds(snapshot.scenario, spec, list);

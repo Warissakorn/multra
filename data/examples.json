@@ -1,0 +1,32 @@
+{
+  "examples": [
+    { "file": "four-leg-signalised.traffic.json",
+      "name": { "en": "Four-leg signalised junction", "th": "สี่แยกสัญญาณไฟ" },
+      "purpose": { "en": "A signalised four-leg with turn pockets: Run it, then run seeds for a delay table with confidence intervals.",
+                   "th": "สี่แยกสัญญาณไฟพร้อมช่องเลี้ยว: กดเริ่มจำลอง แล้วรันหลาย seed เพื่อดูตารางความล่าช้าพร้อมช่วงความเชื่อมั่น" } },
+    { "file": "t-junction-priority.traffic.json",
+      "name": { "en": "Priority T-junction", "th": "สามแยกให้ทาง" },
+      "purpose": { "en": "An unsignalised Yield T-junction: change the gap time and watch the minor-road delay respond.",
+                   "th": "สามแยกไม่มีสัญญาณไฟแบบให้ทาง: ปรับ gap time แล้วดูความล่าช้าของทางรอง" } },
+    { "file": "m2.6-study-template.traffic.json",
+      "name": { "en": "Junction study template", "th": "แม่แบบการศึกษาทางแยก" },
+      "purpose": { "en": "The four-leg set up as a one-hour study with counted intervals and routing decisions. Placeholder volumes.",
+                   "th": "สี่แยกที่ตั้งค่าเป็นการศึกษาหนึ่งชั่วโมง มีปริมาณรายช่วงและจุดตัดสินใจเส้นทาง ปริมาณเป็นค่าสมมติ" } },
+    { "file": "macro-four-step.traffic.json",
+      "name": { "en": "Macro four-step model", "th": "แบบจำลองสี่ขั้นตอนระดับ Macro" },
+      "purpose": { "en": "Four zones around a town: open Results, choose Macro and run the Procedure.",
+                   "th": "สี่โซนรอบเมือง: เปิดผลลัพธ์ เลือก Macro แล้วรัน Procedure" } },
+    { "file": "lane-change-lab.traffic.json",
+      "name": { "en": "Lane-change lab", "th": "ห้องทดลองการเปลี่ยนช่องจราจร" },
+      "purpose": { "en": "A development bed, not a study: overtaking, three lanes, a lane drop and a diverge.",
+                   "th": "พื้นที่ทดลองสำหรับพัฒนา ไม่ใช่การศึกษา: การแซง สามช่องจราจร ช่องจราจรลด และทางแยกออก" } },
+    { "file": "weaving-lab.traffic.json",
+      "name": { "en": "Weaving lab", "th": "ห้องทดลองช่วงสานกระแส" },
+      "purpose": { "en": "A synthetic fixture, not a study: weaves of 150, 300 and 500 m.",
+                   "th": "กรณีสังเคราะห์ ไม่ใช่การศึกษา: ช่วงสานกระแสยาว 150, 300 และ 500 ม." } },
+    { "file": "lateral-lab.traffic.json",
+      "name": { "en": "Lateral lab", "th": "ห้องทดลองตำแหน่งด้านข้าง" },
+      "purpose": { "en": "A development bed, not a study: timed lane changes, straddling and keep-left with placeholder values.",
+                   "th": "พื้นที่ทดลองสำหรับพัฒนา ไม่ใช่การศึกษา: การเปลี่ยนช่องแบบมีระยะเวลา การคร่อมเส้น และการชิดซ้าย ด้วยค่าสมมติ" } }
+  ]
+}
