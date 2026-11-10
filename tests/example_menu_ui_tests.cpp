@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QMenu>
+#include <QTableWidget>
 #include <QTest>
 #include <iostream>
 #include <set>
@@ -73,6 +74,15 @@ int main(int argc, char** argv) {
             require(state(w).value("file").toString().isEmpty(), "An example kept its installed path");
             emit menu->aboutToShow();
         }
+        // D500: the Node analysis example gives the HCM table with one press, and its Results show the Node level.
+        item<QAction>(*menu, "editorExample:signalised-node-analysis.traffic.json")->trigger(); QApplication::processEvents();
+        require(w.history().document().network.nodes.size() == 1, "The Node analysis example has no Node");
+        auto* analyse = item<QAction>(w, "editorAnalyseNodes");
+        require(analyse->isEnabled(), "Analyse is not offered on the Node analysis example");
+        analyse->trigger(); QApplication::processEvents();
+        require(item<QTableWidget>(w, "editorAnalysisGroupResults")->rowCount() == 8, "The HCM table does not list the eight lane groups");
+        require(item<QTableWidget>(w, "editorAnalysisApproachResults")->rowCount() == 4, "The HCM table does not list the four approaches");
+        require(item<QComboBox>(w, "editorResultsLevel")->currentIndex() == 3, "Analyse did not show the Node (HCM) level");
     } catch (const std::exception& e) { std::cerr << "example-menu-ui: " << e.what() << '\n'; return 1; }
     std::cout << "example-menu-ui: ok\n";
     return 0;

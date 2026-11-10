@@ -35,7 +35,9 @@ Ctrl-drag of a selected object copies it, retaining the D30 convention.
 purpose as its tool tip (D498). An example opens as an untitled copy: Save asks for a destination
 and never writes into the installed data. Names and purposes are stored in English and Thai with
 the list, so a new example needs no code. While the drawing has no Link, the run status line
-points at the Link tool and at this menu.
+points at the Link tool and at this menu. *Signalised junction with LOS and HCM analysis* (D500)
+is the one to open for the two letters: **Analyse** fills the Node (HCM) level's table, and
+**Run seeds** gives the travel-time sections their LOS.
 
 **Check runnability** adds one advisory row to Problems for each place where two roads cross
 with no conflict area (D499): vehicles pass through each other there in a run. Selecting the row

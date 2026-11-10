@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-07 — Linux desktop preset links the multra libraries shared (D488)
+
+- **Cause:** every UI test executable linked `libmultra_shell.a` and carried its own copy of its
+  debug info: a Debug tree passed 30 GB (73 executables, 23.6 GB; 92 % DWARF) and ran out of disk
+  here, and one shell `.cpp` edit relinked 118 executables.
+- **D488:** `MULTRA_SHARED_LIBS` (default OFF) makes every `multra_*` library shared, with
+  `CMAKE_LINK_DEPENDS_NO_SHARED`; only the `desktop` preset turns it on, on Linux. headless,
+  sanitizer, release, packaging and Windows stay static. `multra_shell` now links
+  `multra_vehicle_pose` PUBLIC, since `canvas.hpp` holds `RearAxlePath` (static linking hid that).
+- **Measured (Linux, 4 cores):** tree >30 GB → 7.3 GB, `bin/` 23.6 → 1.2 GB; touching
+  `src/shell/node_analysis_panel.cpp` 2m00 → 8.3 s (median of 3). Clean build ≈14 min, as before.
+- **Verified:** desktop ctest 308/308, the three checks; the release preset still configures static.
+
 ## 2026-11-07 — Run view: no dock relayout per Step (D487)
 
 - **Owner:** ran /optimize-program on everything and chose the recommended plan.
