@@ -36,12 +36,13 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   choice (B9), a second user on the Micro sentence, and B43 (may Micro's M6 gate close before M10
   and M11, D380).
 - **Architecture:**
-  - `multra-check-architecture` does not cover `model`, `commands`, `geo` or `editor`; `editor`
-    includes `shell` in three files (`canvas_cursors.cpp`, `map_locations.cpp`, `map_provider.cpp`).
-  - `macro`, `meso` and `analysis` compile into `multra_core`; give each its own target.
+  - Done (D494): every module's includes are checked, `editor` no longer includes `shell`, and
+    Macro, Meso and analysis are their own targets.
   - **Ask:** split `src/project/` (codecs, runs, outputs; `src/report/` is reserved) and
-    `EditorWindow` (275 member functions in 52 files).
-  - Rewrite ARCHITECTURE as a map with the dependency table; move its per-decision prose to contracts.
+    `EditorWindow` (275 member functions in 52 files). Both are structural; neither is started.
+  - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
+    per-decision notes) still belongs in the contracts.
+  - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
   - **Ask:** one random stream per input. Today every input shares `randomState`
     (`src/core/demand.cpp`), so one edited input moves every arrival (D459's sweep measured 7 %).

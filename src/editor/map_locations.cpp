@@ -1,5 +1,5 @@
 #include "map_locations.hpp"
-#include "../shell/path.hpp"
+#include "path.hpp"
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>

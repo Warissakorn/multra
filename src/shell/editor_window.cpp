@@ -7,7 +7,7 @@
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
 #include "behaviour_lab_window.hpp"
-#include "path.hpp"
+#include "../editor/path.hpp"
 #include "editor_style.hpp"
 #include "vehicle_color_dialog.hpp"
 #include "../project/evaluation_period.hpp"

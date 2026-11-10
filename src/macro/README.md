@@ -7,7 +7,7 @@ network. Contract: [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md); as bu
 
 ## Dependencies
 
-Imports nothing outside this folder; no clock, no random number, no I/O
+Its own CMake target, `multra_macro`, linked by `multra_model` (D494). Imports nothing outside this folder; no clock, no random number, no I/O
 (`multra-check-architecture`).
 
 ## Files

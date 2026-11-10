@@ -16,6 +16,25 @@ placed decisions key route families by type. Scheduled demand time selects legac
 including downstream decisions without `position`; source queues never reselect. Legacy compilation
 order and schema-17/18 bytes stay unchanged without the new fields.
 
+## Module dependencies
+
+Each module may include only the modules to its right; `multra-check-architecture` fails the
+build on any other include (D494). Qt is allowed only in `editor` and `shell`, nlohmann/json from
+`project` upward.
+
+| Module | May include | Qt | JSON |
+|---|---|---|---|
+| `core`, `macro`, `meso`, `analysis` | nothing (standard library only) | no | no |
+| `eval` | `core/types.hpp` | no | no |
+| `runner` | `core`, `eval` | no | no |
+| `model` | `core`, `macro`, `meso`, `analysis` | no | no |
+| `project` | `model`, the engines, `eval`, `runner` | no | yes |
+| `commands` | `project`, `model`, `core` | no | yes |
+| `lab` | `commands`, `project`, `model`, `core` | no | yes |
+| `geo` | `project` (map settings), PROJ | no | yes |
+| `editor` | `commands`, `geo`, `project`, `model`, `core` | yes | yes |
+| `shell` | every module | yes | yes |
+
 ## Boundaries
 
 The authoring network is the source of truth. `compileScenario` derives a runtime scenario;
@@ -41,8 +60,9 @@ unchanged. See [VEHICLE_POSE.md](reference/VEHICLE_POSE.md).
 | CMake target | Location | Dependencies | Status |
 |---|---|---|---|
 | `multra_vehicle_pose` | `src/editor/vehicle_pose.*`, `rear_axle_pose.*`, `lane_change_pose.*` | Model geometry, core route/type contracts; no Qt | Route front sampler, spatial rear-axle tracks and composed lane-change guides, independently testable headless |
+| `multra_macro`, `multra_meso`, `multra_analysis` | `src/macro/`, `src/meso/`, `src/analysis/` | Standard C++ library only; none links another (D494) | The Macro four-step steps and assignment, the Meso link-transmission loading and the HCM 7 Node method; see Remaining systems |
 | `multra_core` | `src/core/` | Standard C++ library only | M0 engine implemented; crossing admission (`conflicts.*`, M3.2.3a); mandatory lane changes and cooperation (`lanes.*`, M3.2.8b) — spans and dead ends arrive as data, the core never sees a lane; parking lots (`parking.*`, M8.4a) — gate routes and exits arrive as data, the core never sees a zone |
-| `multra_model` | `src/model/network/`, `src/model/demand/` | Core contracts/validation | M0 authoring model and compiler implemented; fixed-time Signal Controllers compiled to core programs (`signal_control.*`, M2.7b), with pure template timing/NEMA checks (`nema.*`, M14); authored right-of-way controls (`control.hpp`, `right_of_way.*`, M3.2.2a); lane families and lateral spans (`routeLaneFamily` in `routing.cpp`, `lane_family.cpp`, M3.2.8b) |
+| `multra_model` | `src/model/network/`, `src/model/demand/` | Core contracts/validation; the Macro, Meso and analysis targets its compilers fill | M0 authoring model and compiler implemented; fixed-time Signal Controllers compiled to core programs (`signal_control.*`, M2.7b), with pure template timing/NEMA checks (`nema.*`, M14); authored right-of-way controls (`control.hpp`, `right_of_way.*`, M3.2.2a); lane families and lateral spans (`routeLaneFamily` in `routing.cpp`, `lane_family.cpp`, M3.2.8b) |
 | `multra_eval` | `src/eval/` | Core events and states | Completed-trip diagnostic; per-movement delay/travel time and approach queues for one run (M2.5); M3.2.8c diagnostics (lane changes, segment times, stop-line discharge, arrival phases, dead-end waits); queue discharge/startup observer with type selection, shared-prefix routing, proven lateral/source passage reconstruction and rank-scoped remap invalidation; same-tick source-sink types come from core's pure `upcomingArrivals` replay |
 | `multra_runner` | `src/runner/` | Core and eval only | Multi-seed batches and their seed-ordered aggregate (M5.2, [BATCH](reference/BATCH.md)); scenario comparison, alternative minus base with a Welch 95 % CI (`compare.*`, M5.8a, BATCH §7) |
 | `multra_project` | `src/project/` | Model, evaluation types, runner, nlohmann/json | M0 loading/output; the authoring codec (reads project schemas 1 to the latest, `kLatestSchema` in `document.hpp`); evaluation spec and report output, single-run, batch and comparison (`batch_output.*`, `comparison_output.*`, the D152 seed scheduler `parallel_seeds.*`, sharing `csv_format.hpp` and the LOS pack/formatting in `los_output.*`); revision run snapshots; optional captured-byte input manifests/SHA-256 |
@@ -310,8 +330,9 @@ Adding a command must never teach `project/` its implementation. The correspondi
 - `data/los/`: LOS packs (`hcm.json`, M5.5) — jurisdiction-specific data, never compiled constants.
 
 `multra-check-architecture` permits literal local headers and reviewed standard
-headers in core/eval. It rejects Qt, I/O, unordered containers, wall-clock/RNG headers,
-macro includes and module imports, with negative fixtures. This is a restricted source
+headers in core, eval, runner, macro, meso and analysis. It rejects Qt, I/O, unordered containers,
+wall-clock/RNG headers, macro includes and module imports, with negative fixtures. For project,
+lab, model, commands, geo and editor it checks the table under Module dependencies. This is a restricted source
 check, not a full C++ parser; review remains responsible for unconventional preprocessor
 constructs. CMake target dependencies provide an additional compile/link boundary.
 

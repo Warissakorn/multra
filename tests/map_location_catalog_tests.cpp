@@ -1,5 +1,5 @@
 #include "../src/editor/map_locations.hpp"
-#include "../src/shell/path.hpp"
+#include "../src/editor/path.hpp"
 #include <QCoreApplication>
 #include <QFile>
 #include <QJsonArray>

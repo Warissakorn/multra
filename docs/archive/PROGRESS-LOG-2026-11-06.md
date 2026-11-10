@@ -2,6 +2,17 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — Procedure sequence P2: Procedures dialog and Procedure page (D485)
+
+- **D485 ([PROCEDURE_SEQUENCE](../reference/PROCEDURE_SEQUENCE.md) §9):**
+  - *Procedures…* edits the list and its steps, refused in place, as one History step;
+  - the twelfth Results tab runs a procedure on a worker with Cancel and shows each step's status
+    and summary, with stale marking and a marked CSV.
+- **Rows:** `procedure-ui` (PS10); `workspace-ui` counts 12 tabs.
+- **Note:** `docs/decisions/RECORD.md` reached 500 lines with D485; splitting it is the owner's call
+  (NEXT).
+- **Verified:** Linux only (desktop and headless). Windows not checked (OWNER_SITTING 42).
+
 ## 2026-11-06 — Procedure sequence P1: engine, schema 73, CLI (D484)
 
 - **Owner:** approved the plan after D483.

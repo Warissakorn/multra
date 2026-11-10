@@ -5,6 +5,26 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-10 — Architecture review: every module's includes are checked (D494)
+
+- **Owner:** "ทำต่อ ข้อเสนอของรีวิวสถาปัตยกรรม" (the architecture review's proposals).
+- **D494, the checker:** `multra-check-architecture` gains one rule per layer above the engines:
+  `model` (engines only, no Qt or JSON), `commands` and `geo` (never the UI, no Qt) and `editor`
+  (never `shell` or `lab`). Negative fixtures in `--self-test`. Two mutations (a shell include in
+  `canvas_cursors.cpp`; `<QString>` in `geometry.cpp`) each failed the check.
+- **`editor` no longer includes `shell`:** `path.hpp` moved to `src/editor/`; `EditorIcon` and
+  `paintEditorGlyph` moved out of `shell/editor_style.*` into `editor/editor_glyph.*`. No behaviour
+  changes: the same code in another file.
+- **Targets:** `multra_macro`, `multra_meso` and `multra_analysis` are their own libraries, linked
+  by `multra_model`; they were sources of `multra_core`. A stray include between engines now also
+  fails to link.
+- **ARCHITECTURE:** a *Module dependencies* table (what each module may include, Qt, JSON), checked
+  against the real include counts.
+- **Not done, the owner's choice first:** splitting `src/project/` and `EditorWindow`; both stay
+  **Ask** in [NEXT](NEXT.md). `shell` has no rule: it may include every module.
+- **Verified:** Linux only. Desktop build and ctest 312/312; headless `check` passes (ctest 204/204,
+  architecture, docs, file sizes). Windows not checked; the moved headers are compiled there by CI.
+
 ## 2026-11-10 — Purpose review: status documents brought back to the code (D493)
 
 - **Owner:** asked for a five-part review in chat (purpose, architecture, engine, UI, process), then
@@ -136,14 +156,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   527 anchored links in 24 files now name the file that holds the row. AGENTS says how to cut the
   next range.
 - **Verified:** `multra-check-docs` and `multra-check-file-sizes`; no code changed.
-
-## 2026-11-06 — Procedure sequence P2: Procedures dialog and Procedure page (D485)
-
-- **D485 ([PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md) §9):**
-  - *Procedures…* edits the list and its steps, refused in place, as one History step;
-  - the twelfth Results tab runs a procedure on a worker with Cancel and shows each step's status
-    and summary, with stale marking and a marked CSV.
-- **Rows:** `procedure-ui` (PS10); `workspace-ui` counts 12 tabs.
-- **Note:** `docs/decisions/RECORD.md` reached 500 lines with D485; splitting it is the owner's call
-  (NEXT).
-- **Verified:** Linux only (desktop and headless). Windows not checked (OWNER_SITTING 42).

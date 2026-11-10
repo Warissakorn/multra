@@ -11,10 +11,10 @@ the model. Contracts: [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md),
 ## Dependencies
 
 Qt Widgets and Network. Built into one target with `src/shell/`, `multra_shell`
-([ARCHITECTURE](../../docs/ARCHITECTURE.md)), so no boundary is checked between them. Reads
-`src/model/`, `src/core/`, `src/geo/` and `src/project/` headers; `canvas_cursors.cpp` also reads
-`../shell/editor_style.hpp`, `map_provider.cpp` and `map_locations.cpp` read `../shell/path.hpp`,
-and `canvas_connectors.cpp` reads `../commands/connector_commands.hpp` for its previews.
+([ARCHITECTURE](../../docs/ARCHITECTURE.md)); the shell includes this module, and this module
+never includes `src/shell/` or `src/lab/` (`multra-check-architecture`, D494). Reads
+`src/model/`, `src/core/`, `src/geo/` and `src/project/` headers, and `canvas_connectors.cpp`
+reads `../commands/connector_commands.hpp` for its previews.
 
 ## Files
 
@@ -22,6 +22,8 @@ and `canvas_connectors.cpp` reads `../commands/connector_commands.hpp` for its p
 |---|---|---|
 | `canvas.*` | `EditorCanvas`: pan, zoom, grid snap, selection, drawing, dragging, points, split picking, measurement and calibration, Connector tools. Split by concern into `canvas_*.cpp`: `input`, `select`, `spatial`, `cache`, `cursors`, `feedback`, `lanes`, `connectors`, `conflicts`, `heads`, `counters`, `sections`, `decisions`, `demand`, `zones`, `streetSegments`, `rotation`, `display`, `map`, `run` (Run vehicles at lane centre + `Vehicle::lateral`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md), [VISSIM_PARITY](../../docs/audits/VISSIM_PARITY.md) |
 | `canvas_style.*` | Canvas colours as functions (built after `QApplication`) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_glyph.*` | `EditorIcon` and `paintEditorGlyph`: the 20-unit glyphs behind the shell's toolbar icons and the canvas's tool cursors (D306) | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
+| `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
 | `ui_design_tokens.*` | The only place a hex colour literal may appear; read back by `QPalette` role | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
 | `canvas_hud.*` | Screen HUD: scale bar, zoom in px/m, north arrow when the georeference gives one; transparent to the mouse | [MAP_BACKGROUND](../../docs/reference/MAP_BACKGROUND.md) |
 | `canvas_labels.*` | Upright canvas labels with a Base halo, placed per redraw in screen space beside their anchors (D424) | [CANVAS_STYLE](../../docs/plans/CANVAS_STYLE.md) |

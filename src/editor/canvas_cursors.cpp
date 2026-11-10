@@ -1,6 +1,6 @@
 #include "canvas.hpp"
 #include "canvas_style.hpp"
-#include "../shell/editor_style.hpp"
+#include "editor_glyph.hpp"
 #include <QGraphicsPathItem>
 #include <QMouseEvent>
 #include <QPainter>

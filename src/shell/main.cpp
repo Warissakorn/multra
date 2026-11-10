@@ -1,7 +1,7 @@
 #include "editor_window.hpp"
 #include "automation_server.hpp"
 #include "legacy_storage.hpp"
-#include "path.hpp"
+#include "../editor/path.hpp"
 #include "../geo/projection_data.hpp"
 #include "../project/load.hpp"
 #include <QApplication>

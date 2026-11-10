@@ -7,7 +7,7 @@ cites its PDF page in the owner's copy ([BOOKS](../../docs/reference/BOOKS.md) Â
 
 ## Dependencies
 
-Imports nothing outside this folder and a reviewed set of standard headers; no clock, no random
+Its own CMake target, `multra_analysis`, linked by `multra_model` (D494). Imports nothing outside this folder and a reviewed set of standard headers; no clock, no random
 number, no I/O (`multra-check-architecture`).
 
 ## Files

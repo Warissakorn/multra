@@ -66,8 +66,18 @@ if(NOT TARGET nlohmann_json::nlohmann_json)
     add_library(nlohmann_json::nlohmann_json ALIAS multra_json)
 endif()
 
+# The four engines import nothing and nothing of each other (check_architecture); one target each,
+# so a stray include between them fails at link time as well.
+add_library(multra_macro ${MULTRA_LIBRARY_TYPE} src/macro/graph.cpp src/macro/assign.cpp src/macro/trip_generation.cpp
+    src/macro/trip_distribution.cpp src/macro/mode_choice.cpp)
+add_library(multra_meso ${MULTRA_LIBRARY_TYPE} src/meso/graph.cpp src/meso/demand.cpp src/meso/node_model.cpp
+    src/meso/link_model.cpp src/meso/loading.cpp)
+add_library(multra_analysis ${MULTRA_LIBRARY_TYPE} src/analysis/signalised.cpp src/analysis/lane_flow.cpp
+    src/analysis/critical.cpp src/analysis/queue.cpp src/analysis/qap.cpp src/analysis/permitted.cpp)
+foreach(engine multra_macro multra_meso multra_analysis)
+    target_link_libraries(${engine} PRIVATE multra_options)
+endforeach()
 add_library(multra_core ${MULTRA_LIBRARY_TYPE}
-    src/macro/graph.cpp src/macro/assign.cpp src/macro/trip_generation.cpp src/macro/trip_distribution.cpp src/macro/mode_choice.cpp src/analysis/signalised.cpp src/analysis/lane_flow.cpp src/analysis/critical.cpp src/analysis/queue.cpp src/analysis/qap.cpp src/analysis/permitted.cpp src/meso/graph.cpp src/meso/demand.cpp src/meso/node_model.cpp src/meso/link_model.cpp src/meso/loading.cpp
     src/core/demand.cpp src/core/following.cpp src/core/routes.cpp src/core/speed_decision.cpp src/core/speed_area.cpp
     src/core/signals.cpp src/core/red_running.cpp src/core/caps.cpp src/core/join_anticipation.cpp src/core/simulation.cpp src/core/validate.cpp src/core/conflicts.cpp
     src/core/lanes.cpp src/core/routing.cpp src/core/w74.cpp src/core/perception.cpp src/core/lateral.cpp src/core/lateral_motion.cpp src/core/lane_swap.cpp src/core/courtesy.cpp src/core/leaders.cpp src/core/speed_control.cpp src/core/parking.cpp src/core/retune.cpp)
@@ -82,7 +92,7 @@ add_library(multra_model ${MULTRA_LIBRARY_TYPE} src/model/network/junction_templ
     src/model/network/conflict_polygon_math.cpp
     src/model/network/conflict_bands.cpp
     src/model/network/conflict_mouth_bands.cpp src/model/network/automatic_conflicts.cpp)
-target_link_libraries(multra_model PUBLIC multra_core PRIVATE multra_options)
+target_link_libraries(multra_model PUBLIC multra_core multra_macro multra_meso multra_analysis PRIVATE multra_options)
 target_sources(multra_model PRIVATE src/model/network/approach_layout.cpp src/model/demand/nema_timing.cpp src/model/demand/nema_check.cpp)
 # Run-view geometry is Qt-free and independently testable; the core never imports it.
 add_library(multra_vehicle_pose ${MULTRA_LIBRARY_TYPE} src/editor/vehicle_pose.cpp src/editor/rear_axle_pose.cpp src/editor/lane_change_pose.cpp)

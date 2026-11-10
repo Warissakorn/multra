@@ -64,6 +64,30 @@ bool labBoundary(const std::string& source) {
     }
     return true;
 }
+// The layers above the engines: each names the module directories it must not include, and
+// whether Qt or nlohmann/json may reach it. Every include must be a literal, as above.
+struct LayerRule { const char* module; const char* forbidden; bool qt, json; };
+constexpr LayerRule layerRules[]{
+    {"model", "project|commands|editor|shell|lab|geo|eval|runner|render", false, false},
+    {"commands", "editor|shell|lab|geo|render", false, true},
+    {"geo", "commands|editor|shell|lab|render", false, true},
+    {"editor", "shell|lab|render", true, true}};
+bool layerBoundary(const std::string& source, const LayerRule& rule) {
+    const std::regex directive(R"(^\s*#\s*(include|include_next)\b.*)");
+    const std::regex literal(R"(^\s*#\s*include\s*([<"])([^>"\r\n]+)[>"]\s*(//.*)?$)");
+    const std::regex forbidden(std::string(R"((^|[/\\])()") + rule.forbidden + R"()([/\\]|$))");
+    std::istringstream stream(source); std::string line;
+    while (std::getline(stream, line)) {
+        if (!std::regex_match(line, directive)) continue;
+        std::smatch match;
+        if (!std::regex_match(line, match, literal)) return false;
+        const std::string header = match[2];
+        if (std::regex_search(header, forbidden)) return false;
+        if (!rule.qt && match[1] == "<" && header.starts_with("Q")) return false;
+        if (!rule.json && header.starts_with("nlohmann")) return false;
+    }
+    return true;
+}
 // The batch runner (M5.2) may read the core and eval contracts, which `check` would refuse as
 // cross-directory headers; replace exactly those includes so every other rule still applies.
 std::string runnerContract(std::string source) {
@@ -89,6 +113,13 @@ int main(int argc, char** argv) {
         for (const auto* bad : {"#include \"../shell/editor_window.hpp\"", "#include \"../editor/canvas.hpp\"", "#include <QWidget>"})
             if (labBoundary(bad)) { std::cerr << "Lab guard accepted: " << bad << '\n'; return 1; }
         if (!labBoundary("#include \"../commands/demand_commands.hpp\"\n#include <cmath>")) return 1;
+        // model: engines only; commands and geo: never the UI; editor: never the shell.
+        for (const auto* bad : {"#include \"../../project/json.hpp\"", "#include <QString>", "#include <nlohmann/json.hpp>", "#include HEADER"})
+            if (layerBoundary(bad, layerRules[0])) { std::cerr << "Model guard accepted: " << bad << '\n'; return 1; }
+        if (!layerBoundary("#include \"../../macro/graph.hpp\"\n#include \"../network/network.hpp\"\n", layerRules[0])) return 1;
+        for (const auto* bad : {"#include \"../shell/editor_window.hpp\"", "#include <QWidget>"})
+            if (layerBoundary(bad, layerRules[1]) || layerBoundary(bad, layerRules[2])) { std::cerr << "Layer guard accepted: " << bad << '\n'; return 1; }
+        if (layerBoundary("#include \"../shell/path.hpp\"", layerRules[3]) || !layerBoundary("#include <QWidget>\n#include \"../commands/history.hpp\"\n", layerRules[3])) return 1;
         return check("#include <vector>\n#include <cmath>\n", {}) ? 0 : 1;
     }
     bool valid = true;
@@ -120,5 +151,11 @@ int main(int argc, char** argv) {
         std::ifstream file(entry.path()); std::string source((std::istreambuf_iterator<char>(file)), {});
         if (!file || !labBoundary(source)) { std::cerr << "Lab boundary violation: " << entry.path() << '\n'; valid = false; }
     }
+    for (const auto& rule : layerRules)
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(std::filesystem::path(argv[1]) / "src" / rule.module)) {
+            if (entry.path().extension() != ".hpp" && entry.path().extension() != ".cpp") continue;
+            std::ifstream file(entry.path()); std::string source((std::istreambuf_iterator<char>(file)), {});
+            if (!file || !layerBoundary(source, rule)) { std::cerr << "Layer boundary violation: " << entry.path() << '\n'; valid = false; }
+        }
     return valid ? 0 : 1;
 }
