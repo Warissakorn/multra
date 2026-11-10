@@ -5,6 +5,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-10 — Engine review: the tick's phases split; streams contract (D495, D496)
+
+- **Owner:** "ทำต่อ ข้อเสนอของรีวิว engine"; on random streams chose the contract first, code later.
+- **D495:** `stepSimulation` loses two of its phases to `tick.hpp`: `insertArrivals`
+  (`insertion.cpp`) and `publishMoves` (`publish.cpp`). The lines are the same lines; `simulation.cpp`
+  goes 500 → 380. Phase 1's per-vehicle loop stays one body (the hot path; split it with a
+  callgrind run).
+  - **Evidence:** 30 outputs compared before and after, byte-identical: six shipped projects at
+    seeds 42 and 47 with every diagnostic flag, and M0 event streams at seeds 7, 42, 43.
+  - **Cost:** `multra-engine-benchmark 12 120` under callgrind, Release: 249.14 M → 247.45 M
+    instructions (−0.7 %). One run each; the count is deterministic, wall time was not compared.
+- **D496:** [INPUT_STREAMS](reference/INPUT_STREAMS.md), a proposed contract for one random stream
+  per input. Today every draw shares `randomState`, so one edited input moves every arrival
+  (D459 measured 7 %). Rows IS1–IS9 and four owner choices (OWNER_SITTING B44). No code.
+- **Not done, and why:** rows comparing the engine with HCM need a tolerance; M6.0 keeps engine
+  numbers out until the owner chooses the benchmark (B9), so none was written.
+- **Small:** `progressionFactor` returns 0 at P = 1 (its limit; 0/0 as written, unreachable from
+  the product), with rows in NA3; an `if` in `node_suggestions.cpp` moved to its own line.
+- **Verified:** Linux only. Desktop build and ctest 312/312; headless `check` passes (ctest 204/204,
+  architecture, docs, file sizes). Windows not checked.
+
 ## 2026-11-10 — Architecture review: every module's includes are checked (D494)
 
 - **Owner:** "ทำต่อ ข้อเสนอของรีวิวสถาปัตยกรรม" (the architecture review's proposals).
@@ -146,13 +167,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Properties summary and the Run/Pause button not checked.
 - **Guard (same day):** `run-presentation-ui` counts LayoutRequests on the window and its docks over
   200 Steps of `crossing.json` and fails above 20; measured 0 with D487 and 800 with it reverted.
-
-## 2026-11-06 — Docs: the decision record split every 200 IDs (D486)
-
-- **Owner:** ran /optimize-program on docs and AI context, and chose the split by 200 IDs, with the
-  decision index split by the same ranges.
-- **D486:** `RECORD.md` (500 lines, ~134k tokens) became `RECORD-D001-D199.md` and
-  `RECORD-D200-D399.md` (frozen) and `RECORD.md` (D400 onward, 97 lines). The rows moved unchanged.
-  527 anchored links in 24 files now name the file that holds the row. AGENTS says how to cut the
-  next range.
-- **Verified:** `multra-check-docs` and `multra-check-file-sizes`; no code changed.

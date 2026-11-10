@@ -2,6 +2,16 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — Docs: the decision record split every 200 IDs (D486)
+
+- **Owner:** ran /optimize-program on docs and AI context, and chose the split by 200 IDs, with the
+  decision index split by the same ranges.
+- **D486:** `RECORD.md` (500 lines, ~134k tokens) became `RECORD-D001-D199.md` and
+  `RECORD-D200-D399.md` (frozen) and `RECORD.md` (D400 onward, 97 lines). The rows moved unchanged.
+  527 anchored links in 24 files now name the file that holds the row. AGENTS says how to cut the
+  next range.
+- **Verified:** `multra-check-docs` and `multra-check-file-sizes`; no code changed.
+
 ## 2026-11-06 — Procedure sequence P2: Procedures dialog and Procedure page (D485)
 
 - **D485 ([PROCEDURE_SEQUENCE](../reference/PROCEDURE_SEQUENCE.md) §9):**

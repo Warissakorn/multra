@@ -79,7 +79,7 @@ foreach(engine multra_macro multra_meso multra_analysis)
 endforeach()
 add_library(multra_core ${MULTRA_LIBRARY_TYPE}
     src/core/demand.cpp src/core/following.cpp src/core/routes.cpp src/core/speed_decision.cpp src/core/speed_area.cpp
-    src/core/signals.cpp src/core/red_running.cpp src/core/caps.cpp src/core/join_anticipation.cpp src/core/simulation.cpp src/core/validate.cpp src/core/conflicts.cpp
+    src/core/signals.cpp src/core/red_running.cpp src/core/caps.cpp src/core/join_anticipation.cpp src/core/simulation.cpp src/core/insertion.cpp src/core/publish.cpp src/core/validate.cpp src/core/conflicts.cpp
     src/core/lanes.cpp src/core/routing.cpp src/core/w74.cpp src/core/perception.cpp src/core/lateral.cpp src/core/lateral_motion.cpp src/core/lane_swap.cpp src/core/courtesy.cpp src/core/leaders.cpp src/core/speed_control.cpp src/core/parking.cpp src/core/retune.cpp)
 target_link_libraries(multra_core PRIVATE multra_options)
 

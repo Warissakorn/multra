@@ -15,6 +15,7 @@
 #include "speed_control.hpp"
 #include "speed_decision.hpp"
 #include "speed_area.hpp"
+#include "tick.hpp"
 #include "validate.hpp"
 #include <cmath>
 #include <limits>
@@ -113,67 +114,10 @@ SimState stepSimulation(SimState&& state, double dt) {
     // rather than copying the list. Nothing reads next.vehicles between here and the rebuild.
     auto vehicles = std::move(next.vehicles);
     next.vehicles.clear();
-    std::vector<PendingVehicle> candidates;
-    for (const auto& input : next.inputs)
-        if (!input.queue.empty()) candidates.push_back(input.queue.front());
-    std::sort(candidates.begin(), candidates.end(), [](const auto& a, const auto& b) {
-        return a.scheduledTime == b.scheduledTime ? a.id < b.id : a.scheduledTime < b.scheduledTime;
-    });
     // Where the arrivals will start. The survivors kept the order last tick's rebuild wrote
     // them in, so everything before this point is already sorted by id.
     const std::size_t survivors = vehicles.size();
-    std::set<std::string> attemptedSources;
-    // Built at most once per tick rather than per candidate, and only once a candidate actually
-    // survives the source filter - most ticks have no arrival at all and must stay free.
-    // Insertions append to both, reproducing exactly what a full rebuild over the grown vehicle
-    // list would have produced.
-    std::vector<VehicleRefs> candidateRefs;
-    std::vector<OccupiedSpan> candidateSpans; SpanBuckets candidateBuckets;
-    bool spansBuilt = false;
-    for (const auto& pending : candidates) {
-        const auto& route = scenario.routes[pending.routeIndex];
-        if (!attemptedSources.insert(route.segmentIds.front()).second) continue;
-        const auto& type = scenario.vehicleTypes[pending.typeIndex];
-        if (!spansBuilt) {
-            candidateRefs = resolveRefs(scenario, vehicles, index);
-            candidateSpans = occupiedSpans(scenario, vehicles, index, candidateRefs);
-            candidateBuckets = bucketSpans(candidateSpans, scenario.segments.size());
-            spansBuilt = true;
-        }
-        Vehicle vehicle;
-        static_cast<PendingVehicle&>(vehicle) = pending;
-        vehicle.enteredTime = startTime;
-        // The entry segment's behaviour (M3.3.2b) -- the type's own without assignments, the very
-        // slot byId found before. The pending record is only read: nothing is redrawn while it waits.
-        const auto behaviourSlot = effectiveBehaviour(index, vehicle);
-        const auto& behaviour = scenario.behaviours[behaviourSlot];
-        const auto lateral = followerFilter(scenario, index, partsFor(index, scenario, route), vehicle.distance, type.width, vehicle.lateral, behaviour, vehicle.speed); // §6
-        const auto leader = closestVehicle(vehicle, partsFor(index, scenario, route), candidateSpans,
-                                           candidateBuckets, nullptr, &lateral);
-        if (leader && leader->gap < standstillGap(behaviour)) continue;
-        // D108: a positive source gap can still be smaller than the first ordinary step.
-        // Keep the sampled arrival pending until that step fits the existing buffer;
-        // later lane-change/signal/conflict constraints still use the normal safety checks.
-        if (leader) {
-            // A vehicle entering has no w74 state: its first evaluation initialises one (W74.md §7).
-            const auto first=follow(0,vehicle,std::nullopt,type,behaviour,leader);
-            if (integrate(0,first.acceleration,dt).distance > leader->gap-standstillGap(behaviour)) continue;
-        }
-        const VehicleRefs inserted{static_cast<std::size_t>(&route - scenario.routes.data()),
-                                   static_cast<std::size_t>(&type - scenario.vehicleTypes.data()),
-                                   behaviourSlot};
-        resizeReactionHistory(vehicle, reactionTicks(behaviour.perception, dt));
-        vehicles.push_back(vehicle);
-        candidateRefs.push_back(inserted);
-        appendVehicleSpans(candidateSpans, scenario, index, vehicle, inserted);
-        candidateBuckets = bucketSpans(candidateSpans, scenario.segments.size());
-        next.inputs[pending.inputIndex].queue.erase(next.inputs[pending.inputIndex].queue.begin());
-        if (!next.lots.empty()) noteInserted(next, vehicle.id); // a departure on the road frees its space
-        // Events still carry the route's NAME: they are the run's output, read by the evaluator
-        // and by every frozen fixture, and a slot would mean nothing outside this Scenario.
-        events.emplace_back(DepartedEvent{startTime, vehicle.id, route.id,
-                                         vehicle.scheduledTime, vehicle.desiredSpeed});
-    }
+    detail::insertArrivals(next, vehicles, index, startTime, dt, events); // insertion.cpp
     // Two sorted runs, not an unsorted list: the survivors in id order, then this tick's
     // arrivals, which were appended in scheduled-time order. Sorting the short tail and merging
     // is linear where sorting the whole fleet again is not, and ids are unique, so the result is
@@ -235,10 +179,8 @@ SimState stepSimulation(SimState&& state, double dt) {
     }
     // Phase 1: every vehicle's candidate move, from the snapshot alone. Nothing is published
     // until phase 2 has seen them all (contract §4, steps 1-3 and 6).
-    struct Move { double distance{}, speed{}, acceleration{}; FollowingMode mode{}; bool clamped{}; std::optional<W74State> w74; };
-    std::vector<Move> moves(vehicles.size());
-    struct Reaction { std::size_t vehicle, ticks; FollowingResult action; };
-    std::vector<Reaction> decisions; // no allocation with zero delay; published in vehicle order
+    std::vector<detail::Move> moves(vehicles.size());
+    std::vector<detail::Reaction> decisions; // no allocation with zero delay; published in vehicle order
     std::vector<std::optional<VehicleLeader>> leaders(zones.empty() ? 0 : vehicles.size()); // phase 2 only
     std::vector<char> gateHeld(next.lots.empty() ? 0 : vehicles.size()); // M8.4a: stopped at a lot's line
     std::vector<RedRun> ran(carriesRedRunning(scenario) ? vehicles.size() : 0); std::vector<RedRelease> released; // B-9 (D238, D246): empty without the keys
@@ -410,69 +352,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         }
     }
     // Phase 3: publish, in vehicle order, exactly the events one pass always emitted.
-    next.vehicles.clear();
-    next.vehicles.reserve(vehicles.size()); // At most one survivor per vehicle; arrivals already in.
-    std::size_t reaction = 0;
-    for (std::size_t v = 0; v < vehicles.size(); ++v) {
-        auto& vehicle = vehicles[v];
-        const auto& oldParts = index.parts[refs[v].route];
-        const auto& move = moves[v];
-        if (move.clamped) events.emplace_back(SafetyClampEvent{time, vehicle.id});
-        if (!ran.empty()) reportRedRun(ran[v], scenario, time, vehicle.id, move.distance, events);
-        // The working copy is not read after this vehicle is published, so its lists move rather
-        // than copy; its scalars (id, times, desired speed) stay readable below. The pending decision
-        // is found first, because it reads the passed-decision list.
-        const auto* decision = scenario.routeDecisions.empty() ? nullptr : nextRouteDecision(scenario, vehicle);
-        const double startDistance = vehicle.distance;
-        auto moved = std::move(vehicle);
-        moved.distance += move.distance; moved.speed = move.speed;
-        if (!scenario.speedDecisions.empty()) // B-6 (D223)
-            passSpeedDecisions(index, scenario.vehicleTypes[moved.typeIndex], refs[v].route, startDistance, moved.distance, moved);
-        if (speedAreas) [[unlikely]] // B-6 §7 (D225)
-            passSpeedAreas(index, scenario.vehicleTypes[moved.typeIndex], refs[v].route, startDistance, moved.distance, moved);
-        moved.acceleration = move.acceleration; moved.mode = move.mode;
-        moved.w74State = move.w74; // the applied decision; Stop rest and caps keep its regime
-        if (reaction < decisions.size() && decisions[reaction].vehicle == v) {
-            const auto& saved = decisions[reaction++];
-            storeReactionAction(moved, saved.ticks, saved.action);
-        } else moved.reactionHistory.clear();
-        for (std::size_t i = 1; i < oldParts.size(); ++i)
-            if (startDistance < oldParts[i].start && moved.distance >= oldParts[i].start)
-                events.emplace_back(SegmentEnteredEvent{time, moved.id, oldParts[i].segmentId});
-        if (decision && moved.distance >= decision->at - 1e-9)
-            applyRouteDecision(scenario, moved, *decision, time, next.randomState, events);
-        const auto& parts=index.parts[moved.routeIndex];
-        const double routeLength = parts.back().start + parts.back().length;
-        // D165: a circuit's index holds three laps; past the second the vehicle drops back one.
-        if (scenario.routes[moved.routeIndex].circuit) {
-            if (moved.distance >= 2 * routeLength / 3) moved.distance -= routeLength / 3;
-            const auto location = locateOnParts(parts, moved);
-            next.vehicles.push_back(std::move(moved));
-            events.emplace_back(MovedEvent{time, vehicle.id, location.segmentId, location.position, move.speed, move.acceleration});
-            continue;
-        }
-        // A stub's dead end may be its last metre; standing there is waiting, never arriving.
-        const bool stub = index.laneChanges && std::isfinite(index.deadEndOfRoute[moved.routeIndex]);
-        // M8.4a: a gate route never ends in the ordinary way. Driving in admits while space remains;
-        // otherwise the vehicle stays at the line -- a planned stop when held, a reported clamp when
-        // this tick's admissions filled the lot first. It is never removed.
-        if (!gateHeld.empty() && moved.distance >= routeLength && !stub && index.lotOfRoute[moved.routeIndex] != SIZE_MAX) {
-            if (gateArrival(next, moved, moved.routeIndex, time, gateHeld[v])) continue;
-            if (!gateHeld[v] && !move.clamped) events.emplace_back(SafetyClampEvent{time, moved.id});
-            if (!gateHeld[v]) { moved.speed = 0; moved.acceleration = -vehicle.speed / dt; }
-            moved.distance = routeLength;
-        }
-        if (moved.distance >= routeLength && !stub && (gateHeld.empty() || index.lotOfRoute[moved.routeIndex] == SIZE_MAX)) {
-            ++next.completed;
-            events.emplace_back(ArrivedEvent{time, vehicle.id, scenario.routes[moved.routeIndex].id,
-                time - vehicle.enteredTime,
-                vehicle.enteredTime - vehicle.scheduledTime, freeFlowTime(moved, routeLength, scenario.routes[moved.routeIndex].leadIn)});
-        } else {
-            const auto location = locateOnParts(parts, moved);
-            next.vehicles.push_back(std::move(moved));
-            events.emplace_back(MovedEvent{time, vehicle.id, location.segmentId, location.position, move.speed, move.acceleration});
-        }
-    }
+    detail::publishMoves(next, vehicles, index, refs, moves, decisions, ran, gateHeld, speedAreas, time, dt, events); // publish.cpp
     // LATERAL §7 (D189): sideways moves after the longitudinal step, against the published bodies.
     if (index.lateral.on) moveLaterally(scenario, index, next.vehicles, startTick, time, dt, events);
     // The tick's start colour is headColors[h] already; only the end colour is new.

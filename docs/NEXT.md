@@ -44,13 +44,17 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     per-decision notes) still belongs in the contracts.
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
-  - **Ask:** one random stream per input. Today every input shares `randomState`
-    (`src/core/demand.cpp`), so one edited input moves every arrival (D459's sweep measured 7 %).
-    It changes every baseline; do it before M6.
-  - Split `stepSimulation` (about 400 lines in one function) along its own phases.
-  - Analytic rows that do not pin the engine's own numbers: saturation flow and delay against HCM.
-  - Small: `progressionFactor` divides by zero at P = 1, X ≥ 1 (unreachable today);
-    `node_suggestions.cpp:95` has an `if` on the loop body's line.
+  - **Random streams per input: contract written, stop for the owner (D496).**
+    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §7 has four choices (OWNER_SITTING B44); no code
+    before they are answered. Then its §8 slices, rows IS1–IS9 first.
+  - Done (D495): source insertion and publication are out of `stepSimulation` (`tick.hpp`), with
+    byte-identical outputs. **Left:** phase 1's per-vehicle loop, about 150 lines, still one body;
+    split it only with a callgrind run before and after (it is the hot path).
+  - **Blocked on B9:** analytic rows against HCM. A row comparing engine saturation flow or delay
+    with a formula needs a tolerance, and M6.0 keeps engine numbers and tolerances out until the
+    owner has chosen the benchmark, so the choice stays pre-registered.
+  - Done: `progressionFactor` returns its limit, 0, at P = 1; the `if` in `node_suggestions.cpp`
+    is on its own line.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
   - A start page with *Open example* and recent files; the palette opens icons-only below 1500 px.
   - `four-leg-signalised` shows no LOS and no Node analysis: add a section or Node with inputs.
