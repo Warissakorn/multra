@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-06 — Procedure sequence P1: engine, schema 73, CLI (D484)
+
+- **Owner:** approved the plan after D483.
+- **D484 ([PROCEDURE_SEQUENCE](../reference/PROCEDURE_SEQUENCE.md) §8):**
+  - `procedures` at schema 73, and `runProcedure` (nearest earlier active input, an in-memory
+    assignment demand, a refusal stops the rest, Cancel);
+  - `procedureJson` and `--procedure`;
+  - `generatedOdMatrices` moved into the project layer.
+- **Rows:** `procedure` (PS1–PS8) and `cli-procedure*` (PS9). Found by the rows: a `{}` initialiser
+  had set every step to *done*; fixed. Four mutations each failed a row.
+- **Verified:** Linux only (desktop and headless). Windows not checked.
+
 ## 2026-11-06 — Procedure sequence contract (D483)
 
 - **Owner:** "ลำดับขั้นตอนการรัน"; answered §6 in the session: a general step list (1b, against

@@ -137,18 +137,16 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
 
 37–38. **J4T structure/cuts and polygon fitting:** answered and approved; [whole items B37–B38](../archive/OWNER_SITTING-B37-B38-2026-10-31.md), D416/D417.
 
-39. **J7 analysis source:** answered and approved; [whole B39](../archive/OWNER_SITTING-B39-2026-10-31.md), D418.
-
-40. **A9 Fill from model and Micro comparison:** answered (D419, D420; [choices](../reference/NODE_ANALYSIS_MODEL.md#b40-answered-choices)). Do not re-ask.
-
-41. **A9 manual-count comparison window** (answered 2026-10-31, D422). Owner selected
-   [explicit session-only confirmation](../reference/NODE_ANALYSIS_MODEL.md#b41-manual-count-comparison-window),
-   matching batch evaluation start/end and Node T, labelled manual counts. Nothing is stored.
-   Checkpoints a6d0a25/d663bf5 are accepted so far; finish A9, then stop for review.
+39–41. **J7 analysis source; A9 Fill from model; A9 manual-count window:** answered (D418; D419, D420; D422). [B39](../archive/OWNER_SITTING-B39-2026-10-31.md), [B40](../reference/NODE_ANALYSIS_MODEL.md#b40-answered-choices), [B41](../reference/NODE_ANALYSIS_MODEL.md#b41-manual-count-comparison-window). Do not re-ask.
 
 42. **M10.2 trip generation:** answered 1a–8a (D469); G2 choices D471. **Look (Windows):** Edit Zone's
    attributes, *Trip-rate sets…* (import `tests/data/trip-generation/trip-rates/example-4-1.json`) and the *Trip generation* page; layout ok?
    M10.3 D2 (D474): *Deterrence sets…*, *Cost matrices…* and the *Trip distribution* page (import `tests/data/trip-distribution/`'s sets). M10.4 E2 (D479): the *Mode choice* page, *Mode choice sets…* (import `tests/data/trip-distribution/mode-choice/hand.json`), *Period factors…* and *Write OD matrices*, then Run Macro on the period. M10.4 N1 (D481): *Mode choice sets…* → *Nests…* (add `foot` with `walk`, φ 0.5; try φ 1.5). D4 (D482): import `deterrence/hand-destination.json` and check the *Trip distribution* note. D485: *Procedure* page: add a procedure in *Procedures…*, run it, turn a step off. *Owner:*
+
+43. **Micro's M6 gate and the level order** (listed 2026-11-10, D493). D380 says a finer level's gate
+   does not close before the gate of the coarser level it depends on. M6's Micro benchmarks take
+   counted volumes, not a Macro or Meso result. May the Micro M6 gate close before the M10 and
+   M11 gates? Kept as it is on 2026-11-10; yes or no. *Owner:*
 
 ## C — Run view (the 125 % screen)
 

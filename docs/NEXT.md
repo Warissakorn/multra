@@ -27,6 +27,42 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   links table and say whether the example's size and story suit a first-time user. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Review of 2026-11-10 — queued proposals (D493)
+
+The first review's proposals are done (D493, [PROGRESS](PROGRESS.md)). The rest wait here in review
+order; none is started. **Ask** marks one the owner chooses before any code.
+
+- **Owner only, from the purpose review:** the M5.7 rehearsal (OWNER_SITTING A3), the M6 benchmark
+  choice (B9), a second user on the Micro sentence, and B43 (may Micro's M6 gate close before M10
+  and M11, D380).
+- **Architecture:**
+  - `multra-check-architecture` does not cover `model`, `commands`, `geo` or `editor`; `editor`
+    includes `shell` in three files (`canvas_cursors.cpp`, `map_locations.cpp`, `map_provider.cpp`).
+  - `macro`, `meso` and `analysis` compile into `multra_core`; give each its own target.
+  - **Ask:** split `src/project/` (codecs, runs, outputs; `src/report/` is reserved) and
+    `EditorWindow` (275 member functions in 52 files).
+  - Rewrite ARCHITECTURE as a map with the dependency table; move its per-decision prose to contracts.
+- **Engine:**
+  - **Ask:** one random stream per input. Today every input shares `randomState`
+    (`src/core/demand.cpp`), so one edited input moves every arrival (D459's sweep measured 7 %).
+    It changes every baseline; do it before M6.
+  - Split `stepSimulation` (about 400 lines in one function) along its own phases.
+  - Analytic rows that do not pin the engine's own numbers: saturation flow and delay against HCM.
+  - Small: `progressionFactor` divides by zero at P = 1, X ≥ 1 (unreachable today);
+    `node_suggestions.cpp:95` has an `if` on the loop body's line.
+- **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
+  - A start page with *Open example* and recent files; the palette opens icons-only below 1500 px.
+  - `four-leg-signalised` shows no LOS and no Node analysis: add a section or Node with inputs.
+  - Results has twelve tabs in one strip; group by level and hide tabs with no data.
+  - The "paths that cross pass through each other" line should be a Problems row per crossing.
+  - The batch page leaves about 200 px empty above its note, cutting the movement table.
+- **Process:**
+  - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged
+    seconds after opening).
+  - `multra-check-docs` checks links, not facts; compare milestone and schema statements with code.
+  - ROADMAP's M10–M14 as one table row per slice; history to the archive.
+  - A short user guide that walks the Micro sentence on the four-leg example.
+
 ## Tables like Excel (D490) — done; owner's look
 
 - Every table is a grid with numbered rows, cell blocks where several cells may be selected,
