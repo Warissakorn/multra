@@ -167,7 +167,7 @@ Control (Signal heads, Conflict areas), Demand (Routes, Vehicle inputs, Zones), 
 chord. The arrow above the tree (also View → icons only) hides the names; tooltips and
 accessible names keep name and chord. Named rows use short tool names with a separate chord
 column. Icons-only uses thin category separators and gives the released width to the canvas.
-The view is session-only; Reset chooses names at 1500 logical pixels and above, icons below.
+The view is session-only; Reset chooses names at 1440 logical pixels and above, icons below (D503).
 A manual choice remains through task switches and window resizing (D432, amending D193).
 
 - **The network view is a dock too (D431).** Its title bar is the validation-marker line: drag it

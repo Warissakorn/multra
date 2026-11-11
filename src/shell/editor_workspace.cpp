@@ -265,8 +265,8 @@ void EditorWindow::resizeEvent(QResizeEvent* event) {
             if(ends.size()>1)resizeDocks(ends,heights,Qt::Vertical);
         }
         setProperty("multraLaidOutSize",size());
-        if(property("editorWorkspacePreset").toInt()==0&&property("editorAutoPalette").toBool()&&actions_.at("editorPaletteIconsOnly")->isChecked()!=(width()<1500)) {
-            actions_.at("editorPaletteIconsOnly")->setChecked(width()<1500);showPaletteView();
+        if(property("editorWorkspacePreset").toInt()==0&&property("editorAutoPalette").toBool()&&actions_.at("editorPaletteIconsOnly")->isChecked()!=(width()<editorDesign::namedPaletteMinWindowWidth)) {
+            actions_.at("editorPaletteIconsOnly")->setChecked(width()<editorDesign::namedPaletteMinWindowWidth);showPaletteView();
         }
     });
 }
@@ -307,7 +307,7 @@ void EditorWindow::setWorkspacePreset(int preset) {
     changingWorkspace_=true;setProperty("editorApplyingLayout",true);setProperty("editorWorkspacePreset",preset);
     auto* palette=findChild<QDockWidget*>("editorPaletteDock");auto* inspector=findChild<QDockWidget*>("editorInspectorDock");
     auto* objects=findChild<QDockWidget*>("editorObjectsDock");auto* view=findChild<QDockWidget*>("editorCanvasDock");
-    const bool results=preset==2,compact=property("editorAutoPalette").toBool()?width()<1500:actions_.at("editorPaletteIconsOnly")->isChecked();
+    const bool results=preset==2,compact=property("editorAutoPalette").toBool()?width()<editorDesign::namedPaletteMinWindowWidth:actions_.at("editorPaletteIconsOnly")->isChecked();
     // An icons-only rail is capped at its own width; showing or hiding docks against that cap let Qt
     // hold the canvas dock at its old height and grow the window. resizePalette sets the cap again.
     if(palette->property("editorPaletteRail").toBool())palette->setMaximumWidth(QWIDGETSIZE_MAX);

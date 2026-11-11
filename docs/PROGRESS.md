@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-11 — The palette names its tools on a 1440 px window (D503)
+
+- **Owner:** chose this from the UI review's remaining items: at 1440 × 900 the palette was 16
+  icons with no names.
+- **Cause:** the palette went icons-only automatically below 1500 px of window width, so a
+  maximised window on a 1366 or 1440 px laptop never showed a tool's name.
+- **D503:** the threshold is 1440 px, one constant (`namedPaletteMinWindowWidth`) in place of
+  three literals. A person's own toggle still stops the automatic switch.
+- **Why not lower (the plan said 1280):** with names, a 1366 px window leaves the canvas 810 px,
+  and `ui-audit-layout` (D432's audit) requires 900 there; at 1280 that row and
+  `properties-layout-ui` failed. They were left as they are and the threshold raised instead.
+  At 1440 the canvas is 884 px with names (1066 with icons). 1366 px windows keep the rail.
+- **Tests:** new `palette-width-ui` (failed at the old threshold: "Wrong palette view at 1440 px");
+  `workspace-ui` reads the constant instead of the literal 1500.
+- **Verified:** Linux, GCC 13.3, desktop ctest 318/318 and headless `check`. Thai captions fit at
+  1440 ([en](images/palette-d503/palette-1440-en.png), [th](images/palette-d503/palette-1440-th.png)).
+  Windows and high-DPI are the owner's (B45).
+
 ## 2026-11-10 — Process review: stated facts checked, ROADMAP tables, a user guide (D502)
 
 - **Owner:** asked for the rest of the queue: the process review's three proposals.
@@ -195,16 +213,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **CI fix (windows-desktop):** `ui-audit-layout` (1×, 1.5×, 2×) failed in Thai at 1366: queue
   approach names under 140 px, after D490's row header took ~21 px. Side-by-side Results now split
   4:3 (was 3:2); on Linux Thai 176 → 215 px, English 235 → 274, movement viewport 778 → 739.
-
-## 2026-11-08 — Compactness pass after D490 (D490a)
-
-- **Owner:** asked for a compactness review in chat, then "แก้ตามแนะนำ" (all of A–D).
-- **Fixed:** whole English column headers; the Objects group picker no longer covers the first tab
-  after a language change; the Tables layout reaches its target height (Qt's `resizeDocks` fell
-  short) and aims at 10.5 rows within the existing preview floor; Results notes fold to one line;
-  the stacked queue table is only as tall as its rows; no grey header band below the last row.
-- **Measured (Linux offscreen, Compact):** Objects rows 7.7 → 9.4 at 1360×860, 6.9 → 8.4 at
-  1024×768, 8.6 → 10.5 at 1920×1080; Thai 1024 Results movements 9 → 12 of 12.
-- **Reverted:** a 300/220 px preview floor, which broke workspace-ui and object-groups-ui's
-  owner-set 350/250 px preview.
-- **Tests:** new `compact-ui`; desktop ctest 310/310 and `check` pass. Windows look is the owner's.

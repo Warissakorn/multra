@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-08 — Compactness pass after D490 (D490a)
+
+- **Owner:** asked for a compactness review in chat, then "แก้ตามแนะนำ" (all of A–D).
+- **Fixed:** whole English column headers; the Objects group picker no longer covers the first tab
+  after a language change; the Tables layout reaches its target height (Qt's `resizeDocks` fell
+  short) and aims at 10.5 rows within the existing preview floor; Results notes fold to one line;
+  the stacked queue table is only as tall as its rows; no grey header band below the last row.
+- **Measured (Linux offscreen, Compact):** Objects rows 7.7 → 9.4 at 1360×860, 6.9 → 8.4 at
+  1024×768, 8.6 → 10.5 at 1920×1080; Thai 1024 Results movements 9 → 12 of 12.
+- **Reverted:** a 300/220 px preview floor, which broke workspace-ui and object-groups-ui's
+  owner-set 350/250 px preview.
+- **Tests:** new `compact-ui`; desktop ctest 310/310 and `check` pass. Windows look is the owner's.
+
 ## 2026-11-07 — Tables read like Excel (D490)
 
 - **Owner:** "ต้องการให้ตารางในโปรแกรมเป็นเหมือนตาราง excel"; chose grid look, Copy to Excel and

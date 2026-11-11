@@ -148,7 +148,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
 
 44. **Random streams per input** (listed 2026-11-10, D496). [INPUT_STREAMS §7](../reference/INPUT_STREAMS.md#7-the-owners-choices):
    choices 1–4 (default for new documents, hashed traits, paired comparison, before or after M6). *Owner:*
-45. **UI review fixes** (listed 2026-11-10, D497–D499; [images](../images/ui-review-d497/)). On Windows: Results by level, *File → Open example*, a batch's tables under its note, Problems' crossing rows. Layout ok? *Owner:*
+45. **UI review fixes** (listed 2026-11-10, D497–D499; [images](../images/ui-review-d497/)). On Windows: Results by level, *File → Open example*, a batch's tables under its note, Problems' crossing rows; the palette names its tools from 1440 px (D503, [images](../images/palette-d503/)). Layout ok? *Owner:*
 
 ## C — Run view (the 125 % screen)
 

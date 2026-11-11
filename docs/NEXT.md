@@ -64,7 +64,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - Fixed (D501): a placed routing decision reaches a pocket through the taper's second lane
     path; an unserved destination is named. **Ask:** move the D500 example to the pocket template
     (`signal-4-p3-major-far-pockets`) now that decisions work with it? Its file would be regenerated.
-  - Left: a start page and recent files; the palette opens icons-only below 1500 px (D432).
+  - Done (D503): the palette names its tools from 1440 px, not 1500 (owner's look: B45).
+  - Left: a start page and recent files.
 - **Process:**
   - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged
     seconds after opening).
