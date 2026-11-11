@@ -27,6 +27,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   links table and say whether the example's size and story suit a first-time user. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Route tool: one origin, several destinations (D506) — done; owner's look
+
+- **Owner, on Windows:** press `R`, click a Link once, then click two or three destinations; check
+  the status hint and that each destination is one Undo. Esc ends the origin.
+
 ## Tables like Excel (D490) — done; owner's look
 
 - Every table is a grid with numbered rows, cell blocks where several cells may be selected,

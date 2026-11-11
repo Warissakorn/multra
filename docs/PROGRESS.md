@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-11 — Pick the origin once, then several destinations (D506)
+
+- **Owner:** "ต้องการให้เลือกต้นทางครั้งเดียว และเลือกปลายทางได้หลายอัน" (pick the origin once, then
+  several destinations).
+- **D506:** after the Route tool saves a traced destination, `EditorCanvas::commitRouteDraft` keeps
+  the start object and station, so the next click is another destination from the same origin and
+  joins the same routing decision. A click back on the origin's line does nothing; the same
+  destination by the same roads is refused (`EDIT_ROUTE_DUPLICATE`, en/th); Esc or Backspace on the
+  bare origin ends it. The status hint says the origin stays. `Ctrl`+right/`Enter` is unchanged.
+- **Rows:** `station-routing-ui` now draws two destinations from one origin click and checks the
+  no-op click, the refused duplicate, Esc and Backspace.
+
 ## 2026-11-09 — A shipped Macro example: four steps on a four-zone town (D492)
 
 - **Owner:** "สร้างโปรเจ็คตัวอย่างการทำ แบบจำลองระดับ Macro" (a sample project for Macro modelling).

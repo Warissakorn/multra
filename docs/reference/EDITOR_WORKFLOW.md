@@ -106,12 +106,17 @@ Routes use an explicit trace gesture (D116, owner request):
 | Move over connected roads | Previews the actual path; passing a branch remembers that choice |
 | Move back onto an earlier route object | Trims the preview back to that object |
 | Click the destination road | Saves the complete preview as one undoable edit |
-| `Backspace` | Removes the last object from the trace |
-| `Esc`, tool/level change or focus loss | Cancels without storing anything |
+| Click further destinations | The origin stays picked (D506): each click saves one more route from the same start, in the same routing decision |
+| `Backspace` | Removes the last object from the trace; on the bare origin, ends it |
+| `Esc`, tool/level change or focus loss | Cancels without storing anything; after a destination, ends the kept origin |
 | `Ctrl`+right-click | Retains the earlier start/append gesture; `Enter` saves it |
 | `V`, then `Ctrl`+right-click a Link | Opens a vehicle input on that Link, with or without a route |
 | Right-click a stored route or input | Edit, delete, or show in its table |
 
+A click back on the kept origin's line (within 10 px of its station) does nothing, and a
+destination the origin's decision already reaches by the same roads is refused
+(`EDIT_ROUTE_DUPLICATE`). Undo removes one destination at a time; Undo, Open and
+`Ctrl`+right/`Enter` routes do not keep an origin.
 An unreachable or equally ambiguous path is rejected. Pass over the desired intermediate
 branch to disambiguate it; the gesture does not guess a turn. Hover never mutates the document.
 Double-click adds no second commit. Other authoring tools retain D84's Ctrl+right gesture.

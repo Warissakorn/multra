@@ -94,6 +94,9 @@ bool EditorCanvas::demandPress(QMouseEvent* e) {
         if(routeStartPosition_ && routeEnd_ && target==routeDraft_.front() && routeEnd_->station<*routeStartPosition_) {
             reject();return true;
         }
+        // D506: a click back on the kept origin's line is not a zero-length destination.
+        if(candidate.size()==1 && routeStartPosition_ && routeEnd_ &&
+           std::abs(routeEnd_->station-*routeStartPosition_)*viewScale()<=10)return true;
         routeDraft_=std::move(candidate);routePreview_.clear();commitRouteDraft();return true;
     }
     const auto chain=routeDraftWith(target);
@@ -149,10 +152,18 @@ void EditorCanvas::commitRouteDraft() {
     const auto segments=routeTracing_ && !routePreview_.empty()?routePreview_:routeDraft_;
     const auto position=routeStartPosition_;
     const auto end=routeEnd_;
+    const bool tracing=routeTracing_;
     clearRouteDraft();
     if(routeDestinationCommitted)routeDestinationCommitted(segments,position,end);
     else if(positionedRouteCommitted)positionedRouteCommitted(segments,position);
     else if(routeDraftCommitted)routeDraftCommitted(segments);
+    // D506: a traced route keeps its origin, so the next click is another destination from the
+    // same start (and the same routing decision). Restored after the commit, which replaced the
+    // document and reset every gesture. Esc, or Backspace on the bare origin, ends it.
+    if(tracing && document_ && !routeLaneChains(document_->network,{segments.front()}).empty()) {
+        routeDraft_={segments.front()};routeStartPosition_=position;routeTracing_=true;
+        if(routeDraftChanged)routeDraftChanged();
+    }
     redraw();
 }
 void EditorCanvas::dropLastRouteSegment() {

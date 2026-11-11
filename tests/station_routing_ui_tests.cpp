@@ -66,9 +66,22 @@ int main(int argc,char** argv) {
         }
         require(overlay,"Committed Route has no overlay");
         require(documentJson(w.history().document())["schemaVersion"]==30,"Destination not persisted in schema 30");
-        click(canvas,{at,0});hover(canvas,{170,50});click(canvas,{170,50});
+        // D506: the origin is picked once; each further click is another destination from it.
+        require(canvas->routeDraft()==std::vector<std::string>({a}) && canvas->routeStartPosition()==at,
+            "The origin was not kept after a destination");
+        const auto kept=w.history().revision();click(canvas,{at,0});
+        require(w.history().revision()==kept && canvas->routeDraft()==std::vector<std::string>({a}),
+            "A click back on the origin's line authored a zero-length route");
+        hover(canvas,{170,50});click(canvas,{170,50});
         require(w.history().document().definition->routingDecisions.size()==1 && decision(w).routes.size()==2,
-            "Starting on the same line did not group the second route");
+            "A second destination from the kept origin did not join its decision");
+        require(canvas->routeDraft()==std::vector<std::string>({a}),"The origin was lost after the second destination");
+        const auto twice=w.history().revision();hover(canvas,{170,0});click(canvas,{170,0});
+        require(w.history().revision()==twice && decision(w).routes.size()==2,"The same destination was added twice");
+        QTest::keyClick(canvas,Qt::Key_Escape);QApplication::processEvents();
+        require(canvas->routeDraft().empty() && !canvas->routeStartPosition(),"Esc did not end the origin");
+        click(canvas,{at,0});QTest::keyClick(canvas,Qt::Key_Backspace);QApplication::processEvents();
+        require(canvas->routeDraft().empty(),"Backspace on the bare origin did not end it");
         undo(w);require(decision(w).routes.size()==1,"Undo did not remove the second route atomically");
         w.findChild<QComboBox*>("editorTool")->setCurrentIndex(0);
         const auto p=canvas->mapFromScene(at,0),q=canvas->mapFromScene(60,0);
