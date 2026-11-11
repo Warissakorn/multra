@@ -9,8 +9,8 @@ registry. Contract: [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md),
 
 ## Dependencies
 
-Qt-free. Reads `src/model/`, `src/project/` and `src/core/` headers. `src/project/` never includes
-this module (`multra-check-architecture`).
+Qt-free, and never includes the editor, shell, lab or geo. Reads `src/model/`, `src/project/` and
+`src/core/` headers. `src/project/` never includes this module (both `multra-check-architecture`).
 
 ## Files
 

@@ -20,6 +20,7 @@ and then the step is unchanged to the bit.
 | `types.hpp` | The runtime contract: `Scenario`, `SimState`, `Vehicle`, `SimEvent`, behaviours (`effectiveBehaviour` by front segment), `upcomingArrivals` | [SIMULATION](../../docs/reference/SIMULATION.md) |
 | `simulation.*` | Public API: `createSimulation`, `stepSimulation`, `runSimulation`, `totalTicks`, `canonicalScenario`; `retuneSimulation` and `placeVehicle` (in `retune.cpp`, for the Behaviour Lab only); `signalColorAt` (in `signals.cpp`). `demand.cpp` draws arrivals | [SIMULATION](../../docs/reference/SIMULATION.md), [BEHAVIOUR_LAB §1](../../docs/reference/BEHAVIOUR_LAB.md) |
 | `validate.*` | `validateScenario`, `assertValidScenario`, `onTimeGrid` | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `tick.hpp` | The tick's phases that `stepSimulation` calls: `insertArrivals` (`insertion.cpp`, source insertion, D108) and `publishMoves` (`publish.cpp`, phase 3: events and survivors), with `Move` and `Reaction` (D495) | [SIMULATION](../../docs/reference/SIMULATION.md) |
 | `detail.hpp` | splitmix64's finaliser and the canonical id order shared by create and retune | [SIMULATION](../../docs/reference/SIMULATION.md) |
 | `routes.*` | The run index: routes as segment indexes, `appendVehicleSpans` (the occupied spans every leader search reads) | [SIMULATION](../../docs/reference/SIMULATION.md) |
 | `routing.*` | Station route decisions: `routingIssues`, `nextRouteDecision`, `applyRouteDecision` (one seeded draw per selection) | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |

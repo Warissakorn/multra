@@ -171,9 +171,12 @@ The gap is narrower than it looks:
 - **Every level is well-documented published science.** Wiedemann 74/99, gap acceptance, lane
   changing (MOBIL, Gipps), signal control, link transmission models, user-equilibrium
   assignment and the four-step model are papers and textbooks, not trade secrets. So is HCM 7.
-- **The hard part is not the physics, it is the modelling surface**: the link-based network,
-  conflict areas, the object model engineers already know. That is design work, and it has
-  already been mapped in detail by the prior effort.
+- **The modelling surface is design work that is already mapped**: the link-based network,
+  conflict areas, the object model engineers already know, in detail from the prior effort.
+- **Making the published models run together is the other hard part (D493).** Each model is
+  documented; their joins are not. Merges, weaving and lateral movement took most of the
+  engine's decisions (ROADMAP M3.2.8a.1, M3.4), a few safety clamps remain, and W99 and
+  motorcycles are not built. This cost is real and is planned for, not assumed away.
 - **One model for every level is practical.** Aimsun Next holds Micro, Meso and Macro on one
   network database; MULTRA's one network and one demand (D145) is the same structure.
 - **The evaluation layer has to be written either way**, so it is not extra cost here.

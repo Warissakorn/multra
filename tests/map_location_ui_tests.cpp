@@ -1,6 +1,6 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/shell/map_settings_dialog.hpp"
-#include "../src/shell/path.hpp"
+#include "../src/editor/path.hpp"
 #include "../src/editor/map_locations.hpp"
 #include "dialog_fit_support.hpp"
 #include "ui_test_storage.hpp"

@@ -50,6 +50,7 @@ SaturationFactors saturationFactors(const SignalisedLaneGroup& g) {
     return f;
 }
 double progressionFactor(double p, double gc, double x) {
+    if (p >= 1) return 0; // every arrival on green: no uniform delay, and Eq. 19-20 is 0/0 at X >= 1
     const double y = std::min(1.0, x) * gc; // Eq. 19-21
     return (1 - p) / (1 - gc) * (1 - y) / (1 - std::min(1.0, x) * p) * (1 + y * (1 - p / gc) / (1 - gc));
 }

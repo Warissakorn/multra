@@ -1,6 +1,6 @@
 #include "editor_style.hpp"
 #include "editor_interaction.hpp"
-#include "path.hpp"
+#include "../editor/path.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QApplication>
 #include <QDir>

@@ -29,6 +29,26 @@ except that once a multi-click draft (Zone, Node, Queue counter, Section, two-cl
 its first point, plain left clicks place the rest (D306). Shift-click toggles, Ctrl-click adds an unselected object, and
 Ctrl-drag of a selected object copies it, retaining the D30 convention.
 
+## Examples and an empty drawing
+
+**File → Open example** lists the shipped projects from `data/examples.json`, with each one's
+purpose as its tool tip (D498). An example opens as an untitled copy: Save asks for a destination
+and never writes into the installed data. Names and purposes are stored in English and Thai with
+the list, so a new example needs no code. While the drawing has no Link, the run status line
+points at the Link tool and at this menu. *Signalised junction with LOS and HCM analysis* (D500)
+is the one to open for the two letters: **Analyse** fills the Node (HCM) level's table, and
+**Run seeds** gives the travel-time sections their LOS.
+
+**File → Open recent** lists the last eight projects opened or saved, newest first (D504); the
+file name is shown and the path is the tool tip. A file that is gone is listed disabled, *Clear
+list* empties it. The list is the person's (`recent-files.json` in the application's local data
+folder), never part of a project; an example and a recovery draft do not enter it.
+
+**Check runnability** adds one advisory row to Problems for each place where two roads cross
+with no conflict area (D499): vehicles pass through each other there in a run. Selecting the row
+selects one of the two roads. It is an advisory and never blocks Run; the run view's general
+line stays.
+
 ## History
 
 Use **View → History** or **Ctrl+Shift+H**. The dock lists reachable states from oldest
@@ -152,7 +172,7 @@ Control (Signal heads, Conflict areas), Demand (Routes, Vehicle inputs, Zones), 
 chord. The arrow above the tree (also View → icons only) hides the names; tooltips and
 accessible names keep name and chord. Named rows use short tool names with a separate chord
 column. Icons-only uses thin category separators and gives the released width to the canvas.
-The view is session-only; Reset chooses names at 1500 logical pixels and above, icons below.
+The view is session-only; Reset chooses names at 1440 logical pixels and above, icons below (D503).
 A manual choice remains through task switches and window resizing (D432, amending D193).
 
 - **The network view is a dock too (D431).** Its title bar is the validation-marker line: drag it
@@ -211,6 +231,15 @@ side by side they split 4:3, so the approach names keep 140 px beside the number
 The toolbar row directly above the panels ends in the panels' own separator band (4 px and its
 two 1 px edges, midlight), outside the toolbar's 32 px contents (D491); when the toolbars stack
 below the break width, only the lower row has it.
+
+Results shows one level's tabs at a time (D497). The picker at the head of the Results toolbar
+chooses Micro (Movements and queues, Queue discharge, Safety clamps, Parking lots, Nodes), Meso
+(Meso links), Macro (Trip generation, Trip distribution, Mode choice, Macro links, Procedure, the
+study chain's order) or Node (HCM) (Node analysis). Parking lots and Nodes are left out of the
+strip while the project has no lot or no Node, and a level with one tab shows no strip. A command
+that opens a tab (Run Macro, Run Meso, Analyse nodes, Run seeds) picks its level. The choice is
+session-only and nothing is stored. A batch replaces the single run's tables and their frame, so
+its tables start directly under its note.
 
 Results stacks movement and queue tables below 1250 logical pixels of content width. Macro,
 Meso and seed-batch commands appear in their own Results tabs; Export/Copy stays common.

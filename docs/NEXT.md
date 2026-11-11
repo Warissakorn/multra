@@ -27,6 +27,58 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   links table and say whether the example's size and story suit a first-time user. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Review of 2026-11-10 — queued proposals (D493)
+
+The first review's proposals are done (D493, [PROGRESS](PROGRESS.md)). The rest wait here in review
+order; none is started. **Ask** marks one the owner chooses before any code.
+
+- **Owner only, from the purpose review:** the M5.7 rehearsal (OWNER_SITTING A3) and a second user
+  on the Micro sentence. Answered (D505): the M6 benchmark sources ([ROADMAP](ROADMAP.md) M6.0);
+  Micro's M6 gate may close before M10 and M11.
+- **Architecture:**
+  - Done (D494): every module's includes are checked, `editor` no longer includes `shell`, and
+    Macro, Meso and analysis are their own targets.
+  - **Approved (D505), not started:** split `EditorWindow` (275 member functions in 52 files; its
+    header is at the 500-line limit) in small steps with no behaviour change. `src/project/`
+    (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
+  - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
+    per-decision notes) still belongs in the contracts.
+  - `shell` is not checked: it may include everything, so there is nothing to refuse.
+- **Engine:**
+  - **Random streams per input: contract written, choices answered (D496, D505), not started.**
+    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §7: `perInput` for new documents at a schema
+    step, traits re-keyed, before the M6 runs. Its §8 slices, rows IS1–IS9 first.
+  - Done (D495): source insertion and publication are out of `stepSimulation` (`tick.hpp`), with
+    byte-identical outputs. **Left:** phase 1's per-vehicle loop, about 150 lines, still one body;
+    split it only with a callgrind run before and after (it is the hot path).
+  - **Unblocked (D505), not started:** analytic rows against HCM. The sources are chosen; a row
+    comparing engine saturation flow or delay with a formula still needs the option sheet's §6
+    and a tolerance written down before the first comparable run.
+  - Done: `progressionFactor` returns its limit, 0, at P = 1; the `if` in `node_suggestions.cpp`
+    is on its own line.
+- **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
+  - Done (D497–D499): Results by level, *File → Open example* with an empty-drawing hint, one
+    Problems row per unprotected crossing, and the batch page's blank band. **Owner's look:**
+    OWNER_SITTING B45, [images](images/ui-review-d497/).
+  - Done (D500): `signalised-node-analysis.traffic.json` shows LOS and the HCM table
+    (`multra-node-example`).
+  - Fixed (D501): a placed routing decision reaches a pocket through the taper's second lane
+    path; an unserved destination is named. **Approved (D505), not started:** move the D500 example to
+    the pocket template (`signal-4-p3-major-far-pockets`); its file and test numbers are regenerated.
+  - Done (D503): the palette names its tools from 1440 px, not 1500 (owner's look: B45). Names
+    at 1366 px: not wanted (D505).
+  - Done (D504): *File → Open recent*, and the empty drawing points at it (owner's look: B45).
+  - No start page (D505): File already has recent files and examples. Reopen only if a real
+    user cannot find them.
+- **Process:**
+  - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged
+    seconds after opening).
+  - Done (D502): `multra-check-docs` checks three stated facts (decision ids, schema numbers,
+    the shipped-project list); ROADMAP's M10, M11, M13 and M14 are one table row per slice with
+    the history archived; [USER_GUIDE](USER_GUIDE.md) walks the Micro sentence on the four-leg.
+  - Left: milestone status statements ("M10.2 implemented") are still not checked against code;
+    the user guide has no Thai edition and no pictures.
+
 ## Tables like Excel (D490) — done; owner's look
 
 - Every table is a grid with numbered rows, cell blocks where several cells may be selected,

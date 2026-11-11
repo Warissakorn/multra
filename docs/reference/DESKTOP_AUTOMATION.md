@@ -131,8 +131,8 @@ validate before publication. The editor's History owns the revision; patches can
 change `revision` or the `format` marker. Embedded background image bytes cannot be
 replaced through this interface. Use ordinary project files to load another image.
 The document's feature schema still applies: adding a field introduced in a newer
-schema must use a schema version that accepts that field, up to the supported version
-58. `schemaVersion` can be patched but must remain present; removing it would select
+schema must use a schema version that accepts that field, up to the reply's
+`latestSchemaVersion`. `schemaVersion` can be patched but must remain present; removing it would select
 the legacy scenario decoder. Saving selects the schema required by the document's
 features. Successful edits refresh
 the same canvas and invalidate the previous run, as ordinary editor edits do.

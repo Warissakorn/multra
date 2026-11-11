@@ -93,7 +93,8 @@ std::vector<Node> nodeSuggestions(const Network& network) {
         c.order = root;
         for (const auto& side : c.linkSides)
             if (const auto a = c.arrivals.find(side.path.linkId); a == c.arrivals.end() || a->second > side.entryStation + 1e-6)
-                c.sources.insert(side.path.linkId); if (c.pad > 0 && !c.points.empty() && c.sources.size() > 1) list.push_back(std::move(c)); }
+                c.sources.insert(side.path.linkId);
+        if (c.pad > 0 && !c.points.empty() && c.sources.size() > 1) list.push_back(std::move(c)); }
     // Overlapping suggestions are one junction: merge until none overlap.
     for (bool merged = true; merged;) {
         merged = false;

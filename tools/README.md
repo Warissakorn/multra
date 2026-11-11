@@ -17,7 +17,7 @@ cmake --build build/headless --target check
 | `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
 | `four_step_cli.*` | `multra-cli` | The four-step runs `--trip-generation`, `--trip-distribution` and `--mode-choice` (M10.2–M10.4), moved out of `run_simulation.cpp` (D478); `--procedure`, a saved procedure's steps (D484) |
 | `desktop_control.cpp` | `multra-control` | Send a JSON command to a visible desktop's local automation endpoint; desktop build only |
-| `check_architecture.cpp` | `multra-check-architecture` | Check core/eval include boundaries and forbidden nondeterministic APIs |
+| `check_architecture.cpp` | `multra-check-architecture` | Check every module's include boundary (engines import nothing; model, commands, geo and editor by layer) and forbidden nondeterministic APIs |
 | `check_file_sizes.cpp` | `multra-check-file-sizes` | Enforce the source-file line budget |
 | `check_docs.cpp` | `multra-check-docs` | Check maintained Markdown local links, anchors, folder indexes and that every `src/` header is in its module README; supplied spec parts are excluded |
 | `node_detail_benchmark.cpp` | `multra-node-detail-benchmark` | Time F4 for unconnected four-arm Nodes; `16 output.json` prints three timings and saves the first document for byte comparison; not in `check` |

@@ -3,7 +3,7 @@
 // same mean delay as `multra-cli 42`, reached through the only UI that still runs.
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
-#include "../src/shell/path.hpp"
+#include "../src/editor/path.hpp"
 #include "../src/core/simulation.hpp"
 #include <QAction>
 #include <QApplication>

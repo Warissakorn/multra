@@ -104,8 +104,45 @@ std::string normalized(const fs::path& path) {
     while (name.size()>1 && name.ends_with('/')) name.pop_back();
     return name;
 }
-std::vector<std::string> check(const Documents& docs, const std::set<std::string>& files) {
+// Facts a document states that the repository can answer (D502). `latestSchema` 0 skips its check.
+// - A decision id (D12, D490a) names a row of a decision record: an `id="d12"` anchor under docs/decisions/.
+// - No document cites a project schema above the reader's kLatestSchema.
+// - data/projects/README.md names every shipped project, and no project that is not there.
+void checkFacts(const Documents& docs, const std::set<std::string>& files, int latestSchema, std::vector<std::string>& errors) {
+    std::set<std::string> decisions;
+    const std::regex anchor("id=\"(d[0-9]+[a-z]?)\""), id("(^|[^A-Za-z0-9_-])D([1-9][0-9]{0,2}[a-z]?)(?![A-Za-z0-9])"),
+        schema("[Ss]chemas?\\s+([0-9]{1,3})(\\s*(–|-|to)\\s*([0-9]{1,3}))?");
+    for (const auto& [path,text]:docs)
+        if (path.starts_with("docs/decisions/"))
+            for (std::sregex_iterator it(text.begin(),text.end(),anchor),end; it!=end; ++it) decisions.insert((*it)[1]);
+    for (const auto& [path,text]:docs) {
+        if (sourcePart(path)) continue;
+        const auto body=prose(text);
+        std::set<std::string> reported;
+        if (!decisions.empty())
+            for (std::sregex_iterator it(body.begin(),body.end(),id),end; it!=end; ++it) {
+                const auto name=(*it)[2].str();
+                // D18 names the family D18a-D18d.
+                if (!decisions.contains("d"+name) && !decisions.contains("d"+name+"a") && reported.insert(name).second) errors.push_back(path+": unknown decision D"+name);
+            }
+        if (latestSchema>0)
+            for (std::sregex_iterator it(body.begin(),body.end(),schema),end; it!=end; ++it)
+                for (const auto group:{1,4})
+                    if ((*it)[group].matched && std::stoi((*it)[group])>latestSchema && reported.insert("s"+(*it)[group].str()).second)
+                        errors.push_back(path+": schema "+(*it)[group].str()+" is above kLatestSchema "+std::to_string(latestSchema));
+    }
+    const std::string index="data/projects/README.md", folder="data/projects/", suffix=".traffic.json";
+    if (!docs.contains(index)) return;
+    for (const auto& file:files)
+        if (file.starts_with(folder) && file.ends_with(suffix) && docs.at(index).find("`"+file.substr(folder.size())+"`")==std::string::npos)
+            errors.push_back(index+": shipped project not listed: "+file);
+    const std::regex row("(^|\n)\\| `([^`]+\\.traffic\\.json)`");
+    for (std::sregex_iterator it(docs.at(index).begin(),docs.at(index).end(),row),end; it!=end; ++it)
+        if (!files.contains(folder+(*it)[2].str())) errors.push_back(index+": lists a project that is not shipped: "+(*it)[2].str());
+}
+std::vector<std::string> check(const Documents& docs, const std::set<std::string>& files, int latestSchema=0) {
     std::vector<std::string> errors;
+    checkFacts(docs,files,latestSchema,errors);
     // One parse per target document: RECORD.md alone is the target of ~330 anchored links.
     std::map<std::string, std::set<std::string>> anchorsOf;
     for (const auto& [path,text]:docs) {
@@ -180,6 +217,20 @@ int selfTest() {
     if (check(docs,files).empty()) return 1; // a prose mention is not a row
     docs["src/model/README.md"]="| `network.hpp` |\n";
     if (!check(docs,files).empty()) return 1;
+    // Facts (D502): an unknown decision, a schema above the reader's, a project list out of step.
+    docs["README.md"]="D1 and D1a stand.\n";
+    if (check(docs,files).size()!=1) return 1; // D1a has no row; D1 has
+    docs["README.md"]="GD7, D0 and a fenced example are not citations.\n```\nD9\n```\n";
+    if (!check(docs,files).empty()) return 1;
+    docs["README.md"]="Readers accept schemas 1–12; schema 13 adds nothing yet.\n";
+    if (!check(docs,files,13).empty() || check(docs,files,12).size()!=1) return 1;
+    docs["README.md"]="";
+    docs["data/projects/README.md"]="| `a.traffic.json` | one |\n"; files.insert("data/projects/README.md");
+    if (check(docs,files).size()!=1) return 1; // listed, not shipped
+    files.insert("data/projects/a.traffic.json"); files.insert("data/projects/b.traffic.json");
+    if (check(docs,files).size()!=1) return 1; // b shipped, not listed
+    docs["data/projects/README.md"]+="| `b.traffic.json` | two |\n";
+    if (!check(docs,files).empty()) return 1;
     std::cout << "Documentation positive/negative fixtures passed\n"; return 0;
 }
 }
@@ -197,8 +248,13 @@ int main(int argc,char** argv) {
         const auto path=it->path().lexically_relative(root).generic_string(); files.insert(path);
         if (it->is_regular_file() && it->path().extension()==".md") docs.emplace(path,read(it->path()));
     }
-    const auto errors=check(docs,files);
+    // The reader's newest schema, from the one place the code states it.
+    std::smatch latest; const auto schemaSource=read(root/"src/project/document.hpp");
+    if (!std::regex_search(schemaSource,latest,std::regex("kLatestSchema\\s*=\\s*([0-9]+)"))) {
+        std::cerr << "Cannot read kLatestSchema from src/project/document.hpp\n"; return 2;
+    }
+    const auto errors=check(docs,files,std::stoi(latest[1]));
     for (const auto& error:errors) std::cerr << error << '\n';
-    if (errors.empty()) std::cout << "Documentation links, anchors, maintained indexes and module maps passed\n";
+    if (errors.empty()) std::cout << "Documentation links, anchors, maintained indexes, module maps and stated facts passed\n";
     return errors.empty() ? 0 : 1;
 }

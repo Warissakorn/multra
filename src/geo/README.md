@@ -6,7 +6,7 @@ translated and rotated local origin. Contract: [MAP_BACKGROUND](../../docs/refer
 
 ## Dependencies
 
-Desktop only. Reads `src/project/map_settings.hpp` (the stored `GeoReference`) and PROJ; no Qt.
+Desktop only. Reads `src/project/map_settings.hpp` (the stored `GeoReference`) and PROJ; no Qt, commands, editor or shell (`multra-check-architecture`).
 Core, eval and headless persistence never import this module.
 
 ## Files

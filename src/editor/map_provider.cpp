@@ -1,5 +1,5 @@
 #include "map_provider.hpp"
-#include "../shell/path.hpp"
+#include "path.hpp"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonArray>

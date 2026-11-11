@@ -1,3 +1,4 @@
+#include "recent_files.hpp"
 #include "editor_interaction.hpp"
 #include "form_values.hpp"
 #include "presentation.hpp"
@@ -7,7 +8,7 @@
 #include "editor_macro.hpp"
 #include "editor_meso.hpp"
 #include "behaviour_lab_window.hpp"
-#include "path.hpp"
+#include "../editor/path.hpp"
 #include "editor_style.hpp"
 #include "vehicle_color_dialog.hpp"
 #include "../project/evaluation_period.hpp"
@@ -81,7 +82,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     files->addAction(action("editorOpen",QKeySequence::Open,[this]{
         if(!confirmDiscard()) return;
         const auto file=QFileDialog::getOpenFileName(this,text("editorOpen"),{},text("editorFilter"));
-        if(!file.isEmpty()) try{openFile(file);}catch(const std::exception& e){showError(e);}
+        if(!file.isEmpty()) try{openFile(file);rememberRecentFile(file);}catch(const std::exception& e){showError(e);}
     }));
     files->addAction(action("editorSave",QKeySequence::Save,[this]{saveDialog();}));
     action("editorSaveAs",QKeySequence::SaveAs,[this]{saveDialog(true);});

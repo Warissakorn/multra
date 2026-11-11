@@ -41,8 +41,8 @@ The owner's R2 answer: correct the known biases first, then the validation path.
 2. **M4.2** amber stop-or-go ([ROADMAP](../ROADMAP.md) M4.2; D36 ran amber as red, which biased
    every signalised delay) — implemented (D147).
 3. **M6.0** benchmark option sheet, docs only, no engine numbers; the marker stays until M6 passes
-   — delivered 2026-10-10 ([sheet](../evidence/m6-benchmark-options.md)); the owner chooses in
-   [OWNER_SITTING](OWNER_SITTING.md) B9.
+   — delivered 2026-10-10 ([sheet](../evidence/m6-benchmark-options.md)); the owner chose on 2026-11-11 (D505,
+   [ROADMAP](../ROADMAP.md) M6.0).
 4. **M5.8** scenario comparison (above) — M5.8a, the CLI `--compare`, implemented (D148); M5.8b, the
    editor's *Compare with…*, implemented (D149); its desktop look is the owner's
    ([OWNER_SITTING](OWNER_SITTING.md) C7).

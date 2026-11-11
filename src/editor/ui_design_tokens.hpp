@@ -39,6 +39,9 @@ inline constexpr int controlHeight=24,tableRowHeight=24,toolbarHeight=32,iconSiz
 inline int presentationDensity(){return QCoreApplication::instance()?std::clamp(QCoreApplication::instance()->property("editorDensity").toInt(),0,2):0;}
 // Label column shared by every Properties form (D195); longer labels wrap inside it.
 inline constexpr int formLabelWidth=120,namedPaletteWidth=210,compactPaletteWidth=64;
+// The palette names its tools from this window width; below it the icons-only rail (D503; 1500 before).
+// Not lower: with names a 1366 px window leaves the canvas 810 px, under the audit's 900 (ui-audit-layout).
+inline constexpr int namedPaletteMinWindowWidth=1440;
 // Vertical padding inside a control. Not a spacing token: it is what makes a 24 px control
 // (1 border + 2 + 18 content + 2 + 1), not a gap between two things.
 inline constexpr int controlPaddingY=2;
