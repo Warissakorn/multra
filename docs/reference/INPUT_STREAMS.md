@@ -1,7 +1,7 @@
 # Random streams per input (contract, proposed)
 
-**Status on 2026-11-10: contract only, no code. The owner's choices in §7 are open; nothing in
-`src/` changes until they are answered** (D496). Milestone status lives in [ROADMAP](../ROADMAP.md).
+**Status on 2026-11-11: contract only, no code. The owner answered §7 (D505); §8's slices are
+not started** (D496). Milestone status lives in [ROADMAP](../ROADMAP.md).
 Verification platform for the measurements quoted here: Linux, GCC 13.3.
 
 ## 1. The problem
@@ -117,6 +117,9 @@ refuses two batches with different values, as it refuses different seed lists.
 3. **Comparison statistic.** With `perInput`, the comparison can pair seeds (a paired t interval
    on per-seed differences) instead of Welch. Booked with this slice, or later?
 4. **Order.** Before the M6 benchmark runs (so the validated numbers are the kept ones), or after.
+
+**Answered 2026-11-11 (D505):** 1 (b); 2 re-key by `(input key, ordinal)`; 3 later, as its own
+slice; 4 before the M6 benchmark runs.
 
 ## 8. Slices, once answered
 

@@ -367,7 +367,7 @@ rehearsal, and the M5 gate.
 
 **Done when:** the engine reproduces published benchmark results — capacity and delay for a signalized approach, gap-acceptance capacity for an unsignalized minor movement — within a stated tolerance, and the tolerance is published in the docs and shown in the app.
 
-**M6.0 — benchmark option sheet** (D143, R2): docs only, at least two published options per benchmark kind, no engine numbers and no tolerance, so the choice stays pre-registered. **Delivered 2026-10-10:** [m6-benchmark-options](evidence/m6-benchmark-options.md), kinds S1 (saturation flow and capacity), S2 (delay) and U (minor-movement capacity and gap acceptance). The owner chooses by letter ([OWNER_SITTING](plans/OWNER_SITTING.md) B9); the tolerance is set after that choice and before any comparable run. Calibrated gap acceptance (moved from M3.2 by R7) is validated here.
+**M6.0 — benchmark option sheet** (D143, R2): docs only, at least two published options per benchmark kind, no engine numbers and no tolerance, so the choice stays pre-registered. **Delivered 2026-10-10:** [m6-benchmark-options](evidence/m6-benchmark-options.md), kinds S1 (saturation flow and capacity), S2 (delay) and U (minor-movement capacity and gap acceptance). **Chosen 2026-11-11 (D505), sources only:** Q4 (d); S1-a with S1-d second; S2-b below saturation and S2-a across it, S2-c first; U-a after U-c, U-e booked for R7. The tolerance is set before any comparable run. Calibrated gap acceptance (moved from M3.2 by R7) is validated here.
 
 **This is a hard gate.** Numbers from an unvalidated engine must never reach a regulator. Until M6 passes, every results screen carries a permanent "not yet validated" marker.
 
@@ -391,7 +391,7 @@ Offline install, native file dialogs, no server required.
 Design, decisions and slices: [`plans/MULTI_LEVEL_MODELLING.md`](plans/MULTI_LEVEL_MODELLING.md).
 One authoring network and one demand compile to three views; each engine imports nothing; every
 result of every level carries the not-yet-validated marker until that level's M6 benchmark
-passes. M8 is code complete (gate open); M10 and M11 are in progress, M9 and M12 not started; each slice begins with its
+passes (Micro's may close before M10 and M11, D505). M8 is code complete (gate open); M10 and M11 are in progress, M9 and M12 not started; each slice begins with its
 contract and acceptance rows. **Equal weight (D378):** open level work follows the study chain, M10.2–M10.4,
 M9, M11.5 and the M11 gate, then M12 ([PROBLEM](PROBLEM.md) §3); hybrid meso–micro is not booked (B26).
 **Amended 2026-10-15 ([D175](decisions/RECORD-D001-D199.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**

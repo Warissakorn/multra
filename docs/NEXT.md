@@ -32,27 +32,28 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 The first review's proposals are done (D493, [PROGRESS](PROGRESS.md)). The rest wait here in review
 order; none is started. **Ask** marks one the owner chooses before any code.
 
-- **Owner only, from the purpose review:** the M5.7 rehearsal (OWNER_SITTING A3), the M6 benchmark
-  choice (B9), a second user on the Micro sentence, and B43 (may Micro's M6 gate close before M10
-  and M11, D380).
+- **Owner only, from the purpose review:** the M5.7 rehearsal (OWNER_SITTING A3) and a second user
+  on the Micro sentence. Answered (D505): the M6 benchmark sources ([ROADMAP](ROADMAP.md) M6.0);
+  Micro's M6 gate may close before M10 and M11.
 - **Architecture:**
   - Done (D494): every module's includes are checked, `editor` no longer includes `shell`, and
     Macro, Meso and analysis are their own targets.
-  - **Ask:** split `src/project/` (codecs, runs, outputs; `src/report/` is reserved) and
-    `EditorWindow` (275 member functions in 52 files). Both are structural; neither is started.
+  - **Approved (D505), not started:** split `EditorWindow` (275 member functions in 52 files; its
+    header is at the 500-line limit) in small steps with no behaviour change. `src/project/`
+    (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
   - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
     per-decision notes) still belongs in the contracts.
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
-  - **Random streams per input: contract written, stop for the owner (D496).**
-    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §7 has four choices (OWNER_SITTING B44); no code
-    before they are answered. Then its §8 slices, rows IS1–IS9 first.
+  - **Random streams per input: contract written, choices answered (D496, D505), not started.**
+    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §7: `perInput` for new documents at a schema
+    step, traits re-keyed, before the M6 runs. Its §8 slices, rows IS1–IS9 first.
   - Done (D495): source insertion and publication are out of `stepSimulation` (`tick.hpp`), with
     byte-identical outputs. **Left:** phase 1's per-vehicle loop, about 150 lines, still one body;
     split it only with a callgrind run before and after (it is the hot path).
-  - **Blocked on B9:** analytic rows against HCM. A row comparing engine saturation flow or delay
-    with a formula needs a tolerance, and M6.0 keeps engine numbers and tolerances out until the
-    owner has chosen the benchmark, so the choice stays pre-registered.
+  - **Unblocked (D505), not started:** analytic rows against HCM. The sources are chosen; a row
+    comparing engine saturation flow or delay with a formula still needs the option sheet's §6
+    and a tolerance written down before the first comparable run.
   - Done: `progressionFactor` returns its limit, 0, at P = 1; the `if` in `node_suggestions.cpp`
     is on its own line.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
@@ -62,12 +63,13 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - Done (D500): `signalised-node-analysis.traffic.json` shows LOS and the HCM table
     (`multra-node-example`).
   - Fixed (D501): a placed routing decision reaches a pocket through the taper's second lane
-    path; an unserved destination is named. **Ask:** move the D500 example to the pocket template
-    (`signal-4-p3-major-far-pockets`) now that decisions work with it? Its file would be regenerated.
-  - Done (D503): the palette names its tools from 1440 px, not 1500 (owner's look: B45).
+    path; an unserved destination is named. **Approved (D505), not started:** move the D500 example to
+    the pocket template (`signal-4-p3-major-far-pockets`); its file and test numbers are regenerated.
+  - Done (D503): the palette names its tools from 1440 px, not 1500 (owner's look: B45). Names
+    at 1366 px: not wanted (D505).
   - Done (D504): *File → Open recent*, and the empty drawing points at it (owner's look: B45).
-  - **Ask:** a start page as a panel over the empty canvas (recent files and examples as
-    buttons)? Not built: it would sit where a drawing starts, so its look is the owner's choice.
+  - No start page (D505): File already has recent files and examples. Reopen only if a real
+    user cannot find them.
 - **Process:**
   - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged
     seconds after opening).

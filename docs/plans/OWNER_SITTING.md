@@ -36,11 +36,6 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 4. **The M2.6 template** (listed 2026-09-25). `data/projects/m2.6-study-template.traffic.json`
    has placeholder volumes, a guessed timing-to-approach mapping and no aerial image. Supply the
    real study's counts, timing sheet and image for M5.7 (A3)? *Owner:*
-9. **M6 benchmark choice (Q4)** (listed 2026-10-10, M6.0). Read the
-   [option sheet](../evidence/m6-benchmark-options.md) and answer its §7 by letter: Q4's kind of
-   benchmark, a primary and secondary option for S1 (saturation flow) and S2 (delay), and for U
-   (minor-movement capacity) the option and whether U-e is booked as the R7 calibration path. The sheet holds no engine numbers; the tolerance comes after this
-   answer and before any comparable run. Which options? *Owner:*
 21. **MA15's capacities and the M10.1 gate** (listed 2026-10-22, D294). Open Sheffi (1985), book
    p. 114, Figure 5.1, in print or a PDF. The Markdown copy's image of that page is empty, and the
    capacities c = (2, 4, 3) were derived from Tables 5.1 and 5.4
@@ -143,11 +138,6 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
    attributes, *Trip-rate sets…* (import `tests/data/trip-generation/trip-rates/example-4-1.json`) and the *Trip generation* page; layout ok?
    M10.3 D2 (D474): *Deterrence sets…*, *Cost matrices…* and the *Trip distribution* page (import `tests/data/trip-distribution/`'s sets). M10.4 E2 (D479): the *Mode choice* page, *Mode choice sets…* (import `tests/data/trip-distribution/mode-choice/hand.json`), *Period factors…* and *Write OD matrices*, then Run Macro on the period. M10.4 N1 (D481): *Mode choice sets…* → *Nests…* (add `foot` with `walk`, φ 0.5; try φ 1.5). D4 (D482): import `deterrence/hand-destination.json` and check the *Trip distribution* note. D485: *Procedure* page: add a procedure in *Procedures…*, run it, turn a step off. *Owner:*
 
-43. **Micro's M6 gate and the level order** (listed 2026-11-10, D493, D380). M6's Micro benchmarks take
-   counted volumes, not a Macro or Meso result. May the Micro M6 gate close before the M10 and M11 gates? *Owner:*
-
-44. **Random streams per input** (listed 2026-11-10, D496). [INPUT_STREAMS §7](../reference/INPUT_STREAMS.md#7-the-owners-choices):
-   choices 1–4 (default for new documents, hashed traits, paired comparison, before or after M6). *Owner:*
 45. **UI review fixes** (listed 2026-11-10, D497–D499; [images](../images/ui-review-d497/)). On Windows: Results by level, *File → Open example*, a batch's tables under its note, Problems' crossing rows; the palette names its tools from 1440 px (D503, [images](../images/palette-d503/)); *File → Open recent* (D504). Layout ok? *Owner:*
 
 ## C — Run view (the 125 % screen)

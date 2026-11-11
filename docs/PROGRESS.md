@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-11 — The owner's answers to the open questions (D505)
+
+- **Owner:** asked for a recommendation on each open question, then took all of them. Documents
+  only; no code, example or baseline changed, and no new work was started.
+- **M6 benchmark sources (was B9):** Q4 (d); S1-a, S1-d second; S2-b below saturation, S2-a
+  across it, S2-c first; U-a after U-c, U-e booked for R7. Sources only: no gate closes and the
+  tolerance is still written before any comparable run ([ROADMAP](ROADMAP.md) M6.0).
+- **Random streams (was B44):** `perInput` for new documents at a schema step, traits re-keyed by
+  input, paired comparison as a later slice, before the M6 runs
+  ([INPUT_STREAMS](reference/INPUT_STREAMS.md) §7).
+- **Micro's M6 gate (was B43):** may close before M10 and M11.
+- **Approved, not started:** the D500 example on the pocket template; `EditorWindow` split in
+  small steps. **Waits:** `src/project/`. **Not wanted:** a start page; tool names at 1366 px.
+- **Still the owner's:** B45 on Windows, and requiring `Native C++` on GitHub.
+- **Verified:** Linux: headless `check`.
+
 ## 2026-11-11 — File → Open recent (D504)
 
 - **Owner:** asked for the rest of the UI review's queue: recent files and a start page.
@@ -197,24 +213,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Queued:** the other four reviews' proposals are in [NEXT](NEXT.md), in review order.
 - **Verified:** Linux headless only: `check` passes (ctest 204/204, docs, file sizes). Documentation
   only; the desktop suite was not run.
-
-## 2026-11-09 — A shipped Macro example: four steps on a four-zone town (D492)
-
-- **Owner:** "สร้างโปรเจ็คตัวอย่างการทำ แบบจำลองระดับ Macro" (a sample project for Macro modelling).
-- **D492:** `data/projects/macro-four-step.traffic.json`, built by `tools/macro_example_network.hpp`
-  (`multra-macro-example <data-dir> <output>`). Four zones (West, North housing; East employment;
-  South mixed) around a centre: two-way radial arterials, a two-way ring road and an access pair per
-  zone, so the origin's split is route choice. It owns everything the procedure reads: three
-  practical-capacity link types, trip rates (HBW, HBO), gravity betas, transit minutes, a car/transit
-  logit, AM period factors and `four-step`. Every value is an illustration, cited as such.
-- **Found while building:** the installed HCM link types are `ultimate` and BPR is `practical`, so
-  Macro refuses them (D304); and the installed car has no PCU (`MODE_PCU_MISSING`), so the project
-  owns its demand catalog with car = 1 PCU by definition.
-- **Result (not validated):** 11 427 car veh/h; converged in 8 iterations (gap 9.3 × 10⁻⁵).
-  West → East is 6 % quicker on the arterials at free flow; the arterial into East reaches V/C 0.83
-  and the two routes equalise (632 s vs 636 s on their Links).
-- **Rows:** `macroexample` (the file is the builder's output; the procedure's four steps, Wardrop
-  equality, the inbound peak) and `cli-macro-example`; `zonescodec` z1 exempts the example from
-  "no shipped zones" and `studyperiods` counts seven files. Two mutations (a rate edited in the
-  file; demand cut to 30 %) each failed a row. Verified: Linux headless only, ctest 204/204;
-  the desktop (Qt) suite not run.
