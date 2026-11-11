@@ -15,7 +15,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   destination by the same roads is refused (`EDIT_ROUTE_DUPLICATE`, en/th); Esc or Backspace on the
   bare origin ends it. The status hint says the origin stays. `Ctrl`+right/`Enter` is unchanged.
 - **Rows:** `station-routing-ui` now draws two destinations from one origin click and checks the
-  no-op click, the refused duplicate, Esc and Backspace.
+  no-op click, the refused duplicate, Esc and Backspace; `road-crossbar-ui` expects the bare origin
+  after a commit. Verified: Linux, desktop ctest 312/312 and `check`; Windows is the owner's.
 
 ## 2026-11-09 — A shipped Macro example: four steps on a four-zone town (D492)
 
