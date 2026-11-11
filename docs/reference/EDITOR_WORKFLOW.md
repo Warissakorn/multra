@@ -122,7 +122,7 @@ branch to disambiguate it; the gesture does not guess a turn. Hover never mutate
 Double-click adds no second commit. Other authoring tools retain D84's Ctrl+right gesture.
 
 Route start/end, vehicle inputs and signal heads share three-pixel cosmetic crossbars (D507: route
-ends no longer widen; only a bar still moving has the preview's Base casing) with
+ends no longer widen; D508a: no Base casing either, even on a bar that follows the pointer) with
 wider hit regions. Bars intersect the road normal with the actual lane rails. Route ends use
 canvas-only tones (D508: green `#5BE39A`, red `#FF6B6B`, at least 2.4:1 on every shipped road
 colour), not the semantic text inks. A route's static violet surface tint (D508; not the accent,

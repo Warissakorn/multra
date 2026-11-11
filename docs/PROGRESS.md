@@ -7,6 +7,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ## 2026-11-11 — Route marks: bright ends, violet tint between them, hover previews (D508)
 
+- **D508a (follow-up):** owner: "บาร์ปลายทางยังมีกรอบสีขาวอยู่". The moving bars lost their Base
+  casing too; no route end has a white frame now.
+
 - **Owner:** the destination bar should show while pointing; the tint should not look like the
   selection blue and should be inset like a conflict area; the tint past the destination is cut;
   the end colours were too dark (measured 1.0:1 on the road) and option 3 (brighter canvas tones)

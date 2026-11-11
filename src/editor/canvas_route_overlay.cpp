@@ -134,10 +134,8 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
     const auto mark=[&](std::optional<RoadCrossbar> bar,bool end) {
         if(!bar || !levelVisible(bar->level))return;
         // D435: origin green, destination red; D507: the inputs' thin bar; D508: canvas tones that
-        // read on every road. Only a bar still moving has the Base casing a head preview has (D306).
-        const bool moving=preview && (end?routeTracing_ || routePress_ || (routeHover_ && routeHover_->objectId==endObject && segments!=routeDraft_)
-                                         :routePress_ && routePress_->draft.empty());
-        auto* line=new RoadCrossbarItem(*bar,end?canvasStyle::routeEnd():canvasStyle::routeStart(),viewScale(),moving);
+        // read on every road, with no Base casing even while the bar moves (owner: no white frame).
+        auto* line=new RoadCrossbarItem(*bar,end?canvasStyle::routeEnd():canvasStyle::routeStart(),viewScale());
         scene_.addItem(line);line->setZValue(200008.5); // D507: above a placed decision's bar of the same width
         if(preview && end)previewRouteEnd_=line;
         line->setData(0,end?QStringLiteral("route-end"):QStringLiteral("route-start"));line->setData(1,QString::fromStdString(id));
@@ -169,7 +167,7 @@ void EditorCanvas::drawRouteOrigin() {
     if(tool_!=Tool::route || !routeDraft_.empty() || routePress_ || !routeHover_ || !hoverReachable_)return;
     const auto bar=hoverOriginBar();
     if(!bar || !levelVisible(bar->level))return;
-    auto* line=new RoadCrossbarItem(*bar,canvasStyle::routeStart(),viewScale(),true);
+    auto* line=new RoadCrossbarItem(*bar,canvasStyle::routeStart(),viewScale());
     scene_.addItem(line);line->setZValue(200008.5);
     line->setData(0,QStringLiteral("route-start"));
     previewRouteStart_=line;
