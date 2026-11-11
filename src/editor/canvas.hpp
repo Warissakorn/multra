@@ -290,6 +290,18 @@ private:
     bool routeTracing_{};
     // D507: a held Ctrl+right press in the Route tool previews the origin or destination where the
     // release will place it. The snapshot is the draft before the press; each move re-applies.
+    // D508 (canvas_route_overlay.cpp): the reachable road under the pointer and where on it; the
+    // preview's chains, inset road surface and tint item, so a move along one road re-tints in place.
+    std::optional<RouteDestination> routeHover_;
+    std::vector<std::vector<Point>> previewChains_;
+    QPainterPath previewRoads_;
+    QGraphicsPathItem* previewTint_{};
+    QGraphicsLineItem* previewRouteStart_{};
+    std::optional<RouteDestination> previewDestination() const;
+    std::optional<double> hoverOriginStation() const;
+    std::optional<RoadCrossbar> hoverOriginBar() const;
+    void retintRoutePreview();
+    void drawRouteOrigin();
     struct RoutePress { std::vector<std::string> draft; std::optional<double> start; };
     std::optional<RoutePress> routePress_;
     bool applyRoutePress(QPoint);

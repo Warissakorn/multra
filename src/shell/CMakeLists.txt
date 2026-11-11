@@ -4,7 +4,7 @@ add_library(multra_shell ${MULTRA_LIBRARY_TYPE} form_values.cpp table_layout.cpp
 target_sources(multra_shell PRIVATE junction_preview_dialog.cpp junction_cross_section_dialog.cpp junction_polygon_dialog.cpp
     junction_form_widgets.cpp junction_catalog_dialog.cpp junction_recipe_dialog.cpp junction_site_dialogs.cpp node_analysis_dialog.cpp node_analysis_panel.cpp node_analysis_fill_dialog.cpp node_analysis_manual_dialog.cpp)
 include(node_analysis_tests.cmake)
-target_sources(multra_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp)
+target_sources(multra_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp ../editor/canvas_route_overlay.cpp)
 target_sources(multra_shell PRIVATE vehicle_color_dialog.cpp object_export.cpp utdf_export_dialog.cpp image_export.cpp ../editor/canvas_image.cpp)
 target_sources(multra_shell PRIVATE automation_server.cpp editor_automation.cpp editor_automation_lifecycle.cpp automation_geometry.cpp automation_document.cpp)
 target_sources(multra_shell PRIVATE trip_generation_panel.cpp trip_rate_dialog.cpp trip_distribution_panel.cpp mode_choice_panel.cpp mode_choice_nests_dialog.cpp procedure_panel.cpp procedures_dialog.cpp period_factors_dialog.cpp owned_list_dialog.cpp editor_macro.cpp editor_link_types.cpp macro_run_dialog.cpp street_segment_zone_dialog.cpp) # Macro dialogs

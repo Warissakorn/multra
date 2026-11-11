@@ -12,15 +12,6 @@
 #include <cmath>
 
 namespace multra {
-namespace {
-QPainterPath polylinePath(const std::vector<Point>& points) {
-    QPainterPath path;
-    if(points.empty())return path;
-    path.moveTo(points.front().x,points.front().y);
-    for(std::size_t i=1;i<points.size();++i)path.lineTo(points[i].x,points[i].y);
-    return path;
-}
-}
 // What a click means to the route and input tools: the Link or Connector under the pointer,
 // which is what a route names. hitObjects already answers that question for every other tool,
 // so the pick, the selection outline and the route agree about what was clicked.
@@ -152,10 +143,21 @@ bool EditorCanvas::isLink(const std::string& objectId) const {
 bool EditorCanvas::demandHover(QMouseEvent* e) {
     if(tool_!=Tool::route && tool_!=Tool::input)return false;
     if(routePress_){if(applyRoutePress(e->pos()))redraw();return true;} // D507: the held bar follows
-    const auto hovered=objectAt(world(e->pos(),false));
+    const auto pointer=world(e->pos(),false);
+    const auto hovered=objectAt(pointer);
+    // D508: where on the hovered road the pointer is, for the bars that follow it.
+    const auto place=[&]{
+        routeHover_.reset();
+        if(tool_!=Tool::route || hovered.empty() || !hoverReachable_)return;
+        const auto geometry=routeDestinationGeometry(document_->network,hovered);
+        if(geometry.size()>=2)routeHover_=RouteDestination{hovered,stationOfClosestPoint(geometry,pointer)};
+    };
     // Path finding and scene rebuilds happen on object changes, not on every mouse pixel.
     if(hovered==hoverSegment_) {
-        if(routeTracing_ && !routeDraft_.empty() && hoverReachable_)updateRouteEnd(hovered,world(e->pos(),false));
+        place();
+        if(routeTracing_ && !routeDraft_.empty() && hoverReachable_)updateRouteEnd(hovered,pointer);
+        else if(!routeDraft_.empty())retintRoutePreview();
+        else if(previewRouteStart_)if(const auto bar=hoverOriginBar())previewRouteStart_->setLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y);
         return true;
     }
     hoverSegment_=hovered;
@@ -174,6 +176,7 @@ bool EditorCanvas::demandHover(QMouseEvent* e) {
         hoverReachable_=!candidate.empty() && !routeLaneChains(document_->network,candidate).empty();
         if(hoverReachable_)routePreview_=std::move(candidate);
     }
+    place();
     if(routeTracing_ && !routeDraft_.empty() && hoverReachable_)updateRouteEnd(hovered,world(e->pos(),false));
     else if(routeTracing_)routeEnd_.reset(); // a Ctrl+right draft keeps the end its release placed (D507)
     redraw();return true;
@@ -183,8 +186,7 @@ void EditorCanvas::updateRouteEnd(const std::string& target,Point pointer) {
     const auto geometry=routeDestinationGeometry(document_->network,target);
     if(geometry.size()<2)return;
     routeEnd_=RouteDestination{target,stationOfClosestPoint(geometry,pointer)};
-    if(previewRouteEnd_)if(const auto bar=objectCrossbar(document_->network,target,true,routeEnd_->station))
-        previewRouteEnd_->setLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y);
+    retintRoutePreview(); // D508: the bar and the tint's end move together
 }
 void EditorCanvas::commitRouteDraft() {
     if(routeDraft_.empty())return;
@@ -340,63 +342,6 @@ void EditorCanvas::drawDemandOverlay() {
         for(const auto& route:document_->definition->routes)if(route.id==highlightedRoute_)
             drawRouteOverlay(route.segmentIds,route.id,false);
     if(!routeDraft_.empty())drawRouteOverlay(routePreview_.empty()?routeDraft_:routePreview_,{},true);
-}
-void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,const std::string& id,bool preview) {
-    if(segments.empty())return;
-    const auto& n=document_->network;
-    auto destination=preview?routeEnd_:std::optional<RouteDestination>{};
-    if(preview && destination && destination->objectId!=segments.back())destination.reset(); // a hover past the placed end
-    if(!preview && document_->definition) {
-        const auto found=document_->definition->routeDestinations.find(id);
-        if(found!=document_->definition->routeDestinations.end())destination=found->second;
-    }
-    auto position=preview?routeStartPosition_:std::optional<double>{};
-    if(!preview && document_->definition)for(const auto& decision:document_->definition->routingDecisions)
-        for(const auto& entry:decision.routes)if(entry.routeId==id && decision.position)position=decision.position;
-    // Keep D96's compiled spans: tint never extends upstream of a mid-Link arrival.
-    // Clip a lane-centre corridor to real road surfaces rather than inventing another road.
-    QPainterPath roads;
-    for(const auto& object:segments) {
-        const auto level=objectLevel(object);
-        if(level && levelVisible(*level))roads=roads.united(objectShape(object));
-    }
-    QPainterPath corridors;
-    double width=0;
-    for(const auto& l:n.links)for(const auto& lane:l.lanes)width=std::max(width,lane.width);
-    for(const auto& c:n.connectors)for(const auto w:c.laneWidths)width=std::max(width,w);
-    QPainterPathStroker stroke;stroke.setWidth(width);stroke.setCapStyle(Qt::FlatCap);
-    for(auto geometry:routeGeometries(n,segments)) {
-        if(position && !geometry.empty())for(const auto& link:n.links)if(link.id==segments.front())
-            for(const auto& lane:link.lanes) {
-                const auto origin=laneGeometry(link,lane.id,n.drivingSide);
-                if(origin.empty() || std::hypot(geometry.front().x-origin.front().x,geometry.front().y-origin.front().y)>1e-7)continue;
-                geometry=polylineSpan(geometry,matchedStation(link.geometry,origin,*position),polylineLength(geometry));break;
-            }
-        corridors=corridors.united(stroke.createStroke(polylinePath(geometry)));
-    }
-    QColor fill=canvasStyle::active();fill.setAlpha(preview?24:40);
-    auto* overlay=scene_.addPath(roads.intersected(corridors),QPen(Qt::NoPen),QBrush(fill));
-    overlay->setZValue(200004);overlay->setData(0,preview?QStringLiteral("route-draft"):QStringLiteral("route-overlay"));
-    overlay->setData(1,QString::fromStdString(id));
-    const auto mark=[&](const std::string& object,bool end) {
-        auto bar=objectCrossbar(n,object,end,end && destination?std::optional<double>(destination->station):std::nullopt);
-        if(!end && position)for(const auto& link:n.links)if(link.id==object) {
-            const auto axis=linkCentreline(link,n.drivingSide);
-            bar=roadCrossbar(axis,laneBoundaryGeometry(link,0,n.drivingSide),laneBoundaryGeometry(link,link.lanes.size(),n.drivingSide),
-                matchedStation(link.geometry,axis,*position),link.level);
-        }
-        if(!bar || !levelVisible(bar->level))return;
-        // D435: origin green, destination red. D507: the same thin bar as inputs and placed
-        // decisions; only a bar still moving (the traced end, or a held Ctrl+right press) has
-        // the Base casing a head preview has (D306).
-        const bool moving=preview && (end?routeTracing_ || routePress_:routePress_ && routePress_->draft.empty());
-        auto* line=new RoadCrossbarItem(*bar,end?canvasStyle::error():canvasStyle::ok(),viewScale(),moving);
-        scene_.addItem(line);line->setZValue(200008.5); // D507: above a placed decision's bar of the same width
-        if(preview && end)previewRouteEnd_=line;
-        line->setData(0,end?QStringLiteral("route-end"):QStringLiteral("route-start"));line->setData(1,QString::fromStdString(id));
-    };
-    mark(segments.front(),false);
-    // D507: a draft that is only its origin has no destination yet, so no red bar at its far end.
-    if(!preview || destination || segments.size()>1)mark(destination?destination->objectId:segments.back(),true);
+    else drawRouteOrigin();
 }
 }

@@ -29,6 +29,13 @@ inline constexpr const char* errorHex="#B42318";
 inline constexpr const char* warningHex="#8A4B08";
 inline constexpr const char* advisoryHex="#0B6E8A";
 inline constexpr const char* okHex="#176B44";
+// D508: canvas-only route marks. The semantic ok/error inks are text colours and have the road's
+// luminance (contrast 1.0:1 on #5A5D61); these are at least 2.4:1 on every shipped road colour,
+// and the green is lighter than the red so the two ends differ without hue. The tint is violet:
+// not the accent (selection, hover), not either end.
+inline constexpr const char* routeStartHex="#5BE39A";
+inline constexpr const char* routeEndHex="#FF6B6B";
+inline constexpr const char* routeTintHex="#8B5CF6";
 
 inline constexpr int space1=4,space2=8,space3=12,space4=16,space5=20,space6=24;
 // The band under the toolbar row above the panels: a dock separator's 4 px and its two 1 px edges (D491).

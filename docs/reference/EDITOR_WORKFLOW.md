@@ -123,10 +123,18 @@ Double-click adds no second commit. Other authoring tools retain D84's Ctrl+righ
 
 Route start/end, vehicle inputs and signal heads share three-pixel cosmetic crossbars (D507: route
 ends no longer widen; only a bar still moving has the preview's Base casing) with
-wider hit regions. Bars intersect the road normal with the actual lane rails. A route's
-static blue surface tint follows its compiled spans, including mid-Link arrivals; it has no
-straight rubber band, moving dashes or repeated arrows. A plain destination click places the end crossbar at the projected pointer station;
-hovering within the same road moves just that crossbar, without rebuilding the route.
+wider hit regions. Bars intersect the road normal with the actual lane rails. Route ends use
+canvas-only tones (D508: green `#5BE39A`, red `#FF6B6B`, at least 2.4:1 on every shipped road
+colour), not the semantic text inks. A route's static violet surface tint (D508; not the accent,
+which means selection and hover) follows its compiled spans from the origin bar to the destination
+bar, inset from the road's outer edges as a conflict area is (0.5 m, at most a fifth of the
+narrowest lane); past the destination bar it is not drawn, although vehicles still drive on to the
+road's end. It has no straight rubber band, moving dashes or repeated arrows. Before a route
+starts, a green bar shows where a click or `Ctrl`+right release would put the origin on the
+hovered road; with a draft, hovering a reachable road shows the red bar and the tint's end at the
+pointer (in `Ctrl`+right mode as the release would place it: the far end within 10 px). A plain
+destination click places the end crossbar at the projected pointer station;
+hovering within the same road moves that crossbar and re-cuts the tint, without rebuilding the route.
 The click is re-read even when Qt coalesces its last move. The marker persists as
 `definition.routeDestinations[routeId] = { objectId, station }` (schema 30), with Link
 stations on the reference polyline and Connector stations on its bundle centreline.

@@ -4,6 +4,7 @@
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/editor/ui_design_tokens.hpp"
+#include "../src/editor/canvas_style.hpp"
 #include <QApplication>
 #include <QAction>
 #include <QComboBox>
@@ -89,12 +90,23 @@ int main(int argc,char** argv) {
         const auto release=[&](Point p){QTest::mouseRelease(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
         const auto barX=[&](const char* kind){double x=-1;for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)
             if(auto* line=dynamic_cast<QGraphicsLineItem*>(item))x=line->line().center().x();return x;};
+        const auto itemOf=[&](const char* kind)->QGraphicsItem*{for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)return item;return nullptr;};
+        // D508: before the press, the green bar already shows where the origin would go.
+        hover(canvas,{60,0});hover(canvas,{65,0});
+        require(std::abs(barX("route-start")-65)<1,"Hovering a Link showed no origin bar at the pointer");
+        require(static_cast<QGraphicsLineItem*>(itemOf("route-start"))->pen().color()==canvasStyle::routeStart(),"The origin bar is not the route green");
         press({70,0});
         require(canvas->routeDraft()==std::vector<std::string>({a}) && std::abs(*canvas->routeStartPosition()-70)<1 &&
                 std::abs(barX("route-start")-70)<1,"A held press showed no origin where it will be placed");
         hover(canvas,{80,0});require(std::abs(barX("route-start")-80)<1,"The held origin did not follow the pointer");
         // A Link holds one decision: releasing near its station joins it (snapped within 10 px).
         release({at+1,0});require(canvas->routeStartPosition()==at,"The release did not place and snap the origin");
+        // D508: hovering the destination road shows the red bar and the tint's end at the pointer,
+        // moved in place along the road.
+        hover(canvas,{150,50});auto* tint=itemOf("route-draft");hover(canvas,{160,50});
+        require(std::abs(barX("route-end")-160)<1 && itemOf("route-draft")==tint,"The hovered destination bar did not follow in place");
+        require(std::abs(tint->boundingRect().right()-160)<1,"The tint did not stop at the hovered destination");
+        require(static_cast<QGraphicsLineItem*>(itemOf("route-end"))->pen().color()==canvasStyle::routeEnd(),"The destination bar is not the route red");
         press({150,50});require(std::abs(barX("route-end")-150)<1,"A held press showed no destination bar");
         hover(canvas,{190,50});release({190,50});
         hover(canvas,{170,0}); // hovering elsewhere keeps the placed destination

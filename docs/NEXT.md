@@ -33,6 +33,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   the status hint and that each destination is one Undo. Esc ends the origin.
 - Hold `Ctrl`+right on a road and move: the green (origin) or red (destination) bar follows until
   release. Check the thin end bars beside inputs, decisions and signal heads.
+- D508: the violet tint between the bars, its inset at the road edges, and the bars while only
+  hovering. The tint colour (`routeTintHex`) was not the owner's choice yet: violet or amber.
 
 ## Tables like Excel (D490) — done; owner's look
 

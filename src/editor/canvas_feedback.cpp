@@ -31,7 +31,7 @@ void EditorCanvas::clearSelection(bool cancelGesture) {
 void EditorCanvas::clearHover() {
     hoverObject_.clear(); hoverConflict_.clear(); hoverAutomatic_.clear(); hoverWaitingLine_.clear();
     hoverVertex_ = -1; hoverLaneKind_ = 0; hoverLaneLocation_ = -1;
-    hoverSegment_.clear(); hoverHead_.reset(); connectorHover_.reset();
+    hoverSegment_.clear(); hoverHead_.reset(); connectorHover_.reset(); routeHover_.reset();
     if(!routeTracing_)routePreview_=routeDraft_;
     setCursor(idleCursor());
 }

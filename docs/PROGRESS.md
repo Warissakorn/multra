@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-11 — Route marks: bright ends, violet tint between them, hover previews (D508)
+
+- **Owner:** the destination bar should show while pointing; the tint should not look like the
+  selection blue and should be inset like a conflict area; the tint past the destination is cut;
+  the end colours were too dark (measured 1.0:1 on the road) and option 3 (brighter canvas tones)
+  was chosen.
+- **D508:** `canvas_route_overlay.cpp` (moved out of `canvas_demand.cpp`) draws a route's violet
+  tint between its green origin and red destination bars, inset 0.5 m (at most a fifth of the
+  narrowest lane) from the road's outer edges once the Link/Connector seams are closed. Hover sets
+  `routeHover_`: before a route starts a green bar shows the origin; with a draft the red bar and
+  the tint's end follow the pointer, re-cut in place (`retintRoutePreview`) along one road. New
+  tokens `routeStartHex`, `routeEndHex`, `routeTintHex`; the tint colour was my recommendation
+  and is one token to change.
+- **Images:** `docs/images/route-tint-d508/` (hover origin, hover destination, stored route, the
+  inset at a Link/Connector join; `before.png` is D507's stored route).
+- **Rows:** `station-routing-ui` hovers the origin and destination bars, checks their colours, that
+  the tint item moves in place and stops at the hovered bar.
+
 ## 2026-11-11 — Ctrl+right previews the route's ends; thin end bars (D507)
 
 - **Owner:** a correct preview of the origin and destination while Ctrl + the button is held, movable
