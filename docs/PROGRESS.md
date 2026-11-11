@@ -5,6 +5,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-11 — Ctrl+right previews the route's ends; thin end bars (D507)
+
+- **Owner:** a correct preview of the origin and destination while Ctrl + the button is held, movable
+  until release; and end bars shaped like the other canvas objects. Chose the inputs' thin bar and
+  an origin at the release point.
+- **D507:** `EditorCanvas::applyRoutePress` re-applies a press snapshot on each move, so the green
+  origin or red destination bar sits where the release will put it; `finishRoutePress` places it.
+  An origin mid-Link opens or joins that Link's routing decision at the station (within 10 px of
+  the start it stays a whole-Link route); a destination near its far end keeps the boundary marker.
+  Route ends lose D435's width and casing, sit above a placed decision's bar, and a draft that is
+  only its origin no longer shows a red bar at the origin's far end.
+- **Images:** `docs/images/route-press-d507/` (held origin, held destination, the stored route, and
+  the earlier wide ends for comparison).
+- **Rows:** `station-routing-ui` holds, slides and releases an origin and a destination and checks
+  the stored station, destination and thin bar; `demand-ui` presses its whole-Link route at the
+  Link's first metre.
+
 ## 2026-11-11 — Pick the origin once, then several destinations (D506)
 
 - **Owner:** "ต้องการให้เลือกต้นทางครั้งเดียว และเลือกปลายทางได้หลายอัน" (pick the origin once, then

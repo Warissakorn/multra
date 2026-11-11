@@ -99,10 +99,48 @@ bool EditorCanvas::demandPress(QMouseEvent* e) {
            std::abs(routeEnd_->station-*routeStartPosition_)*viewScale()<=10)return true;
         routeDraft_=std::move(candidate);routePreview_.clear();commitRouteDraft();return true;
     }
-    const auto chain=routeDraftWith(target);
-    if(chain.empty()){reject();return true;}
-    routeTracing_=false;routeStartPosition_.reset();routeEnd_.reset();
-    routeDraft_.insert(routeDraft_.end(),chain.begin(),chain.end());routePreview_=routeDraft_;
+    // D507: Ctrl+right press shows the bar where the release will place it; moving while held
+    // slides it, and the release is authoritative.
+    routePress_=RoutePress{routeDraft_,routeStartPosition_};
+    if(!applyRoutePress(e->pos())){routePress_.reset();reject();return true;}
+    redraw();return true;
+}
+bool EditorCanvas::applyRoutePress(QPoint position) {
+    if(!document_ || !routePress_)return false;
+    const auto& n=document_->network;
+    const auto pointer=world(position,false);
+    const auto target=objectAt(pointer);
+    if(target.empty())return false;
+    auto draft=routePress_->draft;
+    auto start=routePress_->start;
+    std::optional<RouteDestination> end;
+    if(draft.empty()) {
+        if(routeLaneChains(n,{target}).empty())return false;
+        draft={target};start.reset();
+        for(const auto& link:n.links)if(link.id==target) {
+            double station=stationOfClosestPoint(link.geometry,pointer);
+            if(document_->definition)for(const auto& decision:document_->definition->routingDecisions)
+                if(decision.linkId==target && decision.position && std::abs(*decision.position-station)*viewScale()<=10)station=*decision.position;
+            if(station*viewScale()>10)start=station; // near the Link's start: the whole Link, as before
+        }
+    } else {
+        const auto chain=routeChainTo(n,draft,target); // from the snapshot: each move starts again
+        if(chain.empty())return false;
+        draft.insert(draft.end(),chain.begin(),chain.end());
+        if(routeLaneChains(n,draft).empty())return false;
+        const auto geometry=routeDestinationGeometry(n,target);
+        if(geometry.size()>=2) {
+            const double station=stationOfClosestPoint(geometry,pointer);
+            if((polylineLength(geometry)-station)*viewScale()>10)end=RouteDestination{target,station}; // else its far end
+        }
+    }
+    routeDraft_=draft;routePreview_=std::move(draft);routeStartPosition_=start;routeEnd_=end;routeTracing_=false;
+    return true;
+}
+bool EditorCanvas::finishRoutePress(QPoint position) {
+    if(!routePress_)return false;
+    applyRoutePress(position); // native platforms may coalesce the last move
+    routePress_.reset();hoverSegment_.clear();
     if(routeDraftChanged)routeDraftChanged();
     redraw();return true;
 }
@@ -113,6 +151,7 @@ bool EditorCanvas::isLink(const std::string& objectId) const {
 }
 bool EditorCanvas::demandHover(QMouseEvent* e) {
     if(tool_!=Tool::route && tool_!=Tool::input)return false;
+    if(routePress_){if(applyRoutePress(e->pos()))redraw();return true;} // D507: the held bar follows
     const auto hovered=objectAt(world(e->pos(),false));
     // Path finding and scene rebuilds happen on object changes, not on every mouse pixel.
     if(hovered==hoverSegment_) {
@@ -136,7 +175,7 @@ bool EditorCanvas::demandHover(QMouseEvent* e) {
         if(hoverReachable_)routePreview_=std::move(candidate);
     }
     if(routeTracing_ && !routeDraft_.empty() && hoverReachable_)updateRouteEnd(hovered,world(e->pos(),false));
-    else routeEnd_.reset();
+    else if(routeTracing_)routeEnd_.reset(); // a Ctrl+right draft keeps the end its release placed (D507)
     redraw();return true;
 }
 void EditorCanvas::updateRouteEnd(const std::string& target,Point pointer) {
@@ -177,7 +216,7 @@ void EditorCanvas::dropLastRouteSegment() {
     redraw();
 }
 void EditorCanvas::clearRouteDraft() {
-    routeDraft_.clear();routePreview_.clear();routeStartPosition_.reset();routeEnd_.reset();routeTracing_=false;hoverSegment_.clear();
+    routeDraft_.clear();routePreview_.clear();routeStartPosition_.reset();routeEnd_.reset();routeTracing_=false;hoverSegment_.clear();routePress_.reset();
     if(routeDraftChanged)routeDraftChanged();
 }
 void EditorCanvas::reject() {
@@ -306,6 +345,7 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
     if(segments.empty())return;
     const auto& n=document_->network;
     auto destination=preview?routeEnd_:std::optional<RouteDestination>{};
+    if(preview && destination && destination->objectId!=segments.back())destination.reset(); // a hover past the placed end
     if(!preview && document_->definition) {
         const auto found=document_->definition->routeDestinations.find(id);
         if(found!=document_->definition->routeDestinations.end())destination=found->second;
@@ -346,14 +386,17 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
                 matchedStation(link.geometry,axis,*position),link.level);
         }
         if(!bar || !levelVisible(bar->level))return;
-        // D435: origin green, destination red, wide on a Base casing, so both ends read over the
-        // route tint and the hover outline; the destination follows the pointer while tracing.
-        auto* line=new RoadCrossbarItem(*bar,end?canvasStyle::error():canvasStyle::ok(),viewScale(),true);
-        auto wide=line->pen();wide.setWidthF(editorDesign::crossbarPixels+2);line->setPen(wide);
-        scene_.addItem(line);line->setZValue(200007.5);
+        // D435: origin green, destination red. D507: the same thin bar as inputs and placed
+        // decisions; only a bar still moving (the traced end, or a held Ctrl+right press) has
+        // the Base casing a head preview has (D306).
+        const bool moving=preview && (end?routeTracing_ || routePress_:routePress_ && routePress_->draft.empty());
+        auto* line=new RoadCrossbarItem(*bar,end?canvasStyle::error():canvasStyle::ok(),viewScale(),moving);
+        scene_.addItem(line);line->setZValue(200008.5); // D507: above a placed decision's bar of the same width
         if(preview && end)previewRouteEnd_=line;
         line->setData(0,end?QStringLiteral("route-end"):QStringLiteral("route-start"));line->setData(1,QString::fromStdString(id));
     };
-    mark(segments.front(),false);mark(destination?destination->objectId:segments.back(),true);
+    mark(segments.front(),false);
+    // D507: a draft that is only its origin has no destination yet, so no red bar at its far end.
+    if(!preview || destination || segments.size()>1)mark(destination?destination->objectId:segments.back(),true);
 }
 }

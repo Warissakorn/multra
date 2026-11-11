@@ -52,6 +52,15 @@ QPoint laneMiddle(EditorWindow& w,const std::string& linkId,const std::string& l
     }
     require(false,"Unknown lane");return {};
 }
+// A lane's first metre: a Ctrl+right press this close to a Link's start routes the whole Link (D507).
+QPoint laneStart(EditorWindow& w,const std::string& linkId,const std::string& laneId) {
+    const auto& n=w.history().document().network;
+    for(const auto& link:n.links)if(link.id==linkId) {
+        const auto p=pointAlong(laneGeometry(link,laneId,n.drivingSide),1);
+        return w.canvas()->mapFromScene(p.x,p.y);
+    }
+    require(false,"Unknown lane");return {};
+}
 // Ctrl+right-click remains an append gesture; plain clicks trace and finish Routes.
 void click(EditorWindow& w,QPoint position) {
     QTest::mouseClick(w.canvas()->viewport(),Qt::RightButton,Qt::ControlModifier,position);
@@ -110,7 +119,7 @@ int main(int argc,char** argv) {
         action(w,"editorUndo");
         require(!w.history().document().definition || w.history().document().definition->routes.empty(),
             "One Undo did not remove the entire traced route");
-        click(w,laneMiddle(w,west,westLane));
+        click(w,laneStart(w,west,westLane));
         require(w.canvas()->routeDraft()==std::vector<std::string>({west}),"Click did not start a route on the Link");
         // Hovering an unreachable Link says so BEFORE the click, and the click is refused.
         hover(w,laneMiddle(w,north,northLane));

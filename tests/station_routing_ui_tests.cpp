@@ -3,6 +3,7 @@
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
+#include "../src/editor/ui_design_tokens.hpp"
 #include <QApplication>
 #include <QAction>
 #include <QComboBox>
@@ -83,6 +84,31 @@ int main(int argc,char** argv) {
         click(canvas,{at,0});QTest::keyClick(canvas,Qt::Key_Backspace);QApplication::processEvents();
         require(canvas->routeDraft().empty(),"Backspace on the bare origin did not end it");
         undo(w);require(decision(w).routes.size()==1,"Undo did not remove the second route atomically");
+        // D507: a held Ctrl+right press shows the bar where the release places it, and slides it.
+        const auto press=[&](Point p){QTest::mousePress(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
+        const auto release=[&](Point p){QTest::mouseRelease(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
+        const auto barX=[&](const char* kind){double x=-1;for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)
+            if(auto* line=dynamic_cast<QGraphicsLineItem*>(item))x=line->line().center().x();return x;};
+        press({70,0});
+        require(canvas->routeDraft()==std::vector<std::string>({a}) && std::abs(*canvas->routeStartPosition()-70)<1 &&
+                std::abs(barX("route-start")-70)<1,"A held press showed no origin where it will be placed");
+        hover(canvas,{80,0});require(std::abs(barX("route-start")-80)<1,"The held origin did not follow the pointer");
+        // A Link holds one decision: releasing near its station joins it (snapped within 10 px).
+        release({at+1,0});require(canvas->routeStartPosition()==at,"The release did not place and snap the origin");
+        press({150,50});require(std::abs(barX("route-end")-150)<1,"A held press showed no destination bar");
+        hover(canvas,{190,50});release({190,50});
+        hover(canvas,{170,0}); // hovering elsewhere keeps the placed destination
+        require(std::abs(barX("route-end")-190)<1,"Hover moved the placed destination");
+        const auto revisionBefore=w.history().revision();
+        QTest::keyClick(canvas,Qt::Key_Return);QApplication::processEvents();
+        require(w.history().revision()!=revisionBefore && decision(w).routes.size()==2 && decision(w).position==at,
+            "The Ctrl+right route did not join the decision at its station");
+        require(std::abs(w.history().document().definition->routeDestinations.at(decision(w).routes.back().routeId).station-70)<1,
+            "The destination lost the released station");
+        bool thin=true;for(auto* item:canvas->scene()->items())if(item->data(0).toString()=="route-start")
+            if(auto* line=dynamic_cast<QGraphicsLineItem*>(item))thin=line->pen().widthF()<=editorDesign::crossbarPixels;
+        require(thin,"Route ends are not the inputs' thin bar");
+        undo(w);
         w.findChild<QComboBox*>("editorTool")->setCurrentIndex(0);
         const auto p=canvas->mapFromScene(at,0),q=canvas->mapFromScene(60,0);
         const auto revision=w.history().revision();QTest::mousePress(canvas->viewport(),Qt::LeftButton,{},p);

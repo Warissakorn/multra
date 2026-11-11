@@ -288,6 +288,12 @@ private:
     void drawPositionedDecisions();
     std::vector<std::string> routePreview_;
     bool routeTracing_{};
+    // D507: a held Ctrl+right press in the Route tool previews the origin or destination where the
+    // release will place it. The snapshot is the draft before the press; each move re-applies.
+    struct RoutePress { std::vector<std::string> draft; std::optional<double> start; };
+    std::optional<RoutePress> routePress_;
+    bool applyRoutePress(QPoint);
+    bool finishRoutePress(QPoint);
     QString inputRateLabel_, inputPeriodsLabel_;
     std::string hoverSegment_, highlightedRoute_;
     bool hoverReachable_{};
