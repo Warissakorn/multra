@@ -45,7 +45,7 @@ void publishMoves(SimState& next, std::vector<Vehicle>& vehicles, const Scenario
             if (startDistance < oldParts[i].start && moved.distance >= oldParts[i].start)
                 events.emplace_back(SegmentEnteredEvent{time, moved.id, oldParts[i].segmentId});
         if (decision && moved.distance >= decision->at - 1e-9)
-            applyRouteDecision(scenario, moved, *decision, time, next.randomState, events);
+            applyRouteDecision(scenario, moved, *decision, time, next.seed, next.randomState, events);
         const auto& parts=index.parts[moved.routeIndex];
         const double routeLength = parts.back().start + parts.back().length;
         // D165: a circuit's index holds three laps; past the second the vehicle drops back one.

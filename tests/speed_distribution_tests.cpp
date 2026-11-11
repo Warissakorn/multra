@@ -28,7 +28,7 @@ std::vector<PendingVehicle> draws(Scenario s, int n) {
     auto state = createSimulation(std::move(s), 42);
     const auto car = slot(state, "car");
     std::vector<PendingVehicle> out;
-    for (int i = 0; i < n; ++i) out.push_back(detail::samplePending(state, 0, 0, car, 0));
+    for (int i = 0; i < n; ++i) out.push_back(detail::samplePending(state, state.randomState, 0, 0, car, 0));
     return out;
 }
 Vehicle& find(SimState& s, std::uint64_t id) {
@@ -44,7 +44,7 @@ TEST(speeddist, ba110_without_a_curve_the_draw_is_uniform) { // BA110
     CHECK(range.curve.empty() && range.max > range.min);
     auto stream = state.randomState;
     for (int i = 0; i < 1000; ++i) {
-        const auto v = detail::samplePending(state, 0, 0, car, 0);
+        const auto v = detail::samplePending(state, state.randomState, 0, 0, car, 0);
         CHECK(v.desiredSpeed == range.min + detail::random(stream) * (range.max - range.min));
         detail::random(stream); detail::random(stream); // the driver factor's two draws
     }

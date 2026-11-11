@@ -18,6 +18,8 @@ and then the step is unchanged to the bit.
 | File | Holds | Contract |
 |---|---|---|
 | `types.hpp` | The runtime contract: `Scenario`, `SimState`, `Vehicle`, `SimEvent`, behaviours (`effectiveBehaviour` by front segment), `upcomingArrivals` | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `event_types.hpp` | `SignalColor` and the run's events, the `SimEvent` alternatives | [SIMULATION](../../docs/reference/SIMULATION.md) |
+| `random_streams.hpp` | The `randomStreams` switch, stream keys, per-object seeding and the hashed routing draw | [INPUT_STREAMS](../../docs/reference/INPUT_STREAMS.md) |
 | `simulation.*` | Public API: `createSimulation`, `stepSimulation`, `runSimulation`, `totalTicks`, `canonicalScenario`; `retuneSimulation` and `placeVehicle` (in `retune.cpp`, for the Behaviour Lab only); `signalColorAt` (in `signals.cpp`). `demand.cpp` draws arrivals | [SIMULATION](../../docs/reference/SIMULATION.md), [BEHAVIOUR_LAB §1](../../docs/reference/BEHAVIOUR_LAB.md) |
 | `validate.*` | `validateScenario`, `assertValidScenario`, `onTimeGrid` | [SIMULATION](../../docs/reference/SIMULATION.md) |
 | `tick.hpp` | The tick's phases that `stepSimulation` calls: `insertArrivals` (`insertion.cpp`, source insertion, D108) and `publishMoves` (`publish.cpp`, phase 3: events and survivors), with `Move` and `Reaction` (D495) | [SIMULATION](../../docs/reference/SIMULATION.md) |

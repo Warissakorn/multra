@@ -91,7 +91,7 @@ SimState placeVehicle(SimState&& state, const VehiclePlacement& placement) {
             if (other.segmentIndex == mine.segmentIndex && other.rear < mine.front && mine.rear < other.front)
                 throw std::invalid_argument("PLACEMENT_INVALID: overlap");
     static_cast<PendingVehicle&>(vehicle) =
-        detail::samplePending(state, PendingVehicle::kNoInput, route, type, state.time);
+        detail::samplePending(state, state.randomState, PendingVehicle::kNoInput, route, type, state.time);
     vehicle.enteredTime = state.time;
     vehicle.distance = placement.distance;
     vehicle.speed = placement.speed;

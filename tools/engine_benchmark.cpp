@@ -8,7 +8,9 @@
 // number here against a number from elsewhere. The SCENARIO is deterministic, and the seed is
 // fixed, so the work being timed is identical every run.
 //
-//   multra-engine-benchmark [intersections] [seconds]
+//   multra-engine-benchmark [intersections] [seconds] [shared|perInput]
+//
+// The third argument picks the random streams (INPUT_STREAMS IS9); shared when absent.
 #include "../src/core/simulation.hpp"
 #include "../src/project/run.hpp"
 #include "../src/project/load.hpp"
@@ -17,6 +19,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <string>
 using namespace multra;
 namespace {
 // One long through movement plus one entering movement per crossing, each fed by its own input.
@@ -45,9 +48,13 @@ int main(int argc, char** argv) {
     try {
         const int intersections = argc > 1 ? std::atoi(argv[1]) : 12;
         const double seconds = argc > 2 ? std::atof(argv[2]) : 300;
-        if (intersections < 2 || seconds < 1) { std::cerr << "usage: [intersections>=2] [seconds>=1]\n"; return 2; }
+        const std::string streams = argc > 3 ? argv[3] : "shared";
+        if (intersections < 2 || seconds < 1 || (streams != "shared" && streams != "perInput")) {
+            std::cerr << "usage: [intersections>=2] [seconds>=1] [shared|perInput]\n"; return 2;
+        }
         const auto data = findDataDirectory(argv[0]);
-        const auto compiled = compileDocument(scenarioDocument(intersections, seconds), data);
+        auto compiled = compileDocument(scenarioDocument(intersections, seconds), data);
+        if (streams == "perInput") compiled.scenario.randomStreams = RandomStreams::perInput;
         const auto& scenario = compiled.scenario;
         auto state = createSimulation(scenario, 42);
         const auto ticks = totalTicks(scenario);
@@ -62,14 +69,14 @@ int main(int argc, char** argv) {
             std::chrono::steady_clock::now() - start).count();
         std::cout << intersections << " intersections: " << scenario.segments.size() << " segments, "
                   << scenario.routes.size() << " routes, " << scenario.inputs.size() << " inputs, "
-                  << ticks << " ticks of " << scenario.timeStep << " s\n";
+                  << ticks << " ticks of " << scenario.timeStep << " s, " << streams << " streams\n";
         std::cout << std::fixed << std::setprecision(2)
                   << std::left << std::setw(30) << "run" << std::right << std::setw(10) << ms << " ms\n"
                   << std::left << std::setw(30) << "per tick" << std::right << std::setw(10)
                   << ms / static_cast<double>(ticks) << " ms\n"
                   << std::left << std::setw(30) << "per vehicle-tick" << std::right << std::setw(10)
                   << (vehicleTicks ? ms * 1000 / static_cast<double>(vehicleTicks) : 0) << " us\n";
-        std::cout << "completed " << state.completed << " trips, peak " << peak << " vehicles\n";
+        std::cout << "completed " << state.completed << " trips, peak " << peak << " vehicles, " << vehicleTicks << " vehicle-ticks\n";
         return 0;
     } catch (const std::exception& e) { std::cerr << "FAIL: " << e.what() << '\n'; return 1; }
 }
