@@ -31,16 +31,21 @@ jobs:
       CCACHE_MAXSIZE: 1500M
     steps:
       - uses: actions/checkout@v5
-      # 2026-11-11: azure.archive.ubuntu.com stopped resolving on the runners and this step hung
-      # ~47 min before failing (PR 217, twice). The main archive serves the same packages; the
-      # retries and the timeout make a mirror outage fail in minutes rather than an hour.
+      # 2026-11-11: the Canonical archives stopped answering the runners (azure.archive.ubuntu.com
+      # did not resolve; archive.ubuntu.com timed out on every package), and this step hung ~47 min
+      # (PR 217). apt's mirror list now tries two non-Canonical official mirrors first and falls back
+      # to the Canonical ones; the security pocket goes through the same list. Short timeouts and the
+      # step limit make an outage fail in minutes rather than an hour.
       - name: Install build dependencies
         timeout-minutes: 15
         run: |
-          for f in /etc/apt/apt-mirrors.txt /etc/apt/sources.list /etc/apt/sources.list.d/*.sources; do
-            if [ -f "$f" ]; then sudo sed -i 's#azure\.archive\.ubuntu\.com#archive.ubuntu.com#g' "$f"; fi
+          printf '%s\n' http://mirrors.edge.kernel.org/ubuntu/ http://mirrors.mit.edu/ubuntu/ \
+            http://azure.archive.ubuntu.com/ubuntu/ http://archive.ubuntu.com/ubuntu/ | sudo tee /etc/apt/apt-mirrors.txt
+          for f in /etc/apt/sources.list.d/*.sources /etc/apt/sources.list; do
+            if [ -f "$f" ]; then sudo sed -i 's#http://security\.ubuntu\.com/ubuntu/\?#mirror+file:/etc/apt/apt-mirrors.txt#g' "$f"; fi
           done
-          apt="sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30"
+          grep -h '^URIs\|^deb ' /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null || true
+          apt="sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=15"
           $apt update
           $apt install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev ccache lld
       - uses: actions/cache@v4

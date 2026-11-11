@@ -29,9 +29,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   trips), so the whole-run totals are not compared. The benchmark takes `shared|perInput`.
 - **Verified:** Linux, GCC 13.3: headless ctest 208/208 and `check`; `multra-cli 42`, its event
   file and a four-leg 42–45 batch CSV byte-identical to the base commit. Desktop not built.
-- **CI:** `azure.archive.ubuntu.com` stopped resolving on the Linux runners; the apt step hung
-  ~47 min and failed twice. It now rewrites that mirror to `archive.ubuntu.com`, retries, and
-  times out at 15 min (`native.yml`). Windows jobs passed both times.
+- **CI:** the Canonical archives stopped answering the Linux runners (`azure.archive` did not
+  resolve; `archive.ubuntu.com` timed out on every package); the apt step hung ~47 min. apt's
+  mirror list now tries kernel.org and MIT first, then the Canonical ones, security included, with
+  short timeouts and a 15-min step limit (`native.yml`). Windows jobs passed throughout.
 
 ## 2026-11-11 — The owner's answers to the open questions (D505)
 
