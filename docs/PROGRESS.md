@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-11 — File → Open recent (D504)
+
+- **Owner:** asked for the rest of the UI review's queue: recent files and a start page.
+- **D504:** the last eight projects opened or saved, newest first, in `recent-files.json` in the
+  application's local data folder (as `vehicle-colors.json` is), never in a project. Remembered
+  on *Open*, on a save (`saveFile`, so an automation save too), on `--scenario` and when opened
+  from the menu; not an example (it opens untitled) and not a recovery draft. A file that is gone
+  is listed disabled; a damaged list reads as empty. An empty drawing's status line names the
+  menu once the list holds a file (`recent_files.*`, free functions; no new window member).
+- **Not built: the start page.** A panel over the empty canvas would sit where a drawing starts;
+  its look is the owner's choice and is an Ask in NEXT. Both things it would offer are in File.
+- **Tests:** new `recent-files-ui` (failed before the menu existed): order, no repeats, the cap,
+  a missing file, an example leaves the list alone, a second window reads it, Thai, Clear list,
+  a damaged file.
+- **Verified:** Linux, GCC 13.3: desktop ctest and headless `check`. The folder on Windows and the
+  menu's look there are the owner's (B45). Images (composited from the two menus):
+  [en](images/open-recent-d504/open-recent-en.png), [th](images/open-recent-d504/open-recent-th.png).
+
 ## 2026-11-11 — The palette names its tools on a 1440 px window (D503)
 
 - **Owner:** chose this from the UI review's remaining items: at 1440 × 900 the palette was 16
@@ -200,16 +218,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   "no shipped zones" and `studyperiods` counts seven files. Two mutations (a rate edited in the
   file; demand cut to 30 %) each failed a row. Verified: Linux headless only, ctest 204/204;
   the desktop (Qt) suite not run.
-
-## 2026-11-08 — A gap under the toolbar row (D491)
-
-- **Owner:** the Run (F5) toolbar should stand a little apart from the panels, like the panels do.
-- **D491:** the toolbar row above the panels ends in the dock separator's 6 px midlight band, as
-  a bottom contents margin set by `layoutToolbars`; stacked, only the lower row has it.
-- **Tried:** a QSS bottom border/padding alone (Qt's toolbar layout ignores both) and a minimum
-  height (the controls centred into the band).
-- **Tests:** `compact-ui` checks the band's row, size and that no panel starts above it;
-  workspace-ui's 32 px applies to the contents. Desktop ctest 310/310, `check` pass (Linux).
-- **CI fix (windows-desktop):** `ui-audit-layout` (1×, 1.5×, 2×) failed in Thai at 1366: queue
-  approach names under 140 px, after D490's row header took ~21 px. Side-by-side Results now split
-  4:3 (was 3:2); on Linux Thai 176 → 215 px, English 235 → 274, movement viewport 778 → 739.

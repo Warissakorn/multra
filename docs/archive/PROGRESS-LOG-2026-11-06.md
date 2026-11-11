@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-08 — A gap under the toolbar row (D491)
+
+- **Owner:** the Run (F5) toolbar should stand a little apart from the panels, like the panels do.
+- **D491:** the toolbar row above the panels ends in the dock separator's 6 px midlight band, as
+  a bottom contents margin set by `layoutToolbars`; stacked, only the lower row has it.
+- **Tried:** a QSS bottom border/padding alone (Qt's toolbar layout ignores both) and a minimum
+  height (the controls centred into the band).
+- **Tests:** `compact-ui` checks the band's row, size and that no panel starts above it;
+  workspace-ui's 32 px applies to the contents. Desktop ctest 310/310, `check` pass (Linux).
+- **CI fix (windows-desktop):** `ui-audit-layout` (1×, 1.5×, 2×) failed in Thai at 1366: queue
+  approach names under 140 px, after D490's row header took ~21 px. Side-by-side Results now split
+  4:3 (was 3:2); on Linux Thai 176 → 215 px, English 235 → 274, movement viewport 778 → 739.
+
 ## 2026-11-08 — Compactness pass after D490 (D490a)
 
 - **Owner:** asked for a compactness review in chat, then "แก้ตามแนะนำ" (all of A–D).

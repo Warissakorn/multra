@@ -65,7 +65,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     path; an unserved destination is named. **Ask:** move the D500 example to the pocket template
     (`signal-4-p3-major-far-pockets`) now that decisions work with it? Its file would be regenerated.
   - Done (D503): the palette names its tools from 1440 px, not 1500 (owner's look: B45).
-  - Left: a start page and recent files.
+  - Done (D504): *File → Open recent*, and the empty drawing points at it (owner's look: B45).
+  - **Ask:** a start page as a panel over the empty canvas (recent files and examples as
+    buttons)? Not built: it would sit where a drawing starts, so its look is the owner's choice.
 - **Process:**
   - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged
     seconds after opening).

@@ -13,7 +13,8 @@ not to design a junction.
 ## 1. Open the example
 
 *File → Open example → Four-leg signalised junction.* It opens as an untitled copy, so *Save*
-asks for a place of your own and never changes the installed file.
+asks for a place of your own and never changes the installed file. Next time, *File → Open
+recent* lists what you saved.
 
 What you see is what a study needs, already drawn:
 

@@ -3,6 +3,7 @@
 #include "editor_window.hpp"
 #include "object_export.hpp"
 #include "example_menu.hpp"
+#include "recent_files.hpp"
 #include "../editor/path.hpp"
 #include "utdf_export_dialog.hpp"
 #include "image_export.hpp"
@@ -137,6 +138,16 @@ void EditorWindow::buildWorkspace() {
         } catch(const std::exception& e){examples->clear();showError(e);}
     };
     connect(examples,&QMenu::aboutToShow,this,fillExamples);fillExamples();
+    // D504: the person's own recent projects, read each time the menu opens.
+    auto* recent=new QMenu(this);recent->setObjectName("editorOpenRecent");texts_["editorOpenRecent"]=recent;
+    findChild<QMenu*>("editorFileMenu")->insertMenu(actions_.at("editorSave"),recent);
+    const auto fillRecent=[this,recent]{
+        fillRecentMenu(*recent,loadRecentFiles(),text("editorRecentNone"),text("editorRecentClear"),[this](const QString& file){
+            if(!confirmDiscard())return;
+            try{openFile(file);rememberRecentFile(file);}catch(const std::exception& e){showError(e);}
+        },[this]{clearRecentFiles();refreshRun();});
+    };
+    connect(recent,&QMenu::aboutToShow,this,fillRecent);fillRecent();
     auto* exports=new QMenu(this);exports->setObjectName("editorExportObjects");texts_["editorExportObjects"]=exports;
     findChild<QMenu*>("editorFileMenu")->addMenu(exports);
     for(const auto& [key,table]:{std::pair{"editorExportLinks",ObjectTable::links},

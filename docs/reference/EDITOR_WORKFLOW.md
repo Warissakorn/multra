@@ -39,6 +39,11 @@ points at the Link tool and at this menu. *Signalised junction with LOS and HCM 
 is the one to open for the two letters: **Analyse** fills the Node (HCM) level's table, and
 **Run seeds** gives the travel-time sections their LOS.
 
+**File → Open recent** lists the last eight projects opened or saved, newest first (D504); the
+file name is shown and the path is the tool tip. A file that is gone is listed disabled, *Clear
+list* empties it. The list is the person's (`recent-files.json` in the application's local data
+folder), never part of a project; an example and a recovery draft do not enter it.
+
 **Check runnability** adds one advisory row to Problems for each place where two roads cross
 with no conflict area (D499): vehicles pass through each other there in a run. Selecting the row
 selects one of the two roads. It is an advisory and never blocks Run; the run view's general

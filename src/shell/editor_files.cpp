@@ -1,3 +1,4 @@
+#include "recent_files.hpp"
 #include "editor_window.hpp"
 #include "message_label.hpp"
 #include "editor_storage.hpp"
@@ -33,7 +34,7 @@ void EditorWindow::openFile(const QString& file) {
     file_=file;loadSideFiles();error_->clear();canvas_->select("");refresh();canvas_->fitNetwork(); // S5.5a: its side files
 }
 void EditorWindow::openFileOrReport(const QString& file) {
-    try { openFile(file); } catch (const std::exception& e) { showError(e); }
+    try { openFile(file); rememberRecentFile(file); } catch (const std::exception& e) { showError(e); }
 }
 void EditorWindow::saveFile(const QString& file) {
     if(file==recoveryFile_)throw std::runtime_error("EDIT_FILE_WRITE");
@@ -41,7 +42,7 @@ void EditorWindow::saveFile(const QString& file) {
     writeEditorDocument(file,documentJson(history_.document()));
     // S5.5a (D331): a new path has its own side files (none are copied; they would be stale by hash).
     const bool moved=file!=file_;
-    clearRecovery();file_=file;if(moved)loadSideFiles();history_.markSaved();error_->clear();refresh();
+    clearRecovery();file_=file;if(moved)loadSideFiles();history_.markSaved();error_->clear();rememberRecentFile(file);refresh();
 }
 bool EditorWindow::saveDialog(bool as) {
     auto file=file_;
