@@ -31,8 +31,18 @@ jobs:
       CCACHE_MAXSIZE: 1500M
     steps:
       - uses: actions/checkout@v5
+      # 2026-11-11: azure.archive.ubuntu.com stopped resolving on the runners and this step hung
+      # ~47 min before failing (PR 217, twice). The main archive serves the same packages; the
+      # retries and the timeout make a mirror outage fail in minutes rather than an hour.
       - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev ccache lld
+        timeout-minutes: 15
+        run: |
+          for f in /etc/apt/apt-mirrors.txt /etc/apt/sources.list /etc/apt/sources.list.d/*.sources; do
+            if [ -f "$f" ]; then sudo sed -i 's#azure\.archive\.ubuntu\.com#archive.ubuntu.com#g' "$f"; fi
+          done
+          apt="sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=30"
+          $apt update
+          $apt install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev ccache lld
       - uses: actions/cache@v4
         with:
           path: .ccache
