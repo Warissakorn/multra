@@ -15,6 +15,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [LOS.md](LOS.md) | Level of service from section delay: the HCM pack as data, control types, approach/intersection rows (M5.5) |
 | [TRAVEL_TIME_SECTIONS.md](TRAVEL_TIME_SECTIONS.md) | Travel-time sections: lines, crossings, section delay, output and acceptance rows (M5.4) |
 | [PRIORITY_LINES.md](PRIORITY_LINES.md) | Counter at a conflict area's waiting line: minor crossings, major entries, follow-up headways (D528) |
+| [FCTL_REFERENCE.md](FCTL_REFERENCE.md) | Fixed-cycle traffic-light queue reference for M6 S2-c: van Leeuwaarden's procedure, `multra-fctl-reference` (D529) |
 | [DISCHARGE.md](DISCHARGE.md) | Lane/cycle discharge and startup diagnostics, quantization and unavailable results |
 | [DRIVING_BEHAVIOUR.md](DRIVING_BEHAVIOUR.md) | Class/road behaviour assignment: library storage, runtime selection and editor (M3.3.2a–c) and the target capability map |
 | [BEHAVIOUR_LAB.md](BEHAVIOUR_LAB.md) | Behaviour Lab: circuit routes, live retune, vehicle placement, the lab ring and window, rows BL1–BL12 (M3.3.4) |

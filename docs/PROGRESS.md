@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — Two papers read: S2-c's procedure, a new S1-f (D529)
+
+- **D529:** the owner supplied van Leeuwaarden (2006, author's preprint) and Akçelik & Besley
+  (2002). The first gives S2-c's procedure and Tables 1–2 to check it; a prototype reproduced
+  both tables to four decimals, and the contract [FCTL_REFERENCE](reference/FCTL_REFERENCE.md)
+  (FC1–FC6) was written before the code. Reading it showed the departure slot counts as delay,
+  and that §3.2's residual term exceeds one slot at the S2-c settings, so it is not used; the
+  residual is stated as a bound. S2-c's green and red become 16 slots each. The second paper is
+  not one of S1-d's; the owner added it as S1-f ([M6 §3, §6](evidence/m6-benchmark-options.md)).
+
 ## 2026-11-12 — The priority-line counter (D528)
 
 - **D528:** contract first ([PRIORITY_LINES](reference/PRIORITY_LINES.md), rows PL1–PL6), then

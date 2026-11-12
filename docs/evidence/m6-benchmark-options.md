@@ -69,6 +69,7 @@ Model facts that decide which options fit:
 | **S1-c** Australian method | [ARR123] | Base saturation flows in through-car units by environment class and lane type, with Akçelik's definitions of lost time and effective green | The same command | The table values were not read for this sheet and must be taken from the report. 1970s Australian data; left-hand traffic |
 | **S1-d** Field headway profile | [Bonneson92], [LiPrev02] | Discharge headway by queue position at US signalised junctions. Bonneson finds the minimum headway is reached only from about the eighth position | The crossings `--discharge` emits per cycle give the headway at each rank; ranks are declared to match each paper's positions | Neither paper's per-position headways were read for this sheet; they must be taken from the papers before pre-registration. A profile tests behaviour, not one parameter. Five sites in Bonneson, US fleet. Cycles with fewer queued vehicles than the last declared rank are unavailable |
 | **S1-e** Field trajectories | [NGSIM] Lankershim Blvd (2005), Peachtree St (2006) | Vehicle trajectories, free, on signalised arterials; saturation headways can be measured at the stop lines | An adapter that turns the trajectories into crossing records for the discharge estimator, which `estimateDischarge` already accepts in code; no CLI path exists | A dataset, not a published figure: the comparison figure must first be computed by a stated method, and the gate asks for a published result. Prevailing conditions: mixed fleet, platoons, congested periods. Lankershim has two 15-minute periods, so few saturated cycles per lane; Peachtree's periods were not confirmed |
+| **S1-f** Discharge profile in time (D529) | [AkcBes02] | Queue discharge flow against time since the start of green, `q_s = q_n[1 − e^{−m_q(t − t_r)}]` (Eq. 2, PDF p. 2), its cumulative departures (Eq. 7, p. 4), and the saturation flow measured after the first 10 s, about the first four vehicles (p. 10). Light vehicles at 18 Melbourne and Sydney sites; Through (isolated) average: `q_n` 2,086 veh/h, `m_q` 0.369, `h_n` 1.725 s with `t_r` = 0 (Table 1, p. 6); `s` 2,083 veh/h, `t_s` 2.6 s, `t_e` 2.6 s (Table 2, p. 11) | The S1-a runs: `s` from ranks 5–12; the per-rank crossing times after green against Eq. 7 | Fitted per site; the average row stands for no one site, and the through isolated sites range from 1,786 to 2,549 veh/h in `s`. Australian fleet of the late 1990s; parameters fitted with `t_r` = 0. Left-hand traffic, as a Thai drawing |
 
 ## 4. Kind S2 — delay on a signalised approach
 
@@ -76,7 +77,7 @@ Model facts that decide which options fit:
 |---|---|---|---|---|
 | **S2-a** Handbook control delay | [HCM7] Ch. 19; closed forms in [HCM2000] Ch. 16 | Control delay in s/veh over an analysis period `T`. In HCM 2000, `d = d1·PF + d2 + d3`, with `d1 = 0.5·C·(1 − g/C)² / (1 − min(1, X)·g/C)` and `d2 = 900·T·[(X − 1) + √((X − 1)² + 8·k·I·X/(c·T))]`, with `k = 0.5` for pretimed control and `I = 1` for an isolated approach; `T` is in hours and `c` is the lane-group capacity in veh/h. HCM 2010 adopted incremental queue accumulation for the uniform term; the 7th edition's form, including whether it keeps `PF`, must be read before use | Section delay, `--seeds 42-81 --csv`, on a section from upstream of the longest queue to past the acceleration zone. `X` is computed from a declared `s` and `g`, because TrafficSim reports no v/c. Evaluation window `T` after a warm-up. `d3 = 0`, and `d2` itself, assume no residual queue at the start of `T`, while the warm-up starts the window loaded, so the two diverge most near `X = 1`. The batch selects trips by section end crossing (no cool-down) or by release (with one), not by arrival during `T`; that offset must be declared | `d1` alone assumes uniform arrivals, which the engine cannot generate; only `d1 + d2` describes Poisson arrivals. The `max(0, ·)` truncation and the desired-speed reference differ from control delay. Paid |
 | **S2-b** Random-arrival formula | [TP39] | Webster's mean delay at a fixed-time approach with random arrivals; the first two terms are queueing theory, the third an empirical correction fitted to simulation: `d = c(1 − λ)² / [2(1 − λx)] + x² / [2q(1 − x)] − 0.65·(c/q²)^(1/3)·x^(2+5λ)`, where `c` is the cycle in s, `λ = g/c`, `q` the arrival flow in veh/s and `x = q/(λ·s)` the degree of saturation, with `s` the saturation flow in veh/s. Undersaturated only | The same section delay, at stated `x` below 1 | Diverges as `x → 1`. The saturation flow and effective green it needs must be declared before the run, from the S1 choice or a stated lost-time convention, never fitted to engine output |
-| **S2-c** Exact queueing results | [Darroch64], [vanLeeuwaarden06]; overview in [TFT9] | The fixed-cycle traffic-light queue with Poisson (and more general) arrivals in a discrete slot model, one departure per green slot: Darroch gives the stationary queue-length distribution with bounds on mean delay; van Leeuwaarden gives the generating functions of queue length and delay, evaluated by numerical procedures | A project as close to the slot model as the engine allows: one lane, a green and red program without amber; the same section delay | A vertical queue with constant departures and no start-up loss, whereas the engine discharges a physical queue by car-following, with start-up loss: that difference must be stated. It checks the queueing arithmetic, not driving behaviour. No published table fits a TrafficSim setting: the reference value is computed from the papers' numerical procedures by a script that does not exist yet, and whether the departure slot itself counts as delay must be confirmed first. Useful before S2-a or S2-b, not instead of them |
+| **S2-c** Exact queueing results | [Darroch64], [vanLeeuwaarden06]; overview in [TFT9] | The fixed-cycle traffic-light queue with Poisson (and more general) arrivals in a discrete slot model, one departure per green slot: Darroch gives the stationary queue-length distribution with bounds on mean delay; van Leeuwaarden gives the generating functions of queue length and delay, evaluated by numerical procedures | A project as close to the slot model as the engine allows: one lane, a green and red program without amber; the same section delay | A vertical queue with constant departures and no start-up loss, whereas the engine discharges a physical queue by car-following, with start-up loss: that difference must be stated. It checks the queueing arithmetic, not driving behaviour. No published table fits a TrafficSim setting: the reference value is computed by `multra-fctl-reference` ([FCTL_REFERENCE](../reference/FCTL_REFERENCE.md), D529), which reproduces [vanLeeuwaarden06]'s Tables 1–2. Its delay counts the departure slot and leaves out the in-slot residual (Definition 1, read 2026-11-12). Useful before S2-a or S2-b, not instead of them |
 | **S2-d** Time-dependent model | [ARR123]; [AkcRou94] | Akçelik's two-term delay (uniform plus overflow), finite at and above saturation; the 1994 paper extends it to platooned arrivals | The same section delay, including oversaturated `x` | Its constants must be read from the report. Overlaps S2-a in form |
 | **S2-e** Published field delay | [Kyte08] | Field-measured delay on Lankershim Boulevard ([NGSIM]) against HCM uniform delay and incremental queue accumulation | A Lankershim project with its timing and volumes; the same section delay | Closely spaced signals, reported as actuated by a secondary source, and congested periods: hard to reproduce. No numbers from the paper were seen. Read first whether it tabulates its field delays, whether it compares total control delay or only the uniform-delay component, and its field delay definition. Paid |
 
@@ -129,7 +130,7 @@ of the pass.
 
 | Kind | Band |
 |---|---|
-| S1 (S1-a; S1-d per rank) | ±5 % of the reference saturation flow (or headway) |
+| S1 (S1-a; S1-d per rank; S1-f's `s`) | ±5 % of the reference saturation flow (or headway) |
 | S2 (S2-c, S2-b, S2-a) | ±15 % of the reference delay, after the stated offset |
 | U (U-c, U-a) | ±15 % of the reference capacity at each major-flow level |
 
@@ -168,14 +169,30 @@ give the headway at ranks 1–12. References: the per-position headways of [Bonn
 [LiPrev02] (*to read*: neither table has been read). Ranks with fewer than 30 cycles across the
 40 seeds are reported unavailable.
 
-**S2-c (first), the queueing arithmetic.** One lane as S1-a, but green and red only (no amber),
-cycle 60 s, green 30 s. Degrees of saturation `x` = 0.5, 0.7, 0.85, with `s` the S1-a run's
-**declared** reference (the HCM `s0`, not the engine's measured value) and `g` = the green. A
-travel-time section from 250 m upstream to 50 m past the line. The reference value comes from a
-script implementing [vanLeeuwaarden06]'s procedure, with the slot length `3600 / s` and the
-question whether the departure slot counts as delay answered in that script's header before the
-run. The vertical-queue offset (deceleration and acceleration around the line) is measured once
-on a run with no signal at the same demand and subtracted, and the subtraction is stated.
+**S1-f (D529), the discharge profile in time.** The same project and runs as S1-a; S1-d still
+waits for its papers. **The figure that decides:** `s = 3600 /` the steady headway of ranks 5–12,
+reduced as S1-a, which mirrors [AkcBes02]'s saturation flow after the first 10 s, about four
+vehicles (PDF p. 10). Reference: **`s` = 2,083 veh/h**, the Through (isolated) average of Table 2
+(p. 11, image read), within the S1 band (±5 %, D516). **Shown beside it, with no band:** the mean
+time after green at which rank `k` = 1 … 12 crosses, against the `t` at which Eq. 7 (p. 4) gives
+`n_s(t) = k` with Table 1's average `q_n` = 2,086 veh/h, `m_q` = 0.369 and `t_r` = 0 (p. 5–6). The
+paper fits each site; its average row stands for no site, and the comparison says so.
+
+**S2-c (first), the queueing arithmetic.** One lane as S1-a, but green and red only (no amber).
+The slot model ([FCTL_REFERENCE](../reference/FCTL_REFERENCE.md), D529) needs whole slots: with the
+slot `h = 3600 / s` and `s` the S1-a run's **declared** reference (1,900, not the engine's measured
+value), `h` = 1.8947 s, green = red = **16 slots** (30.32 s each, cycle 60.63 s; the switch is
+quantised by up to one 0.1 s step, stated). Degrees of saturation `x` = 0.5, 0.7, 0.85, so
+Poisson arrivals with `μ = x/2` per slot = 0.25, 0.35, 0.425 and `v` = 475, 665, 807.5 veh/h. A
+travel-time section from 250 m upstream to 50 m past the line. The reference is `h · E D` from
+`multra-fctl-reference`, which implements [vanLeeuwaarden06]'s procedure (Eq. 5.2, 3.11, 3.13,
+3.17; author's preprint, PDF pp. 6–7, 11) and reproduces its Tables 1 and 2 (pp. 12, 14). Its
+delay counts the departure slot and leaves out the wait inside the arrival slot (Definition 1, p.
+7), which adds between 0 and one slot (`h`) per delayed vehicle; that bound is stated beside the
+figure. §3.2's claim (p. 8) that `r/(2cμ(1 − μ))` is the mean of that wait cannot hold here (it
+exceeds one slot) and is not used. The vertical-queue offset (deceleration and acceleration
+around the line) is measured once on a run with no signal at the same demand and subtracted, and
+the subtraction is stated. The reference table is computed by the script before any run.
 
 **S2-b (below saturation) and S2-a (across it), delay.** The S2-c project with amber restored
 (cycle 90 s, green 40 s, amber 3 s, effective green `g` by HCM 7: **checked 2026-11-12**, Equations 19-1 and 19-3 (PDF pp. 1415,
@@ -223,7 +240,7 @@ base conditions the adjustments of Equations 20-16 and 20-17 are 0 (`P_HV` = 0, 
 
 **Before the first run:** the HCM 7 values were read 2026-11-12 (copy `74f4bc3`, page images
 read; cited above). Still open: the S1-d per-position headways of [Bonneson92] and [LiPrev02]
-(papers, not in the owner's book set); the S2-c script; U-c's effective `t_c`. The priority-line
+(papers, not in the owner's book set); the S2-c reference table (the script, D529); U-c's effective `t_c`. The priority-line
 counter exists (D528). Each open item has its own rows before it is used.
 
 ## 7. Owner questions (answer by letter, sitting B9)
@@ -231,7 +248,7 @@ counter exists (D528). Each open item has its own rows before it is used.
 | # | Question | Options | Session's recommendation |
 |---|---|---|---|
 | Q4 | What kind of benchmark defines M6? (the 2026-10-03 O2) | (a) handbook and analytic references · (b) a published field dataset · (c) local Thai measurements · (d) (a) now, (c) later | **(d)**, as the 2026-10-03 review recommended. No published Thai study on these quantities could be verified for this sheet. The first pass found leads it could not check before its search budget ran out: a Bangkok saturation-flow paper (Minh & Sano 2003, *Journal of the Eastern Asia Society for Transportation Studies* 5), and a thesis and a journal paper on unsignalised delay at Thai universities. (c) would rest on those after a follow-up check, or on the owner's own measurement |
-| S1 | Which saturation-flow benchmark, primary and secondary? | S1-a … S1-e | **S1-a** primary, the handbook the LOS pack already follows (it cites the 6th edition; the option is the 7th). **S1-d** secondary: a headway profile by queue position tests behaviour, which one base value cannot |
+| S1 | Which saturation-flow benchmark, primary and secondary? | S1-a … S1-e | **S1-a** primary, the handbook the LOS pack already follows (it cites the 6th edition; the option is the 7th). **S1-d** secondary: a headway profile by queue position tests behaviour, which one base value cannot. **S1-f** added by the owner on 2026-11-12 (D529), while S1-d waits for its papers |
 | S2 | Which delay benchmark, primary and secondary? | S2-a … S2-e | **S2-b** below saturation, because it assumes random arrivals, which the engine approximates (§2), with **S2-a** (`d1 + d2`) across and above saturation. Run **S2-c** first as a check of the queueing arithmetic |
 | U | Which minor-movement benchmark, and is the calibration path booked? | U-a … U-e | **U-a** on a rank-2 movement, after **U-c** as a verification step; **U-e** booked as the R7 calibration path. The `gapTime` translation is decided with the tolerance |
 
@@ -258,6 +275,10 @@ Thai study of these quantities found none that could be verified (leads in §7, 
 - **[AkcRou94]** Akçelik, R., Rouphail, N.M. (1994). Overflow queues and delays with random and
   platooned arrivals at signalized intersections. *Journal of Advanced Transportation* 28(3),
   227–251.
+- **[AkcBes02]** Akçelik, R., Besley, M. (2002). Queue discharge flow and speed models for
+  signalised intersections. In Taylor, M.A.P. (ed.), *Transportation and Traffic Theory in the
+  21st Century* (15th ISTTT, Adelaide). Pergamon. Paper PDF supplied by the owner, 20 pages; page
+  numbers above are the PDF's.
 - **[ARR123]** Akçelik, R. (1981). *Traffic Signals: Capacity and Timing Analysis.* Research
   Report ARR No. 123. Australian Road Research Board. [TRID](https://trid.trb.org/View/173392)
 - **[BKT99]** Brilon, W., Koenig, R., Troutbeck, R.J. (1999). Useful estimation procedures for
@@ -317,5 +338,6 @@ Thai study of these quantities found none that could be verified (leads in §7, 
 - **[TP56]** Webster, F.V., Cobbe, B.M. (1966). *Traffic Signals.* Road Research Technical Paper
   No. 56. Road Research Laboratory. [TRID](https://trid.trb.org/View/159910)
 - **[vanLeeuwaarden06]** van Leeuwaarden, J.S.H. (2006). Delay analysis for the fixed-cycle
-  traffic-light queue. *Transportation Science* 40(2), 189–199.
+  traffic-light queue. *Transportation Science* 40(2), 189–199. Author's preprint supplied by the
+  owner (16 pages, read 2026-11-12); page numbers above are the preprint PDF's.
   [doi:10.1287/trsc.1050.0125](https://doi.org/10.1287/trsc.1050.0125)

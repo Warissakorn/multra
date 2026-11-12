@@ -63,9 +63,10 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     HCM 7 values read (D527: `s0` 1,900; `g` = displayed green; d1/d2 and Eq. 20-18 forms; U-a's
     `t_c` 6.2 s, `t_f` 3.3 s; references computed in [§6](evidence/m6-benchmark-options.md)).
     The priority-line counter is built (D528, [PRIORITY_LINES](reference/PRIORITY_LINES.md),
-    `--priority-lines`). Before the first comparable run: S1-d's papers (not in the book set; owner
-    to supply), the S2-c script (van Leeuwaarden 2006, not in the book set) and U-c's effective `t_c`
-    method, each with its own rows.
+    `--priority-lines`). D529: S1-f added (Akçelik & Besley 2002); the S2-c script's contract
+    is written ([FCTL_REFERENCE](reference/FCTL_REFERENCE.md), rows FC1–FC6), code and the S2-c
+    table next. Before the first comparable run: S1-d's papers (Bonneson 1992, Li & Prevedouros
+    2002; owner to supply) and U-c's effective `t_c` method, each with its own rows.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
   - D497–D504 are done; the owner's look is OWNER_SITTING B45.
   - The Node analysis example uses the pocket template (D513).
