@@ -1,7 +1,9 @@
-# Random streams per input (contract, proposed)
+# Random streams per input (contract)
 
-**Status on 2026-11-11: contract only, no code. The owner answered §7 (D505); §8's slices are
-not started** (D496). Milestone status lives in [ROADMAP](../ROADMAP.md).
+**Status on 2026-11-11: the engine runs both mappings (D506, §8 slices 1–2); nothing outside
+core and tests sets `perInput` yet.** The owner answered §7 (D505). Slice 3 (the project switch,
+its schema step, Run settings and the IS8 output field) is next. Milestone status lives in
+[ROADMAP](../ROADMAP.md).
 Verification platform for the measurements quoted here: Linux, GCC 13.3.
 
 ## 1. The problem
@@ -68,11 +70,17 @@ input's index-independent stream.
 |---|---|---|---|
 | Input | `I` | `VehicleInput::id` | its first arrival, and each arrival's desired speed, driver factor and next headway, in today's order |
 | Lot | `L` | `ParkingLotSpec::id` | its initial occupants, dwell times and exit choices |
-| Routing decision | none | hashed | `u = hash(seed, vehicle's input key, vehicle's ordinal within its input, decision index)`, as W74 traits are hashed; no state, so no order dependence |
+| Routing decision | `D` | hashed | `u = hash(seed, vehicle's origin key, vehicle's ordinal within its origin, decision key)`, as W74 traits are hashed; no state, so no order dependence. The decision is keyed by its id, not its index (D506), so an added decision leaves the others' draws alone |
 
 State lives where the consumer's state already is: one `std::uint32_t` in `InputState` and one in
-`LotState`. A vehicle carries its ordinal within its input (a `std::uint32_t` on
-`PendingVehicle`) for the hashed draws.
+`LotState`, each beside a `generated` count. A vehicle carries its origin's key and its ordinal
+there (`streamKey`, `ordinal` on `PendingVehicle`) for the hashed draws: an input's vehicles are
+keyed by the input, a lot's initial occupants by the lot, and a parked vehicle keeps its origin
+when it leaves by an exit input. Under `shared` all of these stay zero. The keys are computed once
+in the scenario index (`keyOfInput`, `keyOfLot`). A vehicle placed by hand (the lab's placement)
+still draws from the run stream under either mapping. A checkpoint under `perInput` also writes each
+input's and lot's `stream` and `generated` and each vehicle's `ordinal`; a `shared` checkpoint keeps
+its bytes. Code: `random_streams.hpp`, `demand.cpp`, `parking.cpp`, `routing.cpp`.
 
 **Scope limit, stated rather than hidden.** W74 traits and red runners still hash the global
 vehicle id, which shifts when another input generates earlier. Re-keying them by
@@ -123,8 +131,16 @@ slice; 4 before the M6 benchmark runs.
 
 ## 8. Slices, once answered
 
-1. Rows IS1–IS9 written and failing where they should; the switch in core, the scenario codec
-   and the summary/CSV field.
-2. Input and lot streams; hashed routing draws.
-3. The project switch, its schema step and Run settings control (by choice 1).
-4. Choices 2 and 3, if booked.
+1. **Done (D506), with slice 2.** Rows IS1–IS7 and IS9 in `tests/input_streams_tests.cpp` (group
+   `inputstreams`); each `perInput` row runs again under `shared` and expects the check to fail,
+   which is its failure-first proof. The switch is `Scenario::randomStreams` in core.
+   **Moved to slice 3:** the codec key and IS8's summary/CSV field and `--compare` refusal. Until
+   the project can set the switch no run outside the tests is `perInput`, so a field written now
+   would only ever read `shared`, and writing it unconditionally would change every existing
+   output's bytes.
+2. **Done (D506):** input and lot streams; hashed routing draws. IS6b (added): a lot's initial
+   occupants and dwell ends do not move when an input is added.
+3. **Next:** the project switch at a schema step (new documents `perInput`, choice 1 b), the Run
+   settings control, the summary/CSV field and `compareBatches` refusing mixed values (IS8).
+4. Choice 2 (W74 traits and red runners re-keyed by origin and ordinal; the vehicle already
+   carries both); choice 3 (paired comparison) as its own slice.

@@ -136,7 +136,7 @@ SimState stepSimulation(SimState&& state, double dt) {
     if(!scenario.routeDecisions.empty())for(auto& vehicle:vehicles)
         while(const auto* decision=nextRouteDecision(scenario,vehicle)) {
             if(vehicle.distance<decision->at-1e-9)break;
-            applyRouteDecision(scenario,vehicle,*decision,startTime,next.randomState,events);
+            applyRouteDecision(scenario,vehicle,*decision,startTime,next.seed,next.randomState,events);
         }
     // Resolved once per tick rather than roughly six times per vehicle.
     auto refs = resolveRefs(scenario, vehicles, index);

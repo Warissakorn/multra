@@ -135,6 +135,10 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
         index.routeOfInput.push_back(static_cast<std::uint32_t>(&route - scenario.routes.data()));
         index.typeOfInput.push_back(static_cast<std::uint32_t>(&type - scenario.vehicleTypes.data()));
     }
+    if (scenario.randomStreams == RandomStreams::perInput) { // INPUT_STREAMS §4: by id, never by slot
+        for (const auto& input : scenario.inputs) index.keyOfInput.push_back(detail::streamKey(detail::kInputStream, input.id));
+        for (const auto& lot : scenario.parkingLots) index.keyOfLot.push_back(detail::streamKey(detail::kLotStream, lot.id));
+    }
     index.routeRules.resize(scenario.routes.size());
     for (std::size_t r = 0; r < scenario.routes.size(); ++r)
         for (std::size_t k = 0; k < scenario.priorityRules.size(); ++k) {

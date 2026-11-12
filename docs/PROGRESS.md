@@ -5,6 +5,35 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-11 — Random streams per input in the engine (D506)
+
+- **Owner:** "ทำตามคำแนะนำ" after D505: the recommendations, in their order. B9 and B43 needed no
+  code; B44 (streams before the M6 runs) is the first that did. Branch protection and B45 stay the
+  owner's; the D500 move and the `EditorWindow` split wait for their own sessions.
+- **D506 ([INPUT_STREAMS](reference/INPUT_STREAMS.md) §4, §8 slices 1–2):** `Scenario::randomStreams`,
+  `shared` by default. Under `perInput` each input and each lot draws from its own xorshift32 state
+  seeded from the run seed and an FNV-1a key of its id; a routing draw is hashed from the seed, the
+  vehicle's origin key and ordinal, and the decision's id (its id, not its index, so an added
+  decision moves no other). A vehicle carries `streamKey` and `ordinal`; under `shared` they and
+  the new state fields stay zero. A `perInput` checkpoint also writes the stream states.
+- **Moved to slice 3:** the codec key and IS8's summary/CSV field and `--compare` refusal. No run
+  outside the tests can be `perInput` until the project sets it, and an unconditional field would
+  change every existing output's bytes.
+- **Rows:** IS1–IS7 and IS6b (a lot's draws) in `inputstreams`. Each `perInput` row runs again
+  under `shared` and expects the check to fail there, which is its failure-first proof.
+- **Split:** `types.hpp` was at 500 lines; the event structs moved whole to `event_types.hpp`
+  (no rebuild change measured: `types.hpp` includes it).
+- **IS9 (callgrind, Release, `multra-engine-benchmark 12 300`, seed 42):** `shared` 909.8 M →
+  914.0 M instructions (+0.46 %, the larger `PendingVehicle`), same 553 trips. `perInput` against
+  `shared` per vehicle-tick: 2408 vs 2419 (−0.4 %); the two runs are different traffic (551 and 553
+  trips), so the whole-run totals are not compared. The benchmark takes `shared|perInput`.
+- **Verified:** Linux, GCC 13.3: headless ctest 208/208 and `check`; `multra-cli 42`, its event
+  file and a four-leg 42–45 batch CSV byte-identical to the base commit. Desktop not built.
+- **CI:** the Canonical archives stopped answering the Linux runners (`azure.archive` did not
+  resolve; `archive.ubuntu.com` timed out on every package); the apt step hung ~47 min. apt's
+  mirror list now tries kernel.org and MIT first, then the Canonical ones, security included, with
+  short timeouts and a 15-min step limit (`native.yml`). Windows jobs passed throughout.
+
 ## 2026-11-11 — The owner's answers to the open questions (D505)
 
 - **Owner:** asked for a recommendation on each open question, then took all of them. Documents
@@ -195,21 +224,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   **Ask** in [NEXT](NEXT.md). `shell` has no rule: it may include every module.
 - **Verified:** Linux only. Desktop build and ctest 312/312; headless `check` passes (ctest 204/204,
   architecture, docs, file sizes). Windows not checked; the moved headers are compiled there by CI.
-
-## 2026-11-10 — Purpose review: status documents brought back to the code (D493)
-
-- **Owner:** asked for a five-part review in chat (purpose, architecture, engine, UI, process), then
-  "ทำตามข้อเสนอตั้งแต่รีวิวแรก" and chose: the first review's proposals only this session; PROBLEM §2
-  unchanged (D38 stands); D380 unchanged, with the question filed for the owner.
-- **Status documents:** README, ARCHITECTURE, PROJECT_SCHEMA, DESKTOP_AUTOMATION and
-  `src/project/README` named schemas 32, 65 and 58 as the latest; they now name `kLatestSchema`
-  instead of a copy of its value (it is 73). README's Implemented table gains Macro, Meso and the
-  Node method; ROADMAP no longer calls M10 and M11 "not started"; ARCHITECTURE's Macro and Meso
-  rows say what is built. No gate moved.
-- **D493:** PROBLEM §6 no longer says the physics is not the hard part; joining the published
-  models is named as the second hard part, with the roadmap items that show it.
-- **Owner items:** OWNER_SITTING B43 asks whether Micro's M6 gate may close before M10 and M11
-  (D380). M5.7, the M6 benchmark choice (B9) and a second user stay the owner's; no session can do them.
-- **Queued:** the other four reviews' proposals are in [NEXT](NEXT.md), in review order.
-- **Verified:** Linux headless only: `check` passes (ctest 204/204, docs, file sizes). Documentation
-  only; the desktop suite was not run.
