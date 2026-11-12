@@ -7,6 +7,11 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ## 2026-11-11 — Route marks: bright ends, a tint between them, hover previews (D509)
 
+- **D509c (follow-up, 2026-11-12):** owner: "ตกลงทั้ง 2 ข้อ" to a 50 % yellow and a wider inset.
+  The tint is 50 % stored and 35 % preview (2.25:1 on the road; lane marks 2.3:1 through it), and
+  its own inset is 0.8 m, at most a quarter of the narrowest lane (was the conflict area's 0.5 m and
+  a fifth), so a grey edge shows between it and the selection outline. Only the selected route is
+  tinted, as before. Images: `docs/images/route-tint-d509c/` (`before.png` is D509b).
 - **D509b (follow-up, 2026-11-12):** owner: "สีเหลืองเพิ่มความทึบ" after the violet, yellow and white
   tints were compared on the road. `routeTintHex` is `#FACC15`, 59 % stored and 43 % preview (was
   violet at 39 % and 27 %): 2.5:1 on the road `#5A5D61` against violet's 1.2:1, and the lane marks

@@ -19,8 +19,8 @@ inline QColor ok() { return editorDesign::semantic(editorDesign::Semantic::ok); 
 // D509: a route's origin and destination bars and its surface tint (no QPalette role is free).
 inline QColor routeStart() { return QColor(editorDesign::routeStartHex); }
 inline QColor routeEnd() { return QColor(editorDesign::routeEndHex); }
-// D509b: 59 % stored, 43 % preview: 2.5:1 on the road and the lane marks still read (2.1:1) through it.
-inline QColor routeTint(bool preview) { QColor c(editorDesign::routeTintHex); c.setAlpha(preview ? 110 : 150); return c; }
+// D509c: 50 % stored, 35 % preview: 2.25:1 on the road, and the lane marks read through it at 2.3:1.
+inline QColor routeTint(bool preview) { QColor c(editorDesign::routeTintHex); c.setAlpha(preview ? 89 : 128); return c; }
 // Neutral overlay ink: linework a tool draws that is not state (draft, band, waiting line).
 inline QColor ink() { return editorDesign::role(QPalette::Dark); }
 // D306: a preview is never dashed. It is a solid line on a wider translucent casing in the

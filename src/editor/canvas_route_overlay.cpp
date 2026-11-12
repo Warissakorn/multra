@@ -1,6 +1,6 @@
 // A route's surface tint and its origin/destination bars, stored or previewed (D96, D435, D508,
-// D509). The tint lies between the two bars only, inset from the road edges as a conflict area
-// is, in its own colour; a preview re-tints in place while the pointer moves along one road.
+// D509, D509c). The tint lies between the two bars only, inset from the road's outer edges, in
+// its own colour; a preview re-tints in place while the pointer moves along one road.
 #include "canvas.hpp"
 #include "canvas_style.hpp"
 #include "../project/route_destination.hpp"
@@ -35,14 +35,16 @@ std::vector<Point> cutAtBar(const std::vector<Point>& chain,const RoadCrossbar& 
     out.push_back({cut->second.x(),cut->second.y()});
     return out;
 }
-// D509: like a conflict area's band, half a metre inside the painted rails, at most a fifth of a lane.
+// D509c: 0.8 m inside the painted rails, at most a quarter of the narrowest lane, so a grey edge
+// shows between the tint and the selection outline (a conflict area keeps kConflictRailOffset).
+constexpr double kRouteTintInset=0.8;
 double tintInset(const Network& n,const std::vector<std::string>& segments) {
     double narrowest=std::numeric_limits<double>::infinity();
     for(const auto& id:segments) {
         for(const auto& l:n.links)if(l.id==id)for(const auto& lane:l.lanes)narrowest=std::min(narrowest,lane.width);
         for(const auto& c:n.connectors)if(c.id==id)for(const auto w:c.laneWidths)narrowest=std::min(narrowest,w);
     }
-    return std::isfinite(narrowest)?std::min(kConflictRailOffset,0.2*narrowest):0;
+    return std::isfinite(narrowest)?std::min(kRouteTintInset,0.25*narrowest):0;
 }
 QPainterPath tintPath(const std::vector<std::vector<Point>>& chains,const QPainterPath& roads,double width,
                       const std::optional<RoadCrossbar>& end) {
