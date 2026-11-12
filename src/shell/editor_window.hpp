@@ -53,7 +53,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -246,22 +246,9 @@ private:
     bool automaticShown() const;
     void authorConflict(const std::string& key);
     // M3.2.6c, src/shell/editor_counters.cpp: the Queue counters tab and the tool's commit.
-    ObjectTab counterTab_;
-    void buildCounters();
-    void translateCounters();
-    void refreshCounters();
-    void showCounters();
-    void editCounter(const std::string& id);
-    void addCounter(std::vector<MeasurementLine> lines);
-    std::string selectedCounter() const;
+    CountersPanel* counters_{}; // its own panel (counters_panel.hpp, D521)
     // M5.4b, src/shell/editor_sections.cpp: the Travel-time sections tab and the tool's commit.
-    ObjectTab sectionTab_;
-    void buildSections();
-    void translateSections();
-    void refreshSections();
-    void showSections();
-    void editSection(const std::string& id);
-    std::string selectedSection() const;
+    SectionsPanel* sections_{}; // its own panel (sections_panel.hpp, D521)
     // B-6 (D223), src/shell/editor_speed_decisions.cpp: the Speed decisions tab and its dialog.
     SpeedDecisionsPanel* speedDecisions_{}; // its own panel (speed_decisions_panel.hpp, D521)
     // B-6 §7 (D225): the reduced-speed areas tab, same pattern.

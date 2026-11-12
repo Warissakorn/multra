@@ -13,6 +13,7 @@ namespace multra {
 class ObjectTabPanel : public QWidget {
 public:
     void invalidate() { tab_.invalidate(); }
+    QTableWidget* table() const { return tab_.table; }
 protected:
     ObjectTabPanel(QWidget* parent, ObjectTabContext context) : QWidget(parent), context_(std::move(context)) {}
     QAction* action(const std::string& key, const std::function<void()>& run) { return actions_[key] = context_.action(key, run); }

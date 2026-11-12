@@ -27,7 +27,7 @@ replaced atomically (`QSaveFile`).
 | Control | `editor_priority.cpp`, `editor_control.cpp`, `editor_signal.cpp` |
 | Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp` (the window's period choices; the tab is `study_periods_panel.*`),  `editor_behaviour.cpp`, `editor_zones.cpp` (Zones tab), `editor_od.cpp` (compositions and the lot dialog; the OD tab is `od_panel.*`) |
 | Street segments and Nodes | `editor_street_segments.cpp`, `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp`, `editor_nodes.cpp` |
-| Evaluation objects | `editor_counters.cpp`, `editor_sections.cpp` |
+| Evaluation objects | `counters_panel.*`, `sections_panel.*` (D521) |
 | Runs and Results | `editor_run.cpp` (Run/Pause/Step/Reset, seed, speed; its state is `RunSession` in `editor_run_state.hpp`, D517), `editor_batch.cpp` (N seeds on one worker thread; its state is `BatchSession` in `editor_batch_state.hpp`, D514), `editor_compare.cpp` (the open project against a chosen file), `editor_macro.cpp`, `editor_meso.cpp`, `editor_results.cpp`, `editor_results_nodes.cpp` |
 | Map, lab, automation | `editor_map.cpp`, `editor_lab.cpp`, `editor_automation.cpp`, `editor_automation_lifecycle.cpp` (state: `AutomationHost` in `editor_automation_state.hpp`, D519) |
 
@@ -43,6 +43,8 @@ The other headers:
 | `object_tab.hpp` | `ObjectTab`: one object tab's table and the History revision its rows were built at; thirteen `EditorWindow` tabs hold one each (D520) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_context.hpp` | `ObjectTabContext`: what an object tab's panel needs from the window (document, revision, text, actions, History steps, refresh, show), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_panel.hpp` | `ObjectTabPanel`: the base of an object tab's panel (context, table and revision, its actions by key), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `counters_panel.*` | `CountersPanel`: the Queue counters object tab, its dialog and the counter tool's commit (D521) | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |
+| `sections_panel.*` | `SectionsPanel`: the Travel-time sections object tab, its dialog and the section tool's commit (D521) | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) |
 | `speed_decisions_panel.*` | `SpeedDecisionsPanel`: the Speed decisions object tab and its dialog (D521) | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |
 | `speed_areas_panel.*` | `SpeedAreasPanel`: the Reduced-speed areas object tab and its dialog (D521) | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |
 | `od_panel.*` | `OdPanel`: the OD matrices object tab and its dialog (D521) | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
