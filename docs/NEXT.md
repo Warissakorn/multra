@@ -43,10 +43,10 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   Micro's M6 gate may close before M10 and M11.
 - **Architecture** (includes checked per module since D494):
   - **Split `EditorWindow` (D505): steps 1–5 done (D514 `BatchSession`, D517 `RunSession`, D518
-    `RecoverySession`, D519 `AutomationHost`, D520 `ObjectTab`; header 455 lines).** Next, one per
-    commit with no behaviour change: the object tabs as panels (D521; done: Study periods, Modes, OD, speed decisions,
-    speed areas, counters, sections, link types, zones, cross-sections, street segments; next, one per commit by
-    the D523 contract: Nodes, conflicts), then Macro/Meso functions onto their panels. `src/project/`
+    `RecoverySession`, D519 `AutomationHost`, D520 `ObjectTab`), and all 13 object tabs are panels
+    (D521–D523; header 398 lines).** Next, one per commit with no behaviour change: Macro/Meso
+    functions onto their panels. A metadata-driven generic object list (D522) needs an owner choice
+    and its own contract first. `src/project/`
     (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
   - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
     per-decision notes) still belongs in the contracts.
