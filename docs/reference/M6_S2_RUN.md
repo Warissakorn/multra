@@ -18,10 +18,11 @@ rows S2C1–S2C6 fail first. A miss is reported, never tuned away (rule 4).
   - Timings must lie on the 0.1 s grid (`signal_control.cpp`), so each phase is 0.016 s shorter. This is stated beside the figure.
 - **No-signal twin** (`signal` false): the same document without the head and the controller.
 - **Travel-time section.** From the approach at station 50 m to the exit at station 29 m: route distances 50 m and 350 m, that is, 250 m upstream to 50 m past the line ([TRAVEL_TIME_SECTIONS](TRAVEL_TIME_SECTIONS.md)).
-- **Demand.** One input, `car`, `v` veh/h over the whole run. Sources are Poisson processes (SIMULATION).
+- **Demand.** One input, `car`, `v` veh/h from 0 to 4,500 s. Sources are Poisson processes (SIMULATION).
 - **Run.**
-  - dt 0.1 s, duration 4,800 s;
+  - dt 0.1 s, authored duration 4,500 s;
   - evaluation warm-up 900 s, window end 4,500 s, cool-down 300 s: trips released in the window count (D146);
+  - the cool-down adds ticks, not demand ([BATCH](BATCH.md) §5), so the run lasts 4,800 s and the input ends at 4,500 s;
   - `perInput` streams;
   - `default.json` behaviour, no assignment.
 
@@ -69,7 +70,7 @@ rows S2C1–S2C6 fail first. A miss is reported, never tuned away (rule 4).
 
 | Row | What must hold | Test |
 |---|---|---|
-| S2C1 | `approach(v, true)` compiles to one program with cycle 60.6 s and green 30.3 s, one input at `v`, `perInput`, and a section whose lines sit at route distances 50 and 350 m (1e−6). `approach(v, false)` has no head and no program, and the same section and input | `m6s2` |
+| S2C1 | `approach(v, true)` compiles to one program with cycle 60.6 s and green 30.3 s, one input at `v`, `perInput`, a compiled run of 4,800 s, and a section whose lines sit at route distances 50 and 350 m (1e−6). `approach(v, false)` has no head and no program, and the same section and input | `m6s2` |
 | S2C2 | `x` = 0.5, 0.7, 0.85 give μ 0.25, 0.35, 0.425 and `v` 475, 665, 807.5 | `m6s2` |
 | S2C3 | Synthetic per-seed travel times give the hand Δ mean and half-width; a seed missing on either side is listed and excluded from `n` | `m6s2` |
 | S2C4 | The verdict passes at exactly ±15 %, misses just beyond, and is unavailable without a figure | `m6s2` |
