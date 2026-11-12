@@ -22,7 +22,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   (`StudyPeriodsPanel`), then Modes (`ModesPanel`) OD
   matrices (`OdPanel`), speed decisions, reduced-speed areas, queue counters,
   travel-time sections, Link types,
-  Zones and Cross-sections (on the `ObjectTabPanel` base).
+  Zones, Cross-sections and Street segments (on the `ObjectTabPanel` base).
 - **D522:** a selection hub (`ObjectSelection`) the panels subscribe to, after a look at how Vissim,
   Aimsun and SUMO share one selection across views; the counter and section panels follow a
   cleared canvas selection through it.

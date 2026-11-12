@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "street_segments_panel.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
 #include <QAbstractSpinBox>
@@ -174,7 +175,7 @@ void EditorWindow::buildInspector() {
     // D433: a Link being drawn previews with these lanes.
     const auto lanes=[this]{
         canvas_->setNewLinkLanes(count_->value(),width_->value());
-        if(streetSegmentTemplate_&&streetSegmentTemplate_->count()>0){streetSegmentTemplate_->setItemText(0,defaultTemplateLabel());canvas_->redraw();}
+        if(streetSegments_&&streetSegments_->templateBox()->count()>0){streetSegments_->templateBox()->setItemText(0,defaultTemplateLabel());canvas_->redraw();}
     };lanes();
     connect(count_,&QSpinBox::valueChanged,this,lanes);connect(width_,&QDoubleSpinBox::valueChanged,this,lanes);
     widths_=new QLineEdit(body);label(form,"editorLaneWidths",widths_);

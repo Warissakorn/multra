@@ -54,7 +54,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -264,17 +264,13 @@ private:
     QTableWidget* nodeProposalTable_{}; QLabel* nodeProposalNote_{}; std::array<std::uint64_t, 3> nodeProposalKey_{UINT64_MAX, UINT64_MAX, UINT64_MAX};
     void buildNodeProposals(QVBoxLayout*); void refreshNodeProposals(); void translateNodeProposals();
     // S3.3b (STREET_SEGMENTS §16, D307): the StreetSegments and Cross-sections tabs and the StreetSegment tool's commit.
-    ObjectTab streetSegmentTab_; CrossSectionsPanel* crossSections_{}; // the Cross-sections tab is its own panel (D521)
-    QComboBox* streetSegmentTemplate_{};
-    enum class StreetSegmentStatus { noTemplate, unknownTemplate, notApplied, applied, detached };
-    std::vector<CrossSection> crossSectionRows() const; // D433: Default template; chosenTemplate resolves the tool's choice in a Command
-    CrossSection defaultCrossSection() const; QString defaultTemplateLabel() const; std::optional<std::string> chosenTemplate(ProjectDocument&, const std::vector<CrossSection>& installed) const;
-    StreetSegmentStatus streetSegmentStatus(const StreetSegment&, const std::vector<CrossSection>&) const;
-    void buildStreetSegments(); void translateStreetSegments(); void refreshStreetSegments(); void showStreetSegments(); void editStreetSegment(const std::string& id);
+    StreetSegmentsPanel* streetSegments_{}; CrossSectionsPanel* crossSections_{}; // both tabs are panels (D521)
+    std::vector<CrossSection> crossSectionRows() const; // D433: Default template (Properties' lane count and width)
+    CrossSection defaultCrossSection() const; QString defaultTemplateLabel() const;
     void findCrossingsDialog(); // S3.5 (D309)
     void seamChecksDialog(); // S3.7 (D312): editor_seams.cpp
     double seamSpeedJump_{20}; // km/h, a display choice kept for the session (STREET_SEGMENTS §7)
-    std::string selectedStreetSegment() const; std::vector<std::string> selectedStreetSegmentRows() const; std::vector<std::string> selectedLinks() const;
+    std::string selectedStreetSegment() const;
     std::string selectedNode() const;
     // M8.6b (D162): the OD matrices tab, the lot dialog and the catalog's compositions for both.
     OdPanel* od_{}; // its own panel (od_panel.hpp, D521)

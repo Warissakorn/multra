@@ -28,6 +28,8 @@ struct ObjectTabContext {
     std::filesystem::path data;             // the installed catalogs
     std::function<const std::vector<std::string>&()> selection; // the canvas selection
     std::function<void(const std::exception&)> showError;          // the window's translated error
-    ObjectSelection* selectionHub{};                                // D522: the window's; outlives no panel
+    ObjectSelection* selectionHub{};
+    // execute() for a generated Command (the window's generatedCommand flag), e.g. a junction rebuild.
+    std::function<bool(const std::string&, const std::function<void(ProjectDocument&)>&)> executeGenerated;                                // D522: the window's; outlives no panel
 };
 }
