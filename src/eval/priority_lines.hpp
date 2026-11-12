@@ -10,12 +10,27 @@ namespace multra {
 // the area, both interpolated in time and counted in the evaluation window, and the follow-up
 // headway between consecutive minor crossings whose follower was queued at the leader's crossing
 // with no major entry between them. A measured count, not an HCM capacity; not validated.
+// D534 (PRIORITY_LINES §5): Siegloch's regression for the effective critical headway. A point is
+// the mean of the saturated major gaps that `vehicles` minor vehicles entered.
+struct SieglochPoint {
+    std::uint64_t vehicles{}, gaps{}; double meanGap{};
+    bool operator==(const SieglochPoint&) const = default;
+};
+struct SieglochFit {
+    double t0{}, tf{}, tc{}; // intercept, slope, t0 + tf / 2 (TFT8 Eq. 8.1)
+    bool operator==(const SieglochFit&) const = default;
+};
+// Unweighted least squares of meanGap on vehicles; nothing with fewer than two distinct vehicles.
+std::optional<SieglochFit> sieglochFit(const std::vector<SieglochPoint>& points);
 struct PriorityLineRow {
     std::string zoneId; ZoneControl control{};
     double window{};
     std::uint64_t minorCrossed{}, majorEntered{}, followUps{}, excluded{};
     double minorPerHour{}, majorPerHour{};
     std::optional<double> followUpMean, followUpSd; // n >= 1, n >= 2
+    std::uint64_t sieglochGaps{};              // saturated major gaps, n = 0 included
+    std::vector<SieglochPoint> sieglochPoints; // n >= 1, ascending
+    std::optional<SieglochFit> siegloch;
     bool operator==(const PriorityLineRow&) const = default;
 };
 struct PriorityLineReport { std::vector<PriorityLineRow> rows; }; // in Scenario::conflictZones order

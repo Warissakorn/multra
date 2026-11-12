@@ -132,3 +132,64 @@ TEST(prioritylines, pl5_the_same_seed_gives_the_same_report) {
     runBoth(crossing(ZoneControl::stop, 900, 400), b, 7);
     CHECK(a.report().rows == b.report().rows);
 }
+// D534 (PRIORITY_LINES §5): Siegloch's regression, rows PL7-PL9.
+namespace {
+// Saturated gaps derived from the test's own passages by §5's rule: n -> gap lengths.
+std::map<std::uint64_t, std::vector<double>> saturatedGaps(Independent seen, std::uint64_t* total) {
+    std::sort(seen.minor.begin(), seen.minor.end(), [](const auto& a, const auto& b) { return a.time < b.time; });
+    std::sort(seen.major.begin(), seen.major.end());
+    std::map<std::uint64_t, std::vector<double>> out;
+    *total = 0;
+    for (std::size_t k = 0; k + 1 < seen.major.size(); ++k) {
+        const double start = seen.major[k], end = seen.major[k + 1];
+        if (!inWindow(start) || !inWindow(end)) continue;
+        std::vector<const Passage*> inside; const Passage* next = nullptr;
+        for (const auto& p : seen.minor) {
+            if (p.time > start && p.time <= end) inside.push_back(&p);
+            else if (p.time > end) { next = &p; break; }
+        }
+        if (!next) continue;
+        bool ok = true; double previous = start;
+        for (const auto* p : inside) { ok = ok && p->stood && *p->stood <= previous; previous = p->time; }
+        if (!ok || !next->stood || *next->stood > end) continue;
+        ++*total;
+        if (!inside.empty()) out[inside.size()].push_back(end - start);
+    }
+    return out;
+}
+}
+TEST(prioritylines, pl7_the_fit_recovers_a_line) {
+    const auto fit = sieglochFit({{1, 3, 5.0}, {2, 4, 8.5}, {3, 1, 12.0}, {4, 2, 15.5}});
+    CHECK(fit.has_value());
+    test::near(fit->tf, 3.5); test::near(fit->t0, 1.5); test::near(fit->tc, 1.5 + 3.5 / 2);
+    CHECK(!sieglochFit({{2, 5, 6.0}, {2, 1, 7.0}}).has_value());
+    CHECK(!sieglochFit({}).has_value());
+}
+TEST(prioritylines, pl8_saturated_gaps_equal_the_independent_count) {
+    PriorityLineAccumulator counter(spec());
+    const auto seen = runBoth(crossing(ZoneControl::stop, 1800, 600), counter);
+    const auto row = counter.report().rows.front();
+    std::uint64_t total = 0;
+    const auto expected = saturatedGaps(seen, &total);
+    CHECK(row.sieglochGaps == total);
+    CHECK(row.sieglochPoints.size() == expected.size());
+    for (const auto& p : row.sieglochPoints) {
+        const auto& gaps = expected.at(p.vehicles);
+        CHECK(p.gaps == gaps.size());
+        double sum = 0; for (const double g : gaps) sum += g;
+        test::near(p.meanGap, sum / static_cast<double>(gaps.size()));
+    }
+    CHECK(row.siegloch.has_value()); // the forcing: at least two distinct n
+    CHECK(row.followUpMean.has_value());
+    CHECK(std::abs(row.siegloch->tf - *row.followUpMean) <= 0.5);
+}
+TEST(prioritylines, pl9_sparse_minor_demand_leaves_gaps_unsaturated) {
+    PriorityLineAccumulator counter(spec());
+    const auto seen = runBoth(crossing(ZoneControl::yield, 60, 600), counter);
+    const auto row = counter.report().rows.front();
+    std::uint64_t total = 0;
+    saturatedGaps(seen, &total);
+    CHECK(row.sieglochGaps == total);
+    CHECK(row.majorEntered >= 2);
+    CHECK(row.sieglochGaps < row.majorEntered - 1); // the forcing: some major gaps are not saturated
+}

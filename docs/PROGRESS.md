@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — Siegloch's regression for U-c's effective `t_c` (D534)
+
+- **D534:** the session fetched FHWA's Traffic Flow Theory chapter 8 and read §8.2.2 from the
+  page images; the owner chose Siegloch's regression. Contract first (PRIORITY_LINES §5, rows
+  PL7–PL9), then `sieglochFit` and the saturated-gap count in `PriorityLineAccumulator`: a major
+  gap is saturated when each entering minor vehicle, and the first after the gap, was queued in
+  time. `--priority-lines` adds a `siegloch` object per area (`gaps`, `points`, `t0`, `tf`, `tc`).
+  PL9 runs sparse minor demand against 600 veh/h major (PL4's run has no major gaps).
+- **Verified on Linux:** desktop build and ctest 328/328 (`prioritylines` 8/8).
+
 ## 2026-11-12 — Lee & Chen and Zegeer (1986): S1-d banded without Li & Prevedouros (D533)
 
 - **D533:** both TRR 1091 papers are free on TRB Online Pubs and were read from the page images.

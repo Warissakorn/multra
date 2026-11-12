@@ -57,7 +57,7 @@ n < 1 and n < 2), `excluded`, and §5's `siegloch` object. `multra-cli --project
 | PL5 | A run with the same seed gives the same report, bit for bit | `prioritylines` |
 | PL7 | `sieglochFit` on points that lie exactly on a line returns its slope as `t_f`, its intercept as `t_0` and `t_0 + t_f/2` as `t_c`; with fewer than two distinct `n` it returns nothing | `prioritylines` |
 | PL8 | Saturated minor demand with major traffic: the saturated gaps and their counts `n` equal those a test derives independently from the passages by §5's rule, and `t_f` lies within 0.5 s of `followUpMean` | `prioritylines` |
-| PL9 | Sparse minor demand (PL4's run): a gap whose next minor vehicle was not queued at the gap's end is not saturated, so fewer gaps qualify than there are major gaps in the window (the forcing), and none without a waiting vehicle | `prioritylines` |
+| PL9 | Sparse minor demand (60 veh/h, Yield) against 600 veh/h major: a gap whose next minor vehicle was not queued at the gap's end is not saturated, so fewer gaps qualify than there are major gaps in the window (the forcing), and none without a waiting vehicle | `prioritylines` |
 | PL6 | `--priority-lines` needs `--project`; the JSON carries one row per conflict area in `Scenario` order | `cli-priority-lines`, `cli-priority-lines-refused` |
 
 ## 5. Siegloch's regression for the effective `t_c` (D534)

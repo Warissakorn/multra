@@ -373,7 +373,7 @@ if(BUILD_TESTING)
     set_tests_properties(cli-compare-conflict PROPERTIES PASS_REGULAR_EXPRESSION "--compare needs --project and --seeds")
     # D528 (PRIORITY_LINES PL6): the priority-line counter on the T-junction, and its refusal.
     add_test(NAME cli-priority-lines COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/data/projects/t-junction-priority.traffic.json" --priority-lines)
-    set_tests_properties(cli-priority-lines PROPERTIES PASS_REGULAR_EXPRESSION "\"priorityLines\".*\"control\": \"yield\".*\"zone\": \"right-of-way/conflict-11\"")
+    set_tests_properties(cli-priority-lines PROPERTIES PASS_REGULAR_EXPRESSION "\"priorityLines\".*\"control\": \"yield\".*\"siegloch\".*\"zone\": \"right-of-way/conflict-11\"")
     add_test(NAME cli-priority-lines-refused COMMAND multra-cli 42 --priority-lines)
     set_tests_properties(cli-priority-lines-refused PROPERTIES PASS_REGULAR_EXPRESSION "--priority-lines needs --project")
     # D529 (FCTL_REFERENCE FC6): the S2-c reference script and its refusal.

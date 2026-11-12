@@ -68,6 +68,24 @@ void PriorityLineAccumulator::observe(const SimState& state) {
     std::erase_if(queuedSince_, [&](const auto& q) { return !now.contains(q.first.first); });
     previous_ = std::move(now);
 }
+std::optional<SieglochFit> sieglochFit(const std::vector<SieglochPoint>& points) {
+    std::set<std::uint64_t> distinct;
+    for (const auto& p : points) distinct.insert(p.vehicles);
+    if (distinct.size() < 2) return std::nullopt;
+    double sx = 0, sy = 0;
+    for (const auto& p : points) { sx += static_cast<double>(p.vehicles); sy += p.meanGap; }
+    const double n = static_cast<double>(points.size()), mx = sx / n, my = sy / n;
+    double sxy = 0, sxx = 0;
+    for (const auto& p : points) {
+        const double dx = static_cast<double>(p.vehicles) - mx;
+        sxy += dx * (p.meanGap - my); sxx += dx * dx;
+    }
+    SieglochFit fit;
+    fit.tf = sxy / sxx;
+    fit.t0 = my - fit.tf * mx;
+    fit.tc = fit.t0 + fit.tf / 2;
+    return fit;
+}
 PriorityLineReport PriorityLineAccumulator::report() const {
     PriorityLineReport r;
     if (!bound_) return r;
@@ -108,6 +126,34 @@ PriorityLineReport PriorityLineAccumulator::report() const {
                 row.followUpSd = std::sqrt(squares / static_cast<double>(gaps.size() - 1));
             }
         }
+        // D534: saturated major gaps (PRIORITY_LINES §5). Each entering vehicle was queued by the
+        // event before it, and so was the first vehicle after the gap at its end.
+        std::map<std::uint64_t, std::pair<std::uint64_t, double>> byCount; // n -> (gaps, sum)
+        for (std::size_t k = 0; k + 1 < major.size(); ++k) {
+            const double start = major[k], end = major[k + 1];
+            if (!inWindow(start) || !inWindow(end)) continue;
+            const auto after = [&](double t) {
+                return static_cast<std::size_t>(std::upper_bound(minor.begin(), minor.end(), t, [](double v, const auto& c) { return v < c.time; }) - minor.begin());
+            };
+            const std::size_t lo = after(start), hi = after(end);
+            if (hi >= minor.size()) continue; // no vehicle after the gap
+            bool saturated = true;
+            double previous = start;
+            for (std::size_t j = lo; j < hi && saturated; ++j) {
+                saturated = minor[j].queuedSince && *minor[j].queuedSince <= previous;
+                previous = minor[j].time;
+            }
+            saturated = saturated && minor[hi].queuedSince && *minor[hi].queuedSince <= end;
+            if (!saturated) continue;
+            ++row.sieglochGaps;
+            const auto n = static_cast<std::uint64_t>(hi - lo);
+            if (n == 0) continue;
+            auto& entry = byCount[n];
+            ++entry.first; entry.second += end - start;
+        }
+        for (const auto& [n, entry] : byCount)
+            row.sieglochPoints.push_back({n, entry.first, entry.second / static_cast<double>(entry.first)});
+        row.siegloch = sieglochFit(row.sieglochPoints);
         r.rows.push_back(std::move(row));
     }
     return r;
