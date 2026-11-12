@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_batch_state.hpp"
 #include "message_label.hpp"
 #include "automation_server.hpp"
 #include "editor_macro.hpp"
@@ -23,8 +24,10 @@ namespace multra {
 EditorWindow::~EditorWindow() {
     disableAutomation();
     // Every worker can post to this window; cancel and join before QObject/member teardown.
-    for (auto& [generation, worker] : batchWorkers_) *worker.cancel = true;
-    for (auto& [generation, worker] : batchWorkers_) if (worker.thread.joinable()) worker.thread.join();
+    if (batchSession_) {
+        for (auto& [generation, worker] : batchSession_->workers) *worker.cancel = true;
+        for (auto& [generation, worker] : batchSession_->workers) if (worker.thread.joinable()) worker.thread.join();
+    }
     if (macro_) macro_->stop(); // S2.4: the Macro worker too
     if (meso_) meso_->stop(); // M11.4: and the Meso one
 

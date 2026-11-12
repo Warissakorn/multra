@@ -4,6 +4,7 @@
 #include "editor_interaction.hpp"
 #include "table_layout.hpp"
 #include "editor_window.hpp"
+#include "editor_batch_state.hpp"
 #include "folded_note.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../core/simulation.hpp"
@@ -134,7 +135,7 @@ void EditorWindow::buildResults() {
     buildMeso(localBar(mesoBox,"editorMesoToolbar"),mesoBox);
     auto* analysis=new NodeAnalysisPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
         [this]{return history_.generation();},[this]{return file_;},data_,[this](const char* key){return text(key);},
-        [this]{return NodeAnalysisMicroBatchView{batch_?&batch_->report:nullptr,batch_&&!batch_->runs.empty()?&batch_->runs.front().report:nullptr,batchGeneration_};},
+        [this]{return NodeAnalysisMicroBatchView{batch_?&batch_->report:nullptr,batch_&&!batch_->runs.empty()?&batch_->runs.front().report:nullptr,batchSession_->generation};},
         [this]{refreshRun();}});
     resultPages_.emplace("editorResultsTabNodeAnalysis",analysis);resultsTabs_->addTab(analysis,{});
     // M10.2 G2 (TRIP_GENERATION §8, D471): self-owned like Node analysis; the window lends History and file dialogs.

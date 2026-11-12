@@ -51,7 +51,8 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 class AutomationServer;
-struct MacroPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct MacroPanel;
+struct BatchSession; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -224,16 +225,7 @@ private:
 public:
     struct BatchResult { BatchReport report; std::vector<SeedRun> runs; };
 private:
-    QLineEdit* batchSeeds_{};
-    QLabel* batchNote_{};
-    QWidget* batchView_{};
-    QTableWidget *batchMovementTable_{}, *batchSectionTable_{}, *batchQueueTable_{};
-    // Every live worker by generation; each is joined by its own finishBatch, or at teardown.
-    struct BatchWorker { std::thread thread; std::shared_ptr<std::atomic<bool>> cancel; };
-    std::map<std::uint64_t, BatchWorker> batchWorkers_;
-    std::shared_ptr<std::atomic<bool>> batchCancel_;
-    std::uint64_t batchGeneration_{};
-    std::size_t batchDone_{}, batchTotal_{}; // batchTotal_ is non-zero while a batch runs
+    std::unique_ptr<BatchSession> batchSession_; // the worker and its widgets (editor_batch_state.hpp, D514)
     std::optional<BatchResult> batch_;
     void buildBatch(QToolBar*, QVBoxLayout*);
     void translateBatch();
@@ -252,10 +244,6 @@ private:
 public:
     struct ComparisonResult { Comparison comparison; ComparedBatch base, alternative; };
 private:
-    QWidget* compareView_{};
-    QLabel* compareNote_{};
-    QTableWidget *compareMovementTable_{}, *compareSectionTable_{}, *compareQueueTable_{};
-    bool batchComparing_{}; // the running job is a comparison
     std::optional<ComparisonResult> comparison_;
     void buildCompare(QToolBar*, QVBoxLayout*);
     void translateCompare();
@@ -416,7 +404,7 @@ public:
     void copyResults() const;
     std::string singleRunCsv() const;
     std::string resultsCsv() const; // what Export writes; throws EDIT_CSV_UNFINISHED without a finished run, batch or comparison
-    bool batchRunning() const { return batchTotal_ > 0; }
+    bool batchRunning() const;
     const std::optional<BatchResult>& batchResult() const { return batch_; }
     // The open project (base) against `file` (alternative) over the Seeds field. Refuses, before
     // any run and leaving the results on show, a bad list, an alternative that cannot be read or

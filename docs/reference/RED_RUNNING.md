@@ -52,6 +52,7 @@ After D247's measurements, the owner kept both on 2026-10-18 (D248):
 
 - **The runner draw.** `u = mix(mix(seed) ^ id · 0x9E3779B97F4A7C15 ^ 15) >> 11 · 2⁻⁵³`.
   - This is W74's trait hash ([W74 §5](W74.md#5-parameters-and-traits)) at index 15; W74 uses 0–14.
+    Under `perInput`, `id` is the vehicle's trait identity, as for W74 (INPUT_STREAMS §4, D512).
   - A vehicle is a runner where `u < redRunningShare`.
   - It is computed when needed, never stored, and never drawn from the run's random stream, so
     arrivals, desired speeds and driver factors stay the same.

@@ -26,10 +26,14 @@ double hashedUniform(std::uint32_t seed, std::uint64_t origin, std::uint32_t ord
     h = splitmix64Mix(h ^ decision);
     return (static_cast<double>(h >> 11) + 0.5) / 9007199254740992.0; // 53 bits, never 0 or 1
 }
+std::uint64_t traitIdentity(std::uint64_t vehicleId, std::uint64_t origin, std::uint32_t ordinal) {
+    return origin == 0 ? vehicleId : splitmix64Mix(splitmix64Mix(origin) ^ ordinal);
+}
 // One new vehicle: its desired speed and driver factor drawn in this order, then (only with a w74
 // behaviour) its hashed traits. Arrivals and a lot's initial occupants (M8.4a) both come from here.
+// `origin`/`ordinal` are set only under perInput (zero otherwise) and go in before the trait hash (D512).
 PendingVehicle samplePending(SimState& state, std::uint32_t& rng, std::uint32_t input, std::uint32_t route,
-                             std::uint32_t typeIndex, double scheduledTime) {
+                             std::uint32_t typeIndex, double scheduledTime, std::uint64_t origin, std::uint32_t ordinal) {
     const auto& type = state.scenario->vehicleTypes[typeIndex];
     const double desiredSpeed = speedAt(type.desiredSpeed, random(rng)); // B-5 (D229)
     // Separate statements specify draw order; C++ operand evaluation order must
@@ -42,8 +46,9 @@ PendingVehicle samplePending(SimState& state, std::uint32_t& rng, std::uint32_t 
     const auto& spread = state.scenario->behaviours[state.index->behaviourOfType[typeIndex]].driverFactorSpread;
     PendingVehicle v{state.nextVehicleId++, input, route, typeIndex, scheduledTime, desiredSpeed,
                      std::clamp(0.5 + spread.value_or(0.15) * gaussian, 0.0, 1.0)};
+    v.streamKey = origin; v.ordinal = ordinal;
     // Hashed, not drawn: randomState's sequence is the same with or without W74 (D129).
-    if (state.index->w74) v.w74Traits = w74Traits(state.seed, v.id, v.driverFactor);
+    if (state.index->w74) v.w74Traits = w74Traits(state.seed, traitIdentity(v.id, origin, ordinal), v.driverFactor);
     return v;
 }
 void initializeInputs(SimState& state) {
@@ -74,8 +79,9 @@ void generateArrivals(SimState& state) {
         const bool perInput = state.scenario->randomStreams == RandomStreams::perInput;
         auto& rng = perInput ? current.stream : state.randomState;
         while (current.nextArrival && *current.nextArrival <= state.time) {
-            auto v = samplePending(state, rng, static_cast<std::uint32_t>(i), routeIndex, typeIndex, *current.nextArrival);
-            if (perInput) { v.streamKey = state.index->keyOfInput[i]; v.ordinal = current.generated++; }
+            auto v = perInput ? samplePending(state, rng, static_cast<std::uint32_t>(i), routeIndex, typeIndex,
+                                              *current.nextArrival, state.index->keyOfInput[i], current.generated++)
+                              : samplePending(state, rng, static_cast<std::uint32_t>(i), routeIndex, typeIndex, *current.nextArrival);
             current.queue.push_back(std::move(v));
             const double arrival = *current.nextArrival - std::log(random(rng)) * 3600 / input.vehiclesPerHour;
             current.nextArrival = arrival < input.endTime ? std::optional(arrival) : std::nullopt;

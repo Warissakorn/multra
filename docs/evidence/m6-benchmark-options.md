@@ -4,7 +4,7 @@ Prepared by a session for Q4, open since 2026-09-10: *which published benchmarks
 tolerance?* ([D143](../decisions/RECORD-D001-D199.md#d143), R2 (b); the 2026-10-03 review's
 [O2 and S0](../archive/ROADMAP-review-2026-10-03.md)). The owner answers by letter in the
 owner sitting (B9). **Answered 2026-11-11 ([D505](../decisions/RECORD.md#d505)): the owner took §7's
-recommendation in every row.** That chooses sources only; §6 and the tolerance are still to write.
+recommendation in every row.** That chooses sources only. §6 is written (2026-11-12, D515); the tolerance is still to set.
 
 ## 1. Rules of this sheet
 
@@ -37,8 +37,8 @@ built for the benchmark's conditions, and the seeds follow D88 (at least 40, 42�
 
 | Figure | Command | Definition | Gaps every comparison must state |
 |---|---|---|---|
-| Queue discharge headway, so saturation flow `3600 / h` | `trafficsim-cli --project F --discharge --discharge-warmup W`, optionally `--discharge-type car` and `--discharge-steady-first/last` ([DISCHARGE](../reference/DISCHARGE.md), D121) | Per lane and cycle: the gaps between front crossings of the stop line by vehicles queued at green, ranks 3–5 by default; startup estimates for ranks 1–2 | veh/h, not pc/h, with no PCU conversion. Crossings are stamped at the end of a tick, so each gap carries up to one time step of quantisation. Initial and partial greens are unavailable. One run per seed: there is no `--seeds` form |
-| Section delay | `trafficsim-cli --project F --seeds 42-81 --csv out.csv`, with a travel-time section on the approach ([TRAVEL_TIME_SECTIONS](../reference/TRAVEL_TIME_SECTIONS.md), [BATCH](../reference/BATCH.md)) | Per trip, `max(0, travel time − free-flow time)` between two section lines, with the free-flow time at the vehicle's own desired speed. Crossings are interpolated within a tick. Mean, SD and 95 % CI over seeds | Not HCM control delay. It equals the travel-time definition of control delay only when the section starts upstream of the longest queue and ends past the acceleration zone. The `max(0, ·)` drops the negative values a signed definition would average. Free flow is each driver's desired speed, not a stated free-flow speed, so the figure also counts delay behind slower leaders that no signal causes; against a vertical-queue formula (S2-b, S2-c) it also counts deceleration and acceleration around the line, an offset each comparison declares before it runs |
+| Queue discharge headway, so saturation flow `3600 / h` | `multra-cli --project F --discharge --discharge-warmup W`, optionally `--discharge-type car` and `--discharge-steady-first/last` ([DISCHARGE](../reference/DISCHARGE.md), D121) | Per lane and cycle: the gaps between front crossings of the stop line by vehicles queued at green, ranks 3–5 by default; startup estimates for ranks 1–2 | veh/h, not pc/h, with no PCU conversion. Crossings are stamped at the end of a tick, so each gap carries up to one time step of quantisation. Initial and partial greens are unavailable. One run per seed: there is no `--seeds` form |
+| Section delay | `multra-cli --project F --seeds 42-81 --csv out.csv`, with a travel-time section on the approach ([TRAVEL_TIME_SECTIONS](../reference/TRAVEL_TIME_SECTIONS.md), [BATCH](../reference/BATCH.md)) | Per trip, `max(0, travel time − free-flow time)` between two section lines, with the free-flow time at the vehicle's own desired speed. Crossings are interpolated within a tick. Mean, SD and 95 % CI over seeds | Not HCM control delay. It equals the travel-time definition of control delay only when the section starts upstream of the longest queue and ends past the acceleration zone. The `max(0, ·)` drops the negative values a signed definition would average. Free flow is each driver's desired speed, not a stated free-flow speed, so the figure also counts delay behind slower leaders that no signal causes; against a vertical-queue formula (S2-b, S2-c) it also counts deceleration and acceleration around the line, an offset each comparison declares before it runs |
 | Vehicles counted per movement, so throughput per hour | The same batch: each movement's `vehicles` over the evaluation period | Trips that end inside the period (D132). With a cool-down, trips released inside it (D146) | Equals capacity only while the movement's queue never empties. A capacity count uses no cool-down, so it counts trips that end inside the window. A saturated seed is likely to be flagged overloaded (BATCH §3); that is expected, and the flag is kept |
 | Whole-route movement delay | The same batch | Source wait plus in-network time, minus the desired-speed reference (D39) | Includes source waiting and entry acceleration: not a benchmark quantity |
 
@@ -95,7 +95,7 @@ parameter sets it, so it can only be measured.
 **One command for all options, not available today.** Each option needs:
 - a car-only project with a Stop-controlled minor approach whose demand exceeds its capacity;
 - one project per major-flow level, because a batch reports one evaluation period;
-- `trafficsim-cli --project F --seeds 42-81 --csv out.csv` with no cool-down;
+- `multra-cli --project F --seeds 42-81 --csv out.csv` with no cool-down;
 - the minor movement's `vehicles` per hour of window, against the major flow actually counted.
 
 No such project exists. `trafficsim-t-junction-sweep` varies gap time and headway, not major
@@ -116,18 +116,76 @@ minor right turn is the minor left turn.
 
 ## 6. What a comparison fixes before it runs
 
-Whichever options are chosen, a later session writes these down, with the tolerance, before the
-first comparable run:
+The checklist a session writes down, with the tolerance, before the first comparable run. **Written
+2026-11-12 for the sources D505 chose; the tolerance is still the owner's (OWNER_SITTING B47).**
+Nothing here was set by looking at an engine figure; no comparable run has been made. Every
+value marked *to read* comes from the book or paper, never from memory. The session that fills it
+in reads the page image ([BOOKS](../reference/BOOKS.md)) and cites the page.
 
-- the following model and behaviour set, with the catalog hashes `--discharge` already prints;
-- the time step, the seeds (42–81), the warm-up and window, and a cool-down of zero for capacity
-  counts;
-- for S1, the declared ranks, the cycles kept and the lane;
-- for S2, the section's start and end, the `x` values and how `s` and `g` are declared;
-- for U, the major-flow levels, the translation from published `t_c` to `gapTime` and `headway`,
-  and how the engine's emergent `t_f` is measured and set against the published one;
-- the unit conversion: pc, pcu, tcu or Pkw-E against veh, with car-only demand where the source
-  states base conditions.
+**Common to every row**
+
+| Item | Fixed value |
+|---|---|
+| Following model and behaviour | `data/driver-behaviour/default.json` as shipped, no preset; the catalog hashes `--discharge` prints (DISCHARGE §6) are copied into the evidence file of the first run and must not change between runs |
+| Vehicle types | `data/vehicle-types/car.json` only (base conditions: car-only, so veh = pc and no PCU conversion is applied) |
+| Random streams | `perInput` (D505: streams before the M6 runs), stated in the output (IS8) |
+| Time step | 0.1 s, the shipped default; a crossing's quantisation (§2) is stated as up to one step |
+| Seeds | 42–81 (40, D88), every one reported; nothing is dropped |
+| Warm-up / window / cool-down | 900 s / 3,600 s / 0 for capacity counts and discharge; 900 s / 3,600 s / 300 s for delay (trips released in the window, D146) |
+| Driving side | left, as a Thai drawing; US sources' movements are mirrored (§5) |
+| Reported figure | mean over seeds with its 95 % CI (BATCH); the tolerance compares the mean, and the CI is shown beside it |
+
+**S1-a (primary), saturation flow.** One straight approach, one lane, through only, 3.5 m, level,
+no parking, no bus stop, 300 m from source to stop line. A fixed-time head, cycle 90 s, green
+40 s, amber 3 s, red 47 s. Demand 1,200 veh/h, so every cycle starts with a standing queue
+longer than the last declared rank (a cycle that does not is reported unavailable, not dropped).
+`multra-cli --project F --discharge --discharge-warmup 900 --discharge-type car` with ranks 5 to
+the last queued vehicle (`--discharge-steady-first 5`, the 1985 HCM convention quoted in
+[LiPrev02]). The 7th edition's own field procedure (first and last rank) is *to read* in HCM 7 Ch.
+19/31; if it differs, its ranks replace these before the run. Figure: `3600 / h`, per lane and
+cycle, averaged over cycles, then over seeds. Reference: `s0`, HCM 7 Ch. 19 base saturation flow
+(*to read*: the exhibit and page; 1,900 pc/h/ln is the sheet's unread default), with every
+adjustment factor at its base value because the project is at base conditions.
+
+**S1-d (second), headway by queue position.** The same project and runs; the per-cycle crossings
+give the headway at ranks 1–12. References: the per-position headways of [Bonneson92] and
+[LiPrev02] (*to read*: neither table has been read). Ranks with fewer than 30 cycles across the
+40 seeds are reported unavailable.
+
+**S2-c (first), the queueing arithmetic.** One lane as S1-a, but green and red only (no amber),
+cycle 60 s, green 30 s. Degrees of saturation `x` = 0.5, 0.7, 0.85, with `s` the S1-a run's
+**declared** reference (the HCM `s0`, not the engine's measured value) and `g` = the green. A
+travel-time section from 250 m upstream to 50 m past the line. The reference value comes from a
+script implementing [vanLeeuwaarden06]'s procedure, with the slot length `3600 / s` and the
+question whether the departure slot counts as delay answered in that script's header before the
+run. The vertical-queue offset (deceleration and acceleration around the line) is measured once
+on a run with no signal at the same demand and subtracted, and the subtraction is stated.
+
+**S2-b (below saturation) and S2-a (across it), delay.** The S2-c project with amber restored
+(cycle 90 s, green 40 s, amber 3 s, effective green `g` = green + amber − 2 s lost time, a stated
+convention, *to check* against HCM 7's definition). `x` = 0.5, 0.7, 0.85, 0.95 for S2-b; 0.85,
+0.95, 1.0, 1.05 for S2-a with `T` = 1 h, `k` = 0.5, `I` = 1, `PF` = 1 and `d3` = 0 (HCM 2000
+forms; the 7th edition's form is *to read* before use, §4). Demand per `x` is `x·s·g/C` with the
+declared `s`. The same section, measured as above, and the same stated offset.
+
+**U-c (first), then U-a (rank 2), minor-movement capacity.** A four-leg Stop-controlled junction,
+two-lane major (one lane each way), car-only. The rank-2 movement in HCM terms is the minor right
+turn of a right-hand drawing, so on this left-hand drawing it is the **minor left turn**. Minor
+demand 900 veh/h (above capacity at every level). Major flows `v_c` = 200, 400, 600, 800, 1,000
+veh/h, one project per level, each counted, not assumed. Figure: the minor movement's vehicles per
+hour of window, no cool-down. Translation from `t_c` to the rule (proposed; §7 says it is
+decided with the tolerance, so the owner confirms it in B47): `gapTime = t_c − τ`, where `τ` is
+the mean time the earlier major vehicle takes to clear the conflict area at the major speed (50
+km/h), computed from the area's drawn length; `headway` (metres) at the smallest value validation
+accepts (*to check*), so the time test decides. `t_f` is measured, not set:
+the mean front-to-front time between queued minor vehicles leaving the Stop line, which needs a
+counter at a priority line that does not exist yet (§5); until it does, U-a cannot run. U-c
+uses the measured effective `t_c` and `t_f`; U-a uses the HCM 7 Ch. 20 base values (*to read*:
+the exhibit and page; the sheet's software-documentation values are not used).
+
+**Before the first run:** the owner sets the tolerance per kind (B47); the S1-a/S1-d, U-a and S2
+values marked *to read* are read and cited here; the S2-c script and the priority-line counter
+exist and have their own rows.
 
 ## 7. Owner questions (answer by letter, sitting B9)
 

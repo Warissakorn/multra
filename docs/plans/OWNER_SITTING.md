@@ -143,6 +143,16 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
 46. **The Macro example** (listed 2026-11-10, D492). Open `macro-four-step`, run *Procedure*, check
     the Macro links table: do the example's size and story suit a first-time user? *Owner:*
 
+47. **The M6 tolerance** (listed 2026-11-12, D515). The option sheet's
+    [§6](../evidence/m6-benchmark-options.md#6-what-a-comparison-fixes-before-it-runs) now fixes
+    every run setting; no comparable run has been made. Per kind, the engine mean passes when it is
+    within: **(a)** a fixed band (S1 ±5 % of `s0`, S2 ±15 % of delay, U ±15 % of capacity) · **(b)**
+    the band of (a) *and* the reference inside the 95 % CI of the mean · **(c)** a band per kind
+    taken from the published field scatter of each source (needs the sources read first).
+    *Session's recommendation:* **(a)** now, because (b) narrows as seeds are added and (c) waits on
+    reading. The bands are a starting proposal, not derived from any engine figure. Also confirm U's
+    `t_c` → `gapTime` translation (`gapTime = t_c − τ`, §6). *Owner:*
+
 ## C–I — on the Windows machine
 
 Sections C (Run view), D (Right-of-way), E (Drawing and gestures), F (Dialogs), G (Object

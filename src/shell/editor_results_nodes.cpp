@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_batch_state.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/los_output.hpp"
 #include <QHeaderView>
@@ -31,7 +32,7 @@ void EditorWindow::refreshResultNodes() {
     const auto level = [&](const char* key, const std::string& name, int indent) {
         return std::pair{plain(text(key)), plain(QString(indent * 2, ' ') + q(name))};
     };
-    if (batchRunning() && batchComparing_) { t->setColumnCount(0); nodeResultNote_->setText(marker + " " + text("editorNodeResultsRunning")); return; }
+    if (batchRunning() && batchSession_->comparing) { t->setColumnCount(0); nodeResultNote_->setText(marker + " " + text("editorNodeResultsRunning")); return; }
     if (comparison_) { refreshComparedNodes(marker); return; }
     if (batch_) {
         t->setColumnCount(11);
