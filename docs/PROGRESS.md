@@ -7,6 +7,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ## 2026-11-11 — Route marks: bright ends, a tint between them, hover previews (D509)
 
+- **D509d (follow-up, 2026-11-12):** owner: "เปลี่ยนระยะ offset เป็น 0.6m". The tint's inset is
+  0.6 m (was D509c's 0.8 m), still at most a quarter of the narrowest lane. Images:
+  `docs/images/route-tint-d509d/` (`before.png` is D509c).
 - **D509c (follow-up, 2026-11-12):** owner: "ตกลงทั้ง 2 ข้อ" to a 50 % yellow and a wider inset.
   The tint is 50 % stored and 35 % preview (2.25:1 on the road; lane marks 2.3:1 through it), and
   its own inset is 0.8 m, at most a quarter of the narrowest lane (was the conflict area's 0.5 m and

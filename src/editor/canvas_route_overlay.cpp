@@ -35,9 +35,10 @@ std::vector<Point> cutAtBar(const std::vector<Point>& chain,const RoadCrossbar& 
     out.push_back({cut->second.x(),cut->second.y()});
     return out;
 }
-// D509c: 0.8 m inside the painted rails, at most a quarter of the narrowest lane, so a grey edge
-// shows between the tint and the selection outline (a conflict area keeps kConflictRailOffset).
-constexpr double kRouteTintInset=0.8;
+// D509d: 0.6 m inside the painted rails (D509c had 0.8 m), at most a quarter of the narrowest
+// lane, so a grey edge shows between the tint and the selection outline (a conflict area keeps
+// kConflictRailOffset).
+constexpr double kRouteTintInset=0.6;
 double tintInset(const Network& n,const std::vector<std::string>& segments) {
     double narrowest=std::numeric_limits<double>::infinity();
     for(const auto& id:segments) {

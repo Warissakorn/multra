@@ -34,7 +34,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - Hold `Ctrl`+right on a road and move: the green (origin) or red (destination) bar follows until
   release. Check the thin end bars beside inputs, decisions and signal heads.
 - D509: the tint between the bars, its inset at the road edges, and the bars while only
-  hovering. D509b/D509c: the owner chose a yellow tint at 50 %, inset 0.8 m; check it on Windows.
+  hovering. D509b/D509c: the owner chose a yellow tint at 50 %, inset 0.6 m (D509d); check it on Windows.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
