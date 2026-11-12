@@ -913,6 +913,7 @@
   "editorDeletePeriod": "Delete study period",
   "editorPeriodStart": "Start (clock)",
   "editorPeriodEnd": "End (clock)",
+  "editorTableColumns": "Columns",
   "editorTableCellInvalid": "The value cannot be read. A clock time is HH:MM:SS; hours may pass 24.",
   "editorOdStudyPeriod": "Study period",
   "editorOdOwnTimes": "Own times (run seconds)",

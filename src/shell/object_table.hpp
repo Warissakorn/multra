@@ -7,6 +7,7 @@
 #include <vector>
 
 class QAbstractItemView;
+class QMenu;
 class QTableWidget;
 namespace multra {
 // D525 (docs/plans/OBJECT_TABLE.md): one object tab's table, built from its columns' metadata. It
@@ -25,6 +26,11 @@ public:
     void clearSelection();
     // In-place edit (D525): whether a column's cells take an edit; a double-click elsewhere is the panel's.
     bool editable(int column) const;
+    // Hide and show columns (D525): the header's menu (right-click), one checkable entry per column;
+    // the id column cannot be hidden. The choice lasts for the session.
+    void setColumnShown(const std::string& key, bool shown);
+    bool columnShown(const std::string& key) const;
+    QMenu* columnMenu() const { return columnMenu_; }
 private:
     void commit(const std::string& id, int column, const QString& text);
     std::vector<TableRow> shown_; // the texts the cells were built with, to tell an edit from none
@@ -32,5 +38,6 @@ private:
     ObjectTableModel model_;
     QTableWidget* table_{};
     std::uint64_t revision_{UINT64_MAX};
+    QMenu* columnMenu_{};
 };
 }

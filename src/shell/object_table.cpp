@@ -2,7 +2,9 @@
 #include "table_grid.hpp"
 #include "table_layout.hpp"
 #include "../editor/ui_design_tokens.hpp"
+#include <QAction>
 #include <QHeaderView>
+#include <QMenu>
 #include <QMetaObject>
 #include <QSignalBlocker>
 #include <QTableWidget>
@@ -21,6 +23,16 @@ ObjectTable::ObjectTable(QWidget* parent, ObjectTabContext context, ObjectTableM
     table_->setSelectionMode(severalRows ? QAbstractItemView::ExtendedSelection : QAbstractItemView::SingleSelection);
     table_->horizontalHeader()->setStretchLastSection(true); table_->verticalHeader()->hide();
     layout->addWidget(table_);
+    columnMenu_ = new QMenu(this); columnMenu_->setObjectName(objectName + "Columns");
+    for (std::size_t i = 0; i < model_.columns.size(); ++i) {
+        const auto& c = model_.columns[i];
+        auto* entry = columnMenu_->addAction(QString()); entry->setObjectName(QString::fromStdString(c.key));
+        entry->setCheckable(true); entry->setChecked(true); entry->setEnabled(c.kind != CellKind::id);
+        connect(entry, &QAction::toggled, this, [this, key = c.key](bool on) { setColumnShown(key, on); });
+    }
+    table_->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(table_->horizontalHeader(), &QWidget::customContextMenuRequested, this, [this](const QPoint& at) {
+        columnMenu_->popup(table_->horizontalHeader()->mapToGlobal(at)); });
     // An edit commits after the editor closes: the commit rebuilds the rows, the cell included.
     if (std::any_of(model_.columns.begin(), model_.columns.end(), [](const auto& c) { return bool(c.edit); }))
         table_->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed | QAbstractItemView::AnyKeyPressed);
@@ -28,6 +40,19 @@ ObjectTable::ObjectTable(QWidget* parent, ObjectTabContext context, ObjectTableM
         const auto id = cell->data(Qt::UserRole).toString().toStdString(); const int column = cell->column(); const auto text = cell->text();
         QMetaObject::invokeMethod(this, [this, id, column, text] { commit(id, column, text); }, Qt::QueuedConnection);
     });
+}
+void ObjectTable::setColumnShown(const std::string& key, bool shown) {
+    for (std::size_t i = 0; i < model_.columns.size(); ++i) {
+        if (model_.columns[i].key != key || model_.columns[i].kind == CellKind::id) continue;
+        table_->setColumnHidden(static_cast<int>(i), !shown);
+        auto* entry = columnMenu_->actions().value(static_cast<int>(i));
+        if (entry && entry->isChecked() != shown) { const QSignalBlocker block(entry); entry->setChecked(shown); }
+    }
+}
+bool ObjectTable::columnShown(const std::string& key) const {
+    for (std::size_t i = 0; i < model_.columns.size(); ++i)
+        if (model_.columns[i].key == key) return !table_->isColumnHidden(static_cast<int>(i));
+    return false;
 }
 bool ObjectTable::editable(int column) const {
     return column >= 0 && column < static_cast<int>(model_.columns.size()) && bool(model_.columns[static_cast<std::size_t>(column)].edit);
@@ -43,6 +68,9 @@ void ObjectTable::commit(const std::string& id, int column, const QString& text)
 void ObjectTable::translate() {
     QStringList headers;
     for (const auto& c : model_.columns) headers << context_.text(c.header);
+    columnMenu_->setTitle(context_.text("editorTableColumns"));
+    const auto entries = columnMenu_->actions();
+    for (int i = 0; i < entries.size(); ++i) entries[i]->setText(headers.value(i));
     table_->setHorizontalHeaderLabels(headers);
     invalidate(); // translated cells are rebuilt on the next refresh
 }

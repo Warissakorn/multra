@@ -8,6 +8,8 @@
 #include <QLabel>
 #include <QApplication>
 #include <QLineEdit>
+#include <QMenu>
+#include "../src/shell/table_grid.hpp"
 #include <QTableWidget>
 #include <QTemporaryDir>
 #include <QTest>
@@ -73,6 +75,21 @@ int main(int argc, char** argv) {
         table->item(0, 2)->setText("seven"); settle();
         require(w.history().revision() == before && periods()[0].start == 7 * 3600, "An invalid time was committed");
         require(table->item(0, 2)->text() == "07:00:00", "A refused edit did not revert the cell");
+
+        // Hide and show columns: the header menu's entries; the id column cannot be hidden; Copy leaves
+        // a hidden column out.
+        auto* menu = w.findChild<QMenu*>("editorPeriodTableColumns"); require(menu, "No column menu");
+        require(menu->actions().size() == 4 && !menu->actions()[0]->isEnabled(), "The id column can be hidden");
+        menu->actions()[2]->trigger(); settle();
+        require(table->isColumnHidden(2) && !table->isColumnHidden(0), "The start column did not hide");
+        table->setFocus(); table->selectAll(); settle();
+        const auto copied = tableSelectionText(table);
+        require(!copied.contains("07:00:00") && copied.contains("AM"), "Copy kept the hidden column");
+        table->clearSelection();
+        menu->actions()[0]->trigger(); settle();
+        require(!table->isColumnHidden(0), "The id column hid");
+        menu->actions()[2]->trigger(); settle();
+        require(!table->isColumnHidden(2), "The start column did not show again");
         std::cout << "object table ui tests passed\n";
         return 0;
     } catch (const std::exception& e) {
