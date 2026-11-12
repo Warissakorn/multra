@@ -7,7 +7,7 @@
 #include "../model/network/right_of_way.hpp"
 #include "rear_axle_pose.hpp"
 #include "lane_change_pose.hpp"
-#include "road_crossbar.hpp"
+#include "road_crossbar_geometry.hpp"
 #include <QGraphicsView>
 #include <QCursor>
 #include <QPainterPath>

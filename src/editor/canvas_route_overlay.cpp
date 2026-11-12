@@ -1,4 +1,5 @@
 // A route's surface tint and its origin/destination bars, stored or previewed (D96, D435, D508,
+#include "road_crossbar.hpp"
 // D509, D509c). The tint lies between the two bars only, inset from the road's outer edges, in
 // its own colour; a preview re-tints in place while the pointer moves along one road.
 #include "canvas.hpp"

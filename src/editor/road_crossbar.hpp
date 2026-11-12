@@ -1,21 +1,10 @@
 #pragma once
-#include "../model/network/network.hpp"
+#include "road_crossbar_geometry.hpp"
 #include <QGraphicsLineItem>
 #include <QLineF>
 #include <QColor>
-#include <optional>
 
 namespace multra {
-// travel: unit direction of the road at the bar; pole: where a signal head's mast stands (D460),
-// just outside the road's kerb-side edge, level with the head.
-struct RoadCrossbar { Point first, second; int level{}; Point travel{}; std::optional<Point> pole{}; };
-// Presentation only: intersect the road normal with its real rails at this station.
-std::optional<RoadCrossbar> roadCrossbar(const std::vector<Point>& centre,
-    const std::vector<Point>& firstRail, const std::vector<Point>& secondRail,
-    double station, int level,
-    const std::vector<Point>& firstContinuation = {}, const std::vector<Point>& secondContinuation = {});
-std::optional<RoadCrossbar> objectCrossbar(const Network&, const std::string& id, bool end, std::optional<double> station = {});
-std::optional<RoadCrossbar> signalCrossbar(const Network&, const NetworkSignalHead&);
 // A run signal state's shape (D199), so it reads without hue: stop is the full bar, caution thins
 // its middle third, go opens it. none is the plain stroke every edit-mode bar uses.
 enum class SignalCue { none, stop, caution, go };

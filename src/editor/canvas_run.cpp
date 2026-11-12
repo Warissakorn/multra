@@ -1,4 +1,5 @@
 #include "canvas.hpp"
+#include "road_crossbar.hpp"
 #include "canvas_style.hpp"
 #include "vehicle_shape.hpp"
 #include "vehicle_color.hpp"
