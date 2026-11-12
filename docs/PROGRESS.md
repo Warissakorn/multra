@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — M6 S2-b and S2-a against HCM 7 `d1 + d2` (D539)
+
+- **D539** (owner: lengthen the road and the cool-down): contract first (M6_S2_RUN §6, rows S2AB1–S2AB5). Then:
+  - `m6s2::Layout`, with the 2,001 m approach, 90/40/3 s signal and 900 s cool-down;
+  - `hcmDelay` and the availability rule;
+  - the S2 tool renamed to `multra-m6-s2-run c|ab`. A rerun of mode `c` reproduced S2-c exactly.
+- **The run:** 480 runs on build `c312146`, with every level available.
+  - Δ against `d1 + d2`: 18.51/19.98 (**pass**), 21.04/25.09, 24.61/33.90, 32.09/54.34, 42.42/86.94 and 69.55/147.81 s.
+  - The levels from 0.7 to 1.05 **miss** low.
+  - The gap is in `d2`. HCM at the engine's own `s` (1,944 veh/h) is still higher. One hypothesis is smoothed arrivals after 2 km of following; it is not measured.
+  - [m6-s2ab-first-run](evidence/m6-s2ab-first-run.md).
+- **Verified on Linux:** `check` 335/335 (`m6s2` 9/9), `CMakeLists.txt` at 500 lines.
+
 ## 2026-11-12 — M6 S2-c: the fixed-cycle queue delay run (D538)
 
 - **D538:** contract first (M6_S2_RUN, rows S2C1–S2C6). Then:
