@@ -13,6 +13,7 @@ the live queue. Owner observations are distinct from automated checks.
 | [OWNER_SITTING.md](OWNER_SITTING.md) | Every item waiting on the owner, for one sitting (D143) |
 | [OWNER_SITTING_WINDOWS.md](OWNER_SITTING_WINDOWS.md) | OWNER_SITTING's sections C–I, the checks on the owner's Windows machine |
 | [OBJECT_PANELS_NODES_CONFLICTS.md](OBJECT_PANELS_NODES_CONFLICTS.md) | Contract for the Nodes and Conflicts tabs as panels: what each owns, its hooks, what the window calls (D523) — 2026-11-12 |
+| [OBJECT_TABLE.md](OBJECT_TABLE.md) | Contract for the metadata-driven object table (Vissim/SUMO style): column metadata, in-place edit, hide/show columns, row filter; Study periods pilot (D525) — 2026-11-12 |
 | [UTDF_PROBE.md](UTDF_PROBE.md) | M14 U0: the reference junction and steps for the owner's UTDF probe; Vistro 2026 writes the golden file (D438) — 2026-10-28, revised 2026-11-03 |
 | [M1_ACCEPTANCE.md](M1_ACCEPTANCE.md) | M1 owner acceptance record |
 | [M2_PLAN.md](M2_PLAN.md) | M2 plan — and the M1 review it starts from |

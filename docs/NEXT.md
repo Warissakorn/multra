@@ -45,8 +45,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - **Split `EditorWindow` (D505): steps 1–5 done (D514 `BatchSession`, D517 `RunSession`, D518
     `RecoverySession`, D519 `AutomationHost`, D520 `ObjectTab`), and all 13 object tabs are panels
     (D521–D523), and the Macro/Meso runs' functions are on their panels (D524; header 396 lines).**
-    D505's listed steps are done. A metadata-driven generic object list (D522) needs an owner choice
-    and its own contract first. `src/project/`
+    D505's listed steps are done. Next: the metadata-driven object table (D525,
+    [OBJECT_TABLE](plans/OBJECT_TABLE.md)), piloted on Study periods, one commit per contract step. `src/project/`
     (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
   - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
     per-decision notes) still belongs in the contracts.
