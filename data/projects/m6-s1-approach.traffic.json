@@ -1,0 +1,173 @@
+{
+  "background": {
+    "metresPerPixel": 1.0,
+    "opacity": 0.5,
+    "pngBase64": "",
+    "rotation": 0.0,
+    "x": 0.0,
+    "y": 0.0
+  },
+  "definition": {
+    "duration": 4500.0,
+    "evaluation": {
+      "end": 4500.0,
+      "warmup": 900.0
+    },
+    "inputs": [
+      {
+        "endTime": 4500.0,
+        "id": "input-9",
+        "routeId": "route-8",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 1200.0
+      }
+    ],
+    "randomStreams": "perInput",
+    "routes": [
+      {
+        "id": "route-8",
+        "segmentIds": [
+          "link-1",
+          "connector-5",
+          "link-3"
+        ]
+      }
+    ],
+    "signalControllers": [
+      {
+        "cycle": 90.0,
+        "groups": [
+          {
+            "amber": 3.0,
+            "greenEnd": 40.0,
+            "greenStart": 0.0,
+            "name": "Through",
+            "number": 1
+          }
+        ],
+        "id": "controller-6",
+        "name": "S1 signal",
+        "offset": 0.0
+      }
+    ],
+    "signalPrograms": [],
+    "timeStep": 0.1
+  },
+  "format": "TrafficSim",
+  "network": {
+    "connectors": [
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-2",
+          "linkId": "link-1"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 301.0,
+            "y": 0.0
+          },
+          {
+            "x": 306.0,
+            "y": 0.0
+          },
+          {
+            "x": 311.0,
+            "y": 0.0
+          },
+          {
+            "x": 316.0,
+            "y": 0.0
+          },
+          {
+            "x": 321.0,
+            "y": 0.0
+          }
+        ],
+        "id": "connector-5",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "S1 through",
+        "to": {
+          "laneId": "lane-4",
+          "linkId": "link-3"
+        },
+        "toLaneCount": 1
+      }
+    ],
+    "drivingSide": "left",
+    "id": "m6-s1-approach",
+    "links": [
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 301.0,
+            "y": 0.0
+          }
+        ],
+        "id": "link-1",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-2",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "S1 approach"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 321.0,
+            "y": 0.0
+          },
+          {
+            "x": 421.0,
+            "y": 0.0
+          }
+        ],
+        "id": "link-3",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-4",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "S1 exit"
+      }
+    ],
+    "signalHeads": [
+      {
+        "connectorId": "",
+        "controllerId": "controller-6",
+        "groupNumber": 1,
+        "id": "head-7",
+        "lane": {
+          "laneId": "lane-2",
+          "linkId": "link-1"
+        },
+        "name": "S1 stop line",
+        "position": 300.0,
+        "programId": ""
+      }
+    ]
+  },
+  "nextId": 10,
+  "revision": 0,
+  "schemaVersion": 74
+}
