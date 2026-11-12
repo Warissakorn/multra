@@ -1,4 +1,5 @@
 #include "network_schema.hpp"
+#include "latest_schema.hpp"
 #include "network_fields.hpp"
 #include "document.hpp"
 #include "document_envelope.hpp"

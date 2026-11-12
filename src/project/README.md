@@ -17,6 +17,7 @@ keeps its schema and bytes.
 
 | File | Holds | Contract |
 |---|---|---|
+| `latest_schema.hpp` | `kLatestSchema`, the newest schema the reader accepts; its own header so a schema step rebuilds only its readers | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `document.*` | `ProjectDocument` (authoring network, definition, optional background) and `parseDocument`/`documentJson`; implemented with `parse.cpp`, `definition.cpp`, `signal_migration.cpp` (legacy programs as colour runs) and route migration to Link and Connector ids. `allocateId` and `documentIds` share one traversal; no id index survives an edit | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `document_schema.*` | `documentSchemaVersion`: the writer version chosen from features alone, the rule `documentJson` uses; input versions are not retained | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `document_envelope.*` | Envelope and background field metadata, read and validation stages, the envelope-only partial draft-2020-12 schema | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |

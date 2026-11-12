@@ -1,5 +1,6 @@
 #pragma once
 #include "../src/shell/editor_window.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "../src/core/simulation.hpp"
 #include <QLabel>
 #include <QComboBox>

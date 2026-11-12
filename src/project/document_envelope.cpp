@@ -1,4 +1,5 @@
 #include "document_envelope.hpp"
+#include "latest_schema.hpp"
 #include "document.hpp"
 #include <nlohmann/json.hpp>
 #include <cmath>

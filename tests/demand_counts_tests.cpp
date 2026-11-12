@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "../tools/four_leg_network.hpp"
 #include "../src/commands/history.hpp"
 #include "../src/project/counted_volumes.hpp"

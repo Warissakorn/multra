@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "../src/project/document.hpp"
 #include "../src/project/document_schema.hpp"
 #include <fstream>

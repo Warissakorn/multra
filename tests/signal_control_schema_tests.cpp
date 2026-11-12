@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "signal_control_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 #include "../src/model/demand/signal_control.hpp"

@@ -1,5 +1,6 @@
 #pragma once
 #include "../src/project/document.hpp"
+#include "../src/project/latest_schema.hpp"
 #include <nlohmann/json.hpp>
 
 namespace rightOfWayCases {

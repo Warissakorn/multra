@@ -1,5 +1,6 @@
 #pragma once
 #include "demand_schema_cases.hpp"
+#include "../src/project/latest_schema.hpp"
 
 namespace routingCases {
 struct Case {std::string name;multra::Json document;bool schemaAccepts;};

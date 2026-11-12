@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "project_envelope_cases.hpp"
 #include "../src/project/document_envelope.hpp"
 #include <limits>

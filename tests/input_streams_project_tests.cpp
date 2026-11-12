@@ -2,6 +2,7 @@
 // (D505 choice 1 b), and IS8 -- run, batch and comparison output state `randomStreams`, and a
 // comparison refuses two mappings. `shared` writes nothing, so every existing output keeps its bytes.
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/history.hpp"
 #include "../src/project/batch_output.hpp"
