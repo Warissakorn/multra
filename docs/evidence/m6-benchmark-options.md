@@ -232,7 +232,7 @@ the jam spacing `L_hj` (vehicle length plus the standing gap) and the saturation
 [AkcBes02]'s Eq. 9 (`h_S = t_x + 3.6·L_hj/v_S`, PDF p. 8) and [MurCet19]'s Eq. 24 (p. 300; its
 Eq. 18, p. 299, adds the acceleration terms) write it. Each part is shown against [AkcBes02]'s
 Through (isolated) average (Table 2, p. 11): `t_x` 1.17 s, `L_hj` 6.9 m, `v_S` 45.1 km/h. How
-the engine's three parts are measured is left to its own contract (*to write*); no code exists.
+the engine's three parts are measured: [M6_S1_RUN](../reference/M6_S1_RUN.md) §7 (D536).
 
 **S2-c (first), the queueing arithmetic.** One lane as S1-a, but green and red only (no amber).
 The slot model ([FCTL_REFERENCE](../reference/FCTL_REFERENCE.md), D529) needs whole slots: with the
