@@ -192,7 +192,18 @@ delay counts the departure slot and leaves out the wait inside the arrival slot 
 figure. §3.2's claim (p. 8) that `r/(2cμ(1 − μ))` is the mean of that wait cannot hold here (it
 exceeds one slot) and is not used. The vertical-queue offset (deceleration and acceleration
 around the line) is measured once on a run with no signal at the same demand and subtracted, and
-the subtraction is stated. The reference table is computed by the script before any run.
+the subtraction is stated. The references, computed by the script before any run
+(`multra-fctl-reference --saturation 1900 --green-slots 16 --red-slots 16 --x 0.5,0.7,0.85`):
+
+| `x` | 0.5 | 0.7 | 0.85 |
+|---|---|---|---|
+| `v` (veh/h) | 475.0 | 665.0 | 807.5 |
+| `E X_g` (veh) | 0.0059 | 0.1712 | 1.2795 |
+| `E D` (slots) | 5.7936 | 7.1217 | 10.3306 |
+| `h · E D` (s/veh) | **10.98** | **13.49** | **19.57** |
+
+The in-slot wait adds at most `h` = 1.89 s per delayed vehicle; it is shown as that bound beside
+the comparison, not added to the reference.
 
 **S2-b (below saturation) and S2-a (across it), delay.** The S2-c project with amber restored
 (cycle 90 s, green 40 s, amber 3 s, effective green `g` by HCM 7: **checked 2026-11-12**, Equations 19-1 and 19-3 (PDF pp. 1415,
@@ -240,7 +251,8 @@ base conditions the adjustments of Equations 20-16 and 20-17 are 0 (`P_HV` = 0, 
 
 **Before the first run:** the HCM 7 values were read 2026-11-12 (copy `74f4bc3`, page images
 read; cited above). Still open: the S1-d per-position headways of [Bonneson92] and [LiPrev02]
-(papers, not in the owner's book set); the S2-c reference table (the script, D529); U-c's effective `t_c`. The priority-line
+(papers, not in the owner's book set); U-c's effective `t_c`. The S2-c references are computed
+(D529, `multra-fctl-reference`). The priority-line
 counter exists (D528). Each open item has its own rows before it is used.
 
 ## 7. Owner questions (answer by letter, sitting B9)

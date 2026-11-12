@@ -14,6 +14,11 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   and that §3.2's residual term exceeds one slot at the S2-c settings, so it is not used; the
   residual is stated as a bound. S2-c's green and red become 16 slots each. The second paper is
   not one of S1-d's; the owner added it as S1-f ([M6 §3, §6](evidence/m6-benchmark-options.md)).
+- **Script:** `multra-fctl-reference` (`src/eval/fctl_reference.*`, group `fctl`, CLI rows
+  `cli-fctl-reference`, `cli-fctl-reference-refused`) reproduces Tables 1–2 and agrees with a
+  slot-by-slot simulation. `<complex>` is not in the engine's reviewed headers, so a small local
+  complex type is used. S2-c references in §6: 10.98, 13.49, 19.57 s/veh at `x` = 0.5, 0.7, 0.85.
+- **Verified on Linux:** desktop build and ctest 328/328.
 
 ## 2026-11-12 — The priority-line counter (D528)
 
