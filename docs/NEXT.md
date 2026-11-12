@@ -23,18 +23,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **Shipped projects (D337, D492):** all stay; [their README](../data/projects/README.md) names each
   one's purpose and builder. `macro-four-step` (D492) is the Macro example: run
   `--procedure four-step`; regenerate with `multra-macro-example data <file>` after any change to
-  the four-step codecs' written form. **Owner's look:** open it, run *Procedure*, check the Macro
-  links table and say whether the example's size and story suit a first-time user. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
-  that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
+  the four-step codecs' written form (owner's look: OWNER_SITTING B46). `four-leg-signalised`
+  carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
+  `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## Route tool: one origin, several destinations (D507), Ctrl+right preview (D508) — done; owner's look
+## Owner checks waiting from recent sessions
 
-- **Owner, on Windows:** press `R`, click a Link once, then click two or three destinations; check
-  the status hint and that each destination is one Undo. Esc ends the origin.
-- Hold `Ctrl`+right on a road and move: the green (origin) or red (destination) bar follows until
-  release. Check the thin end bars beside inputs, decisions and signal heads.
-- D509: the tint between the bars, its inset at the road edges, and the bars while only
-  hovering. D509b/D509c: the owner chose a yellow tint at 50 %, inset 0.6 m (D509d); check it on Windows.
+All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI
+review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
+(random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
@@ -57,8 +54,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     vehicle's `streamKey`/`ordinal` under `perInput` (choice 2; `w74` and red-running hashes in
     `src/core/`, rows in `inputstreams`), then the paired comparison (choice 3) on its own. All
     before the M6 runs (D505). A new project is `perInput` at schema 74; shipped projects stay
-    `shared` until a recorded decision regenerates them. **Owner's look:** *Run settings → Random
-    streams* on Windows, and the Compare page's refusal line for two mappings.
+    `shared` until a recorded decision regenerates them.
   - **Left from D495:** phase 1's per-vehicle loop in `stepSimulation`, about 150 lines, is still
     one body; split it only with a callgrind run before and after (it is the hot path).
   - **Unblocked (D505), not started:** analytic rows against HCM. The sources are chosen; a row
@@ -77,12 +73,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - Left from D502: milestone status statements ("M10.2 implemented") are still not checked against code;
     the user guide has no Thai edition and no pictures.
 
-## Tables like Excel (D490) — done; owner's look
+## Tables like Excel (D490) — done; owner's look is E35
 
 - Contract: [EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md).
-- **Owner, on Windows:** paste a Links block and a Results table into Excel; check the grid and
-  row header at 100 % and high DPI; open and fold a Results note; check the Tables layout's
-  height and the Thai group picker (D490a). Linux offscreen tests do not close that look.
 - **Left from the compactness review:** the Results tab strip still scrolls at 1024 in Thai, and
   the clamp note has no not-validated statement of its own (both predate D490).
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
@@ -90,9 +83,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 ## Optimisation pass of 2026-11-07 (D487–D489) — follow-ups only
 
-- Owner, on Windows: the Properties summary height (D463) and the Run/Pause button after D487. The
-  `run-presentation-ui` relayout guard also runs on Windows CI; a failure there only is a Windows
-  LayoutRequest source, not a flaky test.
+- Owner: C14. A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
+  source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
   cause is keys or sloppiness, not size.
 - The engine's next lever is the per-tick containers (spans, refs, events), not single copies
@@ -102,10 +94,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 - [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill answers and slices A–E; A–C and their
   fixes are D423–D426 and D460–D466. The junction median spikes stay (Q5).
-- **Stop for owner review** of [the images](images/), `docs/images/canvas-run-d465/` and
-  `docs/images/canvas-heads-d466/`, and of D427–D432 through OWNER_SITTING E33/E34
-  ([remediation evidence](evidence/ui-audit-fixes.md)). Slice D (lane arrows, white stop line)
-  starts only on the owner's go; Linux evidence does not close those looks.
+- **Stop for owner review:** C15 (slice C) and E33/E34 (D427–D432,
+  [remediation evidence](evidence/ui-audit-fixes.md)). Slice D (lane arrows, white stop line)
+  starts only on the owner's go.
 
 ## M13 — A9 implemented; stop for owner review
 
@@ -157,7 +148,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
 
 - Owner selected native object-table CSV export over the schema queue; packaged Windows checks are
-  [OWNER_SITTING G](plans/OWNER_SITTING.md#g--object-interchange). Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
+  [OWNER_SITTING G](plans/OWNER_SITTING_WINDOWS.md#g--object-interchange). Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
   for columns/units and nested JSON conventions before extending interchange. GeoJSON,
   imports/CRS mapping, recent-file/document workflow and measured rendering retain their scope.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
@@ -194,8 +185,7 @@ user roles) is open.
   [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14, [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md)
   §14–§16, [MODE_CHOICE](reference/MODE_CHOICE.md) §13, [NESTED_LOGIT](reference/NESTED_LOGIT.md),
   [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md). The M10 gate stays open (rule 8).
-- **Owner:** the Windows look at the pages and dialogs ([OWNER_SITTING](plans/OWNER_SITTING.md)
-  item 42, extended for E2, N1 and D4). Linux offscreen tests do not close that look.
+- **Owner:** OWNER_SITTING item 42.
 - **Later (M10.3):** whether the Furness target and cap become a document setting (open from D1).
 - **Next, the owner's pick:**
   - congested-cost feedback on top of procedures (the next slice the owner booked, D483 4a);
