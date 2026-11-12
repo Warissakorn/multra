@@ -85,12 +85,12 @@ bool EditorCanvas::demandPress(QMouseEvent* e) {
         if(routeStartPosition_ && routeEnd_ && target==routeDraft_.front() && routeEnd_->station<*routeStartPosition_) {
             reject();return true;
         }
-        // D506: a click back on the kept origin's line is not a zero-length destination.
+        // D507: a click back on the kept origin's line is not a zero-length destination.
         if(candidate.size()==1 && routeStartPosition_ && routeEnd_ &&
            std::abs(routeEnd_->station-*routeStartPosition_)*viewScale()<=10)return true;
         routeDraft_=std::move(candidate);routePreview_.clear();commitRouteDraft();return true;
     }
-    // D507: Ctrl+right press shows the bar where the release will place it; moving while held
+    // D508: Ctrl+right press shows the bar where the release will place it; moving while held
     // slides it, and the release is authoritative.
     routePress_=RoutePress{routeDraft_,routeStartPosition_};
     if(!applyRoutePress(e->pos())){routePress_.reset();reject();return true;}
@@ -142,10 +142,10 @@ bool EditorCanvas::isLink(const std::string& objectId) const {
 }
 bool EditorCanvas::demandHover(QMouseEvent* e) {
     if(tool_!=Tool::route && tool_!=Tool::input)return false;
-    if(routePress_){if(applyRoutePress(e->pos()))redraw();return true;} // D507: the held bar follows
+    if(routePress_){if(applyRoutePress(e->pos()))redraw();return true;} // D508: the held bar follows
     const auto pointer=world(e->pos(),false);
     const auto hovered=objectAt(pointer);
-    // D508: where on the hovered road the pointer is, for the bars that follow it.
+    // D509: where on the hovered road the pointer is, for the bars that follow it.
     const auto place=[&]{
         routeHover_.reset();
         if(tool_!=Tool::route || hovered.empty() || !hoverReachable_)return;
@@ -178,7 +178,7 @@ bool EditorCanvas::demandHover(QMouseEvent* e) {
     }
     place();
     if(routeTracing_ && !routeDraft_.empty() && hoverReachable_)updateRouteEnd(hovered,world(e->pos(),false));
-    else if(routeTracing_)routeEnd_.reset(); // a Ctrl+right draft keeps the end its release placed (D507)
+    else if(routeTracing_)routeEnd_.reset(); // a Ctrl+right draft keeps the end its release placed (D508)
     redraw();return true;
 }
 void EditorCanvas::updateRouteEnd(const std::string& target,Point pointer) {
@@ -186,7 +186,7 @@ void EditorCanvas::updateRouteEnd(const std::string& target,Point pointer) {
     const auto geometry=routeDestinationGeometry(document_->network,target);
     if(geometry.size()<2)return;
     routeEnd_=RouteDestination{target,stationOfClosestPoint(geometry,pointer)};
-    retintRoutePreview(); // D508: the bar and the tint's end move together
+    retintRoutePreview(); // D509: the bar and the tint's end move together
 }
 void EditorCanvas::commitRouteDraft() {
     if(routeDraft_.empty())return;
@@ -198,7 +198,7 @@ void EditorCanvas::commitRouteDraft() {
     if(routeDestinationCommitted)routeDestinationCommitted(segments,position,end);
     else if(positionedRouteCommitted)positionedRouteCommitted(segments,position);
     else if(routeDraftCommitted)routeDraftCommitted(segments);
-    // D506: a traced route keeps its origin, so the next click is another destination from the
+    // D507: a traced route keeps its origin, so the next click is another destination from the
     // same start (and the same routing decision). Restored after the commit, which replaced the
     // document and reset every gesture. Esc, or Backspace on the bare origin, ends it.
     if(tracing && document_ && !routeLaneChains(document_->network,{segments.front()}).empty()) {

@@ -5,49 +5,49 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-11 — Route marks: bright ends, violet tint between them, hover previews (D508)
+## 2026-11-11 — Route marks: bright ends, violet tint between them, hover previews (D509)
 
-- **D508a (follow-up):** owner: "บาร์ปลายทางยังมีกรอบสีขาวอยู่". The moving bars lost their Base
+- **D509a (follow-up):** owner: "บาร์ปลายทางยังมีกรอบสีขาวอยู่". The moving bars lost their Base
   casing too; no route end has a white frame now.
 
 - **Owner:** the destination bar should show while pointing; the tint should not look like the
   selection blue and should be inset like a conflict area; the tint past the destination is cut;
   the end colours were too dark (measured 1.0:1 on the road) and option 3 (brighter canvas tones)
   was chosen.
-- **D508:** `canvas_route_overlay.cpp` (moved out of `canvas_demand.cpp`) draws a route's violet
+- **D509:** `canvas_route_overlay.cpp` (moved out of `canvas_demand.cpp`) draws a route's violet
   tint between its green origin and red destination bars, inset 0.5 m (at most a fifth of the
   narrowest lane) from the road's outer edges once the Link/Connector seams are closed. Hover sets
   `routeHover_`: before a route starts a green bar shows the origin; with a draft the red bar and
   the tint's end follow the pointer, re-cut in place (`retintRoutePreview`) along one road. New
   tokens `routeStartHex`, `routeEndHex`, `routeTintHex`; the tint colour was my recommendation
   and is one token to change.
-- **Images:** `docs/images/route-tint-d508/` (hover origin, hover destination, stored route, the
-  inset at a Link/Connector join; `before.png` is D507's stored route).
+- **Images:** `docs/images/route-tint-d509/` (hover origin, hover destination, stored route, the
+  inset at a Link/Connector join; `before.png` is D508's stored route).
 - **Rows:** `station-routing-ui` hovers the origin and destination bars, checks their colours, that
   the tint item moves in place and stops at the hovered bar.
 
-## 2026-11-11 — Ctrl+right previews the route's ends; thin end bars (D507)
+## 2026-11-11 — Ctrl+right previews the route's ends; thin end bars (D508)
 
 - **Owner:** a correct preview of the origin and destination while Ctrl + the button is held, movable
   until release; and end bars shaped like the other canvas objects. Chose the inputs' thin bar and
   an origin at the release point.
-- **D507:** `EditorCanvas::applyRoutePress` re-applies a press snapshot on each move, so the green
+- **D508:** `EditorCanvas::applyRoutePress` re-applies a press snapshot on each move, so the green
   origin or red destination bar sits where the release will put it; `finishRoutePress` places it.
   An origin mid-Link opens or joins that Link's routing decision at the station (within 10 px of
   the start it stays a whole-Link route); a destination near its far end keeps the boundary marker.
   Route ends lose D435's width and casing, sit above a placed decision's bar, and a draft that is
   only its origin no longer shows a red bar at the origin's far end.
-- **Images:** `docs/images/route-press-d507/` (held origin, held destination, the stored route, and
+- **Images:** `docs/images/route-press-d508/` (held origin, held destination, the stored route, and
   the earlier wide ends for comparison).
 - **Rows:** `station-routing-ui` holds, slides and releases an origin and a destination and checks
   the stored station, destination and thin bar; `demand-ui` presses its whole-Link route at the
   Link's first metre.
 
-## 2026-11-11 — Pick the origin once, then several destinations (D506)
+## 2026-11-11 — Pick the origin once, then several destinations (D507)
 
 - **Owner:** "ต้องการให้เลือกต้นทางครั้งเดียว และเลือกปลายทางได้หลายอัน" (pick the origin once, then
   several destinations).
-- **D506:** after the Route tool saves a traced destination, `EditorCanvas::commitRouteDraft` keeps
+- **D507:** after the Route tool saves a traced destination, `EditorCanvas::commitRouteDraft` keeps
   the start object and station, so the next click is another destination from the same origin and
   joins the same routing decision. A click back on the origin's line does nothing; the same
   destination by the same roads is refused (`EDIT_ROUTE_DUPLICATE`, en/th); Esc or Backspace on the

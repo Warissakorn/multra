@@ -110,7 +110,7 @@ void trace(EditorCanvas& c) {
     move(c,to);QTest::keyClick(&c,Qt::Key_Backspace);
     require(c.routePreview()==std::vector<std::string>({start,a,upper,b}),"Backspace did not go back");
     click(c,to);require(commits==1 && saved==std::vector<std::string>({start,a,upper,b,end}),"Final click did not commit once");
-    // D506: the commit keeps only the origin, ready for another destination.
+    // D507: the commit keeps only the origin, ready for another destination.
     require(c.routeDraft()==std::vector<std::string>{start} && c.routePreview().empty(),"Commit did not keep just the origin");
     click(c,from);move(c,middle(c,d.network,upper));QTest::keyClick(&c,Qt::Key_Escape);
     require(commits==1 && c.routePreview().empty(),"Escape committed or retained preview");

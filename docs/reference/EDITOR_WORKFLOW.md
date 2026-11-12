@@ -126,10 +126,10 @@ Routes use an explicit trace gesture (D116, owner request):
 | Move over connected roads | Previews the actual path; passing a branch remembers that choice |
 | Move back onto an earlier route object | Trims the preview back to that object |
 | Click the destination road | Saves the complete preview as one undoable edit |
-| Click further destinations | The origin stays picked (D506): each click saves one more route from the same start, in the same routing decision |
+| Click further destinations | The origin stays picked (D507): each click saves one more route from the same start, in the same routing decision |
 | `Backspace` | Removes the last object from the trace; on the bare origin, ends it |
 | `Esc`, tool/level change or focus loss | Cancels without storing anything; after a destination, ends the kept origin |
-| `Ctrl`+right press, move, release | The earlier start/append gesture; `Enter` saves it. While the button is held, a bar shows where the origin or destination will be placed and follows the pointer; the release places it (D507) |
+| `Ctrl`+right press, move, release | The earlier start/append gesture; `Enter` saves it. While the button is held, a bar shows where the origin or destination will be placed and follows the pointer; the release places it (D508) |
 | `V`, then `Ctrl`+right-click a Link | Opens a vehicle input on that Link, with or without a route |
 | Right-click a stored route or input | Edit, delete, or show in its table |
 
@@ -141,11 +141,11 @@ An unreachable or equally ambiguous path is rejected. Pass over the desired inte
 branch to disambiguate it; the gesture does not guess a turn. Hover never mutates the document.
 Double-click adds no second commit. Other authoring tools retain D84's Ctrl+right gesture.
 
-Route start/end, vehicle inputs and signal heads share three-pixel cosmetic crossbars (D507: route
-ends no longer widen; D508a: no Base casing either, even on a bar that follows the pointer) with
+Route start/end, vehicle inputs and signal heads share three-pixel cosmetic crossbars (D508: route
+ends no longer widen; D509a: no Base casing either, even on a bar that follows the pointer) with
 wider hit regions. Bars intersect the road normal with the actual lane rails. Route ends use
-canvas-only tones (D508: green `#5BE39A`, red `#FF6B6B`, at least 2.4:1 on every shipped road
-colour), not the semantic text inks. A route's static violet surface tint (D508; not the accent,
+canvas-only tones (D509: green `#5BE39A`, red `#FF6B6B`, at least 2.4:1 on every shipped road
+colour), not the semantic text inks. A route's static violet surface tint (D509; not the accent,
 which means selection and hover) follows its compiled spans from the origin bar to the destination
 bar, inset from the road's outer edges as a conflict area is (0.5 m, at most a fifth of the
 narrowest lane); past the destination bar it is not drawn, although vehicles still drive on to the

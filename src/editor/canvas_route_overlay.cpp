@@ -1,5 +1,5 @@
-// A route's surface tint and its origin/destination bars, stored or previewed (D96, D435, D507,
-// D508). The tint lies between the two bars only, inset from the road edges as a conflict area
+// A route's surface tint and its origin/destination bars, stored or previewed (D96, D435, D508,
+// D509). The tint lies between the two bars only, inset from the road edges as a conflict area
 // is, in its own colour; a preview re-tints in place while the pointer moves along one road.
 #include "canvas.hpp"
 #include "canvas_style.hpp"
@@ -35,7 +35,7 @@ std::vector<Point> cutAtBar(const std::vector<Point>& chain,const RoadCrossbar& 
     out.push_back({cut->second.x(),cut->second.y()});
     return out;
 }
-// D508: like a conflict area's band, half a metre inside the painted rails, at most a fifth of a lane.
+// D509: like a conflict area's band, half a metre inside the painted rails, at most a fifth of a lane.
 double tintInset(const Network& n,const std::vector<std::string>& segments) {
     double narrowest=std::numeric_limits<double>::infinity();
     for(const auto& id:segments) {
@@ -126,22 +126,22 @@ void EditorCanvas::drawRouteOverlay(const std::vector<std::string>& segments,con
     }
     const auto endObject=destination?destination->objectId:segments.back();
     const auto endBar=objectCrossbar(n,endObject,true,destination?std::optional<double>(destination->station):std::nullopt);
-    // D508: the tint stops at the destination bar; vehicles still drive on to the road's end.
+    // D509: the tint stops at the destination bar; vehicles still drive on to the road's end.
     auto* overlay=scene_.addPath(tintPath(chains,roads,widestLane(n),destination?endBar:std::nullopt),QPen(Qt::NoPen),QBrush(canvasStyle::routeTint(preview)));
     overlay->setZValue(200004);overlay->setData(0,preview?QStringLiteral("route-draft"):QStringLiteral("route-overlay"));
     overlay->setData(1,QString::fromStdString(id));
     if(preview){previewTint_=overlay;previewChains_=std::move(chains);previewRoads_=roads;}
     const auto mark=[&](std::optional<RoadCrossbar> bar,bool end) {
         if(!bar || !levelVisible(bar->level))return;
-        // D435: origin green, destination red; D507: the inputs' thin bar; D508: canvas tones that
+        // D435: origin green, destination red; D508: the inputs' thin bar; D509: canvas tones that
         // read on every road, with no Base casing even while the bar moves (owner: no white frame).
         auto* line=new RoadCrossbarItem(*bar,end?canvasStyle::routeEnd():canvasStyle::routeStart(),viewScale());
-        scene_.addItem(line);line->setZValue(200008.5); // D507: above a placed decision's bar of the same width
+        scene_.addItem(line);line->setZValue(200008.5); // D508: above a placed decision's bar of the same width
         if(preview && end)previewRouteEnd_=line;
         line->setData(0,end?QStringLiteral("route-end"):QStringLiteral("route-start"));line->setData(1,QString::fromStdString(id));
     };
     mark(originBar(n,segments.front(),position),false);
-    // D507: a draft that is only its origin has no destination yet, so no red bar at its far end.
+    // D508: a draft that is only its origin has no destination yet, so no red bar at its far end.
     if(!preview || destination || segments.size()>1)mark(endBar,true);
 }
 // The preview follows the pointer along one road without a scene rebuild: the destination bar
@@ -157,7 +157,7 @@ void EditorCanvas::retintRoutePreview() {
     if(previewRouteEnd_ && bar)previewRouteEnd_->setLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y);
     previewTint_->setPath(tintPath(previewChains_,previewRoads_,widestLane(n),destination?bar:std::nullopt));
 }
-// D508: before a route starts, a green bar shows where a click or Ctrl+right release would put
+// D509: before a route starts, a green bar shows where a click or Ctrl+right release would put
 // the origin on the hovered road.
 std::optional<RoadCrossbar> EditorCanvas::hoverOriginBar() const {
     if(!document_ || !routeHover_)return std::nullopt;

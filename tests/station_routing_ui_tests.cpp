@@ -68,7 +68,7 @@ int main(int argc,char** argv) {
         }
         require(overlay,"Committed Route has no overlay");
         require(documentJson(w.history().document())["schemaVersion"]==30,"Destination not persisted in schema 30");
-        // D506: the origin is picked once; each further click is another destination from it.
+        // D507: the origin is picked once; each further click is another destination from it.
         require(canvas->routeDraft()==std::vector<std::string>({a}) && canvas->routeStartPosition()==at,
             "The origin was not kept after a destination");
         const auto kept=w.history().revision();click(canvas,{at,0});
@@ -85,13 +85,13 @@ int main(int argc,char** argv) {
         click(canvas,{at,0});QTest::keyClick(canvas,Qt::Key_Backspace);QApplication::processEvents();
         require(canvas->routeDraft().empty(),"Backspace on the bare origin did not end it");
         undo(w);require(decision(w).routes.size()==1,"Undo did not remove the second route atomically");
-        // D507: a held Ctrl+right press shows the bar where the release places it, and slides it.
+        // D508: a held Ctrl+right press shows the bar where the release places it, and slides it.
         const auto press=[&](Point p){QTest::mousePress(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
         const auto release=[&](Point p){QTest::mouseRelease(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
         const auto barX=[&](const char* kind){double x=-1;for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)
             if(auto* line=dynamic_cast<QGraphicsLineItem*>(item))x=line->line().center().x();return x;};
         const auto itemOf=[&](const char* kind)->QGraphicsItem*{for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)return item;return nullptr;};
-        // D508: before the press, the green bar already shows where the origin would go.
+        // D509: before the press, the green bar already shows where the origin would go.
         hover(canvas,{60,0});hover(canvas,{65,0});
         require(std::abs(barX("route-start")-65)<1,"Hovering a Link showed no origin bar at the pointer");
         require(static_cast<QGraphicsLineItem*>(itemOf("route-start"))->pen().color()==canvasStyle::routeStart(),"The origin bar is not the route green");
@@ -101,7 +101,7 @@ int main(int argc,char** argv) {
         hover(canvas,{80,0});require(std::abs(barX("route-start")-80)<1,"The held origin did not follow the pointer");
         // A Link holds one decision: releasing near its station joins it (snapped within 10 px).
         release({at+1,0});require(canvas->routeStartPosition()==at,"The release did not place and snap the origin");
-        // D508: hovering the destination road shows the red bar and the tint's end at the pointer,
+        // D509: hovering the destination road shows the red bar and the tint's end at the pointer,
         // moved in place along the road.
         hover(canvas,{150,50});auto* tint=itemOf("route-draft");hover(canvas,{160,50});
         require(std::abs(barX("route-end")-160)<1 && itemOf("route-draft")==tint,"The hovered destination bar did not follow in place");

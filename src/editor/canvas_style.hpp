@@ -16,7 +16,7 @@ inline QColor error() { return editorDesign::semantic(editorDesign::Semantic::er
 inline QColor warning() { return editorDesign::semantic(editorDesign::Semantic::warning); }
 inline QColor advisory() { return editorDesign::semantic(editorDesign::Semantic::advisory); }
 inline QColor ok() { return editorDesign::semantic(editorDesign::Semantic::ok); }
-// D508: a route's origin and destination bars and its surface tint (no QPalette role is free).
+// D509: a route's origin and destination bars and its surface tint (no QPalette role is free).
 inline QColor routeStart() { return QColor(editorDesign::routeStartHex); }
 inline QColor routeEnd() { return QColor(editorDesign::routeEndHex); }
 inline QColor routeTint(bool preview) { QColor c(editorDesign::routeTintHex); c.setAlpha(preview ? 70 : 100); return c; }

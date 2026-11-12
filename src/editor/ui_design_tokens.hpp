@@ -29,7 +29,7 @@ inline constexpr const char* errorHex="#B42318";
 inline constexpr const char* warningHex="#8A4B08";
 inline constexpr const char* advisoryHex="#0B6E8A";
 inline constexpr const char* okHex="#176B44";
-// D508: canvas-only route marks. The semantic ok/error inks are text colours and have the road's
+// D509: canvas-only route marks. The semantic ok/error inks are text colours and have the road's
 // luminance (contrast 1.0:1 on #5A5D61); these are at least 2.4:1 on every shipped road colour,
 // and the green is lighter than the red so the two ends differ without hue. The tint is violet:
 // not the accent (selection, hover), not either end.

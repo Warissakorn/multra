@@ -52,7 +52,7 @@ QPoint laneMiddle(EditorWindow& w,const std::string& linkId,const std::string& l
     }
     require(false,"Unknown lane");return {};
 }
-// A lane's first metre: a Ctrl+right press this close to a Link's start routes the whole Link (D507).
+// A lane's first metre: a Ctrl+right press this close to a Link's start routes the whole Link (D508).
 QPoint laneStart(EditorWindow& w,const std::string& linkId,const std::string& laneId) {
     const auto& n=w.history().document().network;
     for(const auto& link:n.links)if(link.id==linkId) {
