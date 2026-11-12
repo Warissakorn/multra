@@ -43,6 +43,7 @@ The other headers:
 | `object_tab.hpp` | `ObjectTab`: one object tab's table and the History revision its rows were built at; thirteen `EditorWindow` tabs hold one each (D520) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_context.hpp` | `ObjectTabContext`: what an object tab's panel needs from the window (document, revision, text, actions, History steps, refresh, show), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_panel.hpp` | `ObjectTabPanel`: the base of an object tab's panel (context, table and revision, its actions by key), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `link_types_panel.*` | `LinkTypesPanel`: the Link types object tab and its dialog; `linkTypeRowsOf` for the Link's type field (D521) | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md) |
 | `counters_panel.*` | `CountersPanel`: the Queue counters object tab, its dialog and the counter tool's commit (D521) | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |
 | `sections_panel.*` | `SectionsPanel`: the Travel-time sections object tab, its dialog and the section tool's commit (D521) | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) |
 | `speed_decisions_panel.*` | `SpeedDecisionsPanel`: the Speed decisions object tab and its dialog (D521) | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |

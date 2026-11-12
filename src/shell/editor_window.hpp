@@ -53,7 +53,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -298,9 +298,8 @@ private:
     ModesPanel* modes_{}; // its own panel (modes_panel.hpp, D521)
     std::vector<std::pair<std::string, QString>> modeChoices() const;
     // S2.4 (MACRO_NETWORK §20, D277), editor_link_types.cpp: the Link types tab and the Link's type field.
-    ObjectTab linkTypeTab_; QComboBox* linkType_{}; QLineEdit* linkSpeed_{};
-    void buildLinkTypes(); void translateLinkTypes(); void refreshLinkTypes(); void editLinkType(const std::string& id);
-    std::string selectedLinkType() const; void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
+    LinkTypesPanel* linkTypes_{}; QComboBox* linkType_{}; QLineEdit* linkSpeed_{}; // the tab is its own panel (D521)
+    void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
     // S2.4, editor_macro.cpp: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.
     std::unique_ptr<MacroPanel> macro_;
     void buildMacro(QToolBar*, QVBoxLayout*); void refreshMacro(); void startMacro(const std::string& period, const std::string& definitionId = {}); void discardMacro();
