@@ -10,6 +10,7 @@
 #include "../src/project/evaluation_period.hpp"
 #include "../src/project/random_streams_codec.hpp"
 #include "../src/project/run.hpp"
+#include <algorithm>
 #include <fstream>
 #include <nlohmann/json.hpp>
 using namespace multra;
@@ -27,6 +28,8 @@ Batch batch(RandomStreams streams) {
     auto snapshot = compileDocument(d, data);
     // A short run: the rows only need the mapping, not a full hour.
     snapshot.scenario.duration = 120;
+    std::erase_if(snapshot.scenario.inputs, [](const VehicleInput& i) { return i.startTime >= 120; });
+    for (auto& i : snapshot.scenario.inputs) i.endTime = std::min(i.endTime, 120.0);
     auto spec = evaluationSpec(d, snapshot, data); spec.warmup = 0; spec.end = std::nullopt; spec.cooldown = std::nullopt;
     Batch b{snapshot.scenario, runSeeds(snapshot.scenario, spec, {42, 43}), {}};
     b.report = aggregate(b.runs);

@@ -2,6 +2,34 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-10 — A shipped example that shows LOS and the HCM table (D500)
+
+- **Owner:** chose a new example over changing `four-leg-signalised` (UI review, D497–D499 round).
+- **D500:** `signalised-node-analysis.traffic.json`, built by `tools/node_example_network.hpp`
+  (`multra-node-example`) the way the editor builds a junction today: two Street segments, Find
+  crossings, the installed template `signal-4-p3-shared` with NEMA timing, and Fill. It carries
+  one routeless input and one placed routing decision per approach, one signalised travel-time
+  section per movement (12), turning counts on the Node equal to the inputs, and an evaluation
+  window of 300–1200 s that is also the analysis period (0.25 h).
+- **What it shows:** *Analyse* gives the HCM 7 Ch. 19 table (8 lane groups, every one below
+  capacity); *Run seeds* gives section, approach and intersection letters. Both stay session
+  results and keep the not-validated marker; every number is an illustration, not a count.
+- **Found, not fixed (queued in NEXT):** with `signal-4-p3-major-far-pockets`, a placed routing
+  decision's far-turn destination gets no path, although one exists lane by lane (the taper
+  Connector's second lane path enters the pocket, and the turn leaves it) and `placedDecisions`
+  lists both object chains. The destination is dropped with no issue and the other destinations
+  take its share: 0 of an expected 30 far-turn vehicles in the window, while an explicit route
+  over the same objects carried 29. Cause not yet found. The example therefore uses the template
+  without pockets, and a test row pins that none of its destinations is dropped.
+- **Changed from the approved plan:** the counts are typed on the Node, not *Fill from model*.
+  A filled analysis stores SHA-256 of the project and of every installed catalog file read, so
+  the committed example would fail its builder test on any catalog edit.
+- **Tests:** `nodeexample` (3 rows, the first two failed before the file existed),
+  `cli-node-example`, a row in `example-menu-ui` (open, Analyse, 8 + 4 rows, the Node level
+  shown); `studyperiods` counts eight projects.
+- **Verified:** Linux, GCC 13.3: desktop ctest and headless `check`. Windows is the owner's (B45). Images:
+  [HCM table](../images/node-example-d500/hcm-table.png), [LOS after five seeds](../images/node-example-d500/los-sections.png).
+
 ## 2026-11-10 — UI review: Results by level, Open example, crossing rows, the batch band (D497–D499)
 
 - **Owner:** chose four of the UI review's five proposals; the fifth (an example that shows LOS and

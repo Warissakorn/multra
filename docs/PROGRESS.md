@@ -5,6 +5,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — Random streams per input in the project (D510); NEXT and OWNER_SITTING slimmed
+
+- **D510 (INPUT_STREAMS §8 slice 3):** `definition.randomStreams` at schema 74
+  (`random_streams_codec.*`), written only as `perInput`, so a file that keeps the single stream
+  keeps its version and bytes; older files naming the key are refused. `newProjectDocument` sets
+  `perInput` (D505 1 b); shipped projects are not regenerated. *Run settings → Random streams*
+  lists `shared`/`perInput`, one Undo step. The mapping rides on `MovementReport`, so run, batch and
+  comparison JSON/CSV state `perInput` (nothing under `shared`, IS1), `aggregate` refuses mixed
+  runs, `compareBatches` mixed batches, and `requireSameRandomStreams` two projects before any run
+  (CLI `--compare`, desktop Compare page, new locale key `editorCompareStreams`).
+- **Rows:** `inputstreamsproject` (codec, schema floor, Undo, IS8 output and refusals, each output
+  row forced by first asserting the two batches ran different mappings) and a Run settings step in
+  `study-period-ui`. `cooldown`'s new-project schema expectation moves 27 → 74.
+- **Docs pass (optimize-program, docs dimension):** NEXT held 32 lines of shipped work against its
+  own rule (D319) and owner checks that OWNER_SITTING lacked. Finished slices are one-line pointers;
+  OWNER_SITTING split at its 500-line limit (sections C–I to `plans/OWNER_SITTING_WINDOWS.md`,
+  item names unchanged) and gained B46, C14–C16, E35, E36; the container build note moved to
+  BUILDING. NEXT ≈6,400 → ≈4,450 tokens (chars ÷ 4), 349 → 250 lines.
+- **Verified on Linux:** desktop build, `check` (321/321, docs, file sizes, architecture), and the
+  real CLI: a `perInput` copy of the T-junction writes `"randomStreams": "perInput"`, the shipped
+  file writes none, and `--compare` between them is refused. Headless not rebuilt this session.
+
 ## 2026-11-11 — Route marks: bright ends, a tint between them, hover previews (D509)
 
 - **D509d (follow-up, 2026-11-12):** owner: "เปลี่ยนระยะ offset เป็น 0.6m". The tint's inset is
@@ -191,31 +213,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   A decision's destination that needs a lane change on a later Link with no fan-out is still not
   served; it is now named instead of dropped.
 - **Verified:** Linux, GCC 13.3: desktop ctest and headless `check`.
-
-## 2026-11-10 — A shipped example that shows LOS and the HCM table (D500)
-
-- **Owner:** chose a new example over changing `four-leg-signalised` (UI review, D497–D499 round).
-- **D500:** `signalised-node-analysis.traffic.json`, built by `tools/node_example_network.hpp`
-  (`multra-node-example`) the way the editor builds a junction today: two Street segments, Find
-  crossings, the installed template `signal-4-p3-shared` with NEMA timing, and Fill. It carries
-  one routeless input and one placed routing decision per approach, one signalised travel-time
-  section per movement (12), turning counts on the Node equal to the inputs, and an evaluation
-  window of 300–1200 s that is also the analysis period (0.25 h).
-- **What it shows:** *Analyse* gives the HCM 7 Ch. 19 table (8 lane groups, every one below
-  capacity); *Run seeds* gives section, approach and intersection letters. Both stay session
-  results and keep the not-validated marker; every number is an illustration, not a count.
-- **Found, not fixed (queued in NEXT):** with `signal-4-p3-major-far-pockets`, a placed routing
-  decision's far-turn destination gets no path, although one exists lane by lane (the taper
-  Connector's second lane path enters the pocket, and the turn leaves it) and `placedDecisions`
-  lists both object chains. The destination is dropped with no issue and the other destinations
-  take its share: 0 of an expected 30 far-turn vehicles in the window, while an explicit route
-  over the same objects carried 29. Cause not yet found. The example therefore uses the template
-  without pockets, and a test row pins that none of its destinations is dropped.
-- **Changed from the approved plan:** the counts are typed on the Node, not *Fill from model*.
-  A filled analysis stores SHA-256 of the project and of every installed catalog file read, so
-  the committed example would fail its builder test on any catalog edit.
-- **Tests:** `nodeexample` (3 rows, the first two failed before the file existed),
-  `cli-node-example`, a row in `example-menu-ui` (open, Analyse, 8 + 4 rows, the Node level
-  shown); `studyperiods` counts eight projects.
-- **Verified:** Linux, GCC 13.3: desktop ctest and headless `check`. Windows is the owner's (B45). Images:
-  [HCM table](images/node-example-d500/hcm-table.png), [LOS after five seeds](images/node-example-d500/los-sections.png).
