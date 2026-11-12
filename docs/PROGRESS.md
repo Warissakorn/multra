@@ -5,14 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-12 — M6 tolerance set (D516); `EditorWindow` step 2, `RunSession` (D517)
+## 2026-11-12 — M6 tolerance set (D516); `EditorWindow` steps 2–3, `RunSession` and `RecoverySession` (D517, D518)
 
 - **D516:** owner answered B47 with (a): S1 ±5 %, S2 ±15 %, U ±15 % of the reference, on the mean
   over seeds 42–81, CI shown beside it; U's `gapTime = t_c − τ` confirmed. Recorded in the option
   sheet's §6, ROADMAP M6.0 and OWNER_SITTING. No run made, no gate closed.
 - **D517:** the single run's state is `RunSession` (`editor_run_state.hpp`); the three run getters
   moved out of line; header 488 → 469 lines; no behaviour change.
-- **Verified on Linux:** desktop build, ctest 321/321, `check`.
+- **D518:** recovery/autosave state is `RecoverySession` (`editor_recovery_state.hpp`); header
+  469 → 466 lines; no behaviour change.
+- **Verified on Linux:** desktop build, ctest 321/321, `check` (after each of D517 and D518).
 
 ## 2026-11-12 — D505's approved items: streams slice 4, pocket example, EditorWindow step 1, M6 §6 (D512–D515)
 

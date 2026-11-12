@@ -4,6 +4,7 @@
 #include "editor_interaction.hpp"
 #include "table_layout.hpp"
 #include "editor_window.hpp"
+#include "editor_recovery_state.hpp"
 #include "editor_run_state.hpp"
 #include "editor_batch_state.hpp"
 #include "folded_note.hpp"
@@ -343,7 +344,7 @@ std::string EditorWindow::singleRunCsv() const {
 }
 void EditorWindow::exportResults(const QString& file) const {
     const bool analytical=resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabNodeAnalysis");
-    checkExportDestination(file,{file_,recoveryFile_},analytical?"EDIT_ANALYSIS_EXPORT_PROTECTED":"EDIT_EXPORT_PROJECT");
+    checkExportDestination(file,{file_,recoverySession_->file},analytical?"EDIT_ANALYSIS_EXPORT_PROTECTED":"EDIT_EXPORT_PROJECT");
     writeEditorBytes(file,resultsCsv(),"EDIT_CSV_WRITE");
 }
 void EditorWindow::copyResults() const {

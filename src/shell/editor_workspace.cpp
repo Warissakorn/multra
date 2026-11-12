@@ -1,6 +1,7 @@
 #include <QTimer>
 #include <algorithm>
 #include "editor_window.hpp"
+#include "editor_recovery_state.hpp"
 #include "object_export.hpp"
 #include "example_menu.hpp"
 #include "recent_files.hpp"
@@ -82,7 +83,7 @@ namespace multra {
 void EditorWindow::buildWorkspace() {
     buildAutomationActions();
     action("editorExportImage",{},[this]{
-        try{exportNetworkImageDialog(this,*canvas_,[this](const char* key){return text(key);},{file_,recoveryFile_});}
+        try{exportNetworkImageDialog(this,*canvas_,[this](const char* key){return text(key);},{file_,recoverySession_->file});}
         catch(const std::exception& error){showError(error);}
     });
     action("editorVehicleColors",{},[this]{
@@ -154,13 +155,13 @@ void EditorWindow::buildWorkspace() {
         {"editorExportConnectors",ObjectTable::connectors},{"editorExportInputs",ObjectTable::inputs},
         {"editorExportRoutes",ObjectTable::routes},{"editorExportDecisions",ObjectTable::decisions}}) {
         exports->addAction(action(key,{},[this,table]{
-            try {exportObjectTableDialog(this,history_.document(),table,[this](const char* name){return text(name);},{file_,recoveryFile_});}
+            try {exportObjectTableDialog(this,history_.document(),table,[this](const char* name){return text(name);},{file_,recoverySession_->file});}
             catch(const std::exception& error){showError(error);}
         }));
     }
     // UTDF U2b (UTDF_EXPORT §7): report first, then the file; the document is only read.
     findChild<QMenu*>("editorFileMenu")->addAction(action("editorExportUtdf",{},[this]{
-        try {exportUtdfDialog(this,history_.document(),[this](const char* name){return text(name);},{file_,recoveryFile_});}
+        try {exportUtdfDialog(this,history_.document(),[this](const char* name){return text(name);},{file_,recoverySession_->file});}
         catch(const std::exception& error){showError(error);}
     }));
     menu("editorEditMenu",{"editorUndo","editorRedo","","editorRotate","editorDeleteVertex","editorDeleteLink","editorDeleteSelected"});

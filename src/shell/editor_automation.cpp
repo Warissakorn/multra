@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_recovery_state.hpp"
 #include "editor_run_state.hpp"
 #include "message_label.hpp"
 #include "automation_error.hpp"
@@ -244,7 +245,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                     throw CommandError("INVALID_PARAMS","Explicit export supports report: movements",{{"path","params.report"}});
                 checkAutomationRunId(params,true);
                 if(!runFinished())throw CommandError("RUN_NOT_FINISHED","Only a completed single run can be exported");
-                checkExportDestination(path,{file_,recoveryFile_},"EDIT_EXPORT_PROJECT");
+                checkExportDestination(path,{file_,recoverySession_->file},"EDIT_EXPORT_PROJECT");
                 writeEditorBytes(path,singleRunCsv(),"EDIT_CSV_WRITE");
                 result={{"path",path},{"report","movements"},{"source","single"},{"run",automationRunState()},{"validated",false}};
             } else exportResults(path);
@@ -261,7 +262,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
             if(!ids.empty())canvas_->frame(ids.front());
         } else if(command=="view.screenshot") {
             const auto path=requiredString(params,"path");
-            checkExportDestination(path,{file_,recoveryFile_},"EDIT_EXPORT_PROJECT");
+            checkExportDestination(path,{file_,recoverySession_->file},"EDIT_EXPORT_PROJECT");
             QSaveFile file(path);file.setDirectWriteFallback(false);
             if(!file.open(QIODevice::WriteOnly) || !grab().save(&file,"PNG") || !file.commit())
                 throw CommandError("SCREENSHOT_WRITE_FAILED","Could not atomically write PNG screenshot");

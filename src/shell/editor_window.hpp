@@ -52,15 +52,15 @@ namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 class AutomationServer;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
     ~EditorWindow() override;
     void autosaveNow();
     void recoverFile(const QString&);
-    QString recoveryPath() const { return recoveryFile_; }
-    bool autosaveActive() const { return autosaveTimer_.isActive(); }
+    QString recoveryPath() const;
+    bool autosaveActive() const;
     const History& history() const { return history_; }
     EditorCanvas* canvas() const { return canvas_; }
     // D165: Simulation > Behaviour Lab; opens (or raises) the lab window. Null until first opened.
@@ -128,13 +128,10 @@ private:
     void createLinkDialog(const std::vector<Point>&);
     void createRangeDialog(LaneReference,LaneReference,const std::vector<Point>&);
     bool deferRecovery_{};
-    QString recoveryDirectory_, recoveryFile_;
+    std::unique_ptr<RecoverySession> recoverySession_; // recovery and autosave state (editor_recovery_state.hpp, D518)
     QJsonArray recoveryEntries() const;
     QString recoveryCandidate(const QString& id) const;
     void discardRecovery(const QString& id);
-    std::unique_ptr<QLockFile> recoveryLock_;
-    QTimer autosaveTimer_;
-    std::optional<std::uint64_t> autosavedRevision_;
     void buildRecovery();
     void startAutosave();
     void clearRecovery();

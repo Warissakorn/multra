@@ -1,5 +1,6 @@
 #include "recent_files.hpp"
 #include "editor_window.hpp"
+#include "editor_recovery_state.hpp"
 #include "message_label.hpp"
 #include "editor_storage.hpp"
 #include "../project/evaluation_period.hpp"
@@ -37,7 +38,7 @@ void EditorWindow::openFileOrReport(const QString& file) {
     try { openFile(file); rememberRecentFile(file); } catch (const std::exception& e) { showError(e); }
 }
 void EditorWindow::saveFile(const QString& file) {
-    if(file==recoveryFile_)throw std::runtime_error("EDIT_FILE_WRITE");
+    if(file==recoverySession_->file)throw std::runtime_error("EDIT_FILE_WRITE");
     validateDocument(history_.document());
     writeEditorDocument(file,documentJson(history_.document()));
     // S5.5a (D331): a new path has its own side files (none are copied; they would be stale by hash).
