@@ -293,7 +293,7 @@ test decides. `t_f` is measured, not set:
 the mean front-to-front time between queued minor vehicles leaving the Stop line, measured by the
 priority-line counter (`--priority-lines`, D528, [PRIORITY_LINES](../reference/PRIORITY_LINES.md),
 rows PL1–PL6), which also counts the minor movement's vehicles per hour and the major entries
-(`v_c`, counted, not assumed). U-c's effective `t_c` still needs its own method. U-c
+(`v_c`, counted, not assumed). U-c's effective `t_c` is Siegloch's regression over saturated major gaps (D534, [PRIORITY_LINES](../reference/PRIORITY_LINES.md) §5, [TFT8] §8.2.2 read from the page images): `t_c = t_0 + t_f/2`. U-c
 uses the measured effective `t_c` and `t_f`; U-a uses the HCM 7 Ch. 20 base values, **read
 2026-11-12**: right turn from the minor street, two-lane major, `t_c,base` = **6.2 s** (Exhibit
 20-17, PDF p. 1616) and `t_f,base` = **3.3 s** (Exhibit 20-18, PDF p. 1617), table images read; at
@@ -306,7 +306,7 @@ base conditions the adjustments of Equations 20-16 and 20-17 are 0 (`P_HV` = 0, 
 | `c_p` (veh/h) | 846.1 | 654.3 | 504.6 | 388.1 | 297.7 |
 
 **Before the first run:** the HCM 7 values were read 2026-11-12 (copy `74f4bc3`, page images
-read; cited above). S1-d's references are read ([Bonneson92], D532; [LeeChen86], D533). Still open: U-c's effective `t_c`. The S2-c references are computed
+read; cited above). S1-d's references are read ([Bonneson92], D532; [LeeChen86], D533). U-c's effective `t_c` method is chosen (D534). The S2-c references are computed
 (D529, `multra-fctl-reference`). The priority-line
 counter exists (D528). Each open item has its own rows before it is used.
 
