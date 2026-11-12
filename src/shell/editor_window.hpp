@@ -53,7 +53,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -263,15 +263,9 @@ private:
     void editSection(const std::string& id);
     std::string selectedSection() const;
     // B-6 (D223), src/shell/editor_speed_decisions.cpp: the Speed decisions tab and its dialog.
-    ObjectTab speedDecisionTab_;
-    void buildSpeedDecisions(); void translateSpeedDecisions(); void refreshSpeedDecisions();
-    void editSpeedDecision(const std::string& id, const std::string& linkId); // new on linkId when id is empty
-    std::string selectedSpeedDecision() const;
+    SpeedDecisionsPanel* speedDecisions_{}; // its own panel (speed_decisions_panel.hpp, D521)
     // B-6 §7 (D225): the reduced-speed areas tab, same pattern.
-    ObjectTab speedAreaTab_;
-    void buildSpeedAreas(); void translateSpeedAreas(); void refreshSpeedAreas();
-    void editSpeedArea(const std::string& id, const std::string& linkId); // new on linkId when id is empty
-    std::string selectedSpeedArea() const;
+    SpeedAreasPanel* speedAreas_{}; // its own panel (speed_areas_panel.hpp, D521)
     // M8.6a (D161): the Zones tab -- zones, the selected zone's connectors, and their dialogs.
     ObjectTab zoneTab_; QTableWidget* zoneConnectorTable_{};
     std::string zoneConnectorsOf_;

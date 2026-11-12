@@ -19,8 +19,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D520:** the thirteen object tabs' table/revision pairs are one `ObjectTab` each
   (`object_tab.hpp`); header 460 → 455 lines; no behaviour change.
 - **D521:** object tabs become panels with an `ObjectTabContext`; Study periods
-  (`StudyPeriodsPanel`), then Modes (`ModesPanel`) and OD
-  matrices (`OdPanel`).
+  (`StudyPeriodsPanel`), then Modes (`ModesPanel`) OD
+  matrices (`OdPanel`), speed decisions and reduced-speed areas (on the `ObjectTabPanel` base).
 - **Verified on Linux:** desktop build, ctest 321/321, `check` (after each of D517–D521).
 
 ## 2026-11-12 — D505's approved items: streams slice 4, pocket example, EditorWindow step 1, M6 §6 (D512–D515)

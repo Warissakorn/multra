@@ -2,6 +2,8 @@
 #include "../project/document.hpp"
 #include <QString>
 #include <cstdint>
+#include <exception>
+#include <vector>
 #include <filesystem>
 #include <functional>
 #include <string>
@@ -23,5 +25,7 @@ struct ObjectTabContext {
     std::function<void()> selectionChanged; // the window's refresh(false)
     std::function<void(QWidget*)> show;     // brings this page forward in the object tabs
     std::filesystem::path data;             // the installed catalogs
+    std::function<const std::vector<std::string>&()> selection; // the canvas selection
+    std::function<void(const std::exception&)> showError;          // the window's translated error
 };
 }

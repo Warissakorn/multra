@@ -25,7 +25,7 @@ replaced atomically (`QSaveFile`).
 | Files and recovery | `editor_files.cpp`, `editor_recovery.cpp` (state: `RecoverySession` in `editor_recovery_state.hpp`, D518), `editor_side_files.cpp`, `editor_storage.cpp` |
 | Drawing | `editor_creation.cpp`, `editor_connectors.cpp`, `editor_rotation.cpp`, `editor_cross_sections.cpp`, `editor_link_types.cpp`, `editor_appearance.cpp`, `editor_diagnostics.cpp` |
 | Control | `editor_priority.cpp`, `editor_control.cpp`, `editor_signal.cpp` |
-| Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp` (the window's period choices; the tab is `study_periods_panel.*`), `editor_speed_areas.cpp`, `editor_speed_decisions.cpp`, `editor_behaviour.cpp`, `editor_zones.cpp` (Zones tab), `editor_od.cpp` (compositions and the lot dialog; the OD tab is `od_panel.*`) |
+| Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp` (the window's period choices; the tab is `study_periods_panel.*`),  `editor_behaviour.cpp`, `editor_zones.cpp` (Zones tab), `editor_od.cpp` (compositions and the lot dialog; the OD tab is `od_panel.*`) |
 | Street segments and Nodes | `editor_street_segments.cpp`, `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp`, `editor_nodes.cpp` |
 | Evaluation objects | `editor_counters.cpp`, `editor_sections.cpp` |
 | Runs and Results | `editor_run.cpp` (Run/Pause/Step/Reset, seed, speed; its state is `RunSession` in `editor_run_state.hpp`, D517), `editor_batch.cpp` (N seeds on one worker thread; its state is `BatchSession` in `editor_batch_state.hpp`, D514), `editor_compare.cpp` (the open project against a chosen file), `editor_macro.cpp`, `editor_meso.cpp`, `editor_results.cpp`, `editor_results_nodes.cpp` |
@@ -42,6 +42,9 @@ The other headers:
 | `editor_automation_state.hpp` | `AutomationHost`: the automation server, endpoint, document session id and quit-handshake flags, held by `EditorWindow` (D519) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `object_tab.hpp` | `ObjectTab`: one object tab's table and the History revision its rows were built at; thirteen `EditorWindow` tabs hold one each (D520) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_context.hpp` | `ObjectTabContext`: what an object tab's panel needs from the window (document, revision, text, actions, History steps, refresh, show), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `object_tab_panel.hpp` | `ObjectTabPanel`: the base of an object tab's panel (context, table and revision, its actions by key), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `speed_decisions_panel.*` | `SpeedDecisionsPanel`: the Speed decisions object tab and its dialog (D521) | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |
+| `speed_areas_panel.*` | `SpeedAreasPanel`: the Reduced-speed areas object tab and its dialog (D521) | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |
 | `od_panel.*` | `OdPanel`: the OD matrices object tab and its dialog (D521) | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
 | `modes_panel.*` | `ModesPanel`: the Modes object tab and its dialog; `modeChoicesOf` for the OD dialog (D521) | [STUDY_PERIODS](../../docs/reference/STUDY_PERIODS.md) |
 | `study_periods_panel.*` | `StudyPeriodsPanel`: the Study periods object tab and its dialog; `studyPeriodChoices` for the OD and gate-flow dialogs (D521) | [STUDY_PERIODS](../../docs/reference/STUDY_PERIODS.md) |

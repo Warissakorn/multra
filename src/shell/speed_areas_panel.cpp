@@ -1,5 +1,5 @@
 #include "table_layout.hpp"
-#include "editor_window.hpp"
+#include "speed_areas_panel.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/demand_commands.hpp"
 #include "../project/demand_catalog.hpp"
@@ -22,7 +22,7 @@
 
 // B-6 §7 (docs/reference/SPEED_DECISIONS.md §7.4, D225): the Reduced-speed areas tab, the pattern of
 // editor_speed_decisions.cpp. Add places one on the selected Link through a dialog (stretch, optional
-// deceleration, lanes, one min/max row per vehicle type); each edit goes through execute(), so each
+// deceleration, lanes, one min/max row per vehicle type); each edit goes through context_.execute(), so each
 // is one Undo step and invalidates the run.
 namespace multra {
 namespace {
@@ -37,51 +37,49 @@ QString speeds(const ReducedSpeedAreaSpec& a) {
     return parts.join(", ");
 }
 }
-void EditorWindow::buildSpeedAreas() {
-    auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
+SpeedAreasPanel::SpeedAreasPanel(QWidget* parent, ObjectTabContext context) : ObjectTabPanel(parent, std::move(context)) {
+    auto* body = this; auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    speedAreaTab_.table = new QTableWidget(0, 4, body); speedAreaTab_.table->setObjectName("editorReducedSpeedAreaTable");
-    speedAreaTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    speedAreaTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    speedAreaTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
-    speedAreaTab_.table->horizontalHeader()->setStretchLastSection(true); speedAreaTab_.table->verticalHeader()->hide();
-    layout->addWidget(speedAreaTab_.table);
-    addObjectPage(body, "editorReducedSpeedAreaTable");
-    bar->addAction(action("editorAddReducedSpeedArea", {}, [this] {
-        const auto& selection = canvas_->selection();
-        if (selection.size() == 1 && findLink(history_.document().network, selection.front())) editSpeedArea({}, selection.front());
+    tab_.table = new QTableWidget(0, 4, body); tab_.table->setObjectName("editorReducedSpeedAreaTable");
+    tab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    tab_.table->horizontalHeader()->setStretchLastSection(true); tab_.table->verticalHeader()->hide();
+    layout->addWidget(tab_.table);
+    bar->addAction(action("editorAddReducedSpeedArea", [this] {
+        const auto& selection = context_.selection();
+        if (selection.size() == 1 && findLink(context_.document().network, selection.front())) edit({}, selection.front());
     }));
-    bar->addAction(action("editorEditReducedSpeedArea", {}, [this] {
-        const auto id = selectedSpeedArea(); if (!id.empty()) editSpeedArea(id, {}); }));
-    bar->addAction(action("editorDeleteReducedSpeedArea", {}, [this] {
-        const auto id = selectedSpeedArea(); if (id.empty()) return;
-        execute("editorDeleteReducedSpeedArea", [&](auto& d) { deleteReducedSpeedArea(d, id); });
+    bar->addAction(action("editorEditReducedSpeedArea", [this] {
+        const auto id = selected(); if (!id.empty()) edit(id, {}); }));
+    bar->addAction(action("editorDeleteReducedSpeedArea", [this] {
+        const auto id = selected(); if (id.empty()) return;
+        context_.execute("editorDeleteReducedSpeedArea", [&](auto& d) { deleteReducedSpeedArea(d, id); });
     }));
-    connect(speedAreaTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
-        const auto id = selectedSpeedArea(); if (!id.empty()) editSpeedArea(id, {}); });
-    connect(speedAreaTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+        const auto id = selected(); if (!id.empty()) edit(id, {}); });
+    connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
 }
-void EditorWindow::translateSpeedAreas() {
-    speedAreaTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"),
+void SpeedAreasPanel::translate() {
+    tab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"),
                                                 text("editorReducedSpeedAreaPlace"), text("editorSpeedDecisionSpeeds")});
-    speedAreaTab_.invalidate();
+    tab_.invalidate();
 }
-std::string EditorWindow::selectedSpeedArea() const {
-    const auto* cell = speedAreaTab_.table ? speedAreaTab_.table->item(speedAreaTab_.table->currentRow(), 0) : nullptr;
-    return cell && !speedAreaTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+std::string SpeedAreasPanel::selected() const {
+    const auto* cell = tab_.table->item(tab_.table->currentRow(), 0);
+    return cell && !tab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
-void EditorWindow::refreshSpeedAreas() {
-    if (!speedAreaTab_.table) return;
-    const auto& d = history_.document();
+void SpeedAreasPanel::refresh() {
+    const auto& d = context_.document();
     static const std::vector<ReducedSpeedAreaSpec> none;
     const auto& areas = d.definition ? d.definition->reducedSpeedAreas : none;
-    const auto keep = selectedSpeedArea();
-    if (speedAreaTab_.revision != history_.revision() || speedAreaTab_.table->rowCount() != static_cast<int>(areas.size())) {
-        speedAreaTab_.revision = history_.revision();
-        const QSignalBlocker block(speedAreaTab_.table);
-        speedAreaTab_.table->setRowCount(static_cast<int>(areas.size()));
-        for (int r = 0; r < speedAreaTab_.table->rowCount(); ++r) {
+    const auto keep = selected();
+    if (tab_.revision != context_.revision() || tab_.table->rowCount() != static_cast<int>(areas.size())) {
+        tab_.revision = context_.revision();
+        const QSignalBlocker block(tab_.table);
+        tab_.table->setRowCount(static_cast<int>(areas.size()));
+        for (int r = 0; r < tab_.table->rowCount(); ++r) {
             const auto& a = areas[static_cast<std::size_t>(r)];
             const auto* link = findLink(d.network, a.linkId);
             const auto linkName = !link || link->name.empty() ? a.linkId : link->name;
@@ -96,19 +94,19 @@ void EditorWindow::refreshSpeedAreas() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(a.id));
                 if (col == 0 || col >= 2) editorDesign::setNumericText(cell, col >= 2);
-                speedAreaTab_.table->setItem(r, col, cell);
+                tab_.table->setItem(r, col, cell);
             }
-            if (a.id == keep) speedAreaTab_.table->selectRow(r);
+            if (a.id == keep) tab_.table->selectRow(r);
         }
-        fitTableColumns(speedAreaTab_.table);
+        fitTableColumns(tab_.table);
     }
-    const auto& selection = canvas_->selection();
+    const auto& selection = context_.selection();
     actions_.at("editorAddReducedSpeedArea")->setEnabled(selection.size() == 1 && findLink(d.network, selection.front()));
-    const bool chosen = !selectedSpeedArea().empty();
+    const bool chosen = !selected().empty();
     for (const auto* key : {"editorEditReducedSpeedArea", "editorDeleteReducedSpeedArea"}) actions_.at(key)->setEnabled(chosen);
 }
-void EditorWindow::editSpeedArea(const std::string& id, const std::string& linkId) {
-    const auto& document = history_.document();
+void SpeedAreasPanel::edit(const std::string& id, const std::string& linkId) {
+    const auto& document = context_.document();
     ReducedSpeedAreaSpec edited{{}, {}, linkId, 0, 0, {}, {}, {}};
     if (!id.empty()) {
         const auto& all = document.definition->reducedSpeedAreas;
@@ -121,8 +119,8 @@ void EditorWindow::editSpeedArea(const std::string& id, const std::string& linkI
     const double length = polylineLength(link->geometry);
     if (id.empty()) { edited.from = length / 4; edited.to = 3 * length / 4; }
     std::vector<VehicleType> types;
-    try { types = resolveDemandCatalog(document.definition.value_or(AuthoringDefinition{}), data_, false).vehicleTypes; }
-    catch (const std::exception& e) { showError(e); return; }
+    try { types = resolveDemandCatalog(document.definition.value_or(AuthoringDefinition{}), context_.data, false).vehicleTypes; }
+    catch (const std::exception& e) { context_.showError(e); return; }
     QDialog dialog(this); dialog.setObjectName("editorReducedSpeedAreaDialog");
     dialog.setWindowTitle(text(id.empty() ? "editorAddReducedSpeedArea" : "editorEditReducedSpeedArea"));
     auto* form = new QFormLayout(&dialog);
@@ -184,18 +182,18 @@ void EditorWindow::editSpeedArea(const std::string& id, const std::string& linkI
     edited.deceleration = braking->isChecked() ? std::optional<double>(deceleration->value()) : std::nullopt;
     edited.laneIds.clear();
     for (const auto& [lane, box] : lanes) if (box->isChecked()) edited.laneIds.push_back(lane);
-    if (edited.laneIds.empty()) { showError(std::invalid_argument("INVALID_LANE")); return; } // empty would mean every lane
+    if (edited.laneIds.empty()) { context_.showError(std::invalid_argument("INVALID_LANE")); return; } // empty would mean every lane
     if (edited.laneIds.size() == lanes.size()) edited.laneIds.clear();
     edited.speeds.clear();
     for (const auto& row : rows)
         if (row.on->isChecked()) edited.speeds.push_back({row.type, row.min->value(), row.max->value()});
     // Validation names an inverted stretch, an empty range or no lane; a refused edit changes nothing.
     std::string made;
-    if (!execute(id.empty() ? "editorAddReducedSpeedArea" : "editorEditReducedSpeedArea", [&](auto& d) { made = putReducedSpeedArea(d, edited); }))
+    if (!context_.execute(id.empty() ? "editorAddReducedSpeedArea" : "editorEditReducedSpeedArea", [&](auto& d) { made = putReducedSpeedArea(d, edited); }))
         return;
-    objects_->setCurrentWidget(objectPages_.at("editorReducedSpeedAreaTable"));
-    refreshSpeedAreas();
-    for (int r = 0; r < speedAreaTab_.table->rowCount(); ++r)
-        if (speedAreaTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == made) speedAreaTab_.table->selectRow(r);
+    context_.show(this);
+    refresh();
+    for (int r = 0; r < tab_.table->rowCount(); ++r)
+        if (tab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == made) tab_.table->selectRow(r);
 }
 }

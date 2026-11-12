@@ -63,7 +63,8 @@ ObjectTabContext EditorWindow::objectTabContext() {
             [this](const std::string& key,const std::function<void()>& run){return action(key,{},run);},
             [this](const std::string& name,const std::function<void(ProjectDocument&)>& change){return execute(name,change);},
             [this](const std::string& name,const std::function<void(ProjectDocument&)>& change){return commitChange(name,change);},
-            [this]{refresh(false);},[this](QWidget* page){objects_->setCurrentWidget(page);},data_};
+            [this]{refresh(false);},[this](QWidget* page){objects_->setCurrentWidget(page);},data_,
+            [this]()->const std::vector<std::string>&{return canvas_->selection();},[this](const std::exception& e){showError(e);}};
 }
 void EditorWindow::addObjectPage(QWidget* page,const std::string& key) {
     objectPages_.emplace(key,page);objects_->addTab(page,QString());
