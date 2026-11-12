@@ -53,7 +53,7 @@ class QToolBar;
 namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
-struct MacroPanel;
+class MacroPanel;
 struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; class NodesPanel; class ConflictsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
@@ -273,9 +273,8 @@ private:
     // S2.4 (MACRO_NETWORK §20, D277), editor_link_types.cpp: the Link types tab and the Link's type field.
     LinkTypesPanel* linkTypes_{}; QComboBox* linkType_{}; QLineEdit* linkSpeed_{}; // the tab is its own panel (D521)
     void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
-    // S2.4, editor_macro.cpp: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.
-    std::unique_ptr<MacroPanel> macro_;
-    void buildMacro(QToolBar*, QVBoxLayout*); void refreshMacro(); void startMacro(const std::string& period, const std::string& definitionId = {}); void discardMacro();
+    // S2.4: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.
+    std::unique_ptr<MacroPanel> macro_; // its functions are its own (macro_panel.hpp, D524)
 public:
     bool macroRunning() const; const MacroRun* macroResult() const; bool macroStale() const;
     bool macroTabShown() const; // Export and Copy then write the Macro CSV

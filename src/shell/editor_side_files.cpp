@@ -1,4 +1,4 @@
-#include "editor_macro.hpp"
+#include "macro_panel.hpp"
 #include "editor_meso.hpp"
 #include "editor_storage.hpp"
 #include "editor_window.hpp"

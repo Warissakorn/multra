@@ -1,5 +1,6 @@
 #include "recent_files.hpp"
 #include "editor_window.hpp"
+#include "macro_panel.hpp"
 #include "nodes_panel.hpp"
 #include "conflicts_panel.hpp"
 #include "cross_sections_panel.hpp"
@@ -27,14 +28,14 @@
 namespace multra {
 void EditorWindow::newFile() {
     auto document=newProjectDocument(); // Construct before discarding any current work.
-    clearRecovery();clearRun();discardMacro();discardMeso();history_.reset(std::move(document));
+    clearRecovery();clearRun();macro_->discard();discardMeso();history_.reset(std::move(document));
     conflicts_->invalidate();
     crossSections_->invalidate();streetSegments_->invalidate();nodes_->invalidate();
     file_.clear();canvas_->select("");refresh();canvas_->fitNetwork();
 }
 void EditorWindow::openFile(const QString& file) {
     auto document=readEditorDocument(file); // Decode and validate before touching the live document.
-    clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(std::move(document));
+    clearRecovery(); clearRun(); macro_->discard(); discardMeso(); history_.reset(std::move(document));
     conflicts_->invalidate();
     crossSections_->invalidate();streetSegments_->invalidate();nodes_->invalidate();
     file_=file;loadSideFiles();error_->clear();canvas_->select("");refresh();canvas_->fitNetwork(); // S5.5a: its side files

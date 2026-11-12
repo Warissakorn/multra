@@ -1,6 +1,7 @@
 #include "recent_files.hpp"
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "macro_panel.hpp"
 #include "editor_automation_state.hpp"
 #include "editor_run_state.hpp"
 #include "message_label.hpp"
@@ -259,7 +260,7 @@ void EditorWindow::refreshRun(){
         run->setProperty("editorRunShowsPause",runSession_->timer.isActive());
     }
     actions_.at("editorStep")->setEnabled(!runSession_->timer.isActive());
-    refreshMacro(); // S2.4: its actions and stale note follow every refresh
+    macro_->refresh(); // S2.4: its actions and stale note follow every refresh
     refreshMeso(); // M11.4: and the Meso ones
     const auto analysis=resultPages_.find("editorResultsTabNodeAnalysis");
     auto* panel=analysis==resultPages_.end()?nullptr:static_cast<NodeAnalysisPanel*>(analysis->second);if(panel)panel->refresh();

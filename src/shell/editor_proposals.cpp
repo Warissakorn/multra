@@ -1,6 +1,6 @@
 #include "table_layout.hpp"
 #include "editor_interaction.hpp"
-#include "editor_macro.hpp"
+#include "macro_panel.hpp"
 #include "editor_meso.hpp"
 #include "editor_window.hpp"
 #include "nodes_panel.hpp"

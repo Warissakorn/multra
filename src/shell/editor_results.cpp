@@ -12,7 +12,8 @@
 #include "../core/simulation.hpp"
 #include <map>
 #include "editor_storage.hpp"
-#include "editor_macro.hpp"
+#include "macro_panel.hpp"
+#include "message_label.hpp"
 #include "editor_meso.hpp"
 #include "node_analysis_panel.hpp"
 #include "trip_generation_panel.hpp"
@@ -131,8 +132,11 @@ void EditorWindow::buildResults() {
     clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote","editorResultsTabClamps")->addWidget(clampTable_,1);
     lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote","editorResultsTabLots")->addWidget(lotTable_,1); // M8.6b
     nodeResultTable_=resultTable(page,"editorNodeResultTable",10); tab(nodeResultNote_,"editorNodeResultsNote","editorResultsTabNodes")->addWidget(nodeResultTable_,1); // S0.6
-    macro_=std::make_unique<MacroPanel>();auto* macroBox=tab(macro_->note,"editorMacroNote","editorResultsTabMacro");
-    buildMacro(localBar(macroBox,"editorMacroToolbar"),macroBox);
+    macro_=std::make_unique<MacroPanel>(objectTabContext(),MacroHooks{[this]()->const std::string&{return projectSha();},[this]{return macroSideStale();},
+        [this]{error_->clear();},[this]{refreshRun();},[this]{
+            writeMacroSide();objects_->setCurrentWidget(resultsPage_);resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMacro"));refreshRun();}});
+    auto* macroBox=tab(macro_->note,"editorMacroNote","editorResultsTabMacro");
+    macro_->build(localBar(macroBox,"editorMacroToolbar"),macroBox); // D524
     meso_=std::make_unique<MesoPanel>();auto* mesoBox=tab(meso_->note,"editorMesoNote","editorResultsTabMeso");
     buildMeso(localBar(mesoBox,"editorMesoToolbar"),mesoBox);
     auto* analysis=new NodeAnalysisPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
@@ -304,6 +308,10 @@ void EditorWindow::refreshClamps() {
     }
     clampNote_->setText(text("editorClampNote").arg(runSession_->clamps.size()));
 }
+// D524: the Macro run's state and functions are MacroPanel's; these read it for Export, Copy and tests.
+bool EditorWindow::macroRunning() const { return macro_ && macro_->running; }
+const MacroRun* EditorWindow::macroResult() const { return macro_ && macro_->result ? &*macro_->result : nullptr; }
+bool EditorWindow::macroStale() const { return macro_ && macro_->stale(); }
 bool EditorWindow::macroTabShown() const {
     return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMacro");
 }

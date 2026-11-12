@@ -22,7 +22,7 @@
 #include "editor_run_state.hpp"
 #include "editor_batch_state.hpp"
 #include "message_label.hpp"
-#include "editor_macro.hpp"
+#include "macro_panel.hpp"
 #include "editor_meso.hpp"
 #include "behaviour_lab_window.hpp"
 #include "../editor/path.hpp"

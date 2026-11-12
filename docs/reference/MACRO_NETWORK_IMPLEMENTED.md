@@ -135,7 +135,7 @@ names a section here.
   - `deleteLinkType` refuses with `EDIT_LINK_TYPES_NOT_OWNED`, `EDIT_LINK_TYPE_IN_USE` or
     `EDIT_UNKNOWN_OBJECT`.
   - `setLinkType(d, link, type)`, where nullopt or "" clears the type.
-- **Editor** (`src/shell/editor_macro.*`, `editor_link_types.cpp`):
+- **Editor** (`src/shell/macro_panel.*`, `editor_link_types.cpp`):
   - **Run Macro…** in the Results toolbar asks for the period, copies the document and runs
     `runMacro` on the panel's own worker. It posts each stage and gap back, and **Cancel Macro**
     stops between iterations. It never calls `execute`, so it adds no Undo step.
