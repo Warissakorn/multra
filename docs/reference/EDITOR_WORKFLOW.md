@@ -145,7 +145,7 @@ Route start/end, vehicle inputs and signal heads share three-pixel cosmetic cros
 ends no longer widen; D509a: no Base casing either, even on a bar that follows the pointer) with
 wider hit regions. Bars intersect the road normal with the actual lane rails. Route ends use
 canvas-only tones (D509: green `#5BE39A`, red `#FF6B6B`, at least 2.4:1 on every shipped road
-colour), not the semantic text inks. A route's static violet surface tint (D509; not the accent,
+colour), not the semantic text inks. A route's static yellow surface tint (D509, D509b; not the accent,
 which means selection and hover) follows its compiled spans from the origin bar to the destination
 bar, inset from the road's outer edges as a conflict area is (0.5 m, at most a fifth of the
 narrowest lane); past the destination bar it is not drawn, although vehicles still drive on to the

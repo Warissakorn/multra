@@ -5,8 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-11 — Route marks: bright ends, violet tint between them, hover previews (D509)
+## 2026-11-11 — Route marks: bright ends, a tint between them, hover previews (D509)
 
+- **D509b (follow-up, 2026-11-12):** owner: "สีเหลืองเพิ่มความทึบ" after the violet, yellow and white
+  tints were compared on the road. `routeTintHex` is `#FACC15`, 59 % stored and 43 % preview (was
+  violet at 39 % and 27 %): 2.5:1 on the road `#5A5D61` against violet's 1.2:1, and the lane marks
+  still read through it at 2.1:1. White was not taken (it greys the road and is the lane-mark and
+  car colour). Images: `docs/images/route-tint-d509b/` (`before.png` is the violet tint).
 - **D509a (follow-up):** owner: "บาร์ปลายทางยังมีกรอบสีขาวอยู่". The moving bars lost their Base
   casing too; no route end has a white frame now.
 
