@@ -69,7 +69,7 @@ Model facts that decide which options fit:
 | **S1-c** Australian method | [ARR123] | Base saturation flows in through-car units by environment class and lane type, with Akçelik's definitions of lost time and effective green | The same command | The table values were not read for this sheet and must be taken from the report. 1970s Australian data; left-hand traffic |
 | **S1-d** Field headway profile | [Bonneson92], [LiPrev02] | Discharge headway by queue position at US signalised junctions. Bonneson finds the minimum headway is reached only from about the eighth position | The crossings `--discharge` emits per cycle give the headway at each rank; ranks are declared to match each paper's positions | Neither paper's per-position headways were read for this sheet; they must be taken from the papers before pre-registration. A profile tests behaviour, not one parameter. Five sites in Bonneson, US fleet. Cycles with fewer queued vehicles than the last declared rank are unavailable |
 | **S1-e** Field trajectories | [NGSIM] Lankershim Blvd (2005), Peachtree St (2006) | Vehicle trajectories, free, on signalised arterials; saturation headways can be measured at the stop lines | An adapter that turns the trajectories into crossing records for the discharge estimator, which `estimateDischarge` already accepts in code; no CLI path exists | A dataset, not a published figure: the comparison figure must first be computed by a stated method, and the gate asks for a published result. Prevailing conditions: mixed fleet, platoons, congested periods. Lankershim has two 15-minute periods, so few saturated cycles per lane; Peachtree's periods were not confirmed |
-| **S1-f** Discharge profile in time (D529) | [AkcBes02] | Queue discharge flow against time since the start of green, `q_s = q_n[1 − e^{−m_q(t − t_r)}]` (Eq. 2, PDF p. 2), its cumulative departures (Eq. 7, p. 4), and the saturation flow measured after the first 10 s, about the first four vehicles (p. 10). Light vehicles at 18 Melbourne and Sydney sites; Through (isolated) average: `q_n` 2,086 veh/h, `m_q` 0.369, `h_n` 1.725 s with `t_r` = 0 (Table 1, p. 6); `s` 2,083 veh/h, `t_s` 2.6 s, `t_e` 2.6 s (Table 2, p. 11) | The S1-a runs: `s` from ranks 5–12; the per-rank crossing times after green against Eq. 7 | Fitted per site; the average row stands for no one site, and the through isolated sites range from 1,786 to 2,549 veh/h in `s`. Australian fleet of the late 1990s; parameters fitted with `t_r` = 0. Left-hand traffic, as a Thai drawing |
+| **S1-f** Discharge profile in time (D529) | [AkcBes02] | Queue discharge flow against time since the start of green, `q_s = q_n[1 − e^{−m_q(t − t_r)}]` (Eq. 2, PDF p. 2), its cumulative departures (Eq. 7, p. 4), and the saturation flow measured after the first 10 s, about the first four vehicles (p. 10). Light vehicles at 18 Melbourne and Sydney sites; Through (isolated) average: `q_n` 2,086 veh/h, `m_q` 0.369, `h_n` 1.725 s with `t_r` = 0 (Table 1, p. 6); `s` 2,083 veh/h, `t_s` 2.6 s, `t_e` 2.6 s (Table 2, p. 11) | The S1-a runs: `s` from ranks 5–12; the per-rank crossing times after green against Eq. 7 | Fitted per site; the average row stands for no one site, and the through isolated sites range from 1,786 to 2,549 veh/h in `s`. Australian fleet of the late 1990s; parameters fitted with `t_r` = 0. Left-hand traffic, as a Thai drawing. [MurCet19]'s Table 5 re-tabulates these rows and adds no independent data |
 
 ## 4. Kind S2 — delay on a signalised approach
 
@@ -177,6 +177,14 @@ vehicles (PDF p. 10). Reference: **`s` = 2,083 veh/h**, the Through (isolated) a
 time after green at which rank `k` = 1 … 12 crosses, against the `t` at which Eq. 7 (p. 4) gives
 `n_s(t) = k` with Table 1's average `q_n` = 2,086 veh/h, `m_q` = 0.369 and `t_r` = 0 (p. 5–6). The
 paper fits each site; its average row stands for no site, and the comparison says so.
+
+**S1 diagnostic (D530), no band.** Used only when S1-a or S1-f misses its band; it decides
+nothing. The engine's saturation headway is split into the queue departure response time `t_x`,
+the jam spacing `L_hj` (vehicle length plus the standing gap) and the saturation speed `v_S`, as
+[AkcBes02]'s Eq. 9 (`h_S = t_x + 3.6·L_hj/v_S`, PDF p. 8) and [MurCet19]'s Eq. 24 (p. 300; its
+Eq. 18, p. 299, adds the acceleration terms) write it. Each part is shown against [AkcBes02]'s
+Through (isolated) average (Table 2, p. 11): `t_x` 1.17 s, `L_hj` 6.9 m, `v_S` 45.1 km/h. How
+the engine's three parts are measured is left to its own contract (*to write*); no code exists.
 
 **S2-c (first), the queueing arithmetic.** One lane as S1-a, but green and red only (no amber).
 The slot model ([FCTL_REFERENCE](../reference/FCTL_REFERENCE.md), D529) needs whole slots: with the
@@ -291,6 +299,13 @@ Thai study of these quantities found none that could be verified (leads in §7, 
   signalised intersections. In Taylor, M.A.P. (ed.), *Transportation and Traffic Theory in the
   21st Century* (15th ISTTT, Adelaide). Pergamon. Paper PDF supplied by the owner, 20 pages; page
   numbers above are the PDF's.
+- **[MurCet19]** Murat, Y.S., Cetin, M. (2019). A new perspective for saturation flows at
+  signalized intersections. *Periodica Polytechnica Civil Engineering* 63(1), 296–307.
+  [doi:10.3311/PPci.11344](https://doi.org/10.3311/PPci.11344). Read from the owner's PDF
+  (2026-11-12; journal page numbers). Its validation (Table 5, p. 302) re-tabulates [AkcBes02]'s
+  Table 2, whose `t_x` was derived from `s` (Eq. 10), so its small differences are close to
+  circular; its row 10 reads 2,275 where [AkcBes02] has 2,278. The Izmir data (Table 4, p. 301)
+  are not base conditions (vehicle lengths 5.5–7.5 m; parameters rounded, p. 302).
 - **[ARR123]** Akçelik, R. (1981). *Traffic Signals: Capacity and Timing Analysis.* Research
   Report ARR No. 123. Australian Road Research Board. [TRID](https://trid.trb.org/View/173392)
 - **[BKT99]** Brilon, W., Koenig, R., Troutbeck, R.J. (1999). Useful estimation procedures for

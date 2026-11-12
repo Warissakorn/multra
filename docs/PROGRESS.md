@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — Murat & Cetin (2019) read: a citation and an S1 diagnostic (D530)
+
+- **D530:** the owner's third paper is not one of S1-d's. Its validation re-tabulates Akçelik &
+  Besley's rows (close to circular; one figure differs, 2,275 against 2,278), and its Izmir data
+  are not base conditions, so the owner chose a citation and a diagnostic: split `s` into `t_x`,
+  `L_hj` and `v_S` when an S1 row misses its band ([M6 §6](evidence/m6-benchmark-options.md)).
+  Docs only; the measurement has no contract yet.
+
 ## 2026-11-12 — Two papers read: S2-c's procedure, a new S1-f (D529)
 
 - **D529:** the owner supplied van Leeuwaarden (2006, author's preprint) and Akçelik & Besley

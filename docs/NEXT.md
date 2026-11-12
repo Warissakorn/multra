@@ -67,6 +67,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     (`multra-fctl-reference`, [FCTL_REFERENCE](reference/FCTL_REFERENCE.md) FC1–FC6) and its
     references are in §6 (10.98, 13.49, 19.57 s at `x` = 0.5, 0.7, 0.85). Before the first comparable run: S1-d's papers (Bonneson 1992, Li & Prevedouros
     2002; owner to supply) and U-c's effective `t_c` method, each with its own rows.
+    D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
+    before it is used.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
   - D497–D504 are done; the owner's look is OWNER_SITTING B45.
   - The Node analysis example uses the pocket template (D513).
