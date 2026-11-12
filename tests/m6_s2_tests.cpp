@@ -77,3 +77,43 @@ TEST(m6s2, s2c5_references_match_section_six) {
     CHECK(near(m6s2::level(.7).reference, 13.49, .005));
     CHECK(near(m6s2::level(.85).reference, 19.57, .005));
 }
+// D539 (M6_S2_RUN §6): S2-b and S2-a, rows S2AB1-S2AB4.
+TEST(m6s2, s2ab1_hcm_layout_compiles_with_a_long_approach_and_section) {
+    const auto data = test::root() / "data";
+    for (const bool signal : {true, false}) {
+        const auto document = m6s2::approach(717.8, signal, m6s2::hcmLayout());
+        const auto snapshot = compileDocument(document, data);
+        const auto& s = snapshot.scenario;
+        CHECK(s.duration == 5400 && s.inputs.size() == 1);
+        CHECK(s.signalPrograms.size() == (signal ? 1u : 0u));
+        if (signal) {
+            double cycle = 0, green = 0, amber = 0;
+            for (const auto& phase : s.signalPrograms[0].phases) {
+                cycle += phase.duration;
+                if (phase.color == SignalColor::green) green += phase.duration;
+                if (phase.color == SignalColor::amber) amber += phase.duration;
+            }
+            CHECK(near(cycle, 90, 1e-9) && near(green, 40, 1e-9) && near(amber, 3, 1e-9));
+        }
+        const auto section = evaluationSpec(document, snapshot, data).sections.at(0);
+        CHECK(near(routeDistance(s, section.start[0]), 50, 1e-6));
+        CHECK(near(routeDistance(s, section.end[0]), 2050, 1e-6));
+    }
+}
+TEST(m6s2, s2ab2_levels_give_x_times_capacity) {
+    const double x[] = {.5, .7, .85, .95, 1, 1.05}, flow[] = {422.2, 591.1, 717.8, 802.2, 844.4, 886.7};
+    for (int i = 0; i < 6; ++i) CHECK(near(m6s2::hcmLevel(x[i]).flow, flow[i], .05));
+}
+TEST(m6s2, s2ab3_hcm_references_match_section_six) {
+    const double x[] = {.5, .7, .85, .95, 1, 1.05}, d[] = {19.98, 25.09, 33.90, 54.34, 86.94, 147.81};
+    for (int i = 0; i < 6; ++i) CHECK(near(m6s2::hcmLevel(x[i]).reference, d[i], .005));
+}
+TEST(m6s2, s2ab4_unfinished_or_pending_makes_a_level_unavailable) {
+    using V = std::vector<std::optional<double>>;
+    CHECK(m6s2::available(V{0.0, 0.0}, V{0.0, 0.0}));
+    CHECK(!m6s2::available(V{0.0, 1.0}, V{0.0, 0.0}));
+    CHECK(!m6s2::available(V{0.0, 0.0}, V{2.0, 0.0}));
+    CHECK(!m6s2::available(V{0.0, std::nullopt}, V{0.0, 0.0}));
+    const bool ok = m6s2::available(V{1.0}, V{0.0});
+    CHECK(m6s2::verdict(ok ? std::optional<double>(30) : std::nullopt, 33.9) == m6s1::Verdict::unavailable);
+}

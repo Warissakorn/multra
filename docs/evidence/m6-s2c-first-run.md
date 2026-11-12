@@ -9,6 +9,7 @@ S2C1–S2C6 were tested before any engine figure. **Nothing was tuned.**
 
 ```bash
 ./build/desktop/bin/multra-m6-s2c-run data build/desktop/compile_commands.json <new-output-dir>
+# since D539 the same run is: multra-m6-s2-run c data build/desktop/compile_commands.json <new-output-dir>
 ```
 
 - **Build and seeds:** build `7e2d9ab`, seeds 42–81 for each of six in-memory projects: `x` = 0.5, 0.7, 0.85, each with and without the signal. That is 240 runs in 4 min 47 s.

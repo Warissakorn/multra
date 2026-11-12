@@ -4,6 +4,8 @@
 #include "m6_s1_summary.hpp"
 #include "m6_s2_network.hpp"
 #include "../src/eval/fctl_reference.hpp"
+#include <algorithm>
+#include <cmath>
 
 namespace multra::m6s2 {
 inline constexpr double kBand = .15;
@@ -39,4 +41,26 @@ inline Paired paired(const std::vector<std::uint32_t>& seeds, const std::vector<
     return p;
 }
 inline m6s1::Verdict verdict(std::optional<double> mean, double reference) { return m6s1::verdict(mean, reference, kBand); }
+
+// D539 (§6): HCM 7 d1 + d2 for one lane, cycle C, effective green g, PF = 1, T = 1 h, k = 0.5, I = 1.
+inline double hcmDelay(double x, double cycle = 90, double green = 40) {
+    const double c = kSaturation * green / cycle, gc = green / cycle, T = 1, k = .5, I = 1;
+    const double d1 = .5 * cycle * (1 - gc) * (1 - gc) / (1 - std::min(1.0, x) * gc);
+    const double d2 = 900 * T * ((x - 1) + std::sqrt((x - 1) * (x - 1) + 8 * k * I * x / (c * T)));
+    return d1 + d2;
+}
+inline Level hcmLevel(double x) {
+    Level l;
+    l.x = x; l.slot = 3600 / kSaturation;
+    l.flow = x * kSaturation * 40 / 90;
+    l.reference = hcmDelay(x);
+    return l;
+}
+// §6: a level counts only when no seed of its signal run ends with an unfinished window trip or a
+// vehicle pending at a source.
+inline bool available(const std::vector<std::optional<double>>& unfinished, const std::vector<std::optional<double>>& pending) {
+    for (const auto* values : {&unfinished, &pending})
+        for (const auto& v : *values) if (!v || *v > 0) return false;
+    return true;
+}
 }
