@@ -7,6 +7,7 @@
 #include <vector>
 
 class QAbstractItemView;
+class QLineEdit;
 class QMenu;
 class QTableWidget;
 namespace multra {
@@ -31,7 +32,11 @@ public:
     void setColumnShown(const std::string& key, bool shown);
     bool columnShown(const std::string& key) const;
     QMenu* columnMenu() const { return columnMenu_; }
+    // Row filter (D525): the field above the table hides the rows where no shown cell contains its
+    // text (ignoring case); rows are never reordered. selectRow() clears it when the row is hidden.
+    QLineEdit* filter() const { return filter_; }
 private:
+    void applyFilter();
     void commit(const std::string& id, int column, const QString& text);
     std::vector<TableRow> shown_; // the texts the cells were built with, to tell an edit from none
     ObjectTabContext context_;
@@ -39,5 +44,6 @@ private:
     QTableWidget* table_{};
     std::uint64_t revision_{UINT64_MAX};
     QMenu* columnMenu_{};
+    QLineEdit* filter_{};
 };
 }

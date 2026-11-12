@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include "../src/shell/table_grid.hpp"
+#include "../src/shell/object_table.hpp"
 #include <QTableWidget>
 #include <QTemporaryDir>
 #include <QTest>
@@ -90,6 +91,23 @@ int main(int argc, char** argv) {
         require(!table->isColumnHidden(0), "The id column hid");
         menu->actions()[2]->trigger(); settle();
         require(!table->isColumnHidden(2), "The start column did not show again");
+
+        // Row filter: hides rows without reordering them; a hidden row loses its selection; selecting
+        // an object from outside clears the filter.
+        auto* filter = w.findChild<QLineEdit*>("editorPeriodTableFilter"); require(filter, "No row filter");
+        table->selectRow(0); settle();
+        filter->setText("pm"); settle();
+        require(table->isRowHidden(0) && !table->isRowHidden(1) && table->item(1, 0)->text() == "pm", "The filter did not hide the other row");
+        require(table->selectedItems().isEmpty(), "A hidden row kept its selection");
+        filter->setText("PM"); settle();
+        require(!table->isRowHidden(1), "The filter is case-sensitive");
+        auto* periodsAction = w.findChild<QAction*>("editorEditPeriod"); require(periodsAction && !periodsAction->isEnabled(), "Edit stayed enabled with no row");
+        auto* objects = dynamic_cast<ObjectTable*>(table->parentWidget()); require(objects, "The table is not an ObjectTable");
+        require(objects->selectRow("am") && filter->text().isEmpty() && !table->isRowHidden(0), "Selecting a filtered-out row did not clear the filter");
+        require(objects->selected() == "am", "The selected row is not the one asked for");
+        filter->setText("x"); settle();
+        filter->setText(""); settle();
+        require(!table->isRowHidden(0) && !table->isRowHidden(1) && table->item(0, 0)->text() == "am", "Clearing the filter did not show every row in order");
         std::cout << "object table ui tests passed\n";
         return 0;
     } catch (const std::exception& e) {

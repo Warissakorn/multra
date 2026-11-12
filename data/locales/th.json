@@ -913,6 +913,7 @@
   "editorDeletePeriod": "ลบช่วงศึกษา",
   "editorPeriodStart": "เริ่ม (เวลานาฬิกา)",
   "editorPeriodEnd": "สิ้นสุด (เวลานาฬิกา)",
+  "editorTableFilter": "กรองแถว",
   "editorTableColumns": "คอลัมน์",
   "editorTableCellInvalid": "อ่านค่าไม่ได้ เวลานาฬิกาเขียนเป็น HH:MM:SS และชั่วโมงเกิน 24 ได้",
   "editorOdStudyPeriod": "ช่วงศึกษา",

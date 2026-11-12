@@ -4,6 +4,7 @@
 #include "../editor/ui_design_tokens.hpp"
 #include <QAction>
 #include <QHeaderView>
+#include <QLineEdit>
 #include <QMenu>
 #include <QMetaObject>
 #include <QSignalBlocker>
@@ -16,7 +17,10 @@ namespace multra {
 ObjectTable::ObjectTable(QWidget* parent, ObjectTabContext context, ObjectTableModel model, const QString& objectName, bool severalRows)
     : QWidget(parent), context_(std::move(context)), model_(std::move(model)) {
     auto* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(0);
+    layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
+    filter_ = new QLineEdit(this); filter_->setObjectName(objectName + "Filter"); filter_->setClearButtonEnabled(true);
+    layout->addWidget(filter_);
+    connect(filter_, &QLineEdit::textChanged, this, [this] { applyFilter(); });
     table_ = new QTableWidget(0, static_cast<int>(model_.columns.size()), this); table_->setObjectName(objectName);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -45,6 +49,7 @@ void ObjectTable::setColumnShown(const std::string& key, bool shown) {
     for (std::size_t i = 0; i < model_.columns.size(); ++i) {
         if (model_.columns[i].key != key || model_.columns[i].kind == CellKind::id) continue;
         table_->setColumnHidden(static_cast<int>(i), !shown);
+        applyFilter(); // a hidden column no longer matches
         auto* entry = columnMenu_->actions().value(static_cast<int>(i));
         if (entry && entry->isChecked() != shown) { const QSignalBlocker block(entry); entry->setChecked(shown); }
     }
@@ -69,6 +74,7 @@ void ObjectTable::translate() {
     QStringList headers;
     for (const auto& c : model_.columns) headers << context_.text(c.header);
     columnMenu_->setTitle(context_.text("editorTableColumns"));
+    filter_->setPlaceholderText(context_.text("editorTableFilter"));
     const auto entries = columnMenu_->actions();
     for (int i = 0; i < entries.size(); ++i) entries[i]->setText(headers.value(i));
     table_->setHorizontalHeaderLabels(headers);
@@ -85,8 +91,22 @@ std::vector<std::string> ObjectTable::selectedIds() const {
 }
 bool ObjectTable::selectRow(const std::string& id) {
     for (int r = 0; r < table_->rowCount(); ++r)
-        if (table_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) { table_->selectRow(r); return true; }
+        if (table_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) {
+            if (table_->isRowHidden(r)) filter_->clear(); // a selected row is always shown
+            table_->selectRow(r); return true;
+        }
     return false;
+}
+void ObjectTable::applyFilter() {
+    const auto text = filter_->text().trimmed();
+    for (int r = 0; r < table_->rowCount(); ++r) {
+        bool match = text.isEmpty();
+        for (int c = 0; !match && c < table_->columnCount(); ++c)
+            if (!table_->isColumnHidden(c)) if (const auto* cell = table_->item(r, c)) match = cell->text().contains(text, Qt::CaseInsensitive);
+        table_->setRowHidden(r, !match);
+    }
+    const auto rows = selectedTableRows(table_); // a hidden row loses its selection
+    if (std::any_of(rows.begin(), rows.end(), [this](int r) { return table_->isRowHidden(r); })) { table_->clearSelection(); table_->setCurrentItem(nullptr); }
 }
 void ObjectTable::clearSelection() {
     const QSignalBlocker block(table_);
@@ -112,5 +132,6 @@ void ObjectTable::refresh() {
     fitTableColumns(table_);
     shown_ = rows;
     revision_ = context_.revision();
+    applyFilter();
 }
 }

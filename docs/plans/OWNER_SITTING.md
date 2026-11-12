@@ -153,6 +153,12 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     reading. The bands are a starting proposal, not derived from any engine figure. Also confirm U's
     `t_c` → `gapTime` translation (`gapTime = t_c − τ`, §6). *Owner:* **(a), with the translation, 2026-11-12 (D516).**
 
+48. **The object-table pilot** (listed 2026-11-12, D525, [contract](OBJECT_TABLE.md)). On Windows,
+    open *Study periods*: double-click a name, start or end to edit it in place (Enter commits, one
+    Undo step; a time that is not `HH:MM:SS` is refused); right-click a header to hide or show a
+    column; type in the field above the table to filter rows. Should the other tabs move to this
+    table (one per commit), or does the pilot need changes first? *Owner:*
+
 ## C–I — on the Windows machine
 
 Sections C (Run view), D (Right-of-way), E (Drawing and gestures), F (Dialogs), G (Object
