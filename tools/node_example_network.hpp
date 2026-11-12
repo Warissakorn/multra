@@ -83,6 +83,8 @@ inline NodeExample nodeExample(const std::filesystem::path& data) {
     recipe.signal->cycle = 100;
     for (const auto& s : d.network.streetSegments)
         if (s.centreline.front().y == 0 && s.centreline.back().y == 0) recipe.major.push_back(s.id);
+    // Each major leg's far-turn pocket: 45 m of storage behind a 15 m taper (illustrative, as above).
+    for (const auto& id : recipe.major) { recipe.legs[id].storage = {45.0}; recipe.legs[id].taper = {15.0}; }
     setNodeJunction(d, node, recipe);
 
     NodeExample t;

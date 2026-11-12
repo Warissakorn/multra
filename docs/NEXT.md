@@ -30,7 +30,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 ## Owner checks waiting from recent sessions
 
 All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI
-review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
+review), B46 (Macro example), B47 (M6 tolerance), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
 (random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
 ## Review of 2026-11-10 — queued proposals (D493)
@@ -42,29 +42,28 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   on the Micro sentence. Answered (D505): the M6 benchmark sources ([ROADMAP](ROADMAP.md) M6.0);
   Micro's M6 gate may close before M10 and M11.
 - **Architecture** (includes checked per module since D494):
-  - **Approved (D505), not started:** split `EditorWindow` (275 member functions in 52 files; its
-    header is at the 500-line limit) in small steps with no behaviour change. `src/project/`
+  - **Split `EditorWindow` (D505): step 1 done (D514, `BatchSession`; header 488 lines).** Next,
+    one per commit with no behaviour change: the single run's state (`RunSession`, header lines
+    ~189–209, used almost only by `editor_run.cpp`), recovery/autosave, automation, the repeated
+    object tabs (one helper), Macro/Meso functions onto their panels. `src/project/`
     (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
   - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
     per-decision notes) still belongs in the contracts.
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
-  - **Random streams per input: slices 1–3 done (D506, D510); next is slice 4.**
-    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §8: re-key W74 traits and red runners by the
-    vehicle's `streamKey`/`ordinal` under `perInput` (choice 2; `w74` and red-running hashes in
-    `src/core/`, rows in `inputstreams`), then the paired comparison (choice 3) on its own. All
-    before the M6 runs (D505). A new project is `perInput` at schema 74; shipped projects stay
+  - **Random streams per input: slices 1–4 done (D506, D510, D512); next is choice 3**, the paired
+    comparison ([INPUT_STREAMS](reference/INPUT_STREAMS.md) §7–§8), before the M6 runs (D505).
+    Slice 4's cost was not measured with callgrind (D512). A new project is `perInput` at schema 74; shipped projects stay
     `shared` until a recorded decision regenerates them.
   - **Left from D495:** phase 1's per-vehicle loop in `stepSimulation`, about 150 lines, is still
     one body; split it only with a callgrind run before and after (it is the hot path).
-  - **Unblocked (D505), not started:** analytic rows against HCM. The sources are chosen; a row
-    comparing engine saturation flow or delay with a formula still needs the option sheet's §6
-    and a tolerance written down before the first comparable run.
+  - **Analytic rows against HCM: §6 written (D515); waits on the owner's tolerance (OWNER_SITTING
+    B47).** Before the first comparable run: the *to read* values in
+    [§6](evidence/m6-benchmark-options.md) read from the books, the S2-c script and a counter at a
+    priority line (U) built with their own rows.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
   - D497–D504 are done; the owner's look is OWNER_SITTING B45.
-  - **Approved (D505), not started:** move the D500 example (`signalised-node-analysis`) to the
-    pocket template (`signal-4-p3-major-far-pockets`, reachable since D501); its file and test
-    numbers are regenerated.
+  - The Node analysis example uses the pocket template (D513).
   - Not wanted (D505): palette names at 1366 px. No start page (D505): File already has recent files and examples. Reopen only if a real
     user cannot find them.
 - **Process:**
