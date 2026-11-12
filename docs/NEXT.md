@@ -215,9 +215,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 ## Order of level work (D378)
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
-Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the next one is
-**M10.2 and M10.3 (done, below)**, then M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
-its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
+Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done (below); when the owner asks for an engine
+slice, the next one is M9, then M11.5 and the M11 gate, M12. Each starts with its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
 (hybrid meso–micro; the user roles) is open.
 
 ## M10.2 trip generation — G1 and G2 done (D470, D471); stop for the owner's look
