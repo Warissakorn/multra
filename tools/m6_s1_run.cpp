@@ -80,14 +80,14 @@ int main(int argc, char** argv) {
         const auto& scenario = snapshot.scenario;
         const auto s = spec(scenario.duration);
         // §7: the line's route distance; only the one-route, one-head layout of §1 is supported.
-        if (scenario.routes.size() != 1 || scenario.signalHeads.size() != 1 ||
+        if (scenario.routes.size() != 1 || scenario.signalHeads.size() != 1 || scenario.signalPrograms.size() != 1 ||
             scenario.routes[0].segmentIds.empty() || scenario.signalHeads[0].segmentId != scenario.routes[0].segmentIds[0])
-            throw std::invalid_argument("The S1 diagnostic needs one route with its one signal head on its first segment");
+            throw std::invalid_argument("The S1 diagnostic needs one route, one signal program and one head on the route's first segment");
         const double line = scenario.signalHeads[0].position;
         if (!std::filesystem::create_directory(directory)) throw std::runtime_error("Cannot create output directory");
         auto runs = output(directory / "runs.jsonl"), csv = output(directory / "cycles.csv"),
              diag = output(directory / "diagnostic.csv");
-        diag << "seed,go,rank,vehicleId,standDistance,moveTime,crossingTime,lineSpeed\n";
+        diag << "seed,go,rank,vehicleId,goTime,goDistance,goSpeed,moveTime,crossingTime,lineSpeed\n";
         std::vector<m6s1::DiagnosticCycle> diagnostics;
         csv << "seed,go,end,complete,reason,meanHeadway";
         for (std::size_t r = 1; r <= m6s1::kRanks; ++r) csv << ",t" << r;
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
         std::vector<m6s1::Cycle> cycles;
         std::vector<std::uint32_t> seeds;
         for (std::uint32_t seed = 42; seed <= 81; ++seed) {
-            m6s1::DiagnosticObserver observer(line);
+            m6s1::DiagnosticObserver observer(line, scenario.signalPrograms[0], evaluation.queue.beginSpeed);
             const auto result = run(scenario, evaluation.queue, s, seed, observer);
             runs << result.dump() << '\n';
             seeds.push_back(seed);
@@ -115,7 +115,8 @@ int main(int argc, char** argv) {
                     const auto record = r < d.ranks.size() ? d.ranks[r] : m6s1::Record{};
                     diag << seed << ',' << row["go"].dump() << ',' << r + 1 << ','
                          << (r < c.vehicleIds.size() ? std::to_string(c.vehicleIds[r]) : "") << ','
-                         << cell(record.standDistance) << ',' << cell(record.moveTime) << ','
+                         << cell(record.goTime) << ',' << cell(record.goDistance) << ',' << cell(record.goSpeed) << ','
+                         << cell(record.moveTime) << ','
                          << cell(record.crossingTime) << ',' << cell(record.lineSpeed) << '\n';
                 }
                 diagnostics.push_back(d);

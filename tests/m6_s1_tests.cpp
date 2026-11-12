@@ -110,32 +110,39 @@ SimState tick(double time, std::uint64_t id, double distance, double speed) {
     state.vehicles.push_back(v);
     return state;
 }
-// Ranks spaced `spacing` m at standstill, moving `response` s apart, crossing at `speed` m/s.
+// Ranks spaced `spacing` m at Go, reaching beginSpeed `response` s apart, crossing at `speed` m/s.
 m6s1::DiagnosticCycle obeying(std::uint32_t seed, double go, double spacing, double response, double speed) {
     m6s1::DiagnosticCycle c{seed, go, {}};
     for (std::size_t r = 0; r < m6s1::kRanks; ++r)
-        c.ranks.push_back({299 - spacing * static_cast<double>(r), go + 1 + response * static_cast<double>(r), speed,
-                           go + 3 + 2.0 * static_cast<double>(r)});
+        c.ranks.push_back({go, 299 - spacing * static_cast<double>(r), .1, go + 1 + response * static_cast<double>(r),
+                           speed, go + 3 + 2.0 * static_cast<double>(r)});
     return c;
 }
 }
-TEST(m6s1, ms8_observer_records_the_last_stand_first_move_and_line_speed) {
-    m6s1::DiagnosticObserver observer(300);
-    observer.observe(tick(1, 7, 250, 5));      // moving, never stood yet: no move time
-    observer.observe(tick(2, 7, 270, 0));      // stands
-    observer.observe(tick(3, 7, 271, 2));      // moves
-    observer.observe(tick(4, 7, 275, 0));      // stops again: both replaced
-    observer.observe(tick(5, 7, 275.001, .05));// still standing (< 0.1 m/s)
-    observer.observe(tick(6, 7, 280, 3));      // moves
-    observer.observe(tick(7, 7, 300.5, 9));    // front reaches the line
-    observer.observe(tick(8, 7, 301, 0));      // after the line: ignored
+TEST(m6s1, ms8_observer_records_at_go_and_the_first_tick_at_begin_speed) {
+    // Green [0, 10) and red [10, 20) s, repeated: Go ticks at 20, 40, 60 s (not the first tick seen).
+    const SignalProgram program{"p", 0, {{10, SignalColor::green}, {10, SignalColor::red}}};
+    const double begin = 5 / 3.6;
+    m6s1::DiagnosticObserver observer(300, program, begin);
+    observer.observe(tick(5, 7, 250, 0));       // green, but the first tick seen: not a Go
+    observer.observe(tick(12, 7, 260, 0));      // red
+    observer.observe(tick(20, 7, 270, .1));     // Go
+    observer.observe(tick(21, 7, 270.5, 1));    // below beginSpeed
+    observer.observe(tick(22, 7, 272, 2));      // moving
+    observer.observe(tick(30, 7, 279, .2));     // red again
+    observer.observe(tick(40, 7, 280, .05));    // a later Go replaces the record and clears moveTime
+    observer.observe(tick(40.1, 7, 280.01, .1));// still green: not a Go
+    observer.observe(tick(41, 7, 281, begin));  // at beginSpeed: moving
+    observer.observe(tick(42, 7, 300.2, 8));    // front reaches the line
+    observer.observe(tick(60, 7, 301, 0));      // a Go after the line: ignored
     const auto& r = observer.records().at(7);
-    CHECK(near(*r.standDistance, 275.001, 1e-12));
-    CHECK(near(*r.moveTime, 6, 1e-12));
-    CHECK(near(*r.lineSpeed, 9, 1e-12) && near(*r.crossingTime, 7, 1e-12));
-    m6s1::DiagnosticObserver never(300);
+    CHECK(near(*r.goTime, 40, 1e-12) && near(*r.goDistance, 280, 1e-12) && near(*r.goSpeed, .05, 1e-12));
+    CHECK(near(*r.moveTime, 41, 1e-12));
+    CHECK(near(*r.lineSpeed, 8, 1e-12) && near(*r.crossingTime, 42, 1e-12));
+    // A vehicle that crosses without meeting a Go has no Go record.
+    m6s1::DiagnosticObserver never(300, program, begin);
     never.observe(tick(1, 8, 299, 10)); never.observe(tick(2, 8, 300, 10));
-    CHECK(!never.records().at(8).standDistance && !never.records().at(8).moveTime);
+    CHECK(!never.records().at(8).goTime && !never.records().at(8).moveTime && never.records().at(8).lineSpeed);
 }
 TEST(m6s1, ms9_diagnostic_reduction_gives_hand_values) {
     const std::vector<m6s1::DiagnosticCycle> cycles{obeying(42, 0, 7, 1.2, 12.5), obeying(42, 90, 7, 1.2, 12.5),
@@ -147,6 +154,7 @@ TEST(m6s1, ms9_diagnostic_reduction_gives_hand_values) {
     CHECK(near(*d.saturationSpeed.mean, (45 + 36) / 2.0, 1e-9));
     CHECK(near(*d.firstResponse.mean, 1, 1e-9));
     CHECK(near(*d.lineSpeed[0].mean, 40.5, 1e-9) && near(*d.lineSpeed[11].mean, 40.5, 1e-9));
+    CHECK(near(*d.goSpeed[3].mean, .36, 1e-9));
     CHECK(d.responseEq10.n == 0);  // no headways given
 }
 TEST(m6s1, ms10_eq10_equals_the_measured_response_when_eq9_holds) {
@@ -166,8 +174,13 @@ TEST(m6s1, ms11_a_cycle_without_records_is_counted_unavailable) {
     auto c = cycle(42, 0, 3, 2, 2);
     for (std::uint64_t i = 0; i < m6s1::kRanks; ++i) c.vehicleIds.push_back(100 + i);
     std::map<std::uint64_t, m6s1::Record> records;
-    for (std::uint64_t i = 0; i < m6s1::kRanks; ++i) if (i != 5) records[100 + i] = {290.0, 1.0, 10.0, 3.0};
+    for (std::uint64_t i = 0; i < m6s1::kRanks; ++i) if (i != 5) records[100 + i] = {0.0, 290.0, .1, 1.0, 10.0, 3.0};
     const auto mapped = m6s1::diagnosticCycle(c, records);
     CHECK(mapped.ranks.size() == m6s1::kRanks && !mapped.complete());
-    CHECK(near(*mapped.ranks[4].standDistance, 290, 1e-12));
+    CHECK(near(*mapped.ranks[4].goDistance, 290, 1e-12));
+    // Every rank recorded, but one from the previous Go: still unavailable.
+    records[105] = {-90.0, 290.0, .1, 1.0, 10.0, 3.0};
+    CHECK(!m6s1::diagnosticCycle(c, records).complete());
+    records[105] = {0.0, 290.0, .1, 1.0, 10.0, 3.0};
+    CHECK(m6s1::diagnosticCycle(c, records).complete());
 }
