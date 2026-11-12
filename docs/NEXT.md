@@ -216,6 +216,11 @@ user roles) is open.
     four scenes carrying lab placeholder values. **The owner's check:** open it in the editor and
     watch the crossings, the straddling and keep-left (the D203 display).
     The +10–28 % wall cost switched on needs a profile before any work.
+  - **Later, mixed-traffic discharge:** if the engine's saturation flow is ever measured with
+    motorcycles filtering (no lane discipline), Wani et al. (2019, *IJTRE* 6(11), 5769–5774;
+    owner's PDF) measure discharge headway per strip one motorcycle wide, keeping the smallest
+    headway when a vehicle spans strips. Method only: it prints no model coefficients, only bar
+    charts, so it is no benchmark (not in M6).
 - **Weaving (M3.4, D449–D459): the next step is the owner's choice.** The lab is
   [WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md) (rows BA179–BA195; two-entry weaves are scene 4,
   D459). A routing decision on a weave is still not supported.
