@@ -32,12 +32,12 @@ void EditorWindow::buildSections() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    sectionTable_ = new QTableWidget(0, 5, body); sectionTable_->setObjectName("editorSectionTable");
-    sectionTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    sectionTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    sectionTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    sectionTable_->horizontalHeader()->setStretchLastSection(true); sectionTable_->verticalHeader()->hide();
-    layout->addWidget(sectionTable_);
+    sectionTab_.table = new QTableWidget(0, 5, body); sectionTab_.table->setObjectName("editorSectionTable");
+    sectionTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    sectionTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    sectionTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    sectionTab_.table->horizontalHeader()->setStretchLastSection(true); sectionTab_.table->verticalHeader()->hide();
+    layout->addWidget(sectionTab_.table);
     addObjectPage(body,"editorSectionTable");
     bar->addAction(action("editorEditSection", {}, [this] { const auto id = selectedSection(); if (!id.empty()) editSection(id); }));
     bar->addAction(action("editorDeleteSection", {}, [this] {
@@ -48,33 +48,33 @@ void EditorWindow::buildSections() {
         std::string id;
         if (!execute("editorSectionTool", [&](auto& d) { id = putTravelTimeSection(d, {"", "", start, end}); })) return;
         showSections();
-        for (int r = 0; r < sectionTable_->rowCount(); ++r)
-            if (sectionTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) sectionTable_->selectRow(r);
+        for (int r = 0; r < sectionTab_.table->rowCount(); ++r)
+            if (sectionTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) sectionTab_.table->selectRow(r);
     };
-    connect(sectionTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+    connect(sectionTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         const auto id = selectedSection(); if (!id.empty()) editSection(id); });
-    connect(sectionTable_, &QTableWidget::activated, this, [this](const QModelIndex&) { // Enter
+    connect(sectionTab_.table, &QTableWidget::activated, this, [this](const QModelIndex&) { // Enter
         const auto id = selectedSection(); if (!id.empty()) editSection(id); });
-    connect(sectionTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(sectionTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateSections() {
-    sectionTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorSectionControl"),
+    sectionTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorSectionControl"),
                                               text("editorSectionStart"), text("editorSectionEnd")});
-    sectionRevision_ = UINT64_MAX;
+    sectionTab_.invalidate();
 }
 std::string EditorWindow::selectedSection() const {
-    const auto* cell = sectionTable_ ? sectionTable_->item(sectionTable_->currentRow(), 0) : nullptr;
-    return cell && !sectionTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = sectionTab_.table ? sectionTab_.table->item(sectionTab_.table->currentRow(), 0) : nullptr;
+    return cell && !sectionTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshSections() {
-    if (!sectionTable_) return;
+    if (!sectionTab_.table) return;
     const auto& n = history_.document().network;
     const auto keep = selectedSection();
-    if (sectionRevision_ != history_.revision() || sectionTable_->rowCount() != static_cast<int>(n.travelTimeSections.size())) {
-        sectionRevision_ = history_.revision();
-        const QSignalBlocker block(sectionTable_);
-        sectionTable_->setRowCount(static_cast<int>(n.travelTimeSections.size()));
-        for (int r = 0; r < sectionTable_->rowCount(); ++r) {
+    if (sectionTab_.revision != history_.revision() || sectionTab_.table->rowCount() != static_cast<int>(n.travelTimeSections.size())) {
+        sectionTab_.revision = history_.revision();
+        const QSignalBlocker block(sectionTab_.table);
+        sectionTab_.table->setRowCount(static_cast<int>(n.travelTimeSections.size()));
+        for (int r = 0; r < sectionTab_.table->rowCount(); ++r) {
             const auto& s = n.travelTimeSections[static_cast<std::size_t>(r)];
             const auto control = !s.controlType ? text("editorSectionControlNone")
                 : text(*s.controlType == SectionControl::signalised ? "editorSectionSignalised" : "editorSectionUnsignalised");
@@ -82,11 +82,11 @@ void EditorWindow::refreshSections() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(s.id));
                 if (col == 0 || col >= 3) editorDesign::setNumericText(cell, col >= 3);
-                sectionTable_->setItem(r, col, cell);
+                sectionTab_.table->setItem(r, col, cell);
             }
-            if (s.id == keep) sectionTable_->selectRow(r);
+            if (s.id == keep) sectionTab_.table->selectRow(r);
         }
-        fitTableColumns(sectionTable_);
+        fitTableColumns(sectionTab_.table);
     }
     const bool chosen = !selectedSection().empty();
     for (const auto* key : {"editorEditSection", "editorDeleteSection"}) actions_.at(key)->setEnabled(chosen);

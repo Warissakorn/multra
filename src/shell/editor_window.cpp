@@ -290,9 +290,9 @@ void EditorWindow::refresh(bool modelChanged) {
     const auto generation=QVariant::fromValue<qulonglong>(history_.generation());
     if(property("editorViewGeneration")!=generation) {
         const bool replacing=property("editorViewGeneration").isValid();setProperty("editorViewGeneration",generation);
-        tableRevision_=diagnosticRevision_=automaticRevision_=conflictRevision_=counterRevision_=sectionRevision_=UINT64_MAX;
-        speedDecisionRevision_=speedAreaRevision_=zoneRevision_=nodeRevision_=streetSegmentRevision_=crossSectionRevision_=UINT64_MAX;
-        odRevision_=periodRevision_=modeRevision_=linkTypeRevision_=UINT64_MAX;zoneConnectorsOf_.clear();
+        tableRevision_=diagnosticRevision_=automaticRevision_=conflictTab_.revision=counterTab_.revision=sectionTab_.revision=UINT64_MAX;
+        speedDecisionTab_.revision=speedAreaTab_.revision=zoneTab_.revision=nodeTab_.revision=streetSegmentTab_.revision=crossSectionTab_.revision=UINT64_MAX;
+        odTab_.revision=periodTab_.revision=modeTab_.revision=linkTypeTab_.revision=UINT64_MAX;zoneConnectorsOf_.clear();
         diagnostics_.clear();rejected_.clear();readiness_.clear();readinessChecked_=false;
         if(replacing)error_->clear();
         for(auto* table:findChildren<QTableWidget*>()) {

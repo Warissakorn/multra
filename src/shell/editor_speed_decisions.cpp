@@ -42,12 +42,12 @@ void EditorWindow::buildSpeedDecisions() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    speedDecisionTable_ = new QTableWidget(0, 4, body); speedDecisionTable_->setObjectName("editorSpeedDecisionTable");
-    speedDecisionTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    speedDecisionTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    speedDecisionTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    speedDecisionTable_->horizontalHeader()->setStretchLastSection(true); speedDecisionTable_->verticalHeader()->hide();
-    layout->addWidget(speedDecisionTable_);
+    speedDecisionTab_.table = new QTableWidget(0, 4, body); speedDecisionTab_.table->setObjectName("editorSpeedDecisionTable");
+    speedDecisionTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    speedDecisionTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    speedDecisionTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    speedDecisionTab_.table->horizontalHeader()->setStretchLastSection(true); speedDecisionTab_.table->verticalHeader()->hide();
+    layout->addWidget(speedDecisionTab_.table);
     addObjectPage(body, "editorSpeedDecisionTable");
     bar->addAction(action("editorAddSpeedDecision", {}, [this] {
         const auto& selection = canvas_->selection();
@@ -59,30 +59,30 @@ void EditorWindow::buildSpeedDecisions() {
         const auto id = selectedSpeedDecision(); if (id.empty()) return;
         execute("editorDeleteSpeedDecision", [&](auto& d) { deleteSpeedDecision(d, id); });
     }));
-    connect(speedDecisionTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+    connect(speedDecisionTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         const auto id = selectedSpeedDecision(); if (!id.empty()) editSpeedDecision(id, {}); });
-    connect(speedDecisionTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(speedDecisionTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateSpeedDecisions() {
-    speedDecisionTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"),
+    speedDecisionTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"),
                                                     text("editorSpeedDecisionLink"), text("editorSpeedDecisionSpeeds")});
-    speedDecisionRevision_ = UINT64_MAX;
+    speedDecisionTab_.invalidate();
 }
 std::string EditorWindow::selectedSpeedDecision() const {
-    const auto* cell = speedDecisionTable_ ? speedDecisionTable_->item(speedDecisionTable_->currentRow(), 0) : nullptr;
-    return cell && !speedDecisionTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = speedDecisionTab_.table ? speedDecisionTab_.table->item(speedDecisionTab_.table->currentRow(), 0) : nullptr;
+    return cell && !speedDecisionTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshSpeedDecisions() {
-    if (!speedDecisionTable_) return;
+    if (!speedDecisionTab_.table) return;
     const auto& d = history_.document();
     static const std::vector<SpeedDecisionSpec> none;
     const auto& decisions = d.definition ? d.definition->speedDecisions : none;
     const auto keep = selectedSpeedDecision();
-    if (speedDecisionRevision_ != history_.revision() || speedDecisionTable_->rowCount() != static_cast<int>(decisions.size())) {
-        speedDecisionRevision_ = history_.revision();
-        const QSignalBlocker block(speedDecisionTable_);
-        speedDecisionTable_->setRowCount(static_cast<int>(decisions.size()));
-        for (int r = 0; r < speedDecisionTable_->rowCount(); ++r) {
+    if (speedDecisionTab_.revision != history_.revision() || speedDecisionTab_.table->rowCount() != static_cast<int>(decisions.size())) {
+        speedDecisionTab_.revision = history_.revision();
+        const QSignalBlocker block(speedDecisionTab_.table);
+        speedDecisionTab_.table->setRowCount(static_cast<int>(decisions.size()));
+        for (int r = 0; r < speedDecisionTab_.table->rowCount(); ++r) {
             const auto& s = decisions[static_cast<std::size_t>(r)];
             const auto* link = findLink(d.network, s.linkId);
             const auto linkName = !link || link->name.empty() ? s.linkId : link->name;
@@ -91,11 +91,11 @@ void EditorWindow::refreshSpeedDecisions() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(s.id));
                 if (col == 0 || col >= 2) editorDesign::setNumericText(cell, col >= 2);
-                speedDecisionTable_->setItem(r, col, cell);
+                speedDecisionTab_.table->setItem(r, col, cell);
             }
-            if (s.id == keep) speedDecisionTable_->selectRow(r);
+            if (s.id == keep) speedDecisionTab_.table->selectRow(r);
         }
-        fitTableColumns(speedDecisionTable_);
+        fitTableColumns(speedDecisionTab_.table);
     }
     const auto& selection = canvas_->selection();
     actions_.at("editorAddSpeedDecision")->setEnabled(selection.size() == 1 && findLink(d.network, selection.front()));
@@ -161,7 +161,7 @@ void EditorWindow::editSpeedDecision(const std::string& id, const std::string& l
     if(dialog.exec()!=QDialog::Accepted)return;
     objects_->setCurrentWidget(objectPages_.at("editorSpeedDecisionTable"));
     refreshSpeedDecisions();
-    for (int r = 0; r < speedDecisionTable_->rowCount(); ++r)
-        if (speedDecisionTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == made) speedDecisionTable_->selectRow(r);
+    for (int r = 0; r < speedDecisionTab_.table->rowCount(); ++r)
+        if (speedDecisionTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == made) speedDecisionTab_.table->selectRow(r);
 }
 }

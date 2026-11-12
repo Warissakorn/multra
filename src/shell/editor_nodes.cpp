@@ -46,12 +46,12 @@ void EditorWindow::buildNodes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    nodeTable_ = new QTableWidget(0, 9, body); nodeTable_->setObjectName("editorNodeTable");
-    nodeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    nodeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    nodeTable_->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.5: Merge nodes takes several
-    nodeTable_->horizontalHeader()->setStretchLastSection(true); nodeTable_->verticalHeader()->hide();
-    layout->addWidget(nodeTable_);
+    nodeTab_.table = new QTableWidget(0, 9, body); nodeTab_.table->setObjectName("editorNodeTable");
+    nodeTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    nodeTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    nodeTab_.table->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.5: Merge nodes takes several
+    nodeTab_.table->horizontalHeader()->setStretchLastSection(true); nodeTab_.table->verticalHeader()->hide();
+    layout->addWidget(nodeTab_.table);
     buildNodeProposals(layout); // S4.4
     addObjectPage(body, "editorNodeTable");
     const auto rename = [this] {
@@ -130,8 +130,8 @@ void EditorWindow::buildNodes() {
     // S3.5 (D309): the selected rows become one Node, the hull of theirs, in one Undo step.
     bar->addAction(action("editorMergeNodes", {}, [this] {
         std::vector<std::string> ids;
-        for (const int row : selectedTableRows(nodeTable_))
-            ids.push_back(nodeTable_->item(row, 0)->data(Qt::UserRole).toString().toStdString());
+        for (const int row : selectedTableRows(nodeTab_.table))
+            ids.push_back(nodeTab_.table->item(row, 0)->data(Qt::UserRole).toString().toStdString());
         if (ids.size() < 2) return;
         const auto current = selectedNode();
         if (const auto first = std::find(ids.begin(), ids.end(), current); first != ids.end()) std::iter_swap(ids.begin(), first);
@@ -178,41 +178,41 @@ void EditorWindow::buildNodes() {
         std::string id;
         if (!execute("editorNodeTool", [&](auto& d) { id = putNode(d, {"", "", std::move(polygon), false}); })) return false;
         showNodes();
-        for (int r = 0; r < nodeTable_->rowCount(); ++r)
-            if (nodeTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) nodeTable_->selectRow(r);
+        for (int r = 0; r < nodeTab_.table->rowCount(); ++r)
+            if (nodeTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) nodeTab_.table->selectRow(r);
         return true;
     };
-    connect(nodeTable_, &QTableWidget::cellDoubleClicked, this, [rename](int, int) { rename(); });
+    connect(nodeTab_.table, &QTableWidget::cellDoubleClicked, this, [rename](int, int) { rename(); });
     // S5.2a (D327): the Study area column; a tick or an untick is one Undo step.
-    connect(nodeTable_, &QTableWidget::itemChanged, this, [this](QTableWidgetItem* cell) {
+    connect(nodeTab_.table, &QTableWidget::itemChanged, this, [this](QTableWidgetItem* cell) {
         if (cell->column() != 7) return;
         const auto id = cell->data(Qt::UserRole).toString().toStdString();
         auto ids = history_.document().zones.studyArea.nodes;
         std::erase(ids, id);
         if (cell->checkState() == Qt::Checked) ids.push_back(id);
-        if (!execute("editorNodeStudyArea", [&](auto& d) { setStudyAreaNodes(d, ids); })) nodeRevision_ = UINT64_MAX;
+        if (!execute("editorNodeStudyArea", [&](auto& d) { setStudyAreaNodes(d, ids); })) nodeTab_.invalidate();
     });
-    connect(nodeTable_, &QTableWidget::itemSelectionChanged, this, [this] {
+    connect(nodeTab_.table, &QTableWidget::itemSelectionChanged, this, [this] {
         canvas_->setHighlightedNode(selectedNode()); refresh(false); });
 }
 void EditorWindow::translateNodes() {
-    nodeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints"),
+    nodeTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorNodePoints"),
         text("editorNodeControl"), text("editorNodeLegs"), text("editorNodeTurns"), text("editorNodeIssues"), text("editorNodeStudyArea"), text("editorNodeNumberColumn")});
-    nodeRevision_ = UINT64_MAX;
+    nodeTab_.invalidate();
     translateNodeProposals();
 }
 std::string EditorWindow::selectedNode() const {
-    const auto* cell = nodeTable_ ? nodeTable_->item(nodeTable_->currentRow(), 0) : nullptr;
-    return cell && !nodeTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = nodeTab_.table ? nodeTab_.table->item(nodeTab_.table->currentRow(), 0) : nullptr;
+    return cell && !nodeTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshNodes() {
-    if (!nodeTable_) return;
+    if (!nodeTab_.table) return;
     const auto& nodes = history_.document().network.nodes;
-    if (nodeRevision_ != history_.revision() || nodeTable_->rowCount() != static_cast<int>(nodes.size())) {
+    if (nodeTab_.revision != history_.revision() || nodeTab_.table->rowCount() != static_cast<int>(nodes.size())) {
         const auto keep = selectedNode();
-        const QSignalBlocker block(nodeTable_);
-        nodeTable_->setRowCount(static_cast<int>(nodes.size()));
-        for (int r = 0; r < nodeTable_->rowCount(); ++r) {
+        const QSignalBlocker block(nodeTab_.table);
+        nodeTab_.table->setRowCount(static_cast<int>(nodes.size()));
+        for (int r = 0; r < nodeTab_.table->rowCount(); ++r) {
             const auto& n = nodes[static_cast<std::size_t>(r)];
             // S0.2 (NODES §3, D263): what the polygon holds, derived again on every refresh.
             const auto m = nodeMembership(history_.document().network, n);
@@ -230,20 +230,20 @@ void EditorWindow::refreshNodes() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(n.id));
                 if (col == 0 || col == 2 || col == 4 || col == 5) editorDesign::setNumericText(cell, col != 0);
-                nodeTable_->setItem(r, col, cell);
+                nodeTab_.table->setItem(r, col, cell);
             }
             const auto& area = history_.document().zones.studyArea.nodes;
             auto* inArea = new QTableWidgetItem; inArea->setData(Qt::UserRole, QString::fromStdString(n.id));
             inArea->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable);
             inArea->setCheckState(std::find(area.begin(), area.end(), n.id) != area.end() ? Qt::Checked : Qt::Unchecked);
-            nodeTable_->setItem(r, 7, inArea);
+            nodeTab_.table->setItem(r, 7, inArea);
             auto* number = new QTableWidgetItem(n.number ? QString::number(*n.number) : QStringLiteral("\u2014"));
             number->setData(Qt::UserRole, QString::fromStdString(n.id)); editorDesign::setNumericText(number, true);
-            nodeTable_->setItem(r, 8, number);
-            if (n.id == keep) nodeTable_->selectRow(r);
+            nodeTab_.table->setItem(r, 8, number);
+            if (n.id == keep) nodeTab_.table->selectRow(r);
         }
-        fitTableColumns(nodeTable_);
-        nodeRevision_ = history_.revision();
+        fitTableColumns(nodeTab_.table);
+        nodeTab_.revision = history_.revision();
     }
     canvas_->setHighlightedNode(selectedNode()); // S0.7: a deleted or undone Node is no longer lit
     const bool chosen = !selectedNode().empty();
@@ -252,7 +252,7 @@ void EditorWindow::refreshNodes() {
     actions_.at("editorEditCoarse")->setEnabled(chosen && current != nodes.end() && !nodeHasDetail(history_.document().network, *current));
     actions_.at("editorGateFlows")->setEnabled(gateFlowsEditable(history_.document()));
     actions_.at("editorNumberNodes")->setEnabled(std::any_of(nodes.begin(), nodes.end(), [](const auto& x) { return !x.number; }));
-    actions_.at("editorMergeNodes")->setEnabled(selectedTableRows(nodeTable_).size() >= 2);
+    actions_.at("editorMergeNodes")->setEnabled(selectedTableRows(nodeTab_.table).size() >= 2);
     refreshNodeProposals();
 }
 void EditorWindow::showNodes() { objects_->setCurrentWidget(objectPages_.at("editorNodeTable")); }

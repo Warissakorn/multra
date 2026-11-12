@@ -33,12 +33,12 @@ void EditorWindow::buildPeriods() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    periodTable_ = new QTableWidget(0, 4, body); periodTable_->setObjectName("editorPeriodTable");
-    periodTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    periodTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    periodTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    periodTable_->horizontalHeader()->setStretchLastSection(true); periodTable_->verticalHeader()->hide();
-    layout->addWidget(periodTable_);
+    periodTab_.table = new QTableWidget(0, 4, body); periodTab_.table->setObjectName("editorPeriodTable");
+    periodTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    periodTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    periodTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    periodTab_.table->horizontalHeader()->setStretchLastSection(true); periodTab_.table->verticalHeader()->hide();
+    layout->addWidget(periodTab_.table);
     addObjectPage(body, "editorPeriodTable");
     bar->addAction(action("editorAddPeriod", {}, [this] { editPeriod({}); }));
     bar->addAction(action("editorEditPeriod", {}, [this] { const auto id = selectedPeriod(); if (!id.empty()) editPeriod(id); }));
@@ -46,36 +46,36 @@ void EditorWindow::buildPeriods() {
         const auto id = selectedPeriod(); if (id.empty()) return;
         execute("editorDeletePeriod", [&](auto& d) { deleteStudyPeriod(d, id); });
     }));
-    connect(periodTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) { const auto id = selectedPeriod(); if (!id.empty()) editPeriod(id); });
-    connect(periodTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(periodTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) { const auto id = selectedPeriod(); if (!id.empty()) editPeriod(id); });
+    connect(periodTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translatePeriods() {
-    periodTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorPeriodStart"), text("editorPeriodEnd")});
-    periodRevision_ = UINT64_MAX;
+    periodTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorPeriodStart"), text("editorPeriodEnd")});
+    periodTab_.invalidate();
 }
 std::string EditorWindow::selectedPeriod() const {
-    const auto* cell = periodTable_ ? periodTable_->item(periodTable_->currentRow(), 0) : nullptr;
-    return cell && !periodTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = periodTab_.table ? periodTab_.table->item(periodTab_.table->currentRow(), 0) : nullptr;
+    return cell && !periodTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshPeriods() {
-    if (!periodTable_) return;
+    if (!periodTab_.table) return;
     const auto& periods = history_.document().zones.studyPeriods;
-    if (periodRevision_ != history_.revision() || periodTable_->rowCount() != static_cast<int>(periods.size())) {
+    if (periodTab_.revision != history_.revision() || periodTab_.table->rowCount() != static_cast<int>(periods.size())) {
         const auto keep = selectedPeriod();
-        const QSignalBlocker block(periodTable_);
-        periodTable_->setRowCount(static_cast<int>(periods.size()));
-        for (int r = 0; r < periodTable_->rowCount(); ++r) {
+        const QSignalBlocker block(periodTab_.table);
+        periodTab_.table->setRowCount(static_cast<int>(periods.size()));
+        for (int r = 0; r < periodTab_.table->rowCount(); ++r) {
             const auto& p = periods[static_cast<std::size_t>(r)];
             const QStringList values{QString::fromStdString(p.id), QString::fromStdString(p.name), clockText(p.start), clockText(p.end)};
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(p.id));
                 if (col != 1) editorDesign::setNumericText(cell, col >= 2);
-                periodTable_->setItem(r, col, cell);
+                periodTab_.table->setItem(r, col, cell);
             }
-            if (p.id == keep) periodTable_->selectRow(r);
+            if (p.id == keep) periodTab_.table->selectRow(r);
         }
-        fitTableColumns(periodTable_);
-        periodRevision_ = history_.revision();
+        fitTableColumns(periodTab_.table);
+        periodTab_.revision = history_.revision();
     }
     const bool chosen = !selectedPeriod().empty();
     for (const auto* key : {"editorEditPeriod", "editorDeletePeriod"}) actions_.at(key)->setEnabled(chosen);
@@ -121,8 +121,8 @@ void EditorWindow::editPeriod(const std::string& id) {
     },[this](const char* key){return text(key);});
     if(dialog.exec()==QDialog::Accepted) {
         showPeriods();
-        for (int r = 0; r < periodTable_->rowCount(); ++r)
-            if (periodTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) periodTable_->selectRow(r);
+        for (int r = 0; r < periodTab_.table->rowCount(); ++r)
+            if (periodTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) periodTab_.table->selectRow(r);
     }
 }
 std::vector<std::pair<std::string, QString>> EditorWindow::periodChoices() const {

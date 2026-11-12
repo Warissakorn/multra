@@ -39,12 +39,12 @@ void EditorWindow::buildModes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    modeTable_ = new QTableWidget(0, 4, body); modeTable_->setObjectName("editorModeTable");
-    modeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    modeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    modeTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    modeTable_->horizontalHeader()->setStretchLastSection(true); modeTable_->verticalHeader()->hide();
-    layout->addWidget(modeTable_);
+    modeTab_.table = new QTableWidget(0, 4, body); modeTab_.table->setObjectName("editorModeTable");
+    modeTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    modeTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    modeTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    modeTab_.table->horizontalHeader()->setStretchLastSection(true); modeTab_.table->verticalHeader()->hide();
+    layout->addWidget(modeTab_.table);
     addObjectPage(body, "editorModeTable");
     bar->addAction(action("editorAddMode", {}, [this] { editMode({}); }));
     bar->addAction(action("editorEditMode", {}, [this] { const auto id = selectedMode(); if (!id.empty()) editMode(id); }));
@@ -52,27 +52,27 @@ void EditorWindow::buildModes() {
         const auto id = selectedMode(); if (id.empty()) return;
         execute("editorDeleteMode", [&](auto& d) { deleteMode(d, id); });
     }));
-    connect(modeTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+    connect(modeTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         const auto id = selectedMode(); if (!id.empty() && ownsModes(history_.document())) editMode(id);
     });
-    connect(modeTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(modeTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateModes() {
-    modeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorOdComposition"), text("editorModePcu")});
-    modeRevision_ = UINT64_MAX;
+    modeTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorOdComposition"), text("editorModePcu")});
+    modeTab_.invalidate();
 }
 std::string EditorWindow::selectedMode() const {
-    const auto* cell = modeTable_ ? modeTable_->item(modeTable_->currentRow(), 0) : nullptr;
-    return cell && !modeTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = modeTab_.table ? modeTab_.table->item(modeTab_.table->currentRow(), 0) : nullptr;
+    return cell && !modeTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshModes() {
-    if (!modeTable_) return;
-    if (modeRevision_ != history_.revision()) {
+    if (!modeTab_.table) return;
+    if (modeTab_.revision != history_.revision()) {
         const auto rows = modeRows(history_.document(), data_);
         const auto keep = selectedMode();
-        const QSignalBlocker block(modeTable_);
-        modeTable_->setRowCount(static_cast<int>(rows.modes.size()));
-        for (int r = 0; r < modeTable_->rowCount(); ++r) {
+        const QSignalBlocker block(modeTab_.table);
+        modeTab_.table->setRowCount(static_cast<int>(rows.modes.size()));
+        for (int r = 0; r < modeTab_.table->rowCount(); ++r) {
             const auto& m = rows.modes[static_cast<std::size_t>(r)];
             const auto pcu = modePcu(m, rows.compositions, rows.types);
             const QStringList values{QString::fromStdString(m.id), QString::fromStdString(m.name), QString::fromStdString(m.compositionId),
@@ -80,12 +80,12 @@ void EditorWindow::refreshModes() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(m.id));
                 if (col == 3) editorDesign::setNumericText(cell, true);
-                modeTable_->setItem(r, col, cell);
+                modeTab_.table->setItem(r, col, cell);
             }
-            if (m.id == keep) modeTable_->selectRow(r);
+            if (m.id == keep) modeTab_.table->selectRow(r);
         }
-        fitTableColumns(modeTable_);
-        modeRevision_ = history_.revision();
+        fitTableColumns(modeTab_.table);
+        modeTab_.revision = history_.revision();
     }
     const bool owned = ownsModes(history_.document()), chosen = !selectedMode().empty();
     actions_.at("editorAddMode")->setEnabled(owned);
@@ -124,8 +124,8 @@ void EditorWindow::editMode(const std::string& id) {
     std::string created;
     if (execute(id.empty() ? "editorAddMode" : "editorEditMode", [&](auto& doc) { created = putMode(doc, value); })) {
         showModes();
-        for (int r = 0; r < modeTable_->rowCount(); ++r)
-            if (modeTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) modeTable_->selectRow(r);
+        for (int r = 0; r < modeTab_.table->rowCount(); ++r)
+            if (modeTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) modeTab_.table->selectRow(r);
     }
 }
 std::vector<std::pair<std::string, QString>> EditorWindow::modeChoices() const {

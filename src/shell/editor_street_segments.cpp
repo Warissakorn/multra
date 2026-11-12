@@ -55,12 +55,12 @@ void EditorWindow::buildStreetSegments() {
     auto* bar = new QToolBar(body); layout->addWidget(bar);
     streetSegmentTemplate_ = new QComboBox(body); streetSegmentTemplate_->setObjectName("editorStreetSegmentTemplate");
     streetSegmentTemplate_->setSizeAdjustPolicy(QComboBox::AdjustToContents); bar->addWidget(streetSegmentTemplate_);
-    streetSegmentTable_ = new QTableWidget(0, 6, body); streetSegmentTable_->setObjectName("editorStreetSegmentTable");
-    streetSegmentTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    streetSegmentTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    streetSegmentTable_->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.4: Assign template takes several
-    streetSegmentTable_->horizontalHeader()->setStretchLastSection(true); streetSegmentTable_->verticalHeader()->hide();
-    layout->addWidget(streetSegmentTable_);
+    streetSegmentTab_.table = new QTableWidget(0, 6, body); streetSegmentTab_.table->setObjectName("editorStreetSegmentTable");
+    streetSegmentTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    streetSegmentTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    streetSegmentTab_.table->setSelectionMode(QAbstractItemView::ExtendedSelection); // S3.4: Assign template takes several
+    streetSegmentTab_.table->horizontalHeader()->setStretchLastSection(true); streetSegmentTab_.table->verticalHeader()->hide();
+    layout->addWidget(streetSegmentTab_.table);
     addObjectPage(body, "editorStreetSegmentTable");
     // Every selected row in table order, one Undo step; one refusal leaves the whole Command unapplied (D385).
     bar->addAction(action("editorApplyTemplate", {}, [this] {
@@ -74,8 +74,8 @@ void EditorWindow::buildStreetSegments() {
         std::string id;
         if (execute("editorJoinOppositeLinks", [&](auto& d) { id = joinOppositeLinks(d, links[0], links[1]); })) {
             showStreetSegments();
-            for (int r = 0; r < streetSegmentTable_->rowCount(); ++r)
-                if (streetSegmentTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) streetSegmentTable_->selectRow(r);
+            for (int r = 0; r < streetSegmentTab_.table->rowCount(); ++r)
+                if (streetSegmentTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) streetSegmentTab_.table->selectRow(r);
         }
     }));
     // The combo's template on every selected row, without generating a Link; "(no template)" clears it.
@@ -136,30 +136,30 @@ void EditorWindow::buildStreetSegments() {
                 if (section) applyTemplate(d, id, installed);
             })) return false;
         showStreetSegments();
-        for (int r = 0; r < streetSegmentTable_->rowCount(); ++r)
-            if (streetSegmentTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) streetSegmentTable_->selectRow(r);
+        for (int r = 0; r < streetSegmentTab_.table->rowCount(); ++r)
+            if (streetSegmentTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) streetSegmentTab_.table->selectRow(r);
         return true;
     };
-    connect(streetSegmentTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) { const auto id = selectedStreetSegment(); if (!id.empty()) editStreetSegment(id); });
-    connect(streetSegmentTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(streetSegmentTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) { const auto id = selectedStreetSegment(); if (!id.empty()) editStreetSegment(id); });
+    connect(streetSegmentTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateStreetSegments() {
-    streetSegmentTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorStreetSegmentTemplateColumn"),
+    streetSegmentTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorStreetSegmentTemplateColumn"),
         text("editorStreetSegmentLanes"), text("editorStreetSegmentLinks"), text("editorStreetSegmentStatus")});
     actions_.at("editorJoinOppositeLinks")->setToolTip(text("editorJoinOppositeLinksHelp"));
     streetSegmentTemplate_->setToolTip(text("editorStreetSegmentTemplateHelp")); streetSegmentTemplate_->setAccessibleName(text("editorStreetSegmentTemplateHelp"));
-    streetSegmentRevision_ = UINT64_MAX;
+    streetSegmentTab_.invalidate();
 }
 std::string EditorWindow::selectedStreetSegment() const {
-    const auto* cell = streetSegmentTable_ ? streetSegmentTable_->item(streetSegmentTable_->currentRow(), 0) : nullptr;
-    return cell && !streetSegmentTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = streetSegmentTab_.table ? streetSegmentTab_.table->item(streetSegmentTab_.table->currentRow(), 0) : nullptr;
+    return cell && !streetSegmentTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 std::vector<std::string> EditorWindow::selectedStreetSegmentRows() const {
     std::vector<std::string> ids;
-    if (!streetSegmentTable_) return ids;
+    if (!streetSegmentTab_.table) return ids;
     // Table order, not click order; a row counts when any of its cells is selected (D490).
-    for (const int row : selectedTableRows(streetSegmentTable_))
-        ids.push_back(streetSegmentTable_->item(row, 0)->data(Qt::UserRole).toString().toStdString());
+    for (const int row : selectedTableRows(streetSegmentTab_.table))
+        ids.push_back(streetSegmentTab_.table->item(row, 0)->data(Qt::UserRole).toString().toStdString());
     return ids;
 }
 std::vector<std::string> EditorWindow::selectedLinks() const {
@@ -170,10 +170,10 @@ std::vector<std::string> EditorWindow::selectedLinks() const {
     return links;
 }
 void EditorWindow::refreshStreetSegments() {
-    if (!streetSegmentTable_) return;
+    if (!streetSegmentTab_.table) return;
     const auto& roads = history_.document().network.streetSegments;
     const auto sections = crossSectionRows();
-    if (streetSegmentRevision_ != history_.revision()) {
+    if (streetSegmentTab_.revision != history_.revision()) {
         const auto keep = selectedStreetSegment();
         {
             // The template the tool draws with: kept by id across a refresh, "(none)" when it went.
@@ -186,9 +186,9 @@ void EditorWindow::refreshStreetSegments() {
                 streetSegmentTemplate_->addItem(QString::fromStdString(s.name.empty() ? s.id : s.name + " (" + s.id + ")"), QString::fromStdString(s.id));
             streetSegmentTemplate_->setCurrentIndex(std::max(0, streetSegmentTemplate_->findData(chosen.isNull() ? QStringLiteral("@default") : chosen)));
         }
-        const QSignalBlocker block(streetSegmentTable_);
-        streetSegmentTable_->setRowCount(static_cast<int>(roads.size()));
-        for (int r = 0; r < streetSegmentTable_->rowCount(); ++r) {
+        const QSignalBlocker block(streetSegmentTab_.table);
+        streetSegmentTab_.table->setRowCount(static_cast<int>(roads.size()));
+        for (int r = 0; r < streetSegmentTab_.table->rowCount(); ++r) {
             const auto& road = roads[static_cast<std::size_t>(r)];
             const auto* section = findSection(sections, road.crossSectionId);
             QString lanes = QStringLiteral("—");
@@ -210,12 +210,12 @@ void EditorWindow::refreshStreetSegments() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(road.id));
                 if (col == 0 || col == 4) editorDesign::setNumericText(cell, col != 0);
-                streetSegmentTable_->setItem(r, col, cell);
+                streetSegmentTab_.table->setItem(r, col, cell);
             }
-            if (road.id == keep) streetSegmentTable_->selectRow(r);
+            if (road.id == keep) streetSegmentTab_.table->selectRow(r);
         }
-        fitTableColumns(streetSegmentTable_);
-        streetSegmentRevision_ = history_.revision();
+        fitTableColumns(streetSegmentTab_.table);
+        streetSegmentTab_.revision = history_.revision();
     }
     const auto id = selectedStreetSegment();
     const auto road = std::find_if(roads.begin(), roads.end(), [&](const auto& x) { return x.id == id; });

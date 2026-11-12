@@ -58,7 +58,7 @@ void EditorWindow::buildZones() {
         row->addLayout(layout, stretch);
     };
     QToolBar *bar{}, *connectorBar{};
-    column(bar, zoneTable_, 5, "editorZoneTable", 3);
+    column(bar, zoneTab_.table, 5, "editorZoneTable", 3);
     column(connectorBar, zoneConnectorTable_, 3, "editorZoneConnectorTable", 2);
     addObjectPage(body,"editorZoneTable");
     bar->addAction(action("editorEditZone", {}, [this] { const auto id = selectedZone(); if (!id.empty()) editZone(id); }));
@@ -85,28 +85,28 @@ void EditorWindow::buildZones() {
         std::string id;
         if (!execute("editorZoneTool", [&](auto& d) { id = putZone(d, {"", "", std::move(polygon), {}}); })) return false;
         showZones();
-        for (int r = 0; r < zoneTable_->rowCount(); ++r)
-            if (zoneTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) zoneTable_->selectRow(r);
+        for (int r = 0; r < zoneTab_.table->rowCount(); ++r)
+            if (zoneTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) zoneTab_.table->selectRow(r);
         return true;
     };
     const auto open = [this] { const auto id = selectedZone(); if (!id.empty()) editZone(id); };
-    connect(zoneTable_, &QTableWidget::cellDoubleClicked, this, [open](int, int) { open(); });
-    connect(zoneTable_, &QTableWidget::activated, this, [open](const QModelIndex&) { open(); }); // Enter
-    connect(zoneTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(zoneTab_.table, &QTableWidget::cellDoubleClicked, this, [open](int, int) { open(); });
+    connect(zoneTab_.table, &QTableWidget::activated, this, [open](const QModelIndex&) { open(); }); // Enter
+    connect(zoneTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
     connect(zoneConnectorTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         const auto id = selectedZoneConnector(); if (!id.empty()) editZoneConnector(id); });
     connect(zoneConnectorTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateZones() {
-    zoneTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorZoneConnectorTable"),
+    zoneTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorZoneConnectorTable"),
                                            text("editorZoneLot"), text("editorZoneAttributes")});
     zoneConnectorTable_->setHorizontalHeaderLabels({text("editorZoneDirection"), text("editorZoneConnectorTarget"), text("editorZoneConnectorShare")});
-    zoneRevision_ = UINT64_MAX;
+    zoneTab_.invalidate();
 }
-std::string EditorWindow::selectedZone() const { return rowId(zoneTable_); }
+std::string EditorWindow::selectedZone() const { return rowId(zoneTab_.table); }
 std::string EditorWindow::selectedZoneConnector() const { return rowId(zoneConnectorTable_); }
 void EditorWindow::refreshZones() {
-    if (!zoneTable_) return;
+    if (!zoneTab_.table) return;
     const auto& d = history_.document();
     const auto& layer = d.zones;
     const auto keep = selectedZone();
@@ -114,11 +114,11 @@ void EditorWindow::refreshZones() {
         for (const auto& l : d.network.links) if (l.id == id && !l.name.empty()) return QString::fromStdString(l.name);
         return QString::fromStdString(id);
     };
-    const bool changed = zoneRevision_ != history_.revision();
-    if (changed || zoneTable_->rowCount() != static_cast<int>(layer.zones.size())) {
-        const QSignalBlocker block(zoneTable_);
-        zoneTable_->setRowCount(static_cast<int>(layer.zones.size()));
-        for (int r = 0; r < zoneTable_->rowCount(); ++r) {
+    const bool changed = zoneTab_.revision != history_.revision();
+    if (changed || zoneTab_.table->rowCount() != static_cast<int>(layer.zones.size())) {
+        const QSignalBlocker block(zoneTab_.table);
+        zoneTab_.table->setRowCount(static_cast<int>(layer.zones.size()));
+        for (int r = 0; r < zoneTab_.table->rowCount(); ++r) {
             const auto& z = layer.zones[static_cast<std::size_t>(r)];
             const auto connectors = std::count_if(layer.zoneConnectors.begin(), layer.zoneConnectors.end(),
                                                   [&](const auto& c) { return c.zoneId == z.id; });
@@ -128,11 +128,11 @@ void EditorWindow::refreshZones() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(z.id));
                 if (col == 0 || col == 2 || col == 4) editorDesign::setNumericText(cell, col != 0);
-                zoneTable_->setItem(r, col, cell);
+                zoneTab_.table->setItem(r, col, cell);
             }
-            if (z.id == keep) zoneTable_->selectRow(r);
+            if (z.id == keep) zoneTab_.table->selectRow(r);
         }
-        fitTableColumns(zoneTable_);
+        fitTableColumns(zoneTab_.table);
     }
     // The connector table follows the selected zone.
     const auto zone = selectedZone();
@@ -161,7 +161,7 @@ void EditorWindow::refreshZones() {
         fitTableColumns(zoneConnectorTable_);
         zoneConnectorsOf_ = zone;
     }
-    zoneRevision_ = history_.revision();
+    zoneTab_.revision = history_.revision();
     const bool chosen = !zone.empty();
     for (const auto* key : {"editorEditZone", "editorDeleteZone", "editorEditLot"}) actions_.at(key)->setEnabled(chosen);
     // A connector needs the zone row and exactly one Link selected on the canvas.

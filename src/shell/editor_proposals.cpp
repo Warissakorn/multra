@@ -32,8 +32,8 @@ void EditorWindow::buildNodeProposals(QVBoxLayout* layout) {
         if (!cell || nodeProposalTable_->selectedItems().isEmpty()) return;
         const auto id = cell->data(Qt::UserRole).toString();
         if (id.isEmpty()) { statusBar()->showMessage(text("editorProposalHint").arg(cell->data(Qt::UserRole + 1).toString()), 8000); return; }
-        for (int r = 0; r < nodeTable_->rowCount(); ++r)
-            if (nodeTable_->item(r, 0)->data(Qt::UserRole).toString() == id) { nodeTable_->selectRow(r); return; }
+        for (int r = 0; r < nodeTab_.table->rowCount(); ++r)
+            if (nodeTab_.table->item(r, 0)->data(Qt::UserRole).toString() == id) { nodeTab_.table->selectRow(r); return; }
     });
 }
 void EditorWindow::refreshNodeProposals() {

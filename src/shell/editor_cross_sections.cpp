@@ -30,12 +30,12 @@ void EditorWindow::buildCrossSections() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    crossSectionTable_ = new QTableWidget(0, 8, body); crossSectionTable_->setObjectName("editorCrossSectionTable");
-    crossSectionTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    crossSectionTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    crossSectionTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    crossSectionTable_->horizontalHeader()->setStretchLastSection(true); crossSectionTable_->verticalHeader()->hide();
-    layout->addWidget(crossSectionTable_);
+    crossSectionTab_.table = new QTableWidget(0, 8, body); crossSectionTab_.table->setObjectName("editorCrossSectionTable");
+    crossSectionTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    crossSectionTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    crossSectionTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    crossSectionTab_.table->horizontalHeader()->setStretchLastSection(true); crossSectionTab_.table->verticalHeader()->hide();
+    layout->addWidget(crossSectionTab_.table);
     addObjectPage(body, "editorCrossSectionTable");
     bar->addAction(action("editorAddCrossSection", {}, [this] { editCrossSection({}); }));
     bar->addAction(action("editorEditCrossSection", {}, [this] { const auto id = selectedCrossSection(); if (!id.empty()) editCrossSection(id); }));
@@ -43,28 +43,28 @@ void EditorWindow::buildCrossSections() {
         const auto id = selectedCrossSection(); if (id.empty()) return;
         execute("editorDeleteCrossSection", [&](auto& d) { deleteCrossSection(d, id); });
     }));
-    connect(crossSectionTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+    connect(crossSectionTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         const auto id = selectedCrossSection(); if (!id.empty() && ownsCrossSections(history_.document())) editCrossSection(id);
     });
-    connect(crossSectionTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(crossSectionTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateCrossSections() {
-    crossSectionTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorCrossSectionDirections"),
+    crossSectionTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorCrossSectionDirections"),
         text("editorStreetSegmentLanes"), text("editorStreetSegmentLaneWidth"), text("editorStreetSegmentMedian"), text("editorLinkType"), text("editorLinkTypeSource")});
-    crossSectionRevision_ = UINT64_MAX;
+    crossSectionTab_.invalidate();
 }
 std::string EditorWindow::selectedCrossSection() const {
-    const auto* cell = crossSectionTable_ ? crossSectionTable_->item(crossSectionTable_->currentRow(), 0) : nullptr;
-    return cell && !crossSectionTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = crossSectionTab_.table ? crossSectionTab_.table->item(crossSectionTab_.table->currentRow(), 0) : nullptr;
+    return cell && !crossSectionTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshCrossSections() {
-    if (!crossSectionTable_) return;
-    if (crossSectionRevision_ != history_.revision()) {
+    if (!crossSectionTab_.table) return;
+    if (crossSectionTab_.revision != history_.revision()) {
         const auto rows = crossSectionRows();
         const auto keep = selectedCrossSection();
-        const QSignalBlocker block(crossSectionTable_);
-        crossSectionTable_->setRowCount(static_cast<int>(rows.size()));
-        for (int r = 0; r < crossSectionTable_->rowCount(); ++r) {
+        const QSignalBlocker block(crossSectionTab_.table);
+        crossSectionTab_.table->setRowCount(static_cast<int>(rows.size()));
+        for (int r = 0; r < crossSectionTab_.table->rowCount(); ++r) {
             const auto& s = rows[static_cast<std::size_t>(r)];
             const QStringList values{QString::fromStdString(s.id), QString::fromStdString(s.name), QString::number(s.directions),
                 s.directions == 2 ? QStringLiteral("%1 + %2").arg(s.lanesForward).arg(s.lanesBackward) : QString::number(s.lanesForward),
@@ -73,12 +73,12 @@ void EditorWindow::refreshCrossSections() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(s.id));
                 if (col >= 2 && col <= 5) editorDesign::setNumericText(cell, true);
-                crossSectionTable_->setItem(r, col, cell);
+                crossSectionTab_.table->setItem(r, col, cell);
             }
-            if (s.id == keep) crossSectionTable_->selectRow(r);
+            if (s.id == keep) crossSectionTab_.table->selectRow(r);
         }
-        fitTableColumns(crossSectionTable_);
-        crossSectionRevision_ = history_.revision();
+        fitTableColumns(crossSectionTab_.table);
+        crossSectionTab_.revision = history_.revision();
     }
     const bool chosen = !selectedCrossSection().empty() && ownsCrossSections(history_.document());
     for (const auto* key : {"editorEditCrossSection", "editorDeleteCrossSection"}) actions_.at(key)->setEnabled(chosen);
@@ -155,8 +155,8 @@ void EditorWindow::editCrossSection(const std::string& id) {
     std::string created;
     if (execute(id.empty() ? "editorAddCrossSection" : "editorEditCrossSection", [&](auto& doc) { created = putCrossSection(doc, value, installed); })) {
         objects_->setCurrentWidget(objectPages_.at("editorCrossSectionTable"));
-        for (int r = 0; r < crossSectionTable_->rowCount(); ++r)
-            if (crossSectionTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) crossSectionTable_->selectRow(r);
+        for (int r = 0; r < crossSectionTab_.table->rowCount(); ++r)
+            if (crossSectionTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) crossSectionTab_.table->selectRow(r);
     }
 }
 }

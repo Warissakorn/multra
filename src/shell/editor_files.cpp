@@ -24,15 +24,15 @@ namespace multra {
 void EditorWindow::newFile() {
     auto document=newProjectDocument(); // Construct before discarding any current work.
     clearRecovery();clearRun();discardMacro();discardMeso();history_.reset(std::move(document));
-    automaticRevision_=conflictRevision_=UINT64_MAX;
-    streetSegmentRevision_=crossSectionRevision_=nodeRevision_=UINT64_MAX;
+    automaticRevision_=conflictTab_.revision=UINT64_MAX;
+    streetSegmentTab_.revision=crossSectionTab_.revision=nodeTab_.revision=UINT64_MAX;
     file_.clear();canvas_->select("");refresh();canvas_->fitNetwork();
 }
 void EditorWindow::openFile(const QString& file) {
     auto document=readEditorDocument(file); // Decode and validate before touching the live document.
     clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(std::move(document));
-    automaticRevision_=conflictRevision_=UINT64_MAX;
-    streetSegmentRevision_=crossSectionRevision_=nodeRevision_=UINT64_MAX;
+    automaticRevision_=conflictTab_.revision=UINT64_MAX;
+    streetSegmentTab_.revision=crossSectionTab_.revision=nodeTab_.revision=UINT64_MAX;
     file_=file;loadSideFiles();error_->clear();canvas_->select("");refresh();canvas_->fitNetwork(); // S5.5a: its side files
 }
 void EditorWindow::openFileOrReport(const QString& file) {

@@ -30,6 +30,7 @@
 #include <QKeySequence>
 #include <QPointer>
 #include "run_identity.hpp"
+#include "object_tab.hpp"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -224,9 +225,8 @@ private:
     void refreshCompare();
     bool batchShown() const { return batchRunning() || batch_ || comparison_; }
     // M3.2.4, src/shell/editor_priority.cpp: the Conflict areas tab, its dialogs and actions.
-    QTableWidget* conflictTable_{};
+    ObjectTab conflictTab_; // the rows are rebuilt only when its revision goes stale
     QLabel* runProtection_{};
-    std::uint64_t conflictRevision_{UINT64_MAX}; // the rows are rebuilt only when this goes stale
     void buildConflicts();
     void translateConflicts();
     void refreshConflicts();
@@ -245,8 +245,7 @@ private:
     bool automaticShown() const;
     void authorConflict(const std::string& key);
     // M3.2.6c, src/shell/editor_counters.cpp: the Queue counters tab and the tool's commit.
-    QTableWidget* counterTable_{};
-    std::uint64_t counterRevision_{UINT64_MAX};
+    ObjectTab counterTab_;
     void buildCounters();
     void translateCounters();
     void refreshCounters();
@@ -255,8 +254,7 @@ private:
     void addCounter(std::vector<MeasurementLine> lines);
     std::string selectedCounter() const;
     // M5.4b, src/shell/editor_sections.cpp: the Travel-time sections tab and the tool's commit.
-    QTableWidget* sectionTable_{};
-    std::uint64_t sectionRevision_{UINT64_MAX};
+    ObjectTab sectionTab_;
     void buildSections();
     void translateSections();
     void refreshSections();
@@ -264,29 +262,27 @@ private:
     void editSection(const std::string& id);
     std::string selectedSection() const;
     // B-6 (D223), src/shell/editor_speed_decisions.cpp: the Speed decisions tab and its dialog.
-    QTableWidget* speedDecisionTable_{};
-    std::uint64_t speedDecisionRevision_{UINT64_MAX};
+    ObjectTab speedDecisionTab_;
     void buildSpeedDecisions(); void translateSpeedDecisions(); void refreshSpeedDecisions();
     void editSpeedDecision(const std::string& id, const std::string& linkId); // new on linkId when id is empty
     std::string selectedSpeedDecision() const;
     // B-6 §7 (D225): the reduced-speed areas tab, same pattern.
-    QTableWidget* speedAreaTable_{};
-    std::uint64_t speedAreaRevision_{UINT64_MAX};
+    ObjectTab speedAreaTab_;
     void buildSpeedAreas(); void translateSpeedAreas(); void refreshSpeedAreas();
     void editSpeedArea(const std::string& id, const std::string& linkId); // new on linkId when id is empty
     std::string selectedSpeedArea() const;
     // M8.6a (D161): the Zones tab -- zones, the selected zone's connectors, and their dialogs.
-    QTableWidget *zoneTable_{}, *zoneConnectorTable_{};
-    std::uint64_t zoneRevision_{UINT64_MAX}; std::string zoneConnectorsOf_;
+    ObjectTab zoneTab_; QTableWidget* zoneConnectorTable_{};
+    std::string zoneConnectorsOf_;
     // S0.1 (NODES §6): the Nodes tab -- the drawn polygons, rename and delete.
-    QTableWidget* nodeTable_{}; std::uint64_t nodeRevision_{UINT64_MAX};
+    ObjectTab nodeTab_;
     void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
     void editCoarse(const std::string& id); // S3.6b (D311): editor_coarse.cpp
     // S4.4 (D317): Node proposals from the Macro and Meso results, editor_proposals.cpp.
     QTableWidget* nodeProposalTable_{}; QLabel* nodeProposalNote_{}; std::array<std::uint64_t, 3> nodeProposalKey_{UINT64_MAX, UINT64_MAX, UINT64_MAX};
     void buildNodeProposals(QVBoxLayout*); void refreshNodeProposals(); void translateNodeProposals();
     // S3.3b (STREET_SEGMENTS §16, D307): the StreetSegments and Cross-sections tabs and the StreetSegment tool's commit.
-    QTableWidget* streetSegmentTable_{}; QComboBox* streetSegmentTemplate_{}; std::uint64_t streetSegmentRevision_{UINT64_MAX}; QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};
+    ObjectTab streetSegmentTab_, crossSectionTab_; QComboBox* streetSegmentTemplate_{};
     enum class StreetSegmentStatus { noTemplate, unknownTemplate, notApplied, applied, detached };
     std::vector<CrossSection> crossSectionRows() const; // D433: Default template; chosenTemplate resolves the tool's choice in a Command
     CrossSection defaultCrossSection() const; QString defaultTemplateLabel() const; std::optional<std::string> chosenTemplate(ProjectDocument&, const std::vector<CrossSection>& installed) const;
@@ -309,8 +305,7 @@ private:
     std::string selectedZone() const;
     std::string selectedZoneConnector() const;
     // M8.6b (D162): the OD matrices tab, the lot dialog and the catalog's compositions for both.
-    QTableWidget* odTable_{};
-    std::uint64_t odRevision_{UINT64_MAX};
+    ObjectTab odTab_;
     void buildOd();
     void translateOd();
     void refreshOd();
@@ -320,19 +315,19 @@ private:
     std::string selectedOd() const;
     std::vector<std::pair<std::string, QString>> compositionChoices() const;
     // S1.1 (STUDY_PERIODS §8): the Study periods tab and the choices the OD dialog offers.
-    QTableWidget* periodTable_{}; std::uint64_t periodRevision_{UINT64_MAX};
+    ObjectTab periodTab_;
     void buildPeriods(); void translatePeriods(); void refreshPeriods(); void showPeriods();
     void editPeriod(const std::string& id); // empty: a new period
     std::string selectedPeriod() const;
     std::vector<std::pair<std::string, QString>> periodChoices() const;
     // S1.2 (STUDY_PERIODS §8, D269): the Modes tab -- installed modes read-only, owned ones edited.
-    QTableWidget* modeTable_{}; std::uint64_t modeRevision_{UINT64_MAX};
+    ObjectTab modeTab_;
     void buildModes(); void translateModes(); void refreshModes(); void showModes();
     void editMode(const std::string& id); // empty: a new mode
     std::string selectedMode() const;
     std::vector<std::pair<std::string, QString>> modeChoices() const;
     // S2.4 (MACRO_NETWORK §20, D277), editor_link_types.cpp: the Link types tab and the Link's type field.
-    QTableWidget* linkTypeTable_{}; QComboBox* linkType_{}; QLineEdit* linkSpeed_{}; std::uint64_t linkTypeRevision_{UINT64_MAX};
+    ObjectTab linkTypeTab_; QComboBox* linkType_{}; QLineEdit* linkSpeed_{};
     void buildLinkTypes(); void translateLinkTypes(); void refreshLinkTypes(); void editLinkType(const std::string& id);
     std::string selectedLinkType() const; void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
     // S2.4, editor_macro.cpp: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.

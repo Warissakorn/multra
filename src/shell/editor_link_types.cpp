@@ -41,12 +41,12 @@ void EditorWindow::buildLinkTypes() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    linkTypeTable_ = new QTableWidget(0, 9, body); linkTypeTable_->setObjectName("editorLinkTypeTable");
-    linkTypeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    linkTypeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    linkTypeTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    linkTypeTable_->horizontalHeader()->setStretchLastSection(true); linkTypeTable_->verticalHeader()->hide();
-    layout->addWidget(linkTypeTable_);
+    linkTypeTab_.table = new QTableWidget(0, 9, body); linkTypeTab_.table->setObjectName("editorLinkTypeTable");
+    linkTypeTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    linkTypeTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    linkTypeTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    linkTypeTab_.table->horizontalHeader()->setStretchLastSection(true); linkTypeTab_.table->verticalHeader()->hide();
+    layout->addWidget(linkTypeTab_.table);
     addObjectPage(body, "editorLinkTypeTable");
     bar->addAction(action("editorAddLinkType", {}, [this] { editLinkType({}); }));
     bar->addAction(action("editorEditLinkType", {}, [this] { const auto id = selectedLinkType(); if (!id.empty()) editLinkType(id); }));
@@ -54,29 +54,29 @@ void EditorWindow::buildLinkTypes() {
         const auto id = selectedLinkType(); if (id.empty()) return;
         execute("editorDeleteLinkType", [&](auto& d) { deleteLinkType(d, id); });
     }));
-    connect(linkTypeTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+    connect(linkTypeTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         const auto id = selectedLinkType(); if (!id.empty() && ownsLinkTypes(history_.document())) editLinkType(id);
     });
-    connect(linkTypeTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(linkTypeTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateLinkTypes() {
-    linkTypeTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorLinkTypeCapacity"),
+    linkTypeTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorLinkTypeCapacity"),
         text("editorLinkTypeSpeed"), text("editorLinkTypeVdf"), text("editorLinkTypeModes"), text("editorLinkTypeSource"), text("editorLinkTypeBasis"),
         text("editorLinkTypeRank")});
-    linkTypeRevision_ = UINT64_MAX;
+    linkTypeTab_.invalidate();
 }
 std::string EditorWindow::selectedLinkType() const {
-    const auto* cell = linkTypeTable_ ? linkTypeTable_->item(linkTypeTable_->currentRow(), 0) : nullptr;
-    return cell && !linkTypeTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = linkTypeTab_.table ? linkTypeTab_.table->item(linkTypeTab_.table->currentRow(), 0) : nullptr;
+    return cell && !linkTypeTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshLinkTypes() {
-    if (!linkTypeTable_) return;
-    if (linkTypeRevision_ != history_.revision()) {
+    if (!linkTypeTab_.table) return;
+    if (linkTypeTab_.revision != history_.revision()) {
         const auto rows = linkTypeRows(history_.document(), data_);
         const auto keep = selectedLinkType();
-        const QSignalBlocker block(linkTypeTable_);
-        linkTypeTable_->setRowCount(static_cast<int>(rows.size()));
-        for (int r = 0; r < linkTypeTable_->rowCount(); ++r) {
+        const QSignalBlocker block(linkTypeTab_.table);
+        linkTypeTab_.table->setRowCount(static_cast<int>(rows.size()));
+        for (int r = 0; r < linkTypeTab_.table->rowCount(); ++r) {
             const auto& t = rows[static_cast<std::size_t>(r)];
             const QStringList values{QString::fromStdString(t.id), QString::fromStdString(t.name), editorDesign::formatValue(t.capacityPerLane, 0),
                                      editorDesign::formatValue(t.freeSpeed * 3.6, 1), QString::fromStdString(t.vdfId),
@@ -86,12 +86,12 @@ void EditorWindow::refreshLinkTypes() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(t.id));
                 if (col == 2 || col == 3 || col == 8) editorDesign::setNumericText(cell, true);
-                linkTypeTable_->setItem(r, col, cell);
+                linkTypeTab_.table->setItem(r, col, cell);
             }
-            if (t.id == keep) linkTypeTable_->selectRow(r);
+            if (t.id == keep) linkTypeTab_.table->selectRow(r);
         }
-        fitTableColumns(linkTypeTable_);
-        linkTypeRevision_ = history_.revision();
+        fitTableColumns(linkTypeTab_.table);
+        linkTypeTab_.revision = history_.revision();
     }
     const bool chosen = !selectedLinkType().empty() && ownsLinkTypes(history_.document());
     for (const auto* key : {"editorEditLinkType", "editorDeleteLinkType"}) actions_.at(key)->setEnabled(chosen);
@@ -147,8 +147,8 @@ void EditorWindow::editLinkType(const std::string& id) {
     std::string created;
     if (execute(id.empty() ? "editorAddLinkType" : "editorEditLinkType", [&](auto& doc) { created = putLinkType(doc, value, installed); })) {
         objects_->setCurrentWidget(objectPages_.at("editorLinkTypeTable"));
-        for (int r = 0; r < linkTypeTable_->rowCount(); ++r)
-            if (linkTypeTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) linkTypeTable_->selectRow(r);
+        for (int r = 0; r < linkTypeTab_.table->rowCount(); ++r)
+            if (linkTypeTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) linkTypeTab_.table->selectRow(r);
     }
 }
 void EditorWindow::buildLinkTypeField(QFormLayout* form) {

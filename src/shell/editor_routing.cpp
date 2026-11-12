@@ -24,7 +24,7 @@ std::string routeStartingOn(const AuthoringDefinition& definition,const std::str
 void EditorWindow::buildRouting() {
     canvas_->selectionCleared=[this]{
         // Clear both selection and current row: table commands must not revive an old target.
-        for(auto* table:{routeTable_,inputTable_,programTable_,decisionTable_,conflictTable_,counterTable_,sectionTable_,nodeTable_,streetSegmentTable_}) {
+        for(auto* table:{routeTable_,inputTable_,programTable_,decisionTable_,conflictTab_.table,counterTab_.table,sectionTab_.table,nodeTab_.table,streetSegmentTab_.table}) {
             if(!table)continue;
             const QSignalBlocker block(table);
             table->clearSelection();table->setCurrentItem(nullptr);

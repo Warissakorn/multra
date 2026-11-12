@@ -32,12 +32,12 @@ void EditorWindow::buildCounters() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    counterTable_ = new QTableWidget(0, 4, body); counterTable_->setObjectName("editorCounterTable");
-    counterTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    counterTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    counterTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    counterTable_->horizontalHeader()->setStretchLastSection(true); counterTable_->verticalHeader()->hide();
-    layout->addWidget(counterTable_);
+    counterTab_.table = new QTableWidget(0, 4, body); counterTab_.table->setObjectName("editorCounterTable");
+    counterTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    counterTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    counterTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    counterTab_.table->horizontalHeader()->setStretchLastSection(true); counterTab_.table->verticalHeader()->hide();
+    layout->addWidget(counterTab_.table);
     addObjectPage(body,"editorCounterTable");
     bar->addAction(action("editorAddCounter", {}, [this] {
         std::vector<MeasurementLine> lines;
@@ -52,30 +52,30 @@ void EditorWindow::buildCounters() {
         execute("editorDeleteCounter", [&](auto& d) { deleteQueueCounter(d, id); });
     }));
     canvas_->counterDraftCommitted = [this](std::vector<MeasurementLine> lines) { addCounter(std::move(lines)); };
-    connect(counterTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+    connect(counterTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         const auto id = selectedCounter(); if (!id.empty()) editCounter(id); });
-    connect(counterTable_, &QTableWidget::activated, this, [this](const QModelIndex&) { // Enter
+    connect(counterTab_.table, &QTableWidget::activated, this, [this](const QModelIndex&) { // Enter
         const auto id = selectedCounter(); if (!id.empty()) editCounter(id); });
-    connect(counterTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(counterTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateCounters() {
-    counterTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"),
+    counterTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"),
                                               text("editorCounterLines"), text("editorCounterReplaces")});
-    counterRevision_ = UINT64_MAX;
+    counterTab_.invalidate();
 }
 std::string EditorWindow::selectedCounter() const {
-    const auto* cell = counterTable_ ? counterTable_->item(counterTable_->currentRow(), 0) : nullptr;
-    return cell && !counterTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = counterTab_.table ? counterTab_.table->item(counterTab_.table->currentRow(), 0) : nullptr;
+    return cell && !counterTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshCounters() {
-    if (!counterTable_) return;
+    if (!counterTab_.table) return;
     const auto& n = history_.document().network;
     const auto keep = selectedCounter();
-    if (counterRevision_ != history_.revision() || counterTable_->rowCount() != static_cast<int>(n.queueCounters.size())) {
-        counterRevision_ = history_.revision();
-        const QSignalBlocker block(counterTable_);
-        counterTable_->setRowCount(static_cast<int>(n.queueCounters.size()));
-        for (int r = 0; r < counterTable_->rowCount(); ++r) {
+    if (counterTab_.revision != history_.revision() || counterTab_.table->rowCount() != static_cast<int>(n.queueCounters.size())) {
+        counterTab_.revision = history_.revision();
+        const QSignalBlocker block(counterTab_.table);
+        counterTab_.table->setRowCount(static_cast<int>(n.queueCounters.size()));
+        for (int r = 0; r < counterTab_.table->rowCount(); ++r) {
             const auto& c = n.queueCounters[static_cast<std::size_t>(r)];
             QStringList lines, replaced;
             for (const auto& l : c.lines) lines << describe(l);
@@ -88,11 +88,11 @@ void EditorWindow::refreshCounters() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(c.id));
                 if(col==0||col>=2)editorDesign::setNumericText(cell,col==2);
-                counterTable_->setItem(r, col, cell);
+                counterTab_.table->setItem(r, col, cell);
             }
-            if (c.id == keep) counterTable_->selectRow(r);
+            if (c.id == keep) counterTab_.table->selectRow(r);
         }
-        fitTableColumns(counterTable_);
+        fitTableColumns(counterTab_.table);
     }
     const auto& heads = n.signalHeads;
     const auto& sel = canvas_->selection();
@@ -107,8 +107,8 @@ void EditorWindow::addCounter(std::vector<MeasurementLine> lines) {
     std::string id;
     if (!execute("editorAddCounter", [&](auto& d) { id = putQueueCounter(d, {"", "", std::move(lines)}); })) return;
     showCounters();
-    for (int r = 0; r < counterTable_->rowCount(); ++r)
-        if (counterTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) counterTable_->selectRow(r);
+    for (int r = 0; r < counterTab_.table->rowCount(); ++r)
+        if (counterTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) counterTab_.table->selectRow(r);
 }
 void EditorWindow::editCounter(const std::string& id) {
     const auto& counters = history_.document().network.queueCounters;

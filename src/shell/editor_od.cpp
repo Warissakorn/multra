@@ -36,12 +36,12 @@ void EditorWindow::buildOd() {
     auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    odTable_ = new QTableWidget(0, 5, body); odTable_->setObjectName("editorOdTable");
-    odTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    odTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    odTable_->setSelectionMode(QAbstractItemView::SingleSelection);
-    odTable_->horizontalHeader()->setStretchLastSection(true); odTable_->verticalHeader()->hide();
-    layout->addWidget(odTable_);
+    odTab_.table = new QTableWidget(0, 5, body); odTab_.table->setObjectName("editorOdTable");
+    odTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    odTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    odTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    odTab_.table->horizontalHeader()->setStretchLastSection(true); odTab_.table->verticalHeader()->hide();
+    layout->addWidget(odTab_.table);
     addObjectPage(body,"editorOdTable");
     bar->addAction(action("editorAddOdMatrix", {}, [this] { editOd({}); }));
     bar->addAction(action("editorEditOdMatrix", {}, [this] { const auto id = selectedOd(); if (!id.empty()) editOd(id); }));
@@ -50,29 +50,29 @@ void EditorWindow::buildOd() {
         execute("editorDeleteOdMatrix", [&](auto& d) { deleteOdMatrix(d, id); });
     }));
     const auto open = [this] { const auto id = selectedOd(); if (!id.empty()) editOd(id); };
-    connect(odTable_, &QTableWidget::cellDoubleClicked, this, [open](int, int) { open(); });
-    connect(odTable_, &QTableWidget::activated, this, [open](const QModelIndex&) { open(); });
-    connect(odTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    connect(odTab_.table, &QTableWidget::cellDoubleClicked, this, [open](int, int) { open(); });
+    connect(odTab_.table, &QTableWidget::activated, this, [open](const QModelIndex&) { open(); });
+    connect(odTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
 }
 void EditorWindow::translateOd() {
-    odTable_->setHorizontalHeaderLabels({text("editorColumnId"), text("editorOdPeriod"), text("editorOdComposition"),
+    odTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorOdPeriod"), text("editorOdComposition"),
                                          text("editorZoneTable"), text("editorOdTotal")});
-    odRevision_ = UINT64_MAX;
+    odTab_.invalidate();
 }
 std::string EditorWindow::selectedOd() const {
-    const auto* cell = odTable_ ? odTable_->item(odTable_->currentRow(), 0) : nullptr;
-    return cell && !odTable_->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+    const auto* cell = odTab_.table ? odTab_.table->item(odTab_.table->currentRow(), 0) : nullptr;
+    return cell && !odTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
 void EditorWindow::refreshOd() {
-    if (!odTable_) return;
+    if (!odTab_.table) return;
     const auto& layer = history_.document().zones;
     const auto keep = selectedOd();
-    if (odRevision_ != history_.revision() || odTable_->rowCount() != static_cast<int>(layer.odMatrices.size())) {
-        odRevision_ = history_.revision();
-        const QSignalBlocker block(odTable_);
-        odTable_->setRowCount(static_cast<int>(layer.odMatrices.size()));
+    if (odTab_.revision != history_.revision() || odTab_.table->rowCount() != static_cast<int>(layer.odMatrices.size())) {
+        odTab_.revision = history_.revision();
+        const QSignalBlocker block(odTab_.table);
+        odTab_.table->setRowCount(static_cast<int>(layer.odMatrices.size()));
         const auto modes = namesMode(layer) ? modeChoices() : std::vector<std::pair<std::string, QString>>{};
-        for (int r = 0; r < odTable_->rowCount(); ++r) {
+        for (int r = 0; r < odTab_.table->rowCount(); ++r) {
             const auto& m = layer.odMatrices[static_cast<std::size_t>(r)];
             double total = 0;
             for (const auto& row : m.cells) total = std::accumulate(row.begin(), row.end(), total);
@@ -88,11 +88,11 @@ void EditorWindow::refreshOd() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(m.id));
                 if (col != 2) editorDesign::setNumericText(cell, col >= 3);
-                odTable_->setItem(r, col, cell);
+                odTab_.table->setItem(r, col, cell);
             }
-            if (m.id == keep) odTable_->selectRow(r);
+            if (m.id == keep) odTab_.table->selectRow(r);
         }
-        fitTableColumns(odTable_);
+        fitTableColumns(odTab_.table);
     }
     actions_.at("editorAddOdMatrix")->setEnabled(!layer.zones.empty());
     const bool chosen = !selectedOd().empty();
@@ -125,8 +125,8 @@ void EditorWindow::editOd(const std::string& id) {
             ownModesWhenNamed(doc, installed); // S1.2 (D269): one step with the matrix
         })) {
         showOd();
-        for (int r = 0; r < odTable_->rowCount(); ++r)
-            if (odTable_->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) odTable_->selectRow(r);
+        for (int r = 0; r < odTab_.table->rowCount(); ++r)
+            if (odTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) odTab_.table->selectRow(r);
     }
 }
 void EditorWindow::editLot(const std::string& zoneId) {

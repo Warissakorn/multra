@@ -144,8 +144,8 @@ void EditorWindow::jumpTo(int row) {
     if (id.empty()) {
         const auto object=cell->data(Qt::UserRole+1).toString().toStdString();
         // S5.5b (D332): a Node's row selects it on the Nodes tab, which lights it (D288).
-        for (int r=0; nodeTable_ && r<nodeTable_->rowCount(); ++r)
-            if (nodeTable_->item(r,0)->data(Qt::UserRole).toString().toStdString()==object) { nodeTable_->selectRow(r); return; }
+        for (int r=0; nodeTab_.table && r<nodeTab_.table->rowCount(); ++r)
+            if (nodeTab_.table->item(r,0)->data(Qt::UserRole).toString().toStdString()==object) { nodeTab_.table->selectRow(r); return; }
         if (!selectConflict(object)) selectDemand(object); // M3.2.4: authored controls have a tab
         return;
     }
