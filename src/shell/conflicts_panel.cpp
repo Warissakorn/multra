@@ -1,6 +1,6 @@
 #include "table_layout.hpp"
 #include "editor_interaction.hpp"
-#include "editor_window.hpp"
+#include "conflicts_panel.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/right_of_way_commands.hpp"
 #include "../model/network/right_of_way.hpp"
@@ -11,12 +11,12 @@
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QHeaderView>
+#include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSignalBlocker>
-#include <QTabWidget>
 #include <QTableWidget>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -25,7 +25,8 @@
 
 // M3.2.4: the Conflict areas tab. Every edit goes through the M3.2.2 commands inside
 // execute(), so it is one Undo step and a refused edit changes nothing; keyboard (table, Enter,
-// the dialog) and pointer (double-click, toolbar) submit the same command.
+// the dialog) and pointer (double-click, toolbar) submit the same command. Its own panel since D523;
+// what it needs from the window is a ConflictsHooks entry.
 namespace multra {
 namespace {
 // An automatic area's row carries its key (automaticConflicts), never an authored id.
@@ -38,88 +39,72 @@ std::optional<StopMode> controlOf(const RightOfWay& row, const std::string& area
     return std::nullopt;
 }
 }
-PriorityDefaults EditorWindow::priorityDefaults() const {
-    const auto& def = history_.document().definition;
-    return resolveCatalogs(def ? *def : AuthoringDefinition{}, data_).priorityDefaults;
-}
-void EditorWindow::buildConflicts() {
-    auto* body = new QWidget(objects_); auto* layout = new QVBoxLayout(body);
+ConflictsPanel::ConflictsPanel(QWidget* parent, ObjectTabContext context, ConflictsHooks hooks)
+    : ObjectTabPanel(parent, std::move(context)), hooks_(std::move(hooks)) {
+    auto* body = this; auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    conflictTab_.table = new QTableWidget(0, 8, body); conflictTab_.table->setObjectName("editorConflictTable");
-    conflictTab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    conflictTab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    conflictTab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
-    conflictTab_.table->horizontalHeader()->setStretchLastSection(true); conflictTab_.table->verticalHeader()->hide();
-    layout->addWidget(conflictTab_.table);
-    addObjectPage(body,"editorConflictTable");
-    // The Run UI says what the solver protects: authored areas only (M3_PLAN §2).
-    runProtection_ = new ReflowLabel(canvasHost_); runProtection_->setObjectName("editorRunProtection");
-    runProtection_->setWordWrap(true); setReflowPolicy(runProtection_,QSizePolicy::Ignored);
-    qobject_cast<QVBoxLayout*>(canvasHost_->layout())->insertWidget(1, runProtection_); // D431: under the run status
-    runProtection_->hide();
-    bar->addAction(action("editorAddCrossing", {}, [this] { addCrossings(); }));
-    bar->addAction(action("editorTakeOverMerge", {}, [this] {
-        const auto* connector = canvas_->selectedConnector(); if (!connector) return;
-        const auto id = connector->id; const auto defaults = priorityDefaults();
-        if (execute("editorTakeOverMerge", [&](auto& d) { takeOverMergesOf(d, id, defaults); }))
-            objects_->setCurrentWidget(objectPages_.at("editorConflictTable"));
+    tab_.table = new QTableWidget(0, 8, body); tab_.table->setObjectName("editorConflictTable");
+    tab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    tab_.table->horizontalHeader()->setStretchLastSection(true); tab_.table->verticalHeader()->hide();
+    layout->addWidget(tab_.table);
+    followCanvasClear(); // D522
+    bar->addAction(action("editorAddCrossing", [this] { addCrossings(); }));
+    bar->addAction(action("editorTakeOverMerge", [this] {
+        const auto id = hooks_.selectedConnector(); if (id.empty()) return; const auto defaults = hooks_.priorityDefaults();
+        if (context_.execute("editorTakeOverMerge", [&](auto& d) { takeOverMergesOf(d, id, defaults); }))
+            context_.show(this);
     }));
-    bar->addAction(action("editorEditConflict", {}, [this] { const auto id = selectedConflict(); if (!id.empty()) editConflict(id); }));
+    bar->addAction(action("editorEditConflict", [this] { const auto id = selected(); if (!id.empty()) edit(id); }));
     // P cycles the selected area's priority from the keyboard, as a second click does on the canvas.
-    auto* cycle = action("editorCyclePriority", QKeySequence(Qt::Key_P), [this] { cyclePriority(selectedConflict()); });
-    cycle->setShortcutContext(Qt::WidgetWithChildrenShortcut); canvas_->addAction(cycle); conflictTab_.table->addAction(cycle);
+    auto* cycle = action("editorCyclePriority", [this] { cyclePriority(selected()); });
+    cycle->setShortcut(QKeySequence(Qt::Key_P)); cycle_ = cycle;
+    cycle->setShortcutContext(Qt::WidgetWithChildrenShortcut); tab_.table->addAction(cycle); // the window adds it to the canvas
     bar->addAction(cycle);
-    bar->addAction(action("editorRestorePriority", {}, [this] {
-        const auto id = selectedConflict(); if (id.empty()) return;
-        execute("editorRestorePriority", [&](auto& d) { restoreAutomaticPriorityOf(d, id); });
+    bar->addAction(action("editorRestorePriority", [this] {
+        const auto id = selected(); if (id.empty()) return;
+        context_.execute("editorRestorePriority", [&](auto& d) { restoreAutomaticPriorityOf(d, id); });
     }));
-    bar->addAction(action("editorDeleteConflict", {}, [this] {
-        const auto id = selectedConflict(); if (id.empty()) return;
-        execute("editorDeleteConflict", [&](auto& d) { removeConflictGroup(d, id); });
+    bar->addAction(action("editorDeleteConflict", [this] {
+        const auto id = selected(); if (id.empty()) return;
+        context_.execute("editorDeleteConflict", [&](auto& d) { removeConflictGroup(d, id); });
     }));
-    // The Conflict area tool's gestures (M3.2.4b) submit the same commands as the tab.
-    canvas_->conflictPicked = [this](const std::string& id) { selectConflict(id); };
-    canvas_->conflictCycled = [this](const std::string& id) { cyclePriority(id); };
-    canvas_->conflictAuthored = [this](const std::string& key) { authorConflict(key); };
-    connect(objects_, &QTabWidget::currentChanged, this, [this](int index) { if (objects_->widget(index) == objectPages_.at("editorConflictTable")) refreshConflicts(); });
-    canvas_->waitingLineMoved = [this](const std::string& id, double station) {
-        execute("editorMoveWaitingLine", [&](auto& d) { moveWaitingLine(d, id, station); }); };
-    connect(conflictTab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
-        const auto id = selectedConflict(); if (!id.empty()) editConflict(id); });
-    connect(conflictTab_.table, &QTableWidget::activated, this, [this](const QModelIndex&) { // Enter
-        const auto id = selectedConflict(); if (!id.empty()) editConflict(id); });
-    connect(conflictTab_.table, &QTableWidget::itemSelectionChanged, this, [this] {
-        canvas_->setHighlightedConflict(selectedConflict()); refresh(false); });
+    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+        const auto id = selected(); if (!id.empty()) edit(id); });
+    connect(tab_.table, &QTableWidget::activated, this, [this](const QModelIndex&) { // Enter
+        const auto id = selected(); if (!id.empty()) edit(id); });
+    connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] {
+        hooks_.highlight(selected()); context_.selectionChanged(); });
 }
-void EditorWindow::translateConflicts() {
-    conflictTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorConflictKind"),
+void ConflictsPanel::translate() {
+    tab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorConflictKind"),
         text("editorConflictPriority"), text("editorConflictGap"), text("editorConflictHeadway"), text("editorConflictStatus"),
         text("editorConflictControl")});
-    if (runProtection_) runProtection_->setText(text("editorRunProtection"));
-    conflictTab_.invalidate(); // translated cells are rebuilt on the next refresh
+    tab_.invalidate(); // translated cells are rebuilt on the next refresh
 }
-std::string EditorWindow::selectedConflict() const {
-    const auto* cell = conflictTab_.table ? conflictTab_.table->item(conflictTab_.table->currentRow(), 0) : nullptr;
-    return cell && !conflictTab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+std::string ConflictsPanel::selected() const {
+    const auto* cell = tab_.table ? tab_.table->item(tab_.table->currentRow(), 0) : nullptr;
+    return cell && !tab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
 }
-void EditorWindow::refreshConflicts() {
-    if (!conflictTab_.table) return;
-    const auto& n = history_.document().network;
+void ConflictsPanel::refresh() {
+    if (!tab_.table) return;
+    const auto& n = context_.document().network;
     const auto& row = n.rightOfWay;
-    const auto keep = selectedConflict();
+    const auto keep = selected();
     // The automatic areas: derived from the drawing, so recomputed when it changes -- and only
     // while something shows them. Hidden, they are forgotten rather than left stale.
-    const bool shown = automaticShown();
-    if (shown && automaticRevision_ != history_.revision()) { automatic_ = automaticConflicts(n); automaticRevision_ = history_.revision(); }
+    const bool shown = hooks_.automaticShown();
+    if (shown && automaticRevision_ != context_.revision()) { automatic_ = automaticConflicts(n); automaticRevision_ = context_.revision(); }
     if (!shown && automaticRevision_ != UINT64_MAX) { automatic_.clear(); automaticRevision_ = UINT64_MAX; }
-    canvas_->setAutomaticConflicts(automatic_);
+    hooks_.showAutomatic(automatic_);
     const auto groups = conflictGroups(n, automatic_);
     const int rows = static_cast<int>(groups.size());
-    if (conflictTab_.revision != history_.revision() || conflictTab_.table->rowCount() != rows) {
-        conflictTab_.revision = history_.revision();
-        const QSignalBlocker block(conflictTab_.table);
-        conflictTab_.table->setRowCount(rows);
+    if (tab_.revision != context_.revision() || tab_.table->rowCount() != rows) {
+        tab_.revision = context_.revision();
+        const QSignalBlocker block(tab_.table);
+        tab_.table->setRowCount(rows);
         const auto verdict = row.conflictAreas.empty() ? RightOfWayResolution{} : resolveRightOfWay(n, runtimeSections(n), {1, 1});
         for (int r=0;r<rows;++r) {
             const auto& g=groups[static_cast<std::size_t>(r)];
@@ -170,68 +155,64 @@ void EditorWindow::refreshConflicts() {
                 cell->setToolTip(text("editorConflictGroupPairs").arg(g.areaIds.size()+g.automaticKeys.size())+
                     (std::find(g.kinds.begin(),g.kinds.end(),ConflictKind::branching)!=g.kinds.end()?"\n"+text("editorConflictGroupReadOnly"):QString()));
                 if(c==0||c==4||c==5)editorDesign::setNumericText(cell,c>0);
-                conflictTab_.table->setItem(r,c,cell);
+                tab_.table->setItem(r,c,cell);
             }
-            if(conflictGroupContains(g,keep))conflictTab_.table->selectRow(r);
+            if(conflictGroupContains(g,keep))tab_.table->selectRow(r);
         }
-        fitTableColumns(conflictTab_.table);
+        fitTableColumns(tab_.table);
     }
-    canvas_->setHighlightedConflict(selectedConflict());
+    hooks_.highlight(selected());
     // What each action needs: two roads to cross, a Connector to take over, a row to act on.
-    const auto& sel = canvas_->selection();
+    const auto& sel = context_.selection();
     const auto road = [&](const std::string& id) {
         return std::any_of(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == id; }) ||
                std::any_of(n.connectors.begin(), n.connectors.end(), [&](const auto& c) { return c.id == id; });
     };
     actions_.at("editorAddCrossing")->setEnabled(sel.size() == 2 && road(sel[0]) && road(sel[1]));
-    actions_.at("editorTakeOverMerge")->setEnabled(canvas_->selectedConnector() != nullptr);
-    const auto chosen = selectedConflict();
+    actions_.at("editorTakeOverMerge")->setEnabled(!hooks_.selectedConnector().empty());
+    const auto chosen = selected();
     const bool automatic = isAutomaticKey(chosen);
     const auto group=std::find_if(groups.begin(),groups.end(),[&](const auto& g){return g.key==chosen;});
     const bool branching=group!=groups.end() && group->geometryKind==ConflictGeometryKind::branching;
     for (const auto* key : {"editorEditConflict", "editorCyclePriority"}) actions_.at(key)->setEnabled(!chosen.empty() && !branching);
     for (const auto* key : {"editorRestorePriority", "editorDeleteConflict"}) actions_.at(key)->setEnabled(!chosen.empty() && !automatic);
 }
-void EditorWindow::showConflicts() { objects_->setCurrentWidget(objectPages_.at("editorConflictTable")); refreshConflicts(); }
-bool EditorWindow::automaticShown() const {
-    return tool_->currentIndex() == static_cast<int>(EditorCanvas::Tool::conflict) || objects_->currentWidget() == objectPages_.at("editorConflictTable");
-}
-void EditorWindow::authorConflict(const std::string& key) {
-    for(const auto& g:conflictGroups(history_.document().network,automatic_))
-        if(conflictGroupContains(g,key) && g.geometryKind==ConflictGeometryKind::branching){selectConflict(g.key);return;}
-    const auto defaults = priorityDefaults();
+void ConflictsPanel::authorConflict(const std::string& key) {
+    for(const auto& g:conflictGroups(context_.document().network,automatic_))
+        if(conflictGroupContains(g,key) && g.geometryKind==ConflictGeometryKind::branching){select(g.key);return;}
+    const auto defaults = hooks_.priorityDefaults();
     std::string created;
-    if (execute("editorAuthorConflict", [&](auto& d) { created = authorConflictGroup(d, key, defaults); })) selectConflict(created);
+    if (context_.execute("editorAuthorConflict", [&](auto& d) { created = authorConflictGroup(d, key, defaults); })) select(created);
 }
-void EditorWindow::cyclePriority(const std::string& id) {
+void ConflictsPanel::cyclePriority(const std::string& id) {
     if (id.empty()) return;
     if (isAutomaticKey(id)) { authorConflict(id); return; } // the first P on a passive area sets it
-    const auto defaults = priorityDefaults();
-    execute("editorCyclePriority", [&](auto& d) { cycleConflictGroupPriority(d, id, defaults); });
+    const auto defaults = hooks_.priorityDefaults();
+    context_.execute("editorCyclePriority", [&](auto& d) { cycleConflictGroupPriority(d, id, defaults); });
 }
-bool EditorWindow::selectConflict(const std::string& id) {
-    if (id.empty() || !conflictTab_.table) return false;
-    const auto& row = history_.document().network.rightOfWay;
+bool ConflictsPanel::select(const std::string& id) {
+    if (id.empty() || !tab_.table) return false;
+    const auto& row = context_.document().network.rightOfWay;
     std::string area = id;
     for (const auto& r : row.priorityRules) if (r.id == id) area = r.conflictAreaId;
     for (const auto& c : row.stopControls) if (c.id == id && !c.conflictAreaIds.empty()) area = c.conflictAreaIds.front();
     for (const auto& a : row.conflictAreas)
         if (a.first.waitingLineId == id || a.second.waitingLineId == id) { area = a.id; break; }
-    for(const auto& g:conflictGroups(history_.document().network,automatic_))
+    for(const auto& g:conflictGroups(context_.document().network,automatic_))
         if(conflictGroupContains(g,area)){area=g.key;break;}
-    for (int r = 0; r < conflictTab_.table->rowCount(); ++r)
-        if (conflictTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == area) {
-            revealObjectPage(objectPages_.at("editorConflictTable")); conflictTab_.table->selectRow(r); return true;
+    for (int r = 0; r < tab_.table->rowCount(); ++r)
+        if (tab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == area) {
+            hooks_.reveal(); tab_.table->selectRow(r); return true;
         }
     return false;
 }
-void EditorWindow::editConflict(const std::string& id) {
+void ConflictsPanel::edit(const std::string& id) {
     if (isAutomaticKey(id)) { authorConflict(id); return; } // Enter on an automatic row authors it
-    const auto& row = history_.document().network.rightOfWay;
+    const auto& row = context_.document().network.rightOfWay;
     const auto a = std::find_if(row.conflictAreas.begin(), row.conflictAreas.end(), [&](const auto& x) { return x.id == id; });
     if (a == row.conflictAreas.end()) return;
     const auto rule = std::find_if(row.priorityRules.begin(), row.priorityRules.end(), [&](const auto& x) { return x.conflictAreaId == id; });
-    const auto defaults = priorityDefaults();
+    const auto defaults = hooks_.priorityDefaults();
     QDialog dialog(this); dialog.setObjectName("editorConflictDialog"); dialog.setWindowTitle(text("editorEditConflict"));
     auto* form = new QFormLayout(&dialog);
     form->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);
@@ -251,7 +232,7 @@ void EditorWindow::editConflict(const std::string& id) {
     headway->setValue(rule != row.priorityRules.end() ? rule->headway : std::max(0.1, defaults.headway));
     std::size_t pairCount=1;
     bool hasBranching=false;
-    for(const auto& g:conflictGroups(history_.document().network,automatic_))if(conflictGroupContains(g,id)) {
+    for(const auto& g:conflictGroups(context_.document().network,automatic_))if(conflictGroupContains(g,id)) {
         pairCount=g.areaIds.size();
         for(const auto& key:g.automaticKeys)for(const auto& a:automatic_)if(a.key==key) {
             if(a.kind==ConflictKind::branching)hasBranching=true;else ++pairCount;
@@ -286,16 +267,16 @@ void EditorWindow::editConflict(const std::string& id) {
     if (dialog.exec() != QDialog::Accepted) return;
     const auto chosen = static_cast<ConflictPriority>(priority->currentData().toInt());
     const int mode = control->currentData().toInt();
-    execute("editorEditConflict", [&](auto& d) {
+    context_.execute("editorEditConflict", [&](auto& d) {
         setConflictGroupControl(d, id, name->text().toStdString(), chosen, gap->value(), headway->value());
         if (chosen != ConflictPriority::undetermined)
             setConflictGroupStopControl(d, id, mode < 0 ? std::nullopt : std::optional{static_cast<StopMode>(mode)});
     });
 }
-void EditorWindow::addCrossings() {
-    const auto sel = canvas_->selection();
+void ConflictsPanel::addCrossings() {
+    const auto sel = context_.selection();
     if (sel.size() != 2) return;
-    const auto defaults = priorityDefaults();
+    const auto defaults = hooks_.priorityDefaults();
     QDialog dialog(this); dialog.setObjectName("editorCrossingDialog"); dialog.setWindowTitle(text("editorAddCrossing"));
     auto* form = new QFormLayout(&dialog);
     form->setContentsMargins(editorDesign::space3,editorDesign::space3,editorDesign::space3,editorDesign::space3);
@@ -304,7 +285,7 @@ void EditorWindow::addCrossings() {
     for (const auto& id : sel) yields->addItem(QString::fromStdString(id), QString::fromStdString(id));
     yields->setCurrentIndex(1); // the one selected last, as Vissim's second click marks the minor road
     // Say which lane pairs the gesture will create before it does (contract §1).
-    auto preview = history_.document();
+    auto preview = context_.document();
     std::size_t pairs = 0;
     try { pairs = addCrossingAreas(preview, sel[0], sel[1], sel[0], defaults).size(); } catch (const std::exception&) {}
     auto* count = new ReflowLabel(text("editorCrossingPairs").arg(pairs), &dialog); count->setObjectName("editorCrossingPairs");
@@ -318,7 +299,7 @@ void EditorWindow::addCrossings() {
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     if (dialog.exec() != QDialog::Accepted) return;
     const auto minor = yields->currentData().toString().toStdString();
-    if (execute("editorAddCrossing", [&](auto& d) { addCrossingAreas(d, sel[0], sel[1], minor, defaults); }))
-        objects_->setCurrentWidget(objectPages_.at("editorConflictTable"));
+    if (context_.execute("editorAddCrossing", [&](auto& d) { addCrossingAreas(d, sel[0], sel[1], minor, defaults); }))
+        context_.show(this);
 }
 }

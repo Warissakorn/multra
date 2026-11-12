@@ -5,6 +5,7 @@
 #include "automation_server.hpp"
 #include "editor_window.hpp"
 #include "nodes_panel.hpp"
+#include "conflicts_panel.hpp"
 #include "study_periods_panel.hpp"
 #include "modes_panel.hpp"
 #include "od_panel.hpp"
@@ -302,7 +303,7 @@ void EditorWindow::refresh(bool modelChanged) {
     const auto generation=QVariant::fromValue<qulonglong>(history_.generation());
     if(property("editorViewGeneration")!=generation) {
         const bool replacing=property("editorViewGeneration").isValid();setProperty("editorViewGeneration",generation);
-        tableRevision_=diagnosticRevision_=automaticRevision_=conflictTab_.revision=UINT64_MAX;counters_->invalidate();sections_->invalidate();
+        tableRevision_=diagnosticRevision_=UINT64_MAX;conflicts_->invalidate();counters_->invalidate();sections_->invalidate();
         speedDecisions_->invalidate();speedAreas_->invalidate();zones_->invalidate();crossSections_->invalidate();streetSegments_->invalidate();nodes_->invalidate();
         periods_->invalidate();modes_->invalidate();od_->invalidate();linkTypes_->invalidate();
         diagnostics_.clear();rejected_.clear();readiness_.clear();readinessChecked_=false;
@@ -346,6 +347,6 @@ void EditorWindow::refresh(bool modelChanged) {
     bgX_->setValue(b.x);bgY_->setValue(b.y);bgScale_->setValue(b.metresPerPixel);bgAngle_->setValue(b.rotation);bgOpacity_->setValue(b.opacity);
     actions_.at("editorDeleteSelected")->setEnabled(!canvas_->selection().empty());
     actions_.at("editorRotate")->setEnabled(canvas_->rotationPivot().has_value());
-    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();counters_->refresh();sections_->refresh();speedDecisions_->refresh();speedAreas_->refresh();zones_->refresh();nodes_->refresh();od_->refresh();periods_->refresh();modes_->refresh();linkTypes_->refresh();refreshLinkTypeField();streetSegments_->refresh();crossSections_->refresh();refreshDiagnostics();refreshRun();
+    refreshTables(modelChanged);if(modelChanged)refreshDemand();conflicts_->refresh();counters_->refresh();sections_->refresh();speedDecisions_->refresh();speedAreas_->refresh();zones_->refresh();nodes_->refresh();od_->refresh();periods_->refresh();modes_->refresh();linkTypes_->refresh();refreshLinkTypeField();streetSegments_->refresh();crossSections_->refresh();refreshDiagnostics();refreshRun();
 }
 }

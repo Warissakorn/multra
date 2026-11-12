@@ -1,5 +1,6 @@
 #include "editor_window.hpp"
 #include "nodes_panel.hpp"
+#include "conflicts_panel.hpp"
 #include "table_grid.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/macro_run.hpp"
@@ -146,7 +147,7 @@ void EditorWindow::jumpTo(int row) {
         const auto object=cell->data(Qt::UserRole+1).toString().toStdString();
         // S5.5b (D332): a Node's row selects it on the Nodes tab, which lights it (D288).
         if (nodes_->selectRow(object)) return;
-        if (!selectConflict(object)) selectDemand(object); // M3.2.4: authored controls have a tab
+        if (!conflicts_->select(object)) selectDemand(object); // M3.2.4: authored controls have a tab
         return;
     }
     canvas_->select(id);

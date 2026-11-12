@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "conflicts_panel.hpp"
 #include "editor_automation_state.hpp"
 #include "editor_recovery_state.hpp"
 #include "editor_run_state.hpp"
@@ -92,7 +93,7 @@ void EditorWindow::recoverFile(const QString& file) {
     auto document=readEditorDocument(file);
     // Restored documents are untitled, so Save asks for a destination before replacing anything.
     clearRecovery();clearRun();discardMacro();discardMeso();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
-    automaticRevision_=conflictTab_.revision=UINT64_MAX;
+    conflicts_->invalidate();
     recoverySession_->lock=std::move(lock);recoverySession_->file=file;recoverySession_->autosavedRevision.reset();startAutosave();
     canvas_->select("");refresh();canvas_->fitNetwork();error_->setText(text("editorRecovered"));
 }

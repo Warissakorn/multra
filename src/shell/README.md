@@ -24,7 +24,7 @@ replaced atomically (`QSaveFile`).
 | Window, workspace, tables, inspector | `editor_window.cpp`, `editor_workspace.cpp`, `editor_tables.cpp`, `editor_inspector.cpp`, `editor_palette.cpp` (command palette), `editor_commands.cpp`, `editor_history.cpp`, `editor_input.cpp`, `editor_modes.cpp` (the window's mode choices; the tab is `modes_panel.*`) |
 | Files and recovery | `editor_files.cpp`, `editor_recovery.cpp` (state: `RecoverySession` in `editor_recovery_state.hpp`, D518), `editor_side_files.cpp`, `editor_storage.cpp` |
 | Drawing | `editor_creation.cpp`, `editor_connectors.cpp`, `editor_rotation.cpp`, `cross_sections_panel.*` (D521), `editor_link_types.cpp`, `editor_appearance.cpp`, `editor_diagnostics.cpp` |
-| Control | `editor_priority.cpp`, `editor_control.cpp`, `editor_signal.cpp` |
+| Control | `editor_conflicts.cpp` (the Conflict areas tab's hooks and canvas gestures; the tab is `conflicts_panel.*`), `editor_control.cpp`, `editor_signal.cpp` |
 | Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp` (the window's period choices; the tab is `study_periods_panel.*`),  `editor_behaviour.cpp`, `zones_panel.*` (Zones tab, D521), `editor_od.cpp` (compositions and the lot dialog; the OD tab is `od_panel.*`) |
 | Street segments and Nodes | `editor_street_segments.cpp` (template rows and the Default template; the tab is `street_segments_panel.*`), `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp` (Node proposals, and the Nodes panel's hooks) |
 | Evaluation objects | `counters_panel.*`, `sections_panel.*` (D521) |
@@ -46,6 +46,7 @@ The other headers:
 | `object_tab_panel.hpp` | `ObjectTabPanel`: the base of an object tab's panel (context, table and revision, its actions by key), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `street_segments_panel.*` | `StreetSegmentsPanel`: the Street segments object tab, its template combo and dialog, and the Street segment tool's preview and commit (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
 | `nodes_panel.*` | `NodesPanel`: the Nodes object tab, its rename dialog, actions and the Node tool's commit; window parts reached through `NodesHooks` (D523) | [NODES](../../docs/reference/NODES.md) |
+| `conflicts_panel.*` | `ConflictsPanel`: the Conflict areas object tab, its dialogs, priority actions and the automatic areas; window parts reached through `ConflictsHooks` (D523) | [M3_PLAN](../../docs/plans/M3_PLAN.md) |
 | `cross_sections_panel.*` | `CrossSectionsPanel`: the Cross-sections object tab and its dialog (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
 | `zones_panel.*` | `ZonesPanel`: the Zones object tab, its connectors, dialogs and the Zone tool's commit (D521) | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
 | `link_types_panel.*` | `LinkTypesPanel`: the Link types object tab and its dialog; `linkTypeRowsOf` for the Link's type field (D521) | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md) |

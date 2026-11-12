@@ -54,7 +54,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; class NodesPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; class NodesPanel; class ConflictsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -226,26 +226,13 @@ private:
     void translateCompare();
     void refreshCompare();
     bool batchShown() const { return batchRunning() || batch_ || comparison_; }
-    // M3.2.4, src/shell/editor_priority.cpp: the Conflict areas tab, its dialogs and actions.
-    ObjectTab conflictTab_; // the rows are rebuilt only when its revision goes stale
+    // M3.2.4: the Conflict areas tab, its own panel (conflicts_panel.hpp, D523); editor_conflicts.cpp
+    // builds it and keeps the run-protection note and the canvas gestures.
+    ConflictsPanel* conflicts_{};
     QLabel* runProtection_{};
-    void buildConflicts();
-    void translateConflicts();
-    void refreshConflicts();
-    void editConflict(const std::string& id);
-    void addCrossings();
-    // Shows the area in the tab and on the canvas; a waiting line or rule id names its area.
-    bool selectConflict(const std::string& id);
-    void showConflicts();
-    void cyclePriority(const std::string& id);
-    std::string selectedConflict() const;
+    void buildConflicts(); void translateConflicts(); void showConflicts();
     PriorityDefaults priorityDefaults() const; // data/priority-rules, as Run reads them
-    // M3.2.4c (D68): the automatic areas, derived once per revision and only while the Conflict
-    // area tool or tab is in use (3.4 ms a revision on the four-leg template, Release).
-    std::vector<AutomaticConflict> automatic_;
-    std::uint64_t automaticRevision_{UINT64_MAX};
-    bool automaticShown() const;
-    void authorConflict(const std::string& key);
+    bool automaticShown() const; // the automatic areas are derived only while this holds (D68)
     // M3.2.6c, src/shell/editor_counters.cpp: the Queue counters tab and the tool's commit.
     CountersPanel* counters_{}; // its own panel (counters_panel.hpp, D521)
     // M5.4b, src/shell/editor_sections.cpp: the Travel-time sections tab and the tool's commit.
