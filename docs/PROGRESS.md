@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — Bonneson (1992) read: S1-d's model curve (D532)
+
+- **D532:** fetched Bonneson (1992) from TRB Online Pubs (a personal environment allowing
+  `onlinepubs.trb.org`, owner-approved) and read all nine pages. It has no per-position table, so
+  S1-d's Bonneson reference is his Eq. 20 at `v` = 16.8, shown without a band (3.22 s at rank 1
+  to 1.76 s at rank 12). The owner's earlier summary was secondary and gave Briggs's `T` (1.22 s)
+  as Bonneson's. Li & Prevedouros (2002) is not freely available and keeps the ±5 % band.
+
 ## 2026-11-12 — Shao & Liu (2012): the S1 headway estimator (D531)
 
 - **D531:** the owner attached a Thai Markdown rendering of Shao & Liu (2012). Its point, that

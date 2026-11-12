@@ -67,7 +67,7 @@ Model facts that decide which options fit:
 | **S1-a** Handbook default | [HCM7] Ch. 19 | Base saturation flow `s0` in pc/h/ln: 1,900 by default (HCM 2010 gives 1,750 for areas under 250,000 population; not checked in the 7th edition). Lane-group capacity `c = N·s·g/C`, with `s` the adjusted saturation flow in veh/h/ln. Base conditions: 12 ft lanes, no heavy vehicles, level grade, no parking, no buses stopping, even lane utilisation, through movements only (both from HCM 2010-based agency sources; not checked in the 7th edition) | `--discharge` on a car-only, straight, through-only lane. `--discharge-steady-first 5` with a declared last rank mirrors the 1985 HCM's "headways after the fourth vehicle in the queue" (quoted in [LiPrev02]; the 7th edition's field procedure was not read); `--discharge-startup-last 4` gives the start-up estimate over the first four. Then `3600 / h` per lane and cycle, averaged over cycles and seeds | A national planning default, not a site measurement; local calibrations differ from it. The steady headway is almost set by the following model's parameters, so a match tests the parameter choice unless the model, behaviour set and catalog are frozen first. The 1985 HCM's field method runs to the last vehicle of each standing queue, while `--discharge` uses a declared rank range of vehicles queued at green. Effective green is not measured: amber ends the discharge window, so `c` must use a declared `g` |
 | **S1-b** UK regression | [RR67] | 2080 pcu/h for a non-nearside lane 3.2 m wide (the abstract's figure), straight ahead, from 64 UK sites, with terms for lane width, gradient, nearside position and turning radius. It replaced [TP56] | The same `--discharge` command on a non-nearside straight lane of the reference width | Only the intercept can be tested: the engine has no grade or kerb effect. The 64 sites were chosen to avoid heavy parking and pedestrian activity, and TRL Software's notes call the 2080 figure optimistic, better than an average site. UK fleet of the 1980s; pcu, not veh. Left-hand traffic, so the nearside lane maps directly onto a Thai drawing |
 | **S1-c** Australian method | [ARR123] | Base saturation flows in through-car units by environment class and lane type, with Akçelik's definitions of lost time and effective green | The same command | The table values were not read for this sheet and must be taken from the report. 1970s Australian data; left-hand traffic |
-| **S1-d** Field headway profile | [Bonneson92], [LiPrev02] | Discharge headway by queue position at US signalised junctions. Bonneson finds the minimum headway is reached only from about the eighth position | The crossings `--discharge` emits per cycle give the headway at each rank; ranks are declared to match each paper's positions | Neither paper's per-position headways were read for this sheet; they must be taken from the papers before pre-registration. A profile tests behaviour, not one parameter. Five sites in Bonneson, US fleet. Cycles with fewer queued vehicles than the last declared rank are unavailable |
+| **S1-d** Field headway profile | [Bonneson92], [LiPrev02] | Discharge headway by queue position at US signalised junctions. Bonneson finds the minimum headway is reached only from about the eighth position | The crossings `--discharge` emits per cycle give the headway at each rank; ranks are declared to match each paper's positions | [Bonneson92] read 2026-11-12 (D532): it gives a calibrated model (Eq. 20, fitted to 164 site-by-position averages), not a per-position table, so its reference is the model curve. [LiPrev02] is still unread. A profile tests behaviour, not one parameter. Five sites in Bonneson, US fleet. Cycles with fewer queued vehicles than the last declared rank are unavailable |
 | **S1-e** Field trajectories | [NGSIM] Lankershim Blvd (2005), Peachtree St (2006) | Vehicle trajectories, free, on signalised arterials; saturation headways can be measured at the stop lines | An adapter that turns the trajectories into crossing records for the discharge estimator, which `estimateDischarge` already accepts in code; no CLI path exists | A dataset, not a published figure: the comparison figure must first be computed by a stated method, and the gate asks for a published result. Prevailing conditions: mixed fleet, platoons, congested periods. Lankershim has two 15-minute periods, so few saturated cycles per lane; Peachtree's periods were not confirmed |
 | **S1-f** Discharge profile in time (D529) | [AkcBes02] | Queue discharge flow against time since the start of green, `q_s = q_n[1 − e^{−m_q(t − t_r)}]` (Eq. 2, PDF p. 2), its cumulative departures (Eq. 7, p. 4), and the saturation flow measured after the first 10 s, about the first four vehicles (p. 10). Light vehicles at 18 Melbourne and Sydney sites; Through (isolated) average: `q_n` 2,086 veh/h, `m_q` 0.369, `h_n` 1.725 s with `t_r` = 0 (Table 1, p. 6); `s` 2,083 veh/h, `t_s` 2.6 s, `t_e` 2.6 s (Table 2, p. 11) | The S1-a runs: `s` from ranks 5–12; the per-rank crossing times after green against Eq. 7 | Fitted per site; the average row stands for no one site, and the through isolated sites range from 1,786 to 2,549 veh/h in `s`. Australian fleet of the late 1990s; parameters fitted with `t_r` = 0. Left-hand traffic, as a Thai drawing. [MurCet19]'s Table 5 re-tabulates these rows and adds no independent data |
 
@@ -130,7 +130,7 @@ of the pass.
 
 | Kind | Band |
 |---|---|
-| S1 (S1-a; S1-d per rank; S1-f's `s`) | ±5 % of the reference saturation flow (or headway) |
+| S1 (S1-a; S1-d per rank from [LiPrev02], Bonneson's model curve shown without a band, D532; S1-f's `s`) | ±5 % of the reference saturation flow (or headway) |
 | S2 (S2-c, S2-b, S2-a) | ±15 % of the reference delay, after the stated offset |
 | U (U-c, U-a) | ±15 % of the reference capacity at each major-flow level |
 
@@ -165,9 +165,28 @@ otherwise; a Thai city study is in the first class). Every adjustment factor is 
 because the project is at base conditions.
 
 **S1-d (second), headway by queue position.** The same project and runs; the per-cycle crossings
-give the headway at ranks 1–12. References: the per-position headways of [Bonneson92] and
-[LiPrev02] (*to read*: neither table has been read). Ranks with fewer than 30 cycles across the
-40 seeds are reported unavailable.
+give the headway at ranks 1–12: `t[1] − go` for rank 1 and `t[r] − t[r−1]` after it, mean over
+cycles, then over seeds. Ranks with fewer than 30 cycles across the 40 seeds are reported
+unavailable. **[Bonneson92], read 2026-11-12 (D532), shown with no band.** The paper gives no
+table of measured headways by position (its Figure 8 plots two movements; the data are in his
+1990 dissertation), so the reference is its calibrated model, Eq. 20 (PDF p. 105, image read):
+`h_n = τ′N₁ + T′ + d′/Vmax + b3(V_sl(n) − V_sl(n−1))/Amax + b4·v + b5·AGI`, with `τ′` 1.03 s,
+`T′` 1.57 s, `d′` 25.25 ft, `b3` 0.357, `b4` −0.0086, `b5` −0.23 (p. 105), the stop-line speed
+`V_sl(n) = Vmax(1 − e^(−nk))`, `k = −0.290 + 24.0/Vmax` (Eq. 19, p. 105), `Vmax` 49 ft/s
+(pp. 104–105) and `Amax` 6.63 ft/s² (p. 104). The 1.22 s on p. 100 is Briggs's `T`, not
+Bonneson's. Rank 1 counts from the start of green (p. 102), as `t[1] − go` does. Traffic
+pressure `v` is lane volume per cycle as a one-hour average (p. 105), fitted over 0–16.8; the
+S1-a project's `v` ≈ 30 lies outside, so the curve is evaluated at **`v` = 16.8**, with `AGI` = 1
+(at-grade), before any run:
+
+| Rank | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `h` (s) | 3.22 | 2.10 | 2.03 | 1.97 | 1.93 | 1.89 | 1.85 | 1.83 | 1.81 | 1.79 | 1.78 | 1.76 |
+
+The limiting `H` is 1.71 s (Eq. 22 at `v` = 16.8). Stated beside it: a regression of averages,
+extrapolated in pressure; the paper's tapeswitch axle hits just past the line (pp. 103–104), the
+axle not stated, against the engine's front crossing; five US sites at v/c 0.30–0.70. The
+banded profile (±5 % per rank, D516) is [LiPrev02]'s measured headways, still *to read*.
 
 **S1-f (D529), the discharge profile in time.** The same project and runs as S1-a; S1-d still
 waits for its papers. **The figure that decides:** `s = 3600 /` the steady headway of ranks 5–12,
@@ -267,8 +286,8 @@ base conditions the adjustments of Equations 20-16 and 20-17 are 0 (`P_HV` = 0, 
 | `c_p` (veh/h) | 846.1 | 654.3 | 504.6 | 388.1 | 297.7 |
 
 **Before the first run:** the HCM 7 values were read 2026-11-12 (copy `74f4bc3`, page images
-read; cited above). Still open: the S1-d per-position headways of [Bonneson92] and [LiPrev02]
-(papers, not in the owner's book set); U-c's effective `t_c`. The S2-c references are computed
+read; cited above). Still open: the S1-d per-position headways of [LiPrev02] (not freely available;
+[Bonneson92] read, D532); U-c's effective `t_c`. The S2-c references are computed
 (D529, `multra-fctl-reference`). The priority-line
 counter exists (D528). Each open item has its own rows before it is used.
 
@@ -320,7 +339,9 @@ Thai study of these quantities found none that could be verified (leads in §7, 
 - **[BKT99]** Brilon, W., Koenig, R., Troutbeck, R.J. (1999). Useful estimation procedures for
   critical gaps. *Transportation Research Part A* 33(3–4), 161–186.
 - **[Bonneson92]** Bonneson, J.A. (1992). Modeling queued driver behavior at signalized
-  junctions. *Transportation Research Record* 1365, 99–107. [TRID](https://trid.trb.org/View/371410)
+  junctions. *Transportation Research Record* 1365, 99–107. [TRID](https://trid.trb.org/View/371410);
+  [TRB Online Pubs PDF](https://onlinepubs.trb.org/Onlinepubs/trr/1992/1365/1365-010a.pdf), all nine pages
+  read from the page images 2026-11-12 (not vendored; TRB copyright)
 - **[Darroch64]** Darroch, J.N. (1964). On the traffic-light queue. *Annals of Mathematical
   Statistics* 35(1), 380–388. [doi:10.1214/aoms/1177703761](https://doi.org/10.1214/aoms/1177703761)
 - **[Harders68]** Harders, J. (1968). *Die Leistungsfähigkeit nicht signalgeregelter städtischer
