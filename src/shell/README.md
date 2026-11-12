@@ -25,7 +25,7 @@ replaced atomically (`QSaveFile`).
 | Files and recovery | `editor_files.cpp`, `editor_recovery.cpp` (state: `RecoverySession` in `editor_recovery_state.hpp`, D518), `editor_side_files.cpp`, `editor_storage.cpp` |
 | Drawing | `editor_creation.cpp`, `editor_connectors.cpp`, `editor_rotation.cpp`, `editor_cross_sections.cpp`, `editor_link_types.cpp`, `editor_appearance.cpp`, `editor_diagnostics.cpp` |
 | Control | `editor_priority.cpp`, `editor_control.cpp`, `editor_signal.cpp` |
-| Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp` (the window's period choices; the tab is `study_periods_panel.*`),  `editor_behaviour.cpp`, `editor_zones.cpp` (Zones tab), `editor_od.cpp` (compositions and the lot dialog; the OD tab is `od_panel.*`) |
+| Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp` (the window's period choices; the tab is `study_periods_panel.*`),  `editor_behaviour.cpp`, `zones_panel.*` (Zones tab, D521), `editor_od.cpp` (compositions and the lot dialog; the OD tab is `od_panel.*`) |
 | Street segments and Nodes | `editor_street_segments.cpp`, `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp`, `editor_nodes.cpp` |
 | Evaluation objects | `counters_panel.*`, `sections_panel.*` (D521) |
 | Runs and Results | `editor_run.cpp` (Run/Pause/Step/Reset, seed, speed; its state is `RunSession` in `editor_run_state.hpp`, D517), `editor_batch.cpp` (N seeds on one worker thread; its state is `BatchSession` in `editor_batch_state.hpp`, D514), `editor_compare.cpp` (the open project against a chosen file), `editor_macro.cpp`, `editor_meso.cpp`, `editor_results.cpp`, `editor_results_nodes.cpp` |
@@ -43,6 +43,7 @@ The other headers:
 | `object_tab.hpp` | `ObjectTab`: one object tab's table and the History revision its rows were built at; thirteen `EditorWindow` tabs hold one each (D520) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_context.hpp` | `ObjectTabContext`: what an object tab's panel needs from the window (document, revision, text, actions, History steps, refresh, show), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_panel.hpp` | `ObjectTabPanel`: the base of an object tab's panel (context, table and revision, its actions by key), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `zones_panel.*` | `ZonesPanel`: the Zones object tab, its connectors, dialogs and the Zone tool's commit (D521) | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
 | `link_types_panel.*` | `LinkTypesPanel`: the Link types object tab and its dialog; `linkTypeRowsOf` for the Link's type field (D521) | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md) |
 | `counters_panel.*` | `CountersPanel`: the Queue counters object tab, its dialog and the counter tool's commit (D521) | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |
 | `sections_panel.*` | `SectionsPanel`: the Travel-time sections object tab, its dialog and the section tool's commit (D521) | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) |

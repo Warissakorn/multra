@@ -45,7 +45,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - **Split `EditorWindow` (D505): steps 1–5 done (D514 `BatchSession`, D517 `RunSession`, D518
     `RecoverySession`, D519 `AutomationHost`, D520 `ObjectTab`; header 455 lines).** Next, one per
     commit with no behaviour change: the object tabs as panels (D521; done: Study periods, Modes, OD, speed decisions,
-    speed areas, counters, sections, link types; next, one per commit: zones,
+    speed areas, counters, sections, link types, zones; next, one per commit:
     cross-sections, street segments, Nodes, conflicts), then Macro/Meso functions onto their panels. `src/project/`
     (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
   - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of

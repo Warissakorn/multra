@@ -1,5 +1,5 @@
 #include "table_layout.hpp"
-#include "editor_window.hpp"
+#include "zones_panel.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/zone_commands.hpp"
 #include "street_segment_zone_dialog.hpp"
@@ -23,7 +23,7 @@
 #include <map>
 
 // M8.6a (D161, docs/reference/ZONES_AND_PARKING.md §9): the Zones tab. The Zone tool's Enter commits
-// a polygon through execute(), so a drawn zone is one Undo step; connectors are added from the zone
+// a polygon through context_.execute(), so a drawn zone is one Undo step; connectors are added from the zone
 // row to the Link selected on the canvas, and every edit and delete goes through History too.
 namespace multra {
 namespace {
@@ -46,10 +46,10 @@ std::vector<Choice> streetSegmentChoices(const ProjectDocument& d) {
     return choices;
 }
 }
-void EditorWindow::buildZones() {
+ZonesPanel::ZonesPanel(QWidget* parent, ObjectTabContext context, ZonesHooks hooks) : ObjectTabPanel(parent, std::move(context)), hooks_(std::move(hooks)) {
     // Zones and the selected zone's connectors side by side: stacked, the tab's minimum height would
     // squeeze the canvas in a small window.
-    auto* body = new QWidget(objects_); auto* row = new QHBoxLayout(body);
+    auto* body = this; auto* row = new QHBoxLayout(body);
     row->setContentsMargins(0, 0, 0, 0); row->setSpacing(editorDesign::space2);
     const auto column = [&](QToolBar*& bar, QTableWidget*& table, int columns, const char* name, int stretch) {
         auto* layout = new QVBoxLayout; layout->setSpacing(editorDesign::space1);
@@ -58,67 +58,57 @@ void EditorWindow::buildZones() {
         row->addLayout(layout, stretch);
     };
     QToolBar *bar{}, *connectorBar{};
-    column(bar, zoneTab_.table, 5, "editorZoneTable", 3);
-    column(connectorBar, zoneConnectorTable_, 3, "editorZoneConnectorTable", 2);
-    addObjectPage(body,"editorZoneTable");
-    bar->addAction(action("editorEditZone", {}, [this] { const auto id = selectedZone(); if (!id.empty()) editZone(id); }));
-    bar->addAction(action("editorDeleteZone", {}, [this] {
-        const auto id = selectedZone(); if (id.empty()) return;
-        execute("editorDeleteZone", [&](auto& d) { deleteZone(d, id); }); // refused while a matrix or lot names it
+    column(bar, tab_.table, 5, "editorZoneTable", 3);
+    column(connectorBar, connectorTable_, 3, "editorZoneConnectorTable", 2);
+    bar->addAction(action("editorEditZone", [this] { const auto id = selected(); if (!id.empty()) edit(id); }));
+    bar->addAction(action("editorDeleteZone", [this] {
+        const auto id = selected(); if (id.empty()) return;
+        context_.execute("editorDeleteZone", [&](auto& d) { deleteZone(d, id); }); // refused while a matrix or lot names it
     }));
-    bar->addAction(action("editorEditLot", {}, [this] { const auto id = selectedZone(); if (!id.empty()) editLot(id); })); // M8.6b
-    bar->addAction(action("editorAddOriginConnector", {}, [this] { addZoneConnector(true); }));
-    bar->addAction(action("editorAddDestinationConnector", {}, [this] { addZoneConnector(false); }));
-    connectorBar->addAction(action("editorAddStreetSegmentZoneConnector", {}, [this] {
-        const auto zone = selectedZone(); if (zone.empty()) return;
-        ZoneConnector initial; initial.zoneId = zone; initial.streetSegmentId = selectedStreetSegment();
-        const auto edited = editStreetSegmentZoneConnector(this, initial, streetSegmentChoices(history_.document()), [this](const char* k) { return text(k); });
-        if (edited) execute("editorAddStreetSegmentZoneConnector", [&](auto& d) { putZoneConnector(d, *edited); });
+    bar->addAction(action("editorEditLot", [this] { const auto id = selected(); if (!id.empty()) hooks_.editLot(id); })); // M8.6b
+    bar->addAction(action("editorAddOriginConnector", [this] { addConnector(true); }));
+    bar->addAction(action("editorAddDestinationConnector", [this] { addConnector(false); }));
+    connectorBar->addAction(action("editorAddStreetSegmentZoneConnector", [this] {
+        const auto zone = selected(); if (zone.empty()) return;
+        ZoneConnector initial; initial.zoneId = zone; initial.streetSegmentId = hooks_.selectedStreetSegment();
+        const auto edited = editStreetSegmentZoneConnector(this, initial, streetSegmentChoices(context_.document()), [this](const char* k) { return text(k); });
+        if (edited) context_.execute("editorAddStreetSegmentZoneConnector", [&](auto& d) { putZoneConnector(d, *edited); });
     }));
-    connectorBar->addAction(action("editorEditZoneConnector", {}, [this] {
-        const auto id = selectedZoneConnector(); if (!id.empty()) editZoneConnector(id); }));
-    connectorBar->addAction(action("editorDeleteZoneConnector", {}, [this] {
-        const auto id = selectedZoneConnector(); if (id.empty()) return;
-        execute("editorDeleteZoneConnector", [&](auto& d) { deleteZoneConnector(d, id); });
+    connectorBar->addAction(action("editorEditZoneConnector", [this] {
+        const auto id = selectedConnector(); if (!id.empty()) editConnector(id); }));
+    connectorBar->addAction(action("editorDeleteZoneConnector", [this] {
+        const auto id = selectedConnector(); if (id.empty()) return;
+        context_.execute("editorDeleteZoneConnector", [&](auto& d) { deleteZoneConnector(d, id); });
     }));
-    canvas_->zoneCommitted = [this](std::vector<Point> polygon) {
-        std::string id;
-        if (!execute("editorZoneTool", [&](auto& d) { id = putZone(d, {"", "", std::move(polygon), {}}); })) return false;
-        showZones();
-        for (int r = 0; r < zoneTab_.table->rowCount(); ++r)
-            if (zoneTab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) zoneTab_.table->selectRow(r);
-        return true;
-    };
-    const auto open = [this] { const auto id = selectedZone(); if (!id.empty()) editZone(id); };
-    connect(zoneTab_.table, &QTableWidget::cellDoubleClicked, this, [open](int, int) { open(); });
-    connect(zoneTab_.table, &QTableWidget::activated, this, [open](const QModelIndex&) { open(); }); // Enter
-    connect(zoneTab_.table, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
-    connect(zoneConnectorTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
-        const auto id = selectedZoneConnector(); if (!id.empty()) editZoneConnector(id); });
-    connect(zoneConnectorTable_, &QTableWidget::itemSelectionChanged, this, [this] { refresh(false); });
+    const auto open = [this] { const auto id = selected(); if (!id.empty()) edit(id); };
+    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [open](int, int) { open(); });
+    connect(tab_.table, &QTableWidget::activated, this, [open](const QModelIndex&) { open(); }); // Enter
+    connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
+    connect(connectorTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+        const auto id = selectedConnector(); if (!id.empty()) editConnector(id); });
+    connect(connectorTable_, &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
 }
-void EditorWindow::translateZones() {
-    zoneTab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorZoneConnectorTable"),
+void ZonesPanel::translate() {
+    tab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorZoneConnectorTable"),
                                            text("editorZoneLot"), text("editorZoneAttributes")});
-    zoneConnectorTable_->setHorizontalHeaderLabels({text("editorZoneDirection"), text("editorZoneConnectorTarget"), text("editorZoneConnectorShare")});
-    zoneTab_.invalidate();
+    connectorTable_->setHorizontalHeaderLabels({text("editorZoneDirection"), text("editorZoneConnectorTarget"), text("editorZoneConnectorShare")});
+    tab_.invalidate();
 }
-std::string EditorWindow::selectedZone() const { return rowId(zoneTab_.table); }
-std::string EditorWindow::selectedZoneConnector() const { return rowId(zoneConnectorTable_); }
-void EditorWindow::refreshZones() {
-    if (!zoneTab_.table) return;
-    const auto& d = history_.document();
+std::string ZonesPanel::selected() const { return rowId(tab_.table); }
+std::string ZonesPanel::selectedConnector() const { return rowId(connectorTable_); }
+void ZonesPanel::refresh() {
+    const auto& d = context_.document();
     const auto& layer = d.zones;
-    const auto keep = selectedZone();
+    const auto keep = selected();
     const auto linkName = [&](const std::string& id) {
         for (const auto& l : d.network.links) if (l.id == id && !l.name.empty()) return QString::fromStdString(l.name);
         return QString::fromStdString(id);
     };
-    const bool changed = zoneTab_.revision != history_.revision();
-    if (changed || zoneTab_.table->rowCount() != static_cast<int>(layer.zones.size())) {
-        const QSignalBlocker block(zoneTab_.table);
-        zoneTab_.table->setRowCount(static_cast<int>(layer.zones.size()));
-        for (int r = 0; r < zoneTab_.table->rowCount(); ++r) {
+    const bool changed = tab_.revision != context_.revision();
+    if (changed || tab_.table->rowCount() != static_cast<int>(layer.zones.size())) {
+        const QSignalBlocker block(tab_.table);
+        tab_.table->setRowCount(static_cast<int>(layer.zones.size()));
+        for (int r = 0; r < tab_.table->rowCount(); ++r) {
             const auto& z = layer.zones[static_cast<std::size_t>(r)];
             const auto connectors = std::count_if(layer.zoneConnectors.begin(), layer.zoneConnectors.end(),
                                                   [&](const auto& c) { return c.zoneId == z.id; });
@@ -128,21 +118,21 @@ void EditorWindow::refreshZones() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(z.id));
                 if (col == 0 || col == 2 || col == 4) editorDesign::setNumericText(cell, col != 0);
-                zoneTab_.table->setItem(r, col, cell);
+                tab_.table->setItem(r, col, cell);
             }
-            if (z.id == keep) zoneTab_.table->selectRow(r);
+            if (z.id == keep) tab_.table->selectRow(r);
         }
-        fitTableColumns(zoneTab_.table);
+        fitTableColumns(tab_.table);
     }
     // The connector table follows the selected zone.
-    const auto zone = selectedZone();
-    if (changed || zone != zoneConnectorsOf_) {
-        const auto keepConnector = selectedZoneConnector();
-        const QSignalBlocker block(zoneConnectorTable_);
-        zoneConnectorTable_->setRowCount(0);
+    const auto zone = selected();
+    if (changed || zone != connectorsOf_) {
+        const auto keepConnector = selectedConnector();
+        const QSignalBlocker block(connectorTable_);
+        connectorTable_->setRowCount(0);
         for (const auto& c : layer.zoneConnectors) {
             if (c.zoneId != zone) continue;
-            const int r = zoneConnectorTable_->rowCount(); zoneConnectorTable_->insertRow(r);
+            const int r = connectorTable_->rowCount(); connectorTable_->insertRow(r);
             QString target = linkName(c.linkId);
             if (!c.streetSegmentId.empty()) {
                 const auto road = std::find_if(d.network.streetSegments.begin(), d.network.streetSegments.end(), [&](const auto& r) { return r.id == c.streetSegmentId; });
@@ -154,38 +144,37 @@ void EditorWindow::refreshZones() {
             for (int col = 0; col < values.size(); ++col) {
                 auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(c.id));
                 if (col == 2) editorDesign::setNumericText(cell, true);
-                zoneConnectorTable_->setItem(r, col, cell);
+                connectorTable_->setItem(r, col, cell);
             }
-            if (c.id == keepConnector) zoneConnectorTable_->selectRow(r);
+            if (c.id == keepConnector) connectorTable_->selectRow(r);
         }
-        fitTableColumns(zoneConnectorTable_);
-        zoneConnectorsOf_ = zone;
+        fitTableColumns(connectorTable_);
+        connectorsOf_ = zone;
     }
-    zoneTab_.revision = history_.revision();
+    tab_.revision = context_.revision();
     const bool chosen = !zone.empty();
     for (const auto* key : {"editorEditZone", "editorDeleteZone", "editorEditLot"}) actions_.at(key)->setEnabled(chosen);
     // A connector needs the zone row and exactly one Link selected on the canvas.
-    const auto& selection = canvas_->selection();
+    const auto& selection = context_.selection();
     const bool link = selection.size() == 1 && std::any_of(d.network.links.begin(), d.network.links.end(),
                                                           [&](const auto& l) { return l.id == selection.front(); });
     for (const auto* key : {"editorAddOriginConnector", "editorAddDestinationConnector"}) actions_.at(key)->setEnabled(chosen && link);
     actions_.at("editorAddStreetSegmentZoneConnector")->setEnabled(chosen && !streetSegmentChoices(d).empty());
-    const bool connector = !selectedZoneConnector().empty();
+    const bool connector = !selectedConnector().empty();
     for (const auto* key : {"editorEditZoneConnector", "editorDeleteZoneConnector"}) actions_.at(key)->setEnabled(connector);
 }
-void EditorWindow::showZones() { objects_->setCurrentWidget(objectPages_.at("editorZoneTable")); }
-void EditorWindow::addZoneConnector(bool origin) {
-    const auto zone = selectedZone();
-    const auto& selection = canvas_->selection();
+void ZonesPanel::addConnector(bool origin) {
+    const auto zone = selected();
+    const auto& selection = context_.selection();
     if (zone.empty() || selection.size() != 1) return;
     const auto link = selection.front();
-    execute(origin ? "editorAddOriginConnector" : "editorAddDestinationConnector", [&](auto& d) {
+    context_.execute(origin ? "editorAddOriginConnector" : "editorAddDestinationConnector", [&](auto& d) {
         putZoneConnector(d, {"", zone, link, origin ? ZoneDirection::origin : ZoneDirection::destination, 1});
     });
-    showZones();
+    context_.show(this);
 }
-void EditorWindow::editZone(const std::string& id) {
-    const auto& zones = history_.document().zones.zones;
+void ZonesPanel::edit(const std::string& id) {
+    const auto& zones = context_.document().zones.zones;
     const auto z = std::find_if(zones.begin(), zones.end(), [&](const auto& x) { return x.id == id; });
     if (z == zones.end()) return;
     QDialog dialog(this); dialog.setObjectName("editorZoneDialog"); dialog.setWindowTitle(text("editorEditZone"));
@@ -234,15 +223,15 @@ void EditorWindow::editZone(const std::string& id) {
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     if (dialog.exec() != QDialog::Accepted) return;
     auto zone = *z; zone.name = name->text().toStdString(); zone.attributes = std::move(edited);
-    execute("editorEditZone", [&](auto& d) { putZone(d, zone); });
+    context_.execute("editorEditZone", [&](auto& d) { putZone(d, zone); });
 }
-void EditorWindow::editZoneConnector(const std::string& id) {
-    const auto& connectors = history_.document().zones.zoneConnectors;
+void ZonesPanel::editConnector(const std::string& id) {
+    const auto& connectors = context_.document().zones.zoneConnectors;
     const auto c = std::find_if(connectors.begin(), connectors.end(), [&](const auto& x) { return x.id == id; });
     if (c == connectors.end()) return;
     if (!c->streetSegmentId.empty()) {
-        const auto edited = editStreetSegmentZoneConnector(this, *c, streetSegmentChoices(history_.document()), [this](const char* k) { return text(k); });
-        if (edited) execute("editorEditZoneConnector", [&](auto& d) { putZoneConnector(d, *edited); });
+        const auto edited = editStreetSegmentZoneConnector(this, *c, streetSegmentChoices(context_.document()), [this](const char* k) { return text(k); });
+        if (edited) context_.execute("editorEditZoneConnector", [&](auto& d) { putZoneConnector(d, *edited); });
         return;
     }
     QDialog dialog(this); dialog.setObjectName("editorZoneConnectorDialog"); dialog.setWindowTitle(text("editorEditZoneConnector"));
@@ -260,6 +249,14 @@ void EditorWindow::editZoneConnector(const std::string& id) {
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     if (dialog.exec() != QDialog::Accepted) return;
     auto edited = *c; edited.share = share->value();
-    execute("editorEditZoneConnector", [&](auto& d) { putZoneConnector(d, edited); });
+    context_.execute("editorEditZoneConnector", [&](auto& d) { putZoneConnector(d, edited); });
+}
+bool ZonesPanel::commitTool(std::vector<Point> polygon) {
+    std::string id;
+    if (!context_.execute("editorZoneTool", [&](auto& d) { id = putZone(d, {"", "", std::move(polygon), {}}); })) return false;
+    context_.show(this);
+    for (int r = 0; r < tab_.table->rowCount(); ++r)
+        if (tab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == id) tab_.table->selectRow(r);
+    return true;
 }
 }
