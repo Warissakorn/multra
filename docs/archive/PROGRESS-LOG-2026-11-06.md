@@ -2,6 +2,24 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-10 — Purpose review: status documents brought back to the code (D493)
+
+- **Owner:** asked for a five-part review in chat (purpose, architecture, engine, UI, process), then
+  "ทำตามข้อเสนอตั้งแต่รีวิวแรก" and chose: the first review's proposals only this session; PROBLEM §2
+  unchanged (D38 stands); D380 unchanged, with the question filed for the owner.
+- **Status documents:** README, ARCHITECTURE, PROJECT_SCHEMA, DESKTOP_AUTOMATION and
+  `src/project/README` named schemas 32, 65 and 58 as the latest; they now name `kLatestSchema`
+  instead of a copy of its value (it is 73). README's Implemented table gains Macro, Meso and the
+  Node method; ROADMAP no longer calls M10 and M11 "not started"; ARCHITECTURE's Macro and Meso
+  rows say what is built. No gate moved.
+- **D493:** PROBLEM §6 no longer says the physics is not the hard part; joining the published
+  models is named as the second hard part, with the roadmap items that show it.
+- **Owner items:** OWNER_SITTING B43 asks whether Micro's M6 gate may close before M10 and M11
+  (D380). M5.7, the M6 benchmark choice (B9) and a second user stay the owner's; no session can do them.
+- **Queued:** the other four reviews' proposals are in [NEXT](../NEXT.md), in review order.
+- **Verified:** Linux headless only: `check` passes (ctest 204/204, docs, file sizes). Documentation
+  only; the desktop suite was not run.
+
 ## 2026-11-09 — A shipped Macro example: four steps on a four-zone town (D492)
 
 - **Owner:** "สร้างโปรเจ็คตัวอย่างการทำ แบบจำลองระดับ Macro" (a sample project for Macro modelling).

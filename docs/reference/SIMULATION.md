@@ -398,9 +398,9 @@ approximation. Parameters must not be transferred from a calibrated Vissim model
 
 ## Determinism, snapshots and events
 
-The PRNG is xorshift32 with explicit state. Seeds are unsigned 32-bit integers; zero
-maps to the fixed nonzero state `0x6d2b79f5`. Desired speeds are sampled uniformly within
-the vehicle-type range. Scenario collections are sorted by ID, while geometric points,
+The PRNG is xorshift32 with explicit state; seeds are unsigned 32 bit, zero maps to `0x6d2b79f5`.
+One run stream unless `randomStreams` is `perInput` ([INPUT_STREAMS](INPUT_STREAMS.md), D506).
+Desired speeds are sampled uniformly within the vehicle-type range. Scenario collections are sorted by ID, while geometric points,
 route order and phase order are preserved. Stable IDs control simultaneous insertion.
 
 `createSimulation` copies and canonicalizes the scenario into shared const ownership.

@@ -1,8 +1,10 @@
 #pragma once
 
+#include "event_types.hpp"
 #include "lateral_types.hpp"
 #include "line_state_types.hpp"
 #include "parking_types.hpp"
+#include "random_streams.hpp"
 #include "speed_decision_types.hpp"
 #include <cstdint>
 #include <memory>
@@ -132,7 +134,6 @@ struct VehicleInput {
     bool volumeFromCounts{};
     bool operator==(const VehicleInput&) const = default;
 };
-enum class SignalColor { red, amber, green };
 struct SignalPhase { double duration{}; SignalColor color{}; bool operator==(const SignalPhase&) const = default; };
 struct SignalProgram {
     std::string id; double offset{}; std::vector<SignalPhase> phases;
@@ -245,6 +246,7 @@ struct ScenarioDefinition {
     // M8.4a, last again. Empty without a parking lot, which then runs exactly the code path it always did.
     std::vector<ParkingLotSpec> parkingLots;
     ClampRules clampRules; // M3.2.8a.1 (MERGE_CLAMPS §3, D250/D251): last again; all on by default
+    RandomStreams randomStreams{}; // INPUT_STREAMS §3 (D505): last again; shared unless set
     // Value equality, so callers can tell "this edit changed nothing" without serialising.
     bool operator==(const ScenarioDefinition&) const = default;
 };
@@ -312,6 +314,7 @@ struct ScenarioIndex {
     // resolving them per input per tick -- which is what generateArrivals did once the vehicle
     // stopped carrying ids -- was the same lookup in a new place.
     std::vector<std::uint32_t> routeOfInput, typeOfInput; // parallel to Scenario::inputs
+    std::vector<std::uint64_t> keyOfInput, keyOfLot; // INPUT_STREAMS §4: stream keys, perInput only
     // M8.4a: the lot slot whose gate a route ends at, SIZE_MAX for none; empty without a lot.
     std::vector<std::size_t> lotOfRoute;
     LateralIndex lateral; // M3.7 (LATERAL §5, D188): off and empty without a lateral key
@@ -341,6 +344,9 @@ struct PendingVehicle {
     // M3.3.3a (D137): hashed at generation, never redrawn; present iff the scenario holds any
     // w74 behaviour (docs/reference/W74.md §5). Last, so brace-initialisation keeps its meaning.
     std::optional<W74Traits> w74Traits;
+    // INPUT_STREAMS §4, set only under perInput: the key of the input or lot that made the vehicle and
+    // its ordinal there, which its hashed routing draws use. Zero under shared, so states are unchanged.
+    std::uint64_t streamKey{}; std::uint32_t ordinal{};
     bool operator==(const PendingVehicle&) const = default;
 };
 // D101: a vehicle's last lane change, of either kind -- the tick it started and the route it left.
@@ -389,48 +395,9 @@ struct Vehicle : PendingVehicle {
 struct InputState {
     std::optional<double> nextArrival;
     std::vector<PendingVehicle> queue;
+    std::uint32_t stream{}, generated{}; // INPUT_STREAMS §4: perInput only; zero under shared
     bool operator==(const InputState&) const = default;
 };
-struct SignalEvent {
-    double time{}; std::string signalId; SignalColor color{};
-    bool operator==(const SignalEvent&) const = default;
-};
-struct DepartedEvent {
-    double time{}; std::uint64_t vehicleId{}; std::string routeId;
-    double scheduledTime{}, desiredSpeed{};
-    bool operator==(const DepartedEvent&) const = default;
-};
-struct MovedEvent {
-    double time{}; std::uint64_t vehicleId{}; std::string segmentId;
-    double position{}, speed{}, acceleration{};
-    bool operator==(const MovedEvent&) const = default;
-};
-struct SegmentEnteredEvent {
-    double time{}; std::uint64_t vehicleId{}; std::string segmentId;
-    bool operator==(const SegmentEnteredEvent&) const = default;
-};
-struct SafetyClampEvent {
-    double time{}; std::uint64_t vehicleId{};
-    bool operator==(const SafetyClampEvent&) const = default;
-};
-struct ArrivedEvent {
-    double time{}; std::uint64_t vehicleId{}; std::string routeId;
-    double travelTime{}, departureDelay{}, freeFlowTime{};
-    bool operator==(const ArrivedEvent&) const = default;
-};
-// M3.2.8b: a vehicle moved from one route to another at the start of a tick (contract §2).
-struct LaneChangeEvent {
-    double time{}; std::uint64_t vehicleId{}; std::string fromRouteId, toRouteId;
-    bool operator==(const LaneChangeEvent&) const = default;
-};
-struct RoutingEvent {
-    double time{}; std::uint64_t vehicleId{}; std::string decisionId, fromRouteId, toRouteId;
-    bool operator==(const RoutingEvent&) const = default;
-};
-struct RedRunningEvent { double time{}; std::uint64_t vehicleId{}; std::string headId; bool operator==(const RedRunningEvent&) const = default; }; // B-9 (D238)
-// New event alternatives append so every existing index stays stable.
-using SimEvent = std::variant<SignalEvent, DepartedEvent, MovedEvent,
-                              SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent, RedRunningEvent>;
 // M8.4a (ZONES_AND_PARKING §4). A vehicle in a lot keeps its identity and type for its next trip.
 struct ParkedVehicle {
     PendingVehicle vehicle; double admitted{}, dwellEnd{};
@@ -447,6 +414,7 @@ struct LotState {
     std::vector<ParkedVehicle> parked; // sorted by (dwellEnd, id)
     std::vector<std::uint64_t> leaving;
     std::vector<GateArrival> gate;     // sorted by (since, id)
+    std::uint32_t stream{}, generated{}; // INPUT_STREAMS §4: perInput only; zero under shared
     std::size_t occupied() const { return parked.size() + leaving.size(); }
     bool operator==(const LotState&) const = default;
 };

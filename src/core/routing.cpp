@@ -67,7 +67,7 @@ const RouteDecision* nextRouteDecision(const Scenario& s,const Vehicle& v) {
     return found;
 }
 void applyRouteDecision(const Scenario& s,Vehicle& v,const RouteDecision& d,double time,
-                        std::uint32_t& randomState,std::vector<SimEvent>& events) {
+                        std::uint32_t seed,std::uint32_t& randomState,std::vector<SimEvent>& events) {
     std::size_t interval=d.intervals.size();
     for(std::size_t i=0;i<d.intervals.size();++i)
         if(time>=d.intervals[i].startTime && time<d.intervals[i].endTime){interval=i;break;}
@@ -75,7 +75,11 @@ void applyRouteDecision(const Scenario& s,Vehicle& v,const RouteDecision& d,doub
     if(interval<d.intervals.size())for(const auto& c:d.choices)sum+=c.intervalWeights[interval];
     const bool counted=sum>0 && interval<d.intervals.size();
     if(!counted){sum=0;for(const auto& c:d.choices)sum+=c.weight;}
-    const double draw=detail::random(randomState)*sum;
+    // INPUT_STREAMS §4: under perInput the draw is hashed from who the vehicle is, not when it gets here.
+    const double u=s.randomStreams==RandomStreams::perInput
+        ? detail::hashedUniform(seed,v.streamKey,v.ordinal,detail::streamKey(detail::kDecisionStream,d.id))
+        : detail::random(randomState);
+    const double draw=u*sum;
     double cumulative=0;const RoutingChoice* selected=nullptr;
     for(const auto& c:d.choices) {
         const double weight=counted?c.intervalWeights[interval]:c.weight;

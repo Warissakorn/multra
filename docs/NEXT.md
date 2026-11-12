@@ -54,9 +54,12 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     per-decision notes) still belongs in the contracts.
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
-  - **Random streams per input: contract written, choices answered (D496, D505), not started.**
-    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §7: `perInput` for new documents at a schema
-    step, traits re-keyed, before the M6 runs. Its §8 slices, rows IS1–IS9 first.
+  - **Random streams per input: the engine runs both mappings (D506, slices 1–2); next is slice 3.**
+    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §8: the project switch at a schema step (new
+    documents `perInput`), the Run settings control, the summary/CSV field and `--compare`
+    refusing mixed values (IS8). Then slice 4: W74 traits and red runners keyed by the vehicle's
+    `streamKey`/`ordinal` (choice 2), and the paired comparison (choice 3) on its own. All before
+    the M6 runs (D505).
   - Done (D495): source insertion and publication are out of `stepSimulation` (`tick.hpp`), with
     byte-identical outputs. **Left:** phase 1's per-vehicle loop, about 150 lines, still one body;
     split it only with a callgrind run before and after (it is the hot path).

@@ -22,5 +22,7 @@ double random(std::uint32_t& state);
 Scenario canonical(Scenario scenario);
 void initializeInputs(SimState& state);
 void generateArrivals(SimState& state);
-PendingVehicle samplePending(SimState&, std::uint32_t input, std::uint32_t route, std::uint32_t type, double scheduledTime);
+// `rng` is the stream the vehicle draws from: the run stream, or under perInput its input's or lot's (INPUT_STREAMS §4).
+PendingVehicle samplePending(SimState&, std::uint32_t& rng, std::uint32_t input, std::uint32_t route, std::uint32_t type,
+                             double scheduledTime);
 }

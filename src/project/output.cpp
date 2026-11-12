@@ -25,6 +25,7 @@ Json pendingJson(const Scenario& scenario, const PendingVehicle& v) {
     // Only when present (W74.md §9), so prototype checkpoints keep their bytes.
     if (const auto& t = v.w74Traits)
         j["w74Traits"] = {{"zBx", t->zBx}, {"zEx", t->zEx}, {"zCx", t->zCx}, {"zOp", t->zOp}, {"zOsc", t->zOsc}};
+    if (scenario.randomStreams == RandomStreams::perInput) j["ordinal"] = v.ordinal; // INPUT_STREAMS §4
     return j;
 }
 Json optionalNumber(const std::optional<double>& value) { return value ? Json(*value) : Json(nullptr); }
@@ -65,6 +66,7 @@ Json checkpointJson(const SimState& state) {
     // without it. Say that, rather than dereferencing a null.
     if (!state.scenario) throw std::invalid_argument("Checkpoint requires a scenario");
     const auto& scenario = *state.scenario;
+    const bool perInput = scenario.randomStreams == RandomStreams::perInput;
     Json vehicles = Json::array(), inputs = Json::array();
     for (const auto& vehicle : state.vehicles) {
         auto j = pendingJson(scenario, vehicle);
@@ -89,6 +91,8 @@ Json checkpointJson(const SimState& state) {
         for (const auto& pending : state.inputs[i].queue) queue.push_back(pendingJson(scenario, pending));
         inputs.push_back({{"id", scenario.inputs[i].id},
                           {"nextArrival", optionalNumber(state.inputs[i].nextArrival)}, {"queue", queue}});
+        // INPUT_STREAMS §4: only under perInput, so shared checkpoints keep their bytes.
+        if (perInput) { inputs.back()["stream"] = state.inputs[i].stream; inputs.back()["generated"] = state.inputs[i].generated; }
     }
     Json result{{"tick", state.tick}, {"randomState", state.randomState}, {"nextVehicleId", state.nextVehicleId},
                 {"completed", state.completed}, {"vehicles", vehicles}, {"inputs", inputs}};
@@ -104,6 +108,7 @@ Json checkpointJson(const SimState& state) {
             }
             for (const auto& g : lot.gate) gate.push_back({{"vehicleId", g.vehicleId}, {"since", g.since}});
             lots.push_back({{"id", scenario.parkingLots[i].id}, {"parked", parked}, {"leaving", lot.leaving}, {"gate", gate}});
+            if (perInput) { lots.back()["stream"] = lot.stream; lots.back()["generated"] = lot.generated; }
         }
         result["lots"] = std::move(lots);
     }

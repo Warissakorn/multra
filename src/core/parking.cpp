@@ -18,8 +18,13 @@ double routeLength(const ScenarioIndex& index, std::size_t route) {
     return parts.back().start + parts.back().length;
 }
 // One uniform draw, inverted on the cumulative curve; the end rounded up to a tick boundary.
-double dwellEnd(SimState& state, const ParkingLotSpec& lot, double admitted) {
-    const double u = detail::random(state.randomState);
+// INPUT_STREAMS §4: under perInput a lot draws from its own stream, else from the run's.
+std::uint32_t& lotStream(SimState& state, std::size_t lot) {
+    return state.scenario->randomStreams == RandomStreams::perInput ? state.lots[lot].stream : state.randomState;
+}
+double dwellEnd(SimState& state, std::size_t slot, double admitted) {
+    const auto& lot = state.scenario->parkingLots[slot];
+    const double u = detail::random(lotStream(state, slot));
     const auto& d = lot.dwell;
     double seconds = d.front().seconds;
     for (std::size_t i = 1; i < d.size() && u > d[i - 1].cumulative; ++i)
@@ -33,7 +38,7 @@ double dwellEnd(SimState& state, const ParkingLotSpec& lot, double admitted) {
 }
 void park(SimState& state, std::size_t lot, const PendingVehicle& vehicle, double admitted) {
     auto& parked = state.lots[lot].parked;
-    const ParkedVehicle entry{vehicle, admitted, dwellEnd(state, state.scenario->parkingLots[lot], admitted)};
+    const ParkedVehicle entry{vehicle, admitted, dwellEnd(state, lot, admitted)};
     parked.insert(std::upper_bound(parked.begin(), parked.end(), entry, [](const auto& a, const auto& b) {
         return a.dwellEnd == b.dwellEnd ? a.vehicle.id < b.vehicle.id : a.dwellEnd < b.dwellEnd;
     }), entry);
@@ -59,16 +64,20 @@ void initializeLots(SimState& state) {
     state.lots.resize(scenario.parkingLots.size());
     for (std::size_t k = 0; k < scenario.parkingLots.size(); ++k) {
         const auto& lot = scenario.parkingLots[k];
+        const bool perInput = scenario.randomStreams == RandomStreams::perInput;
+        if (perInput) state.lots[k].stream = detail::streamState(state.seed, state.index->keyOfLot[k]);
+        auto& rng = lotStream(state, k);
         double total = 0;
         for (const auto& t : lot.initialTypes) total += t.share;
         for (std::uint32_t n = 0; n < lot.initialOccupancy; ++n) {
             // Type first, then the vehicle's own draws, then its dwell: one fixed order.
-            const double u = detail::random(state.randomState) * total;
+            const double u = detail::random(rng) * total;
             std::size_t pick = 0;
             for (double sum = lot.initialTypes[0].share; pick + 1 < lot.initialTypes.size() && u >= sum;)
                 sum += lot.initialTypes[++pick].share;
             const auto type = static_cast<std::uint32_t>(slotOf(scenario.vehicleTypes, lot.initialTypes[pick].vehicleTypeId));
-            const auto vehicle = detail::samplePending(state, PendingVehicle::kNoInput, 0, type, 0);
+            auto vehicle = detail::samplePending(state, rng, PendingVehicle::kNoInput, 0, type, 0);
+            if (perInput) { vehicle.streamKey = state.index->keyOfLot[k]; vehicle.ordinal = state.lots[k].generated++; }
             park(state, k, vehicle, 0);
         }
     }
@@ -87,7 +96,7 @@ void releaseDepartures(SimState& state) {
             if (spec.exits.size() > 1) {
                 double total = 0;
                 for (const auto& e : spec.exits) total += e.weight;
-                const double u = detail::random(state.randomState) * total;
+                const double u = detail::random(lotStream(state, k)) * total;
                 for (double sum = spec.exits[0].weight; pick + 1 < spec.exits.size() && u >= sum;) sum += spec.exits[++pick].weight;
             }
             const auto& exit = spec.exits[pick];

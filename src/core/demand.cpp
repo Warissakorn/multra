@@ -14,16 +14,28 @@ double random(std::uint32_t& state) {
     state ^= state << 5;
     return (static_cast<double>(state) + 0.5) / 4294967296.0;
 }
+// INPUT_STREAMS §4: the run stream's seeding (D159, the same gamma), mixed again with the object's key.
+std::uint32_t streamState(std::uint32_t seed, std::uint64_t key) {
+    const auto state = static_cast<std::uint32_t>(splitmix64Mix(splitmix64Mix(seed + 0x9E3779B97F4A7C15ULL) ^ key) >> 32);
+    return state == 0 ? 0x6d2b79f5U : state; // xorshift32 never leaves zero
+}
+double hashedUniform(std::uint32_t seed, std::uint64_t origin, std::uint32_t ordinal, std::uint64_t decision) {
+    std::uint64_t h = splitmix64Mix(seed + 0x9E3779B97F4A7C15ULL);
+    h = splitmix64Mix(h ^ origin);
+    h = splitmix64Mix(h ^ ordinal);
+    h = splitmix64Mix(h ^ decision);
+    return (static_cast<double>(h >> 11) + 0.5) / 9007199254740992.0; // 53 bits, never 0 or 1
+}
 // One new vehicle: its desired speed and driver factor drawn in this order, then (only with a w74
 // behaviour) its hashed traits. Arrivals and a lot's initial occupants (M8.4a) both come from here.
-PendingVehicle samplePending(SimState& state, std::uint32_t input, std::uint32_t route, std::uint32_t typeIndex,
-                             double scheduledTime) {
+PendingVehicle samplePending(SimState& state, std::uint32_t& rng, std::uint32_t input, std::uint32_t route,
+                             std::uint32_t typeIndex, double scheduledTime) {
     const auto& type = state.scenario->vehicleTypes[typeIndex];
-    const double desiredSpeed = speedAt(type.desiredSpeed, random(state.randomState)); // B-5 (D229)
+    const double desiredSpeed = speedAt(type.desiredSpeed, random(rng)); // B-5 (D229)
     // Separate statements specify draw order; C++ operand evaluation order must
     // never choose which draw goes to the logarithm versus cosine.
-    const double radiusDraw = random(state.randomState);
-    const double angleDraw = random(state.randomState);
+    const double radiusDraw = random(rng);
+    const double angleDraw = random(rng);
     const double gaussian = std::sqrt(-2 * std::log(radiusDraw)) *
                             std::cos(2 * std::numbers::pi * angleDraw);
     // B-4 (D236): the spread of the type's own behaviour, never the road's; 0.15 without the key.
@@ -35,11 +47,14 @@ PendingVehicle samplePending(SimState& state, std::uint32_t input, std::uint32_t
     return v;
 }
 void initializeInputs(SimState& state) {
-    for (const auto& input : state.scenario->inputs) {
+    const bool perInput = state.scenario->randomStreams == RandomStreams::perInput;
+    for (std::size_t i = 0; i < state.scenario->inputs.size(); ++i) {
+        const auto& input = state.scenario->inputs[i];
         InputState current{std::nullopt, {}};
+        if (perInput) current.stream = streamState(state.seed, state.index->keyOfInput[i]);
+        auto& rng = perInput ? current.stream : state.randomState;
         if (input.vehiclesPerHour != 0) {
-            const double arrival = input.startTime - std::log(random(state.randomState)) *
-                                                    3600 / input.vehiclesPerHour;
+            const double arrival = input.startTime - std::log(random(rng)) * 3600 / input.vehiclesPerHour;
             if (arrival < input.endTime) current.nextArrival = arrival;
         }
         state.inputs.push_back(std::move(current));
@@ -56,11 +71,13 @@ void generateArrivals(SimState& state) {
         // Resolved once per scenario in the index, not once per input per tick.
         const auto routeIndex = state.index->routeOfInput[i];
         const auto typeIndex = state.index->typeOfInput[i];
+        const bool perInput = state.scenario->randomStreams == RandomStreams::perInput;
+        auto& rng = perInput ? current.stream : state.randomState;
         while (current.nextArrival && *current.nextArrival <= state.time) {
-            current.queue.push_back(samplePending(state, static_cast<std::uint32_t>(i), routeIndex, typeIndex,
-                                                  *current.nextArrival));
-            const double arrival = *current.nextArrival - std::log(random(state.randomState)) *
-                                                         3600 / input.vehiclesPerHour;
+            auto v = samplePending(state, rng, static_cast<std::uint32_t>(i), routeIndex, typeIndex, *current.nextArrival);
+            if (perInput) { v.streamKey = state.index->keyOfInput[i]; v.ordinal = current.generated++; }
+            current.queue.push_back(std::move(v));
+            const double arrival = *current.nextArrival - std::log(random(rng)) * 3600 / input.vehiclesPerHour;
             current.nextArrival = arrival < input.endTime ? std::optional(arrival) : std::nullopt;
         }
     }
