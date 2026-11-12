@@ -1,4 +1,4 @@
-# M6_S2_RUN — M6 kind S2-c, the fixed-cycle queue delay run (D538)
+# M6_S2_RUN — M6 kind S2: the delay runs, S2-c (D538), S2-b and S2-a (D539)
 
 Contract for S2-c ([m6-benchmark-options](../evidence/m6-benchmark-options.md) §6). The engine's
 delay on a one-lane signalised approach is compared with van Leeuwaarden's FCTL mean delay
@@ -33,7 +33,7 @@ rows S2C1–S2C6 fail first. A miss is reported, never tuned away (rule 4).
 
 ## 2. The command
 
-`multra-m6-s2c-run <data-dir> <compile_commands.json> <new-output-dir>`
+`multra-m6-s2-run c <data-dir> <compile_commands.json> <new-output-dir>` (named `multra-m6-s2c-run` until D539)
 
 - **Refusals.** The tool refuses an existing output directory. Exit status 1 with a message.
 - **Runs.** For each `x`, the signal and no-signal documents run seeds 42–81 with `runSeeds`, aggregated by `aggregate` (`src/runner/batch.hpp`). The figure reads each document's `sections[0].meanTravelTime.perSeed`.
@@ -75,4 +75,43 @@ rows S2C1–S2C6 fail first. A miss is reported, never tuned away (rule 4).
 | S2C3 | Synthetic per-seed travel times give the hand Δ mean and half-width; a seed missing on either side is listed and excluded from `n` | `m6s2` |
 | S2C4 | The verdict passes at exactly ±15 %, misses just beyond, and is unavailable without a figure | `m6s2` |
 | S2C5 | The references equal 10.98, 13.49 and 19.57 s within 0.005 | `m6s2` |
-| S2C6 | The command prints usage for `--help` and refuses an existing output directory | `cli-m6-s2c-run-help`, `cli-m6-s2c-run-refused` |
+| S2C6 | The command prints usage for `--help` and refuses an existing output directory | `cli-m6-s2-run-help`, `cli-m6-s2-run-refused` |
+
+## 6. S2-b and S2-a: delay against HCM 7's `d1 + d2` (D539)
+
+The same tool in mode `ab`: `multra-m6-s2-run ab <data-dir> <compile_commands.json> <new-output-dir>`.
+§2's outputs, §3's paired reduction and §4's verdict rule apply, with the changes below. The
+owner chose to lengthen the road and the cool-down: at `x` ≥ 1 the queue would spill past a section
+that starts 250 m upstream, and past the source, and that delay would go uncounted.
+
+- **Layout** (`m6s2::Layout`; S2-c keeps its own, so S2C1 is unchanged):
+  - approach 2,001 m, head at 2,000 m;
+  - the same 20 m Connector and 100 m exit;
+  - the section from route distance 50 m (1,950 m upstream of the line) to 2,050 m (50 m past it);
+  - the no-signal twin has the same length.
+- **Signal:** cycle 90 s, green 0–40 s, amber 3 s, so `g` = 40 s (HCM 7 Eq. 19-1 and 19-3, §6).
+- **Run:** authored duration 4,500 s, warm-up 900 s, window to 4,500 s, **cool-down 900 s**. The run lasts 5,400 s and the input ends at 4,500 s.
+- **Levels:** `c` = 1,900 · 40 / 90 = 844.4 veh/h and `v = x · c`.
+
+  | `x` | 0.5 | 0.7 | 0.85 | 0.95 | 1.0 | 1.05 |
+  |---|---|---|---|---|---|---|
+  | `v` (veh/h) | 422.2 | 591.1 | 717.8 | 802.2 | 844.4 | 886.7 |
+  | `d1 + d2` (s) | 19.98 | 25.09 | 33.90 | 54.34 | 86.94 | 147.81 |
+  | Row | S2-b | S2-b | S2-b, S2-a | S2-b, S2-a | S2-a | S2-a |
+
+- **Reference.** `hcmDelay(x)` computes `d1 = 0.5C(1 − g/C)² / [1 − min(1, X)g/C]` (Eq. 19-19, `PF` = 1) and `d2 = 900T[(X − 1) + √((X − 1)² + 8kIX/(cT))]` (Eq. 19-26, 19-27), with `T` = 1 h, `k` = 0.5, `I` = 1 and `d3` = 0. These are §6's forms, read from the page images.
+- **Verdict.** ±15 % (D516). Each level is judged once and reported under every row it belongs to.
+- **Availability.** A level is **unavailable** when any seed of its signal run ends with a window trip unfinished in the section, or with a vehicle still pending at a source. It is then neither a pass nor a miss.
+- **Stated beside the figures:**
+  - **Initial queue.** At `x` ≥ 1 the 900 s warm-up builds a queue before the window, while the reference's `d3` = 0 assumes none. This pulls the engine up.
+  - **Capacity.** The engine discharges at 1,944 veh/h ([m6-s1-first-run](../evidence/m6-s1-first-run.md)), so its capacity is about 864 veh/h, not 844. At the nominal `x` = 1.0 its own degree of saturation is about 0.977. This pulls `d2`, and so the engine, down near saturation.
+  - **Δ** holds the deceleration and acceleration around the line (§4).
+
+| Row | What must hold | Test |
+|---|---|---|
+| S2AB1 | The `ab` layout compiles to one program with cycle 90 s, green 40 s and amber 3 s; a section at route distances 50 and 2,050 m (1e−6); a run of 5,400 s. The twin has no program and the same section | `m6s2` |
+| S2AB2 | `x` = 0.5 … 1.05 give `v` = 422.2, 591.1, 717.8, 802.2, 844.4, 886.7 (0.05) | `m6s2` |
+| S2AB3 | `hcmDelay` equals 19.98, 25.09, 33.90, 54.34, 86.94, 147.81 s within 0.005 | `m6s2` |
+| S2AB4 | `available` is false when any seed has unfinished > 0 or pending > 0, and the verdict is then unavailable | `m6s2` |
+| S2AB5 | Mode `c` or `ab` is required; an unknown mode is refused with usage | `cli-m6-s2-run-mode` |
+
