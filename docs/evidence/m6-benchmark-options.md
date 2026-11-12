@@ -206,8 +206,10 @@ the mean time the earlier major vehicle takes to clear the conflict area at the 
 km/h), computed from the area's drawn length; `headway` (metres): validation accepts any positive value
 (**checked 2026-11-12**, `src/model/network/right_of_way.cpp`), so the run uses 0.1 m and the time
 test decides. `t_f` is measured, not set:
-the mean front-to-front time between queued minor vehicles leaving the Stop line, which needs a
-counter at a priority line that does not exist yet (§5); until it does, U-a cannot run. U-c
+the mean front-to-front time between queued minor vehicles leaving the Stop line, measured by the
+priority-line counter (`--priority-lines`, D528, [PRIORITY_LINES](../reference/PRIORITY_LINES.md),
+rows PL1–PL6), which also counts the minor movement's vehicles per hour and the major entries
+(`v_c`, counted, not assumed). U-c's effective `t_c` still needs its own method. U-c
 uses the measured effective `t_c` and `t_f`; U-a uses the HCM 7 Ch. 20 base values, **read
 2026-11-12**: right turn from the minor street, two-lane major, `t_c,base` = **6.2 s** (Exhibit
 20-17, PDF p. 1616) and `t_f,base` = **3.3 s** (Exhibit 20-18, PDF p. 1617), table images read; at
@@ -221,8 +223,8 @@ base conditions the adjustments of Equations 20-16 and 20-17 are 0 (`P_HV` = 0, 
 
 **Before the first run:** the HCM 7 values were read 2026-11-12 (copy `74f4bc3`, page images
 read; cited above). Still open: the S1-d per-position headways of [Bonneson92] and [LiPrev02]
-(papers, not in the owner's book set); the S2-c script; the priority-line counter (U-a, U-c's
-`t_f`). Each has its own rows before it is used.
+(papers, not in the owner's book set); the S2-c script; U-c's effective `t_c`. The priority-line
+counter exists (D528). Each open item has its own rows before it is used.
 
 ## 7. Owner questions (answer by letter, sitting B9)
 

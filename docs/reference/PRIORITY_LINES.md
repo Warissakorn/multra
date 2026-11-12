@@ -18,8 +18,11 @@ Per conflict area (`Scenario::conflictZones`, Stop and Yield alike), in `Scenari
 - A crossing counts when its time lies in the evaluation window `[warmup, end]` (the run's end
   without one); the window's length turns counts into hourly rates.
 - **Queued:** a minor vehicle is queued from the first snapshot at which it stood (speed below
-  the queue definition's `beginSpeed`, the `--stop-lines` threshold) with its front short of
-  the waiting line.
+  the queue definition's `beginSpeed`) with its front short of the waiting line, **and** within
+  the queue definition's `maxGap` of the line, or of the rear of the next minor vehicle ahead of
+  it short of the same line (distances to the line, so several minor routes compare). This is
+  Vissim's queue condition; a vehicle released from its source at rest, far from any queue, is
+  not queued.
 - **A follow-up headway** (HCM 7 Ch. 20's `t_f`; [Kyte96]'s continuous queuing): consecutive
   minor crossings of one area, leader then follower, both in the window, where the follower was
   queued at or before the leader's crossing time and no major entry lies between the two
@@ -50,8 +53,8 @@ n < 1 and n < 2), `excluded`. `multra-cli --project F --priority-lines` adds the
 | PL1 | A hand-built crossing (Stop): `minorCrossed` and `majorEntered` equal the passages a test counts independently from the snapshots in the window, and each interpolated time lies in `(t − Δt, t]` | `prioritylines` |
 | PL2 | Saturated minor demand, no major traffic: every consecutive pair after the first queued vehicle is a follow-up, and `followUpMean` equals the mean of those differences computed independently | `prioritylines` |
 | PL3 | The same with major traffic: a pair with a major entry between its crossings is not a follow-up, so `followUps` is less than in PL2's count of consecutive queued pairs (the forcing) | `prioritylines` |
-| PL4 | Sparse minor demand that never queues gives no follow-up; a Yield area reports `control: yield` | `prioritylines` |
+| PL4 | Sparse minor demand (60 veh/h, Yield): a vehicle released at rest far from any queue is not queued, so only pairs the arrivals bunched within `maxGap` follow up (the independent count, fewer than half the crossings); the area reports `control: yield` | `prioritylines` |
 | PL5 | A run with the same seed gives the same report, bit for bit | `prioritylines` |
-| PL6 | `--priority-lines` needs `--project`; the JSON carries one row per conflict area in `Scenario` order | `cli-priority-lines` |
+| PL6 | `--priority-lines` needs `--project`; the JSON carries one row per conflict area in `Scenario` order | `cli-priority-lines`, `cli-priority-lines-refused` |
 
 Return to [the reference index](README.md).

@@ -5,6 +5,7 @@
 #include "../eval/movement.hpp"
 #include "../eval/segment_times.hpp"
 #include "../eval/stop_lines.hpp"
+#include "../eval/priority_lines.hpp"
 #include "../eval/arrival_phases.hpp"
 #include "../eval/dead_end_waits.hpp"
 #include "json.hpp"
@@ -38,6 +39,7 @@ Json laneChangeJson(const LaneChangeReport&);
 Json segmentTimeJson(const SegmentTimeReport&);
 // M3.2.8c step 3: each signal head's stop-line discharge as JSON (CLI --stop-lines).
 Json stopLineJson(const StopLineReport&);
+Json priorityLineJson(const PriorityLineReport&); // D528
 Json dischargeJson(const std::vector<DischargeCycle>&, const DischargeSpec&);
 // M3.2.8c step 4: cycle phase of segment entries and first stops as JSON (CLI --arrival-phases).
 Json arrivalPhaseJson(const ArrivalPhaseReport&);

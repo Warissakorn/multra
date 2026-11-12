@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — The priority-line counter (D528)
+
+- **D528:** contract first ([PRIORITY_LINES](reference/PRIORITY_LINES.md), rows PL1–PL6), then
+  `PriorityLineAccumulator` (`src/eval/priority_lines.*`) and `multra-cli --priority-lines`: per
+  conflict area, minor vehicles past the waiting line and major entries in the window
+  (interpolated in time), and follow-up headways between consecutive minor departures whose
+  follower was queued (Vissim's queue condition) with no major entry between. Passages a route
+  change makes unprovable are counted as `excluded`. Writing PL4 showed that a vehicle released
+  at rest at its source read as queued; the queued rule was tightened to `maxGap` of the line or
+  of the vehicle ahead before the commit. New group `prioritylines`, CLI rows
+  `cli-priority-lines`, `cli-priority-lines-refused`.
+- **Verified on Linux:** desktop build and ctest 325/325.
+
 ## 2026-11-12 — M6 §6's HCM 7 values read (D527)
 
 - **D527:** attached the owner's HCM 7 copy (`74f4bc3`) and read each *to read* value of

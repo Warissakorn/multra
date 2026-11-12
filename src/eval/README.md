@@ -23,6 +23,7 @@ May read `src/core/types.hpp` only; no model, project, Qt or I/O (`multra-check-
 | `discharge_passage.*` | `dischargeMotions`: reconstructs proven motion across remaps from the observer's own prior positions, unique engine spans and terminal evidence | [DISCHARGE](../../docs/reference/DISCHARGE.md) |
 | `lane_changes.*` | Diagnostic: where mandatory lane changes happen and how long stub vehicles wait, per movement | [M3_8_CONTRACT §2](../../docs/reference/M3_8_CONTRACT.md) |
 | `segment_times.*` | Diagnostic: mean time from departure to each runtime segment, per movement | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag |
+| `priority_lines.*` | Diagnostic: at each conflict area's waiting line, minor crossings, major entries and follow-up headways (D528) | [PRIORITY_LINES](../../docs/reference/PRIORITY_LINES.md), `multra-cli` flag |
 | `stop_lines.*` | Diagnostic: how each signal head's stop line discharges (standing time in red and green, greens waited) | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag |
 | `arrival_phases.*` | Diagnostic: histograms of when in the cycle vehicles reach and first stop on a segment, bounded to 16 MiB in all | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag |
 | `dead_end_waits.*` | Diagnostic: why a stub vehicle waits at its dead end, decided once per wait | [ARCHITECTURE](../../docs/ARCHITECTURE.md), `multra-cli` flag |
