@@ -65,8 +65,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     The priority-line counter is built (D528, [PRIORITY_LINES](reference/PRIORITY_LINES.md),
     `--priority-lines`). D529: S1-f added (Akçelik & Besley 2002); the S2-c script is done
     (`multra-fctl-reference`, [FCTL_REFERENCE](reference/FCTL_REFERENCE.md) FC1–FC6) and its
-    references are in §6 (10.98, 13.49, 19.57 s at `x` = 0.5, 0.7, 0.85). Before the first comparable run: Li & Prevedouros (2002) for S1-d
-    (not freely available; Bonneson 1992 read and its curve in §6, D532) and U-c's effective `t_c` method, each with its own rows.
+    references are in §6 (10.98, 13.49, 19.57 s at `x` = 0.5, 0.7, 0.85). S1-d's references are read (Bonneson 1992, D532; Lee & Chen 1986, D533).
+    Before the first comparable run: U-c's effective `t_c` method, each with its own rows.
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
     D531: S1 keeps the mean headway; the median and skewness beside it need a `--discharge`

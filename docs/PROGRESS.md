@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — Lee & Chen and Zegeer (1986): S1-d banded without Li & Prevedouros (D533)
+
+- **D533:** both TRR 1091 papers are free on TRB Online Pubs and were read from the page images.
+  Lee & Chen give measured headways by queue position; Table 9's 40 mph column is S1-d's banded
+  reference for ranks 2–9 (rank 1 and ranks 10–12 shown only). Zegeer's 1.92 s at baseline
+  approaches is shown beside S1-a. Li & Prevedouros (2002), not freely available, is dropped.
+
 ## 2026-11-12 — Bonneson (1992) read: S1-d's model curve (D532)
 
 - **D532:** fetched Bonneson (1992) from TRB Online Pubs (a personal environment allowing
