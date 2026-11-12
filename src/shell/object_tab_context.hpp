@@ -2,6 +2,7 @@
 #include "../project/document.hpp"
 #include <QString>
 #include <cstdint>
+#include <filesystem>
 #include <functional>
 #include <string>
 
@@ -21,5 +22,6 @@ struct ObjectTabContext {
     std::function<bool(const std::string&, const std::function<void(ProjectDocument&)>&)> execute, commitChange;
     std::function<void()> selectionChanged; // the window's refresh(false)
     std::function<void(QWidget*)> show;     // brings this page forward in the object tabs
+    std::filesystem::path data;             // the installed catalogs
 };
 }

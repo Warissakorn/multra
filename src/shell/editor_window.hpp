@@ -53,7 +53,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -320,10 +320,7 @@ private:
     std::vector<std::pair<std::string, QString>> periodChoices() const;
     ObjectTabContext objectTabContext(); // D521: what an object tab's panel needs from this window
     // S1.2 (STUDY_PERIODS §8, D269): the Modes tab -- installed modes read-only, owned ones edited.
-    ObjectTab modeTab_;
-    void buildModes(); void translateModes(); void refreshModes(); void showModes();
-    void editMode(const std::string& id); // empty: a new mode
-    std::string selectedMode() const;
+    ModesPanel* modes_{}; // its own panel (modes_panel.hpp, D521)
     std::vector<std::pair<std::string, QString>> modeChoices() const;
     // S2.4 (MACRO_NETWORK §20, D277), editor_link_types.cpp: the Link types tab and the Link's type field.
     ObjectTab linkTypeTab_; QComboBox* linkType_{}; QLineEdit* linkSpeed_{};
