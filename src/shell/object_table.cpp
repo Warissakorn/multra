@@ -3,9 +3,11 @@
 #include "table_layout.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QHeaderView>
+#include <QMetaObject>
 #include <QSignalBlocker>
 #include <QTableWidget>
 #include <QVBoxLayout>
+#include <algorithm>
 
 // D525 (docs/plans/OBJECT_TABLE.md): the metadata-driven object table.
 namespace multra {
@@ -19,6 +21,24 @@ ObjectTable::ObjectTable(QWidget* parent, ObjectTabContext context, ObjectTableM
     table_->setSelectionMode(severalRows ? QAbstractItemView::ExtendedSelection : QAbstractItemView::SingleSelection);
     table_->horizontalHeader()->setStretchLastSection(true); table_->verticalHeader()->hide();
     layout->addWidget(table_);
+    // An edit commits after the editor closes: the commit rebuilds the rows, the cell included.
+    if (std::any_of(model_.columns.begin(), model_.columns.end(), [](const auto& c) { return bool(c.edit); }))
+        table_->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed | QAbstractItemView::AnyKeyPressed);
+    connect(table_, &QTableWidget::itemChanged, this, [this](QTableWidgetItem* cell) {
+        const auto id = cell->data(Qt::UserRole).toString().toStdString(); const int column = cell->column(); const auto text = cell->text();
+        QMetaObject::invokeMethod(this, [this, id, column, text] { commit(id, column, text); }, Qt::QueuedConnection);
+    });
+}
+bool ObjectTable::editable(int column) const {
+    return column >= 0 && column < static_cast<int>(model_.columns.size()) && bool(model_.columns[static_cast<std::size_t>(column)].edit);
+}
+void ObjectTable::commit(const std::string& id, int column, const QString& text) {
+    if (!editable(column)) return;
+    const auto row = std::find_if(shown_.begin(), shown_.end(), [&](const auto& r) { return r.id == id; });
+    if (row == shown_.end() || row->cells.value(column) == text) return; // unchanged: nothing to commit
+    const auto& c = model_.columns[static_cast<std::size_t>(column)];
+    // A refusal (a parse error included) is shown by execute(); the cell then reads the stored value.
+    if (!context_.execute(c.undo, [&](ProjectDocument& d) { c.edit(d, id, text); })) { invalidate(); refresh(); }
 }
 void ObjectTable::translate() {
     QStringList headers;
@@ -56,11 +76,13 @@ void ObjectTable::refresh() {
             auto* cell = new QTableWidgetItem(row.cells[col]); cell->setData(Qt::UserRole, QString::fromStdString(row.id));
             const auto kind = model_.columns[static_cast<std::size_t>(col)].kind;
             if (kind != CellKind::text) editorDesign::setNumericText(cell, kind == CellKind::number);
+            if (editable(col)) cell->setFlags(cell->flags() | Qt::ItemIsEditable); else cell->setFlags(cell->flags() & ~Qt::ItemIsEditable);
             table_->setItem(r, col, cell);
         }
         if (row.id == keep) table_->selectRow(r);
     }
     fitTableColumns(table_);
+    shown_ = rows;
     revision_ = context_.revision();
 }
 }

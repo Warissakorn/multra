@@ -23,7 +23,11 @@ public:
     std::vector<std::string> selectedIds() const;
     bool selectRow(const std::string& id);     // false when no row has it
     void clearSelection();
+    // In-place edit (D525): whether a column's cells take an edit; a double-click elsewhere is the panel's.
+    bool editable(int column) const;
 private:
+    void commit(const std::string& id, int column, const QString& text);
+    std::vector<TableRow> shown_; // the texts the cells were built with, to tell an edit from none
     ObjectTabContext context_;
     ObjectTableModel model_;
     QTableWidget* table_{};

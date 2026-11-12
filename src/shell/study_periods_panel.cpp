@@ -24,6 +24,25 @@ QString clockText(double seconds) {
     return QStringLiteral("%1:%2:%3").arg(s / 3600, 2, 10, QLatin1Char('0')).arg(s / 60 % 60, 2, 10, QLatin1Char('0'))
                                     .arg(s % 60, 2, 10, QLatin1Char('0'));
 }
+// D525: a cell's clock time back to seconds: HH:MM:SS or HH:MM, hours past 24 for a later day.
+double clockSeconds(const QString& text) {
+    const auto parts = text.trimmed().split(':');
+    bool ok = parts.size() == 2 || parts.size() == 3; double seconds = 0;
+    for (int i = 0; ok && i < parts.size(); ++i) {
+        const int value = parts[i].toInt(&ok);
+        ok = ok && value >= 0 && (i == 0 || value < 60);
+        seconds += value * (i == 0 ? 3600 : i == 1 ? 60 : 1);
+    }
+    if (!ok) throw std::runtime_error("editorTableCellInvalid");
+    return seconds;
+}
+// D525: one field of a period, changed in place as the dialog would.
+void setPeriodField(ProjectDocument& d, const std::string& id, const std::function<void(StudyPeriod&)>& change) {
+    auto& periods = d.zones.studyPeriods;
+    const auto found = std::find_if(periods.begin(), periods.end(), [&](const auto& p) { return p.id == id; });
+    if (found == periods.end()) return;
+    auto value = *found; change(value); putStudyPeriod(d, value);
+}
 QTime clockTime(double seconds) { return QTime(0, 0).addSecs(static_cast<int>(std::floor(seconds)) % 86400); }
 StudyPeriodsPanel::StudyPeriodsPanel(QWidget* parent, ObjectTabContext context) : QWidget(parent), context_(std::move(context)) {
     auto* layout = new QVBoxLayout(this);
@@ -33,9 +52,15 @@ StudyPeriodsPanel::StudyPeriodsPanel(QWidget* parent, ObjectTabContext context) 
         [](const ProjectDocument& d) -> const std::vector<StudyPeriod>& { return d.zones.studyPeriods; },
         [](const StudyPeriod& p) { return p.id; },
         {{"id", "editorColumnId", CellKind::id, [](const StudyPeriod& p) { return QString::fromStdString(p.id); }},
-         {"name", "editorColumnName", CellKind::text, [](const StudyPeriod& p) { return QString::fromStdString(p.name); }},
-         {"start", "editorPeriodStart", CellKind::number, [](const StudyPeriod& p) { return clockText(p.start); }},
-         {"end", "editorPeriodEnd", CellKind::number, [](const StudyPeriod& p) { return clockText(p.end); }}}}),
+         {"name", "editorColumnName", CellKind::text, [](const StudyPeriod& p) { return QString::fromStdString(p.name); },
+          [](ProjectDocument& d, const std::string& id, const QString& v) { setPeriodField(d, id, [&](auto& p) { p.name = v.toStdString(); }); },
+          "editorEditPeriod"},
+         {"start", "editorPeriodStart", CellKind::number, [](const StudyPeriod& p) { return clockText(p.start); },
+          [](ProjectDocument& d, const std::string& id, const QString& v) { const auto s = clockSeconds(v); setPeriodField(d, id, [&](auto& p) { p.start = s; }); },
+          "editorEditPeriod"},
+         {"end", "editorPeriodEnd", CellKind::number, [](const StudyPeriod& p) { return clockText(p.end); },
+          [](ProjectDocument& d, const std::string& id, const QString& v) { const auto s = clockSeconds(v); setPeriodField(d, id, [&](auto& p) { p.end = s; }); },
+          "editorEditPeriod"}}}),
         "editorPeriodTable");
     layout->addWidget(table_);
     bar->addAction(context_.action("editorAddPeriod", [this] { edit({}); }));
@@ -44,7 +69,10 @@ StudyPeriodsPanel::StudyPeriodsPanel(QWidget* parent, ObjectTabContext context) 
         const auto id = selected(); if (id.empty()) return;
         context_.execute("editorDeletePeriod", [&](auto& d) { deleteStudyPeriod(d, id); });
     }));
-    connect(table_->table(), &QTableWidget::cellDoubleClicked, this, [this](int, int) { const auto id = selected(); if (!id.empty()) edit(id); });
+    // D525: a double-click on an editable cell edits it in place; elsewhere it opens the dialog.
+    connect(table_->table(), &QTableWidget::cellDoubleClicked, this, [this](int, int column) {
+        if (table_->editable(column)) return;
+        const auto id = selected(); if (!id.empty()) edit(id); });
     connect(table_->table(), &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
 }
 void StudyPeriodsPanel::translate() { table_->translate(); }
