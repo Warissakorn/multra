@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — D505's approved items: streams slice 4, pocket example, EditorWindow step 1, M6 §6 (D512–D515)
+
+- **D512 (INPUT_STREAMS §8 slice 4, choice 2):** W74 traits and red runners hash
+  `traitIdentity(id, origin, ordinal)`: the id without an origin key (all of `shared`, hand-placed
+  vehicles), the input's or lot's key and ordinal otherwise. `samplePending` sets the key before
+  hashing. Rows IS10–IS11, forced under `shared` and by putting the id back (both fail then).
+- **D513:** `signalised-node-analysis` uses `signal-4-p3-major-far-pockets` (45 m storage, 15 m
+  taper on the major): 10 lane groups, highest ratio 0.79, none F; greens and volumes unchanged.
+  `nodeexample` and `example-menu-ui` count 10.
+- **D514 (`EditorWindow` step 1):** the batch/compare worker's state and widgets are
+  `BatchSession` (`editor_batch_state.hpp`); header 500 → 488 lines; no behaviour change.
+- **D515:** the M6 option sheet's §6 holds the run protocol for D505's sources; book values marked
+  *to read*. Tolerance and U's `t_c` translation: OWNER_SITTING B47. No comparable run was made.
+- **Verified on Linux (Qt 6.4, GCC 13):** desktop build, full ctest 321/321 and `check` (docs,
+  file sizes, architecture). **Not done:** headless build; a callgrind measure of slice 4; a
+  separate byte comparison of `shared` outputs against the previous build (the suite's frozen
+  baselines and exact CLI rows are the evidence).
+
 ## 2026-11-12 — Random streams per input in the project (D510); NEXT and OWNER_SITTING slimmed
 
 - **D510 (INPUT_STREAMS §8 slice 3):** `definition.randomStreams` at schema 74

@@ -36,6 +36,7 @@ The other headers:
 | File | Holds | Contract |
 |---|---|---|
 | `editor_window.*` | `EditorWindow` (sources above) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_batch_state.hpp` | `BatchSession`: the batch and comparison worker's state and widgets, held by `EditorWindow` (D514) | [BATCH](../../docs/reference/BATCH.md) |
 | `editor_style.*` | Toolbar icons from the editor's glyphs (`../editor/editor_glyph.*`); the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
 | `example_menu.*` | File → *Open example*: `loadExampleProjects` reads `data/examples.json`, `fillExampleMenu` lists it in the current language (D498) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `recent_files.*` | File → *Open recent*: the person's last eight projects in `recent-files.json` beside their other local data; `rememberRecentFile` on open and save, `fillRecentMenu` lists them (D504) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
