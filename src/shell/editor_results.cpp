@@ -1,3 +1,6 @@
+#include "results_levels.hpp"
+#include <QComboBox>
+#include <set>
 #include "editor_interaction.hpp"
 #include "table_layout.hpp"
 #include "editor_window.hpp"
@@ -169,6 +172,7 @@ void EditorWindow::buildResults() {
         table->horizontalHeader()->setSectionResizeMode(column,QHeaderView::Stretch);
     }
     buildBatch(localBar(movementsBox,"editorBatchToolbar"),movementsBox); // N-seed replaces the single run
+    addResultsLevels(resultsTabs_,resultPages_,bar); // D497: one level's tabs at a time
     sizeTabPages(resultsTabs_);
     connect(resultsTabs_,&QTabWidget::currentChanged,this,[this]{sizeTabPages(resultsTabs_);refreshResults();refreshRun();});
     addObjectPage(page,"editorResultsTable");
@@ -180,6 +184,7 @@ void EditorWindow::translateResults() {
                                             text("editorResultsQueueMax")});
     translateBatch();
     for(const auto& [key,page]:resultPages_)resultsTabs_->setTabText(resultsTabs_->indexOf(page),text(key));
+    translateResultsLevels(resultsPage_->findChild<QComboBox*>("editorResultsLevel"),[this](const char* key){return text(key);});
     static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->translate();
     static_cast<TripGenerationPanel*>(resultPages_.at("editorResultsTabTripGeneration"))->translate();
     static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->translate();
@@ -199,7 +204,14 @@ void EditorWindow::refreshResults() {
     // Rebuilt every Step and Play frame, so skip it while the tab is hidden; the page's Show
     // event refreshes it the moment it can be seen. Measured 2026-10-02 (Windows, Release, M2.6,
     // 3,000 Steps): -11% of the Run view's time per Step, -28% of the action.
-    if(!resultsPage_ || !resultsPage_->isVisible())return;
+    if(!resultsPage_)return;
+    {   // D497: a tab with nothing to show is left out of its level's strip.
+        std::set<std::string> withoutData;
+        if(history_.document().zones.parkingLots.empty())withoutData.insert("editorResultsTabLots");
+        if(history_.document().network.nodes.empty())withoutData.insert("editorResultsTabNodes");
+        applyResultsLevel(resultsTabs_,resultPages_,withoutData);
+    }
+    if(!resultsPage_->isVisible())return;
     // Only the inner tab on show is rebuilt; switching tabs refreshes the new one.
     refreshDischarge(); refreshClamps(); refreshLots(); refreshResultNodes();
     static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis"))->refresh();

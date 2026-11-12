@@ -6,8 +6,8 @@ live in `src/project/`; the commands that edit the model in `src/commands/`.
 
 ## Dependencies
 
-May read `src/core/`, `src/analysis/`, `src/macro/` and `src/meso/` headers. No
-Qt, JSON or file I/O: the codecs are in `src/project/`. Derived data (runtime sections, Connector
+May read `src/core/`, `src/analysis/`, `src/macro/` and `src/meso/` headers and no other module;
+no Qt or JSON (`multra-check-architecture`), and no file I/O: the codecs are in `src/project/`. Derived data (runtime sections, Connector
 paths, Node membership, conflicts) is computed on every read and never stored.
 
 ## network/

@@ -55,7 +55,8 @@ void EditorWindow::refreshBatch() {
     // One table at a time: the single run, a batch, or a comparison (M5.8b).
     const bool shown=(batchRunning()&&!batchComparing_)||batch_;
     batchView_->setVisible(shown);
-    for(QWidget* single:{static_cast<QWidget*>(movementTable_),static_cast<QWidget*>(queueTable_),static_cast<QWidget*>(resultsNote_)})single->setVisible(!batchShown());
+    // The tables' own frame goes with them: left visible and empty it kept its share of the page.
+    for(QWidget* single:{static_cast<QWidget*>(movementTable_),static_cast<QWidget*>(queueTable_),static_cast<QWidget*>(resultsNote_),movementTable_->parentWidget()})single->setVisible(!batchShown());
     refreshCompare();
     batchMovementTable_->setRowCount(0); batchSectionTable_->setRowCount(0); batchQueueTable_->setRowCount(0);
     batchSectionTable_->hide();

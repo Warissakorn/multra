@@ -128,6 +128,12 @@ every left-turner of an M2.6 approach appeared in the kerb lane at the network e
     trip's free-flow time counts.
   - **Rear check:** a change onto it also sees vehicles on the segments feeding its first segment,
     such as the ramp at a gore.
+- **A routing decision's family has no joined chain,** so it cannot change lanes on a later Link.
+  Where a named Connector fans out (one lane, several lane paths, as a generated pocket taper
+  does), its chain takes the first path that reaches the destination, not simply the first drawn
+  (D501). A route keeps the first path and enters the pocket by a joined chain. An entry
+  decision's destination that no lane serves takes no share and is named: advisory
+  `ROUTING_DECISION_UNREACHABLE`.
   - **Scope:** this is what lets a weave drawn with two entries run. Downstream routing decisions
     (D93) never build one.
 - The core gets spans and dead ends as data (`ScenarioDefinition::laneChanges`,

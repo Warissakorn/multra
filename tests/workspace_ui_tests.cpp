@@ -1,4 +1,5 @@
 #include "../src/shell/editor_window.hpp"
+#include "../src/editor/ui_design_tokens.hpp"
 #include "ui_test_storage.hpp"
 #include "tab_page_helpers.hpp"
 #include <QTabBar>
@@ -192,7 +193,7 @@ void paletteViews(EditorWindow& window,const std::filesystem::path& data) {
     require(tree->hasFocus(),"Tab order: the view toggle does not lead into the palette");
     require(window.findChild<QMenu*>("editorViewMenu")->actions().contains(item<QAction>(window,"editorPaletteIconsOnly")),"Palette view has no menu fallback");
     trigger(window,"editorResetLayout");
-    require(item<QAction>(window,"editorPaletteIconsOnly")->isChecked()==(window.width()<1500),
+    require(item<QAction>(window,"editorPaletteIconsOnly")->isChecked()==(window.width()<editorDesign::namedPaletteMinWindowWidth),
             "Reset layout did not choose the screen-appropriate palette");
     language->setCurrentIndex(0);tool->setCurrentIndex(0);settle();
 }

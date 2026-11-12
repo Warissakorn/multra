@@ -87,11 +87,14 @@ installer — M7 owns installation.
 |---|---|---|
 | Simulation core | `src/core/simulation.hpp` | Fixed stepping, seeded arrivals, prototype or W74 car-following, fixed-time signals with amber, parking lots, conflict-area and merge right-of-way, commitment at waiting lines, mandatory lane changes with cooperative braking. Imports nothing. |
 | Network and demand model | `src/model/` | Links, lanes, Connectors, routes, inputs, routing decisions, signal controllers, conflict areas, queue counters, sections, zones, OD matrices and parking lots, compiled into core inputs |
-| Project files | `src/project/` | Strict load and save of `*.traffic.json` (reads schemas 1–32; writes 17–32 by feature) and M0 scenario JSON, validation, movement evaluation and its CSV |
+| Project files | `src/project/` | Strict load and save of `*.traffic.json` (reads schemas 1 to the latest and writes 17 to the latest by feature; `kLatestSchema` in `src/project/document.hpp`) and M0 scenario JSON, validation, movement evaluation and its CSV |
 | Evaluation | `src/eval/` | Per-movement delay, approach queues, section delay/LOS, discharge and lot reports from one run's event stream |
 | Batches | `src/runner/` | Independent seeds in parallel, 95 % CI aggregation and scenario comparison |
+| Macro four-step model | `src/macro/` | Trip generation, gravity distribution, logit mode choice and multi-class Frank–Wolfe assignment, run singly or as a stored procedure (M10, gate open). Imports nothing. |
+| Meso loading | `src/meso/` | Link-transmission loading of the whole run's demand, with signals as capacity and spill-back (M11, gate open). Imports nothing. |
+| Analytical junction capacity | `src/analysis/` | HCM 7 Ch. 19 lane-group capacity, control delay, LOS and back of queue on a Node (M13, gate open). Analytical, not simulated. Imports nothing. |
 | Desktop | `src/shell/`, `src/editor/` | The Network Editor, Run view, Results tab and Behaviour Lab, in English and Thai |
-| CLI | `tools/run_simulation.cpp` | One seeded run, `--seeds` batches or `--compare` of a scenario or project; summary JSON, optional events and `--csv` |
+| CLI | `tools/run_simulation.cpp` | One seeded run, `--seeds` batches or `--compare` of a scenario or project; `--macro`, `--procedure`, `--meso` and `--node-analysis` for the other levels; summary JSON, optional events and `--csv` |
 
 Validation against field data is M6 and has not passed; every result carries the not-yet-validated
 marker. Read [`docs/reference/SIMULATION.md`](docs/reference/SIMULATION.md) for numerical behaviour.
@@ -122,7 +125,7 @@ selected by the documentation map.
 | [`docs/PROBLEM.md`](docs/PROBLEM.md) | Audience, scope and why this owns an engine |
 | [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md) | Correctness and working rules |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Modules, dependencies and contracts |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Milestones M0–M12, their status and acceptance gates |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Milestones M0–M14, their status and acceptance gates |
 | [`docs/PROGRESS.md`](docs/PROGRESS.md) | Session log and the decision record |
 | [`AGENTS.md`](AGENTS.md) | Shared working instructions for humans and AI tools |
 | [`CLAUDE.md`](CLAUDE.md) | Claude entry point, pointing to the shared instructions |

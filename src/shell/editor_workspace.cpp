@@ -2,6 +2,9 @@
 #include <algorithm>
 #include "editor_window.hpp"
 #include "object_export.hpp"
+#include "example_menu.hpp"
+#include "recent_files.hpp"
+#include "../editor/path.hpp"
 #include "utdf_export_dialog.hpp"
 #include "image_export.hpp"
 #include "editor_interaction.hpp"
@@ -122,6 +125,29 @@ void EditorWindow::buildWorkspace() {
     auto* files=findChild<QToolBar*>("editorFiles");
     for(const auto* key:{"editorRecover","editorEmbedCatalogs"})files->removeAction(actions_.at(key));
     menu("editorFileMenu",{"editorNew","editorOpen","editorSave","editorSaveAs","","editorRecover","editorEmbedCatalogs","editorExportImage"});
+    // D498: the shipped examples, read from data/examples.json each time the menu opens so
+    // it follows the language. An example opens untitled: Save must never write into the installed data.
+    auto* examples=new QMenu(this);examples->setObjectName("editorOpenExample");texts_["editorOpenExample"]=examples;
+    findChild<QMenu*>("editorFileMenu")->insertMenu(actions_.at("editorSave"),examples);
+    const auto fillExamples=[this,examples]{
+        try {
+            fillExampleMenu(*examples,loadExampleProjects(data_),language_->currentData().toString(),[this](const std::filesystem::path& file){
+                if(!confirmDiscard())return;
+                try{openFile(displayPath(file));file_.clear();loadSideFiles();refresh();}catch(const std::exception& e){showError(e);}
+            });
+        } catch(const std::exception& e){examples->clear();showError(e);}
+    };
+    connect(examples,&QMenu::aboutToShow,this,fillExamples);fillExamples();
+    // D504: the person's own recent projects, read each time the menu opens.
+    auto* recent=new QMenu(this);recent->setObjectName("editorOpenRecent");texts_["editorOpenRecent"]=recent;
+    findChild<QMenu*>("editorFileMenu")->insertMenu(actions_.at("editorSave"),recent);
+    const auto fillRecent=[this,recent]{
+        fillRecentMenu(*recent,loadRecentFiles(),text("editorRecentNone"),text("editorRecentClear"),[this](const QString& file){
+            if(!confirmDiscard())return;
+            try{openFile(file);rememberRecentFile(file);}catch(const std::exception& e){showError(e);}
+        },[this]{clearRecentFiles();refreshRun();});
+    };
+    connect(recent,&QMenu::aboutToShow,this,fillRecent);fillRecent();
     auto* exports=new QMenu(this);exports->setObjectName("editorExportObjects");texts_["editorExportObjects"]=exports;
     findChild<QMenu*>("editorFileMenu")->addMenu(exports);
     for(const auto& [key,table]:{std::pair{"editorExportLinks",ObjectTable::links},
@@ -250,8 +276,8 @@ void EditorWindow::resizeEvent(QResizeEvent* event) {
             if(ends.size()>1)resizeDocks(ends,heights,Qt::Vertical);
         }
         setProperty("multraLaidOutSize",size());
-        if(property("editorWorkspacePreset").toInt()==0&&property("editorAutoPalette").toBool()&&actions_.at("editorPaletteIconsOnly")->isChecked()!=(width()<1500)) {
-            actions_.at("editorPaletteIconsOnly")->setChecked(width()<1500);showPaletteView();
+        if(property("editorWorkspacePreset").toInt()==0&&property("editorAutoPalette").toBool()&&actions_.at("editorPaletteIconsOnly")->isChecked()!=(width()<editorDesign::namedPaletteMinWindowWidth)) {
+            actions_.at("editorPaletteIconsOnly")->setChecked(width()<editorDesign::namedPaletteMinWindowWidth);showPaletteView();
         }
     });
 }
@@ -292,7 +318,7 @@ void EditorWindow::setWorkspacePreset(int preset) {
     changingWorkspace_=true;setProperty("editorApplyingLayout",true);setProperty("editorWorkspacePreset",preset);
     auto* palette=findChild<QDockWidget*>("editorPaletteDock");auto* inspector=findChild<QDockWidget*>("editorInspectorDock");
     auto* objects=findChild<QDockWidget*>("editorObjectsDock");auto* view=findChild<QDockWidget*>("editorCanvasDock");
-    const bool results=preset==2,compact=property("editorAutoPalette").toBool()?width()<1500:actions_.at("editorPaletteIconsOnly")->isChecked();
+    const bool results=preset==2,compact=property("editorAutoPalette").toBool()?width()<editorDesign::namedPaletteMinWindowWidth:actions_.at("editorPaletteIconsOnly")->isChecked();
     // An icons-only rail is capped at its own width; showing or hiding docks against that cap let Qt
     // hold the canvas dock at its old height and grow the window. resizePalette sets the cap again.
     if(palette->property("editorPaletteRail").toBool())palette->setMaximumWidth(QWIDGETSIZE_MAX);

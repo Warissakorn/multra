@@ -72,6 +72,10 @@ TEST(nodeanalysis, na2_capacity_and_ratio) { // NA2: Eqs. 19-16, 19-17
 TEST(nodeanalysis, na3_progression_and_uniform_delay) { // NA3: Eqs. 19-19 to 19-21
     test::near(progressionFactor(1.0 / 3, 1.0 / 3, 0.5), 1.0, 1e-12); // random arrivals: P = g/C
     test::near(progressionFactor(1.0 / 3, 1.0 / 3, 1.4), 1.0, 1e-12);
+    // P = 1 is the formula's limit, 0, on both sides of X = 1 (0/0 there as written).
+    test::near(progressionFactor(1.0, 0.4, 0.5), 0.0, 1e-12);
+    test::near(progressionFactor(1.0, 0.4, 1.2), 0.0, 1e-12);
+    test::near(progressionFactor(1.0 - 1e-9, 0.4, 0.5), 0.0, 1e-6);
     test::near(uniformDelay(90, 1.0 / 3, 0.5, 1.0), 24.0, 1e-12);     // 0.5 x 90 x (2/3)^2 / (1 - 0.5/3)
     test::near(uniformDelay(90, 1.0 / 3, 2.0, 1.0), 30.0, 1e-12);     // min(1, X) = 1
 }

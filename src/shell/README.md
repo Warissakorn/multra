@@ -36,12 +36,14 @@ The other headers:
 | File | Holds | Contract |
 |---|---|---|
 | `editor_window.*` | `EditorWindow` (sources above) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
-| `editor_style.*` | The 20-unit toolbar and cursor glyphs; the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
+| `editor_style.*` | Toolbar icons from the editor's glyphs (`../editor/editor_glyph.*`); the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
+| `example_menu.*` | File → *Open example*: `loadExampleProjects` reads `data/examples.json`, `fillExampleMenu` lists it in the current language (D498) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `recent_files.*` | File → *Open recent*: the person's last eight projects in `recent-files.json` beside their other local data; `rememberRecentFile` on open and save, `fillRecentMenu` lists them (D504) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `results_levels.*` | The Results level picker: one level's tabs at a time, tabs without data left out, jumps pick their level (D497) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `message_label.*` | The one-row, closable message line under the canvas | [D429](../../docs/decisions/RECORD.md#d429) |
 | `editor_storage.*` | Atomic replacement and exact Save bytes shared with analysis snapshots; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD-D200-D399.md#d286) |
-| `path.hpp` | `nativePath` and `displayPath`: Unicode-safe path conversion | none |
 | `form_values.*` | Precision-preserving staged values, language-switch drafts and validation before modal acceptance | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `table_layout.*` | Bounded initial columns, stable user widths and active-tab minima | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `table_grid.*` | The spreadsheet half of the table recipe: cell selection, numbered rows, Ctrl+C as Excel text, selected rows of a cell selection (D490) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |

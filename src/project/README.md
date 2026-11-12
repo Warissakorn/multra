@@ -1,6 +1,6 @@
 # src/project
 
-Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1–65), catalogs from
+Persistence and runs, without Qt: the `ProjectDocument` codec (reads schemas 1 to `kLatestSchema`), catalogs from
 `data/`, compilation for each level, and every run's output formats. The document persists
 authoring data and the optional background; no compiled runtime network is saved, and an empty
 draft network is valid. Schema inventory: [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md).
@@ -122,7 +122,7 @@ keeps its schema and bytes.
 
 `network_fields` owns versioned known-key/type metadata for Network, Link, Lane, Connector, SignalHead, signal controller/group/program/phase rows, geometry points and attachment references. `network_link_codec` reads Links in the original order, leaving linkType/
 streetSegmentId to their existing document stages. `projectDocumentSchema` (`network_schema.hpp`)
-composes envelope/background with these structural rules for schemas 1–65; shared `$defs`
+composes envelope/background with these structural rules for schemas 1 to `kLatestSchema`; shared `$defs`
 and conditional version groups keep it compact. Model invariants and nested features remain
 codec-owned, and `projectEnvelopeSchema` retains its original envelope-only API.
 

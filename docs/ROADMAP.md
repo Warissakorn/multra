@@ -25,13 +25,7 @@ The smallest thing that is genuinely a traffic simulator, end to end. Every laye
 
 **Explicitly not in M0:** lane changing, editing anything, saving anything, LOS, multiple seeds, priority control. The slice is about the *shape*, not the feature set.
 
----
-
-## M0.1 — Native C++ migration (D15)
-
-**Implemented 2026-09-11** (Linux; Windows desktop suites in `native.yml` since `e57b1b5`). C++20
-core/model/CLI, CMake/CTest, Qt Widgets desktop, strict JSON loading, four TS baseline fixtures.
-It does not close the owner's M0 plausibility gate, M1 or M7. Body in [archive](archive/ROADMAP-implemented-2026-10-15.md#m01--native-c-migration-d15).
+**M0.1, native C++ migration (D15).** **Implemented 2026-09-11** (Linux; Windows desktop suites in `native.yml` since `e57b1b5`). C++20 core/model/CLI, CMake/CTest, Qt Widgets desktop, strict JSON loading, four TS baseline fixtures. It does not close the owner's M0 plausibility gate, M1 or M7. Body in [archive](archive/ROADMAP-implemented-2026-10-15.md#m01--native-c-migration-d15).
 
 ---
 
@@ -51,18 +45,8 @@ an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility accep
 
 ### M1.1–M1.21.1, M1.24–M1.27 — Implemented slices
 
-Full bodies: [archive](archive/ROADMAP-implemented-2026-10-15.md) (this pass), [ROADMAP-M1-implemented](archive/ROADMAP-M1-implemented.md)
+All implemented or closed; status rows: [2026-11-10](archive/ROADMAP-implemented-2026-11-10.md#m1-implemented-slices). Full bodies: [archive](archive/ROADMAP-implemented-2026-10-15.md) (this pass), [ROADMAP-M1-implemented](archive/ROADMAP-M1-implemented.md)
 and [ROADMAP-M1.11-M3.1-implemented](archive/ROADMAP-M1.11-M3.1-implemented.md).
-
-| Slice | Status |
-|---|---|
-| M1.1 Document and commands · M1.2 Canvas and background · M1.3 Link and lane tools · M1.3.1 Split links carrying heads · M1.4 Connector editor · M1.5 Inspection · M1.5.1 Demand tables · M1.6 Persistence | Implemented |
-| M1.7 Run handoff and owner acceptance | Implemented; **owner acceptance by ruling, 2026-09-25 (D49)** |
-| M1.8 Run in the editor · M1.10 Levels and display types | Implemented (no movement results/LOS in M1.8; no simulation effect from elevation) |
-| M1.9 Network Objects sidebar, Vissim gestures | Implemented; **done when** a daily Vissim user draws the four-leg without searching for controls (owner test) |
-| M1.11 Body attachments · M1.11.1 Interior attachments compiled · M1.12 Lane edges, markings, selection/copy | Implemented (M1.12 gestures: Windows CI only, no owner check) |
-| M1.12.1–M1.21.1 (M1.12.2 not a defect, M1.12.3 closed by M1.19, M1.17 reverted) | Closed |
-| M1.24 one-window editor · M1.25 demand by pointer | Closed |
 
 ### M1.22 — Remaining authoring and interaction requirements
 
@@ -125,13 +109,7 @@ Vehicle inputs per interval, compositions, turning proportions; Run gives delay 
 **Done when** the M1 intersection with counted volumes produces a delay table — met. **Gate:** the
 owner's pre-registered real study (D8, D38, D51–D53; C1 only, C2/C4 withdrawn), passed as *not
 disproven* on 2026-09-25 ([M2_GATE](plans/M2_GATE.md)). M2.1, M2.7 and M2.8 continue as open
-sub-milestones and do not reopen M2. Gate text and slice bodies: [archive](archive/ROADMAP-implemented-2026-10-15.md).
-
-| Slice | Status |
-|---|---|
-| M2.0, M2.0.1 (D35), M2.2–M2.5 (D37, D39, D40) | Implemented 2026-09-24/25 ([M2_PLAN](plans/M2_PLAN.md) §4) |
-| M2.6 owner gate study | Passed 2026-09-25 (D51, D53) |
-| M2.1.1 routeless inputs and placed decisions (D42, D43) · M2.1.2 per-interval turning proportions (D45) | Implemented 2026-09-24 |
+sub-milestones and do not reopen M2. Slice status rows: [2026-11-10](archive/ROADMAP-implemented-2026-11-10.md#m2-slices). Gate text and slice bodies: [archive](archive/ROADMAP-implemented-2026-10-15.md).
 
 ### M2.1 — Link/lane/Connector behavior and demand extensions
 
@@ -389,7 +367,7 @@ rehearsal, and the M5 gate.
 
 **Done when:** the engine reproduces published benchmark results — capacity and delay for a signalized approach, gap-acceptance capacity for an unsignalized minor movement — within a stated tolerance, and the tolerance is published in the docs and shown in the app.
 
-**M6.0 — benchmark option sheet** (D143, R2): docs only, at least two published options per benchmark kind, no engine numbers and no tolerance, so the choice stays pre-registered. **Delivered 2026-10-10:** [m6-benchmark-options](evidence/m6-benchmark-options.md), kinds S1 (saturation flow and capacity), S2 (delay) and U (minor-movement capacity and gap acceptance). The owner chooses by letter ([OWNER_SITTING](plans/OWNER_SITTING.md) B9); the tolerance is set after that choice and before any comparable run. Calibrated gap acceptance (moved from M3.2 by R7) is validated here.
+**M6.0 — benchmark option sheet** (D143, R2): docs only, at least two published options per benchmark kind, no engine numbers and no tolerance, so the choice stays pre-registered. **Delivered 2026-10-10:** [m6-benchmark-options](evidence/m6-benchmark-options.md), kinds S1 (saturation flow and capacity), S2 (delay) and U (minor-movement capacity and gap acceptance). **Chosen 2026-11-11 (D505), sources only:** Q4 (d); S1-a with S1-d second; S2-b below saturation and S2-a across it, S2-c first; U-a after U-c, U-e booked for R7. The tolerance is set before any comparable run. Calibrated gap acceptance (moved from M3.2 by R7) is validated here.
 
 **This is a hard gate.** Numbers from an unvalidated engine must never reach a regulator. Until M6 passes, every results screen carries a permanent "not yet validated" marker.
 
@@ -413,26 +391,22 @@ Offline install, native file dialogs, no server required.
 Design, decisions and slices: [`plans/MULTI_LEVEL_MODELLING.md`](plans/MULTI_LEVEL_MODELLING.md).
 One authoring network and one demand compile to three views; each engine imports nothing; every
 result of every level carries the not-yet-validated marker until that level's M6 benchmark
-passes. M8 is code complete (gate open); M9–M12 are not started; each slice begins with its
+passes (Micro's may close before M10 and M11, D505). M8 is code complete (gate open); M10 and M11 are in progress, M9 and M12 not started; each slice begins with its
 contract and acceptance rows. **Equal weight (D378):** open level work follows the study chain, M10.2–M10.4,
 M9, M11.5 and the M11 gate, then M12 ([PROBLEM](PROBLEM.md) §3); hybrid meso–micro is not booked (B26).
 **Amended 2026-10-15 ([D175](decisions/RECORD-D001-D199.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
 stages S0 Node (merging M5.1's evaluation nodes) and S1 StudyPeriod + PCU come before M10.1;
 Street segments with cross-section templates replace centreline-only Links; M12's stored cut becomes a
 run-time cut over a study area. M9–M11 keep their engine scopes and gates; no gate moves.
-**S1 contract written** ([STUDY_PERIODS](reference/STUDY_PERIODS.md), D266): StudyPeriod, the run clock, Mode and PCU; owner choices answered (D267); **S1.1 implemented** (D268: study periods, `clockStart`, matrix `periodId`, rows SP1–SP8); **S1.2 implemented** (D269 modes in the Demand catalog, D270: the matrix `modeId`, vehicle-type `pcu`, derived mode PCU, the Modes tab, rows SP9–SP14). S1 is complete.
-**S3 complete** ([STREET_SEGMENTS](reference/STREET_SEGMENTS.md), D303–D312, rows RD1–RD29); **S4 complete** ([READINESS](reference/READINESS.md), D313–D317, RS1–RS10); **S4.5 complete** (D323–D325, RS11–RS18);
-**S5 complete** ([STUDY_AREA](reference/STUDY_AREA.md), D326–D332, SA1–SA16) with the single-type cut follow-up (D338, SA17–SA18). No milestone gate changes. Slice bodies: [archive](archive/ROADMAP-implemented-2026-10-27.md#m8m12-s3-s4-s45-and-s5-slices).
+**Stages S1, S3, S4, S4.5 and S5 are complete** (D266–D270, D303–D317, D323–D332, D338); no milestone gate changes. Status lines: [2026-11-10](archive/ROADMAP-implemented-2026-11-10.md#m8m12-stages), slice bodies: [archive](archive/ROADMAP-implemented-2026-10-27.md#m8m12-s3-s4-s45-and-s5-slices).
 
 ### M8 — Zones, OD matrices and parking lots
-
-**Street segment demand follow-ups D340–D342 implemented** (RD30–RD34, MR1–MR7; Micro requires generated Link targets; [archive](archive/ROADMAP-implemented-2026-10-27.md#m8-road-demand-follow-ups-d340d342)). No milestone gate changes.
 
 **Code complete; gate open.** Contract [ZONES_AND_PARKING](reference/ZONES_AND_PARKING.md) (D153);
 M8.2 codec/commands (D154), M8.3 OD → routes (D155), M8.4a/b lot runtime and authored lots
 (D156, D157), M8.5 lot report (D160), M8.6a/b zone tools, OD table and lot UI (D161, D162); owner
 answers D158. The gate waits on a development-access study run by the owner and the owner's look
-(sitting C8, C9).
+(sitting C8, C9). **Street segment demand follow-ups D340–D342 implemented** (RD30–RD34, MR1–MR7; Micro requires generated Link targets; [archive](archive/ROADMAP-implemented-2026-10-27.md#m8-road-demand-follow-ups-d340d342)). No milestone gate changes.
 **Done when:** a development-access study runs from a zone OD matrix through a capacity-limited
 lot; a full lot produces a gate queue and never deletes a vehicle; older files load
 byte-identical; editor tools and the OD table ship in the milestone.
@@ -446,21 +420,28 @@ tolerance; same inputs give the same bytes; non-convergence is flagged.
 
 ### M10 — Macro four-step model
 
-**Open, not started; M10.1 contract written** ([MACRO_NETWORK](reference/MACRO_NETWORK.md), D271; owner choices answered, D272: one class per mode, a textbook benchmark, 0.01 % gap; S2.1 link types and the Macro graph implemented, D273; S2.2 multi-class Frank–Wolfe implemented, D274; S2.3 run settings, link outputs and CLI `--macro` implemented, D275; S2.4 Run Macro in stages, Macro links table, link-type editor implemented, D277; MA15, the textbook benchmark on Sheffi's Table 5.4, implemented, D294, its capacities awaiting the owner's check against the print; named run definitions implemented at schema 56, D339; a procedure sequence still waits on M10.2–M10.4). **M10.2 contract written** ([TRIP_GENERATION](reference/TRIP_GENERATION.md), D468; owner choices answered 1a–8a and G0 read against Ortúzar Ch. 4, D469; G1 engine, run, outputs and `--trip-generation` implemented, D470; G2 owned rate sets at schema 66, zone attributes and the Trip generation page implemented, D471; the owner's Windows look open). **M10.3 contract written** ([TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md), D472; Ortúzar Examples 5.3 and 5.4 replayed; owner answers 1a–9a and D1 engine, skim, run, outputs and `--trip-distribution` implemented, D473; D2 owned deterrence sets and cost matrices at schema 67 and the Trip distribution page implemented, D474; singly constrained purposes contracted, D475, and implemented, D476; D4 destination-constrained purposes at schema 72, D482; the procedure sequence contract ([PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md)), D483, and P1 (schema 73, `--procedure`), D484, and P2 (the dialog and the Procedure page), D485; M10.4 mode choice contract written after Ortúzar Ch. 6–7, D477, answered 1a–8a and E1 implemented, D478, E2 (owned sets, the Mode choice page, Write OD matrices) implemented, D479; the two-level nested logit ([NESTED_LOGIT](reference/NESTED_LOGIT.md)) contract D480 and N1 implemented with schema 71 and a Nests dialog, D481; the owner's Windows look open). Macro network compile with link types and volume-delay functions as data;
-static user-equilibrium assignment; trip generation, gravity distribution with Furness
-balancing, multinomial-logit mode choice; skims, select-link, Results and Export; centreline-only
-Links in the editor. Owner's B7 answers 2026-10-14 (D158): BPR 0.15/4 default VDF (1964 manual)
-with a local override, doubly-constrained gravity with exponential deterrence and HBW/HBO/NHB,
-modes car/motorcycle/bus/truck, 0.1 % relative gap (tightened to 0.01 % by D272) and Furness defaults (cited in the contract). **Done when:** assignment reproduces a published test network's equilibrium
-within a stated relative gap; each step passes a hand-computed fixture; parameters swap with no
-code edit.
+**Open, gate open; M10.1–M10.4 code implemented.** Macro network compile with link types and volume-delay functions as data; static user-equilibrium assignment; trip generation, gravity distribution with Furness balancing, multinomial-logit mode choice; skims, select-link, Results and Export. Owner's B7 answers (D158, D272): BPR 0.15/4 default with a local override, doubly-constrained gravity with HBW/HBO/NHB, modes car/motorcycle/bus/truck, 0.01 % relative gap. **Done when:** assignment reproduces a published test network's equilibrium within a stated relative gap; each step passes a hand-computed fixture; parameters swap with no code edit. Slice history: [archive](archive/ROADMAP-implemented-2026-11-10.md#m10).
+
+| Slice | Contract | Implemented | Open |
+|---|---|---|---|
+| M10.1 network and assignment | [MACRO_NETWORK](reference/MACRO_NETWORK.md) (D271, D272) | Link types and graph (D273); multi-class Frank–Wolfe (D274); run settings, outputs, `--macro` (D275); Run Macro, links table, link-type editor (D277); MA15 on Sheffi's Table 5.4 (D294); named run definitions, schema 56 (D339) | MA15's capacities await the owner's check against the print |
+| M10.2 trip generation | [TRIP_GENERATION](reference/TRIP_GENERATION.md) (D468, D469) | G1 engine, run, outputs, `--trip-generation` (D470); G2 owned rate sets at schema 66, zone attributes, the page (D471) | The owner's Windows look |
+| M10.3 trip distribution | [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) (D472) | D1 engine, skim, outputs, `--trip-distribution` (D473); D2 owned deterrence sets and cost matrices, schema 67 (D474); singly constrained purposes (D475, D476); D4 destination-constrained, schema 72 (D482) | — |
+| Procedure sequence | [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md) (D483) | P1, schema 73, `--procedure` (D484); P2 dialog and Procedure page (D485) | — |
+| M10.4 mode choice | D477, [NESTED_LOGIT](reference/NESTED_LOGIT.md) (D480) | E1 (D478); E2 owned sets, the page, Write OD matrices (D479); N1 nested logit, schema 71 (D481) | The owner's Windows look |
 
 ### M11 — Meso engine
 
-**Open; M11.1 contract written** ([MESO_NETWORK](reference/MESO_NETWORK.md), D291; owner choices answered 1a–7a, D292); **M11.2 implemented** (D293: the Meso graph, `jamDensity` and `mesoSettings` at schema 52, rows ME1–ME2); **M11.3a implemented** (D295: authored routes, static decisions and OD routes as Meso paths, turn shares and demand per class, rows ME12–ME16); **M11.3b implemented** (D296: routeless inputs and placed decisions through Micro's own expansion, stubs handed to their full routes, rows ME17–ME19; the M2.6 template's demand loads whole). **M11.3 node model implemented** (D297: Tampère et al. 2011 §5.1, checked against the paper and its Table 8, rows ME20–ME23; conflicts inside a Node deferred with `MESO_PRIORITY_IGNORED`); **M11.3c implemented** (D298: Yperman 2007 read; the link model and `loadMeso`, spill-back and the boundary volumes, rows ME3–ME6, ME8, ME9, ME24–ME26; Example 4.5 exact, §7.1 within its figures; turn splits by Eq. 5.2); **M11.3d implemented** (D299: signals as averaged green, Tampère §5.2 internal supplies with Yperman's shared-lane split and HCM's g = G; choice 4a replaced by 4b; rows ME7, ME26, ME27). **M11.4 implemented** (D300: `runMeso` over the whole Micro run (owner), outputs by slice in PCU, `--meso`, Run Meso and the Meso links tab, rows ME10, ME11); **M11.4b implemented** (D301: a turn's free-flow time as a lag charged to the out-link's storage (owner), row ME28); **M11.6a written** (D302: the Meso benchmark option sheet, [meso-benchmark-options](evidence/meso-benchmark-options.md)); **B23 answered** (D315: Boyles et al. 2025 for M1 and M2, Daganzo 1994/1995 secondary, not-blind cases as verification only; waiting on the copy). M11.5 waits on M9; the M11 gate stays open (a Meso benchmark, rule 4). Link-transmission model (owner, D158), signals
-and priority as capacity, spill-back, M9's assignment loop reused. **Done when:** analytic queue
-and shockwave fixtures pass; spill-back blocks the upstream link at storage capacity; same seed
-gives the same bytes.
+**Open; the gate waits on a Meso benchmark (rule 4).** Link-transmission model (owner, D158), signals and priority as capacity, spill-back, M9's assignment loop reused. **Done when:** analytic queue and shockwave fixtures pass; spill-back blocks the upstream link at storage capacity; same seed gives the same bytes. Slice history: [archive](archive/ROADMAP-implemented-2026-11-10.md#m11).
+
+| Slice | Implemented | Open |
+|---|---|---|
+| M11.1 contract · M11.2 graph | [MESO_NETWORK](reference/MESO_NETWORK.md) (D291), owner choices 1a–7a (D292); the Meso graph, `jamDensity`, `mesoSettings`, schema 52 (D293; ME1–ME2) | — |
+| M11.3a–b demand | Routes, static decisions and OD routes as Meso paths (D295; ME12–ME16); routeless inputs and placed decisions through Micro's expansion (D296; ME17–ME19) | — |
+| M11.3 node and link models | Tampère et al. 2011 node model (D297; ME20–ME23); Yperman 2007 link model, `loadMeso`, spill-back (D298); signals as averaged green (D299; ME7, ME26, ME27) | Conflicts inside a Node deferred (`MESO_PRIORITY_IGNORED`) |
+| M11.4 run and outputs | `runMeso`, outputs by slice in PCU, `--meso`, Run Meso, the Meso links tab (D300; ME10, ME11); a turn's free-flow lag (D301; ME28) | — |
+| M11.5 assignment | — | Waits on M9 |
+| M11.6 benchmark | Option sheet (D302, [meso-benchmark-options](evidence/meso-benchmark-options.md)); B23 answered: Boyles et al. 2025, Daganzo secondary (D315) | Waiting on the copy |
 
 ### M12 — Multi-resolution subarea workflow
 
@@ -470,11 +451,30 @@ finer levels with recorded provenance and a reported volume comparison.
 
 ### M13 — Analytical junction capacity (HCM 7, D370)
 
-**Open; contract written** ([NODE_ANALYSIS](reference/NODE_ANALYSIS.md)), owner choices answered (D371); **A1 implemented** (D372: HCM 7 Ch. 19 pretimed protected exclusive lane groups, schema 58, `--node-analysis`, NA1–NA8; Exhibit 19-41 carved out to A2); **A2 implemented** (D373 contract, D374: shared lane groups, critical v/c, back of queue; NODE_ANALYSIS §11, NA9–NA14); A3–A9 outlined (NODE_ANALYSIS §12); **A3 implemented** (D375 choices, D376 contract, D377: [NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md), NA15–NA20; permitted l+sl, lr and one-lane layouts and permitted queues open); J7 implements A9’s editor first half (D418/JT12): input form, current-snapshot analysis and Results/CSV, without a method change; approved at `fe827c8`. The owner selected A9’s Fill-from-model/Micro second half; D419/D420 settle B40 and native expected demand. D421/D422 implement [Fill/schema-64 provenance and model/manual-window Micro comparison](reference/NODE_ANALYSIS_MODEL.md), with NA24–NA30 passing after B40/B41 answers; A9 awaits owner review. A4 stays unselected. A deterministic, flow-based method on the Node that serves Micro, Meso and Macro and is not a fourth level (D378): HCM 7 Ch. 19 lane-group saturation flow, capacity, control delay and LOS first (A1), then queues, permitted turns, stop control, timing proposals, roundabouts and actuated control (A2–A9). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result.
+**Open.** A deterministic, flow-based method on the Node that serves Micro, Meso and Macro and is not a fourth level (D378). Contract [NODE_ANALYSIS](reference/NODE_ANALYSIS.md), owner choices answered (D371). **Done when:** A1's rows NA1–NA8 pass, with every other level's bytes unchanged and the marker and method label on every result. Slice history: [archive](archive/ROADMAP-implemented-2026-11-10.md#m13).
+
+| Slice | Implemented | Open |
+|---|---|---|
+| A1 | HCM 7 Ch. 19, pretimed protected exclusive lane groups, schema 58, `--node-analysis` (D372; NA1–NA8) | — |
+| A2 | Shared lane groups, critical v/c, back of queue (D373, D374; NA9–NA14) | — |
+| A3 | Permitted and protected-permitted turns ([NODE_ANALYSIS_A3](reference/NODE_ANALYSIS_A3.md), D375–D377; NA15–NA20) | Permitted l+sl, lr and one-lane layouts; permitted queues |
+| A9, editor half (J7) | Input form, current-snapshot analysis, Results and CSV (D418; JT12), approved at `fe827c8` | — |
+| A9, Fill from model and Micro comparison | [NODE_ANALYSIS_MODEL](reference/NODE_ANALYSIS_MODEL.md), schema 64 provenance (D419–D422; NA24–NA30) | Awaits owner review |
+| A4–A8 | Outlined (NODE_ANALYSIS §12) | Stop control, timing proposals, roundabouts, actuated control; A4 unselected |
 
 ### M14 — Junction templates and UTDF export (D386, D387)
 
-**Open; contracts written, owner choices answered (D387, D388)** ([JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), [UTDF_EXPORT](reference/UTDF_EXPORT.md)). The owner's HCM-first workflow (D387: no builder tool): Street segments crossing make Nodes, a junction template on the Node generates pockets, lane-assigned Connectors, right-of-way and NEMA-numbered signals; transition templates join Street segments of different cross-sections; posted speed on the Link, the Node analysis panel, and a UTDF export for Synchro 12 and Vistro 2026 (the competitor-format scope revision M1.23 requires; imports stay out). Road was renamed Street segment first (slice SR, done, D389). U0's probe is prepared and waits on the owner's imports ([UTDF_PROBE](plans/UTDF_PROBE.md)). J1 is done: the posted speed is on the Link (schema 60, D390). J2 is done: command-only kerb/far pockets with measured taper/storage, route/head preservation and derived compass movement names (D391, D392; JT3–JT4); J3a is done: structural catalog/loader, Node recipes and independent directions at schema 61 (D393–D396; JT5); its review is approved. J3b is done (D398–D402; JT6–JT8/JT13–JT15), approved by the owner at a52476b: two-way-stop fill and safe replacement/refusals. J4 is done and approved at 5ab3ea3: B32's chosen two-ring timing, head groups and NEMA checks (D404; JT9 passing). B33 selects one protected three-stage signalised T preset with compass NEMA numbers, booked as J4T before U1 (D405; documentation only during J5); B31 defers all-way-stop generation until A5 or U1 needs it, with no StopControl or schema change (D399). J6 also books one Command to change a cross-section through a junction before U1, with corridor/shared-Link handling or a selection aid (D402, D403). J5 and its review fixes are approved at d5e2bbe: upstream transitions, schema-63 owned structure, the required Transition-only selector and JT10 passing; Fill enlarges a still-generated transition polygon in one Undo, while a person's polygon keeps the named outside refusal; newly captured Link legs refuse at those Links with shorter-taper/manual-polygon recovery (D406–D408). J6 is approved at 3ec3d39/09b0689: accepted overlap carry-over (D409), B35/B36 (D410/D412), catalog/Node forms, optional crossing choice, seam/Readiness and explicit repair, complete corridor cross-section rebuild including shared pockets and a three-junction chain, and compact previews (D411/D414; JT11/JT16 passing). J6a is approved at e1eaad8: exact endpoint station conversion fixes ordinary Fill and corridor rebuild with three exit lanes, superseding D413's refusal (D415; JT17 passing). J4T is approved at b7be7c9/fd87e02/4433ffe: protected T/P2 subset, measured T cuts and all-junction polygon fitting (D416/D417; JT18–JT20 passing). B38 fits generated polygons automatically and false flags through explicit previewed Fit + Fill, with capture/overlap guards and one Undo; first template choice keeps current ownership through either entry path, never resurrecting false. J7 is approved at `fe827c8` (D418/JT12): Analysis inputs, source snapshots, synchronous HCM Results and CLI-identical exports. The junction slices are complete; U1 still waits on the owner’s U0 answers, with no UTDF writer authorized. Slices SR, U0, J1–J7, J6a, J4T, U1–U3. **Done when:** rows JT1–JT20 and UT0–UT9 pass, and the owner's UT10 round trip imports the fixture into both programs with geometry, lanes, volumes and timing matching the sheet.
+**Open; the junction slices are complete, UTDF waits on the owner.** The owner's HCM-first workflow (D387: no builder tool): Street segments crossing make Nodes; a junction template generates pockets, lane-assigned Connectors, right-of-way and NEMA-numbered signals; transition templates join different cross-sections; a UTDF export for Synchro 12 and Vistro 2026 (imports stay out). Contracts [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), [UTDF_EXPORT](reference/UTDF_EXPORT.md) (D387, D388). **Done when:** rows JT1–JT20 and UT0–UT9 pass, and the owner's UT10 round trip imports the fixture into both programs with geometry, lanes, volumes and timing matching the sheet. Slice history: [archive](archive/ROADMAP-implemented-2026-11-10.md#m14).
+
+| Slice | Implemented | Open |
+|---|---|---|
+| SR · J1 · J2 | Road renamed Street segment (D389); posted speed on the Link, schema 60 (D390); kerb and far pockets with measured taper and storage (D391, D392; JT3–JT4) | — |
+| J3a · J3b | Template catalog, Node recipes, schema 61 (D393–D396; JT5); two-way-stop Fill with safe replacement and refusals (D398–D402; JT6–JT8, JT13–JT15), approved at a52476b | All-way-stop generation deferred until A5 or U1 needs it (B31, D399) |
+| J4 · J4T | Two-ring timing, head groups, NEMA checks (D404; JT9), approved at 5ab3ea3; protected T and P2 subset, measured T cuts, polygon fitting (D405, D416, D417; JT18–JT20) | — |
+| J5 | Upstream transitions, schema 63, the Transition selector (D406–D408; JT10), approved at d5e2bbe | — |
+| J6 · J6a | Catalog and Node forms, crossing choice, corridor cross-section rebuild (D409–D414; JT11, JT16); exact endpoint station conversion (D415; JT17), approved at e1eaad8 | — |
+| J7 | Analysis inputs, snapshots, HCM Results, CLI-identical exports (D418; JT12), approved at `fe827c8` | — |
+| U0 · U1–U3 | U0's probe prepared ([UTDF_PROBE](plans/UTDF_PROBE.md)) | The owner's imports and answers; U1–U3 wait on them, no UTDF writer authorized |
 
 ---
 
