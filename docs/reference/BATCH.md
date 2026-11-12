@@ -272,7 +272,7 @@ M5.8b (below, D149).
 | CMP10 | Without a Node (four-leg): no `nodes` key, no `unmatched.nodes`, no Node block | `compare` |
 | CMP11 | Paired by hand (D526): for explicit per-seed values `d`, `s_d`, the half-width and `m − 1`; a seed with a value on one side only is not a pair; `m < 2` gives no interval; equal differences give half-width 0 | `compare` |
 | CMP12 | Swapping base and alternative under `perInput` negates every paired `d` and leaves every half-width and df unchanged | `compare` |
-| CMP13 | `four-leg-signalised` as `perInput` against a copy with one input raised by half (seeds 42–51): every row is paired (`pairs` in JSON, `"interval": "paired"`), each `d` is the mean of the per-seed differences, and the network half-width is narrower than Welch's for the same estimates; the same projects as `shared` stay Welch, byte for byte as before | `compare` |
+| CMP13 | `four-leg-signalised` as `perInput` against a copy with one input raised by half (seeds 42–45): every row is paired (`pairs` in JSON, `"interval": "paired"`), each `d` is the mean of the per-seed differences, and the network half-width is narrower than Welch's for the same estimates; the same projects as `shared` stay Welch, byte for byte as before | `compare` |
 | CMP14 | Editor: under `perInput` the Compare note and the Node comparison note say "paired"; the table's figures equal `compareBatches` of the two batches | `compare-run-ui` |
 
 ### Editor comparison (M5.8b, D149)
@@ -299,7 +299,7 @@ the **base** and a chosen file as the **alternative** — the roles of `--projec
 - **Table.** Movements, sections and approaches: name, base n and mean, alternative n and mean,
   difference, ±95 % half-width (s for delay, m for queue). Node, leg and turn rows are in Results →
   Nodes (NODES §18, D290). The df is in Copy and Export. The note
-  carries the marker and the measure (independent runs, Welch's 95 % interval, an interval that
+  carries the marker and the measure (independent runs and Welch's 95 % interval, or under `perInput` runs paired by seed and the paired-t interval, D526; an interval that
   spans 0 is seed noise), both names, the seeds, the evaluation period and cool-down, each side's
   overloaded seeds and unfinished movements, the unmatched names, and the network mean delay
   difference. No LOS letter is given to a difference.

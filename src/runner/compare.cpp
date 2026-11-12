@@ -35,25 +35,26 @@ auto match(const std::vector<Row>& base, const std::vector<Row>& alternative, Ma
     }
     return rows;
 }
+using Statistic = Difference (*)(const Estimate&, const Estimate&); // welch or paired (D526)
 // One value per row, as every block before S0.8a.
 template<class Row, class Value>
 std::vector<ComparisonRow> matchValue(const std::vector<Row>& base, const std::vector<Row>& alternative, Value value,
-                                      Unmatched& unmatched) {
-    return match(base, alternative, [&](const Row& b, const Row& a) { return ComparisonRow{b.name, welch(value(b), value(a))}; },
+                                      Unmatched& unmatched, Statistic statistic) {
+    return match(base, alternative, [&](const Row& b, const Row& a) { return ComparisonRow{b.name, statistic(value(b), value(a))}; },
                  unmatched);
 }
-ComparisonNodeRow compareNode(const BatchNodeRow& base, const BatchNodeRow& alternative) {
-    ComparisonNodeRow row{base.name, welch(base.delay, alternative.delay), {}, {}, {}, {}};
-    row.legs = match(base.legs, alternative.legs, [](const BatchNodeLegRow& b, const BatchNodeLegRow& a) {
-        return ComparisonLegRow{b.name, welch(b.delay, a.delay), welch(b.queueMean, a.queueMean)};
+ComparisonNodeRow compareNode(const BatchNodeRow& base, const BatchNodeRow& alternative, Statistic statistic) {
+    ComparisonNodeRow row{base.name, statistic(base.delay, alternative.delay), {}, {}, {}, {}};
+    row.legs = match(base.legs, alternative.legs, [statistic](const BatchNodeLegRow& b, const BatchNodeLegRow& a) {
+        return ComparisonLegRow{b.name, statistic(b.delay, a.delay), statistic(b.queueMean, a.queueMean)};
     }, row.unmatchedLegs);
     row.turns = matchValue(base.turns, alternative.turns, [](const BatchMovementRow& r) { return r.meanDelay; },
-                           row.unmatchedTurns);
+                           row.unmatchedTurns, statistic);
     return row;
 }
 }
 Difference welch(const Estimate& base, const Estimate& alternative) {
-    Difference d{base.n, alternative.n, base.mean, alternative.mean, {}, {}, {}};
+    Difference d{base.n, alternative.n, base.mean, alternative.mean, {}, {}, {}, {}};
     if (base.mean && alternative.mean) d.difference = *alternative.mean - *base.mean;
     if (!d.difference || !base.sd || !alternative.sd) return d;
     const double vb = *base.sd * *base.sd / static_cast<double>(base.n);
@@ -68,6 +69,28 @@ Difference welch(const Estimate& base, const Estimate& alternative) {
     d.halfWidth95 = tQuantile975(whole) * std::sqrt(variance);
     return d;
 }
+Difference paired(const Estimate& base, const Estimate& alternative) {
+    if (base.perSeed.size() != alternative.perSeed.size())
+        throw std::invalid_argument("compare: paired estimates over different seed lists");
+    Difference d{base.n, alternative.n, base.mean, alternative.mean, {}, {}, {}, {}};
+    std::vector<double> differences;
+    for (std::size_t i = 0; i < base.perSeed.size(); ++i)
+        if (base.perSeed[i] && alternative.perSeed[i]) differences.push_back(*alternative.perSeed[i] - *base.perSeed[i]);
+    const auto m = differences.size();
+    d.pairs = m;
+    if (m == 0) return d;
+    double sum = 0;
+    for (const double x : differences) sum += x;
+    const double mean = sum / static_cast<double>(m);
+    d.difference = mean;
+    if (m < 2) return d;
+    double squares = 0;
+    for (const double x : differences) squares += (x - mean) * (x - mean);
+    const double sd = std::sqrt(squares / static_cast<double>(m - 1));
+    d.degreesOfFreedom = static_cast<double>(m - 1);
+    d.halfWidth95 = tQuantile975(m - 1) * sd / std::sqrt(static_cast<double>(m));
+    return d;
+}
 Comparison compareBatches(const BatchReport& base, const BatchReport& alternative) {
     if (base.seeds != alternative.seeds) throw std::invalid_argument("compare: the batches ran different seed lists");
     if (base.randomStreams != alternative.randomStreams)
@@ -75,14 +98,16 @@ Comparison compareBatches(const BatchReport& base, const BatchReport& alternativ
     Comparison c;
     c.seeds = base.seeds;
     c.randomStreams = base.randomStreams;
+    const Statistic statistic = c.randomStreams == RandomStreams::perInput ? paired : welch;
     c.movements = matchValue(base.movements, alternative.movements, [](const BatchMovementRow& r) { return r.meanDelay; },
-                             c.unmatchedMovements);
+                             c.unmatchedMovements, statistic);
     c.sections = matchValue(base.sections, alternative.sections, [](const BatchSectionRow& r) { return r.meanDelay; },
-                            c.unmatchedSections);
+                            c.unmatchedSections, statistic);
     c.queues = matchValue(base.queues, alternative.queues, [](const BatchQueueRow& r) { return r.meanLength; },
-                          c.unmatchedQueues);
-    c.network = welch(base.meanDelay, alternative.meanDelay);
-    c.nodes = match(base.nodes, alternative.nodes, compareNode, c.unmatchedNodes);
+                          c.unmatchedQueues, statistic);
+    c.network = statistic(base.meanDelay, alternative.meanDelay);
+    c.nodes = match(base.nodes, alternative.nodes,
+                    [statistic](const BatchNodeRow& b, const BatchNodeRow& a) { return compareNode(b, a, statistic); }, c.unmatchedNodes);
     return c;
 }
 }

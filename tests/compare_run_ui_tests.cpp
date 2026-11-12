@@ -10,6 +10,7 @@
 #include "../src/project/document.hpp"
 #include "../src/project/load.hpp"
 #include <QAction>
+#include "../src/commands/demand_commands.hpp"
 #include <QApplication>
 #include <QClipboard>
 #include <QElapsedTimer>
@@ -190,6 +191,25 @@ int main(int argc, char** argv) {
                 "A comparison after a cancel failed");
         QTest::qWait(50);
         require(w.comparisonResult()->comparison.seeds.size() == 1, "A cancelled comparison's result arrived late");
+
+        // CMP14 (D526): perInput projects compare paired by seed, and the note says so.
+        {
+            auto pairedBase = base; changeRandomStreams(pairedBase, RandomStreams::perInput);
+            auto pairedBusier = busier; changeRandomStreams(pairedBusier, RandomStreams::perInput);
+            const auto pairedBaseFile = dir.filePath("paired-base.traffic.json"), pairedBusierFile = dir.filePath("paired-busier.traffic.json");
+            save(pairedBase, pairedBaseFile); save(pairedBusier, pairedBusierFile);
+            require(item<QLabel>(w, "editorCompareNote")->text().contains("Welch"), "The shared note does not say Welch");
+            w.openFile(pairedBaseFile);
+            seeds->setText("42-43"); w.compareWithFile(pairedBusierFile); waitForWorker(w);
+            require(w.comparisonResult().has_value(), "The paired comparison did not finish");
+            const auto pb = batchOf(pairedBase, data, "paired-base.traffic.json", list);
+            const auto pa = batchOf(pairedBusier, data, "paired-busier.traffic.json", list);
+            const auto pairedExpected = compareBatches(pb.report, pa.report);
+            require(w.comparisonResult()->comparison == pairedExpected && pairedExpected.network.pairs, "The editor's paired comparison differs");
+            const auto note = item<QLabel>(w, "editorCompareNote")->text();
+            require(note.contains("paired by seed") && !note.contains("Welch"), "The paired note does not say paired");
+            w.openFile(baseFile);
+        }
 
         // Closing the window mid-comparison must stop and join the worker, not crash.
         seeds->setText("42-51"); w.compareWithFile(alternativeFile);

@@ -14,6 +14,7 @@ void rejectDuplicates(std::vector<std::uint32_t> seeds) {
 }
 Estimate estimate(const std::vector<std::optional<double>>& values) {
     Estimate e;
+    e.perSeed = values;
     double sum = 0;
     for (const auto& v : values) if (v) { ++e.n; sum += *v; }
     if (e.n == 0) return e;

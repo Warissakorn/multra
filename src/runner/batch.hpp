@@ -34,6 +34,9 @@ std::vector<SeedRun> runSeeds(const Scenario&, const EvaluationSpec&, const std:
 struct Estimate {
     std::size_t n{};
     std::optional<double> mean, sd, halfWidth95;
+    // D526: every seed's value in the batch's seed order (empty: none), so a comparison can pair
+    // them (BATCH §7). Not written to any output.
+    std::vector<std::optional<double>> perSeed{};
     bool operator==(const Estimate&) const = default;
 };
 struct BatchMovementRow {

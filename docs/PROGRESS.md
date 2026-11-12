@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — Paired comparison under `perInput` (D526)
+
+- **D526:** contract first (BATCH §7, rows CMP11–CMP14), then code. When both batches are
+  `perInput`, each comparison row pairs the seeds with a value on both sides: `d` is the mean
+  per-seed difference, the interval the paired t with `m − 1` df; JSON adds `pairs` and
+  `"interval": "paired"`, the measure line says "paired by seed", CSV columns are unchanged.
+  `shared` stays Welch, byte for byte. `Estimate` keeps its per-seed values (`perSeed`, not
+  written to any output). The editor's Compare note and the Node comparison note say "paired".
+  On four-leg `perInput` with one input raised by half (seeds 42–45) the network half-width is
+  2.58 s paired against 3.42 s Welch.
+- **Verified on Linux:** desktop build and ctest 322/322.
+
 ## 2026-11-12 — M6 tolerance set (D516); `EditorWindow` steps 2–6 (D517–D524); object table (D525)
 
 - **D516:** owner answered B47 with (a): S1 ±5 %, S2 ±15 %, U ±15 % of the reference, on the mean

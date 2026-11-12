@@ -1,5 +1,6 @@
 #include "test.hpp"
 #include "../src/commands/node_commands.hpp"
+#include "../src/commands/demand_commands.hpp"
 #include "../src/runner/compare.hpp"
 #include "../src/project/comparison_output.hpp"
 #include "../src/project/csv_format.hpp"
@@ -246,4 +247,66 @@ TEST(compare, cmp10_no_node_keeps_the_output) {
     const auto j = comparisonJson(c, fourLeg(), fourLegCopy());
     CHECK(!j.contains("nodes") && !j["unmatched"].contains("nodes"));
     CHECK(comparisonCsv(c, fourLeg(), fourLegCopy()).find("level,node") == std::string::npos);
+}
+// D526 (BATCH §7): the paired comparison under perInput.
+namespace {
+Estimate perSeed(std::vector<std::optional<double>> values) {
+    Estimate e; e.perSeed = values;
+    double sum = 0;
+    for (const auto& v : values) if (v) { ++e.n; sum += *v; }
+    if (e.n) e.mean = sum / static_cast<double>(e.n);
+    return e;
+}
+}
+TEST(compare, cmp11_paired_by_hand) {
+    // Differences 1, 3, 2, 6 (seed 5's base is missing, so it is not a pair): mean 3, s_d^2 = 14/3.
+    const auto d = paired(perSeed({10.0, 20.0, 30.0, 40.0, std::nullopt}), perSeed({11.0, 23.0, 32.0, 46.0, 50.0}));
+    CHECK(*d.pairs == 4); CHECK(d.nBase == 4); CHECK(d.nAlternative == 5);
+    test::near(*d.difference, 3.0);
+    test::near(*d.degreesOfFreedom, 3.0);
+    test::near(*d.halfWidth95, 3.182 * std::sqrt(14.0 / 3) / 2);
+    test::near(*d.base, 25.0); test::near(*d.alternative, 32.4); // each side's own mean
+    const auto one = paired(perSeed({1.0, std::nullopt}), perSeed({3.0, 4.0}));
+    CHECK(*one.pairs == 1); test::near(*one.difference, 2.0); CHECK(!one.halfWidth95); CHECK(!one.degreesOfFreedom);
+    const auto none = paired(perSeed({1.0, std::nullopt}), perSeed({std::nullopt, 4.0}));
+    CHECK(*none.pairs == 0); CHECK(!none.difference);
+    const auto equal = paired(perSeed({1.0, 2.0, 3.0}), perSeed({3.0, 4.0, 5.0}));
+    test::near(*equal.halfWidth95, 0.0); test::near(*equal.degreesOfFreedom, 2.0);
+    test::throws([] { paired(perSeed({1.0}), perSeed({1.0, 2.0})); });
+}
+TEST(compare, cmp12_paired_swap_negates_the_difference_only) {
+    const auto b = perSeed({10.0, 20.0, 30.0, 40.0}), a = perSeed({11.0, 23.0, 32.0, 46.0});
+    const auto forward = paired(b, a), backward = paired(a, b);
+    CHECK(*backward.difference == -*forward.difference);
+    CHECK(*backward.halfWidth95 == *forward.halfWidth95); CHECK(*backward.degreesOfFreedom == *forward.degreesOfFreedom);
+}
+TEST(compare, cmp13_per_input_projects_pair_by_seed) {
+    const std::vector<std::uint32_t> seeds{42, 43, 44, 45};
+    auto base = fourLegDocument(); changeRandomStreams(base, RandomStreams::perInput);
+    auto busier = base; busier.definition->inputs[0].vehiclesPerHour *= 1.5;
+    const auto b = batchOf(base, "base.traffic.json", seeds), a = batchOf(busier, "busier.traffic.json", seeds);
+    const auto c = compareBatches(b.report, a.report);
+    CHECK(c.randomStreams == RandomStreams::perInput);
+    for (std::size_t i = 0; i < c.movements.size(); ++i) {
+        const auto& row = c.movements[i].value;
+        CHECK(row.pairs.has_value());
+        CHECK(row == paired(b.report.movements[i].meanDelay, a.report.movements[i].meanDelay));
+    }
+    double sum = 0;
+    for (std::size_t i = 0; i < seeds.size(); ++i) sum += *a.report.meanDelay.perSeed[i] - *b.report.meanDelay.perSeed[i];
+    test::near(*c.network.difference, sum / static_cast<double>(seeds.size()));
+    CHECK(*c.network.pairs == seeds.size());
+    const auto j = comparisonJson(c, b, a);
+    CHECK(j["interval"] == "paired"); CHECK(j["network"]["pairs"] == seeds.size());
+    CHECK(j["measure"].get<std::string>().find("paired by seed") != std::string::npos);
+    const auto csv = comparisonCsv(c, b, a);
+    CHECK(csv.find("95% CI by the paired t") != std::string::npos);
+    // shared keeps Welch and its keys.
+    const auto shared = compareBatches(fourLeg().report, fourLegCopy().report);
+    CHECK(!shared.network.pairs.has_value());
+    const auto sj = comparisonJson(shared, fourLeg(), fourLegCopy());
+    CHECK(!sj.contains("interval")); CHECK(!sj["network"].contains("pairs"));
+    // The point of pairing: the shared draws cancel, so the network interval is narrower than Welch's
+    // for the same two batches (2.58 s against 3.42 s on Linux, 2026-11-12).
+    CHECK(*c.network.halfWidth95 < *welch(b.report.meanDelay, a.report.meanDelay).halfWidth95);
 }

@@ -70,7 +70,8 @@ void EditorWindow::refreshCompare() {
     const auto& first=base.runs.front().report;
     const auto figure=[&](const std::optional<double>& v){ return v?editorDesign::formatValue(*v,1):text("empty"); };
     // Every argument in one arg() call, so a file name holding "%1" is never substituted again.
-    QString note=text("editorCompareNote").arg(QString::number(c.seeds.size()),seedText(c.seeds),
+    const bool paired=c.randomStreams==RandomStreams::perInput; // D526: rows paired by seed
+    QString note=text(paired?"editorCompareNotePaired":"editorCompareNote").arg(QString::number(c.seeds.size()),seedText(c.seeds),
         QString::fromStdString(base.name),QString::fromStdString(alternative.name),
         QString::number(first.warmup,'f',0),QString::number(first.evaluationEnd,'f',0));
     if(first.cooldown) note+=" "+text("editorCooldownNote").arg(*first.cooldown,0,'f',0); // M5.9

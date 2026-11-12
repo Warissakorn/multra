@@ -53,9 +53,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     per-decision notes) still belongs in the contracts.
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
-  - **Random streams per input: slices 1–4 done (D506, D510, D512); choice 3, the paired
-    comparison, is contracted (D526, BATCH §7 rows CMP11–CMP14)** and next in code, before the M6
-    runs (D505).
+  - **Random streams per input: done** (slices 1–4, D506, D510, D512; choice 3, the paired
+    comparison under `perInput`, D526, BATCH §7 rows CMP11–CMP14).
     Slice 4's cost was not measured with callgrind (D512). A new project is `perInput` at schema 74; shipped projects stay
     `shared` until a recorded decision regenerates them.
   - **Left from D495:** phase 1's per-vehicle loop in `stepSimulation`, about 150 lines, is still

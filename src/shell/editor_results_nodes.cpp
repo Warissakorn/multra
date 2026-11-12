@@ -117,7 +117,7 @@ void EditorWindow::refreshComparedNodes(const QString& marker) {
         collect(n.unmatchedLegs, n.name); collect(n.unmatchedTurns, n.name);
     }
     if (c.nodes.empty() && c.unmatchedNodes.empty()) { nodeResultNote_->setText(marker + " " + text("editorNodeResultsNone")); return; }
-    QString note = marker + " " + text("editorNodeResultsCompared").arg(c.seeds.size());
+    QString note = marker + " " + text(c.randomStreams == RandomStreams::perInput ? "editorNodeResultsComparedPaired" : "editorNodeResultsCompared").arg(c.seeds.size()); // D526
     QStringList unmatched;
     if (!baseOnly.isEmpty()) unmatched << text("editorCompareBaseOnly").arg(baseOnly.join(", "));
     if (!alternativeOnly.isEmpty()) unmatched << text("editorCompareAlternativeOnly").arg(alternativeOnly.join(", "));

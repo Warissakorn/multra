@@ -443,7 +443,7 @@ Each row first asserts that its forcing worked (AGENTS).
 
 - **Matching.** `compareBatches` matches Nodes by name, then each matched Node's in-legs and turns
   by name within it, by BATCH §7's rule. Unmatched names are listed per level, never dropped.
-- **Figures.** Welch differences (BATCH §7) of the Node's, each leg's and each turn's delay, and of
+- **Figures.** Differences (BATCH §7: Welch, or paired by seed under `perInput`, D526) of the Node's, each leg's and each turn's delay, and of
   each leg's mean queue. A difference has no LOS letter.
 - **Output.**
   - JSON: `nodes` and `unmatched.nodes`, only when either side has a Node.
@@ -473,7 +473,8 @@ Each row first asserts that its forcing worked (AGENTS).
   There is no LOS column, because a difference has no letter (BATCH §7).
 - **The note:**
   - the marker;
-  - "alternative minus base" with the seed count and Welch's half-width;
+  - "alternative minus base" with the seed count and Welch's half-width (the paired-t one under
+    `perInput`, D526);
   - the unmatched names, in the comparison tab's wording: Node names bare, leg and turn names as
     `Node / name`.
 
