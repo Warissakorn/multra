@@ -4,6 +4,7 @@
 #include "presentation.hpp"
 #include "automation_server.hpp"
 #include "editor_window.hpp"
+#include "editor_automation_state.hpp"
 #include "editor_recovery_state.hpp"
 #include "editor_run_state.hpp"
 #include "editor_batch_state.hpp"
@@ -46,7 +47,7 @@
 
 namespace multra {
 EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& language,QWidget* parent,bool deferRecovery) : QMainWindow(parent), data_(data), deferRecovery_(deferRecovery) {
-    batchSession_=std::make_unique<BatchSession>();runSession_=std::make_unique<RunSession>();recoverySession_=std::make_unique<RecoverySession>();
+    batchSession_=std::make_unique<BatchSession>();runSession_=std::make_unique<RunSession>();recoverySession_=std::make_unique<RecoverySession>();automationHost_=std::make_unique<AutomationHost>();
     // Numbers are data a user reads back into the project file, so every widget shows Latin
     // digits whatever the system locale. setLocale as well as setDefault: the QMainWindow base has
     // already resolved the system locale, and every child and dialog inherits the window's.

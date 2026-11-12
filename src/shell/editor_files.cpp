@@ -1,5 +1,6 @@
 #include "recent_files.hpp"
 #include "editor_window.hpp"
+#include "editor_automation_state.hpp"
 #include "editor_recovery_state.hpp"
 #include "message_label.hpp"
 #include "editor_storage.hpp"
@@ -61,8 +62,8 @@ bool EditorWindow::confirmDiscard() {
     return answer==QMessageBox::Discard;
 }
 void EditorWindow::closeEvent(QCloseEvent* event) {
-    if(automationClosing_) {
-        if(!automationCloseReady_){event->ignore();return;}
+    if(automationHost_->closing) {
+        if(!automationHost_->closeReady){event->ignore();return;}
         clearRecovery();event->accept();return;
     }
     if(confirmDiscard()){clearRecovery();event->accept();}else event->ignore();

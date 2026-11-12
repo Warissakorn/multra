@@ -50,9 +50,8 @@ class QToolBar;
 namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
-class AutomationServer;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -80,13 +79,8 @@ protected:
     void closeEvent(QCloseEvent*) override;
     void resizeEvent(QResizeEvent*) override;
 private:
-    QString automationSession_; // with History::generation(), the automation documentId
+    std::unique_ptr<AutomationHost> automationHost_; // server, endpoint, session id, quit flags (editor_automation_state.hpp, D519)
     QJsonObject automationState(bool includeSelection = true);
-    std::unique_ptr<AutomationServer> automationServer_;
-    QString automationEndpoint_;
-    bool automationStartupComplete_{};
-    bool automationClosing_{}, automationCloseReady_{};
-    bool automationWasEnabled_{}, automationLabWasEnabled_{};
     void beginAutomationQuit();
     void completeAutomationQuit(bool delivered);
     void newFile();

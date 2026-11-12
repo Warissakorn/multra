@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_automation_state.hpp"
 #include "editor_recovery_state.hpp"
 #include "editor_run_state.hpp"
 #include "message_label.hpp"
@@ -54,15 +55,15 @@ const char* busyReason() {
 
 QJsonObject EditorWindow::automationState(bool includeSelection) {
     // The window's session plus History's generation: New/Open/Recover each start another document.
-    if(automationSession_.isEmpty())automationSession_=QUuid::createUuid().toString(QUuid::WithoutBraces);
+    if(automationHost_->session.isEmpty())automationHost_->session=QUuid::createUuid().toString(QUuid::WithoutBraces);
     QJsonArray selection;
     if(includeSelection)for(const auto& id:canvas_->selection())selection.append(QString::fromStdString(id));
-    QJsonObject state{{"instanceId",automationSession_},{"connectionReady",automationServer_!=nullptr},
-        {"recoveryPolicy",deferRecovery_?"defer":"ask"},{"startupComplete",automationStartupComplete_},{"closing",automationClosing_},
-        {"busyReason",automationClosing_?QJsonValue("closing"):(busyReason()?QJsonValue(busyReason()):QJsonValue(QJsonValue::Null))},
-        {"selectionCount",static_cast<qint64>(canvas_->selection().size())},{"documentId",automationSession_+"-"+QString::number(history_.generation())},{"revision",QString::number(history_.revision())},
+    QJsonObject state{{"instanceId",automationHost_->session},{"connectionReady",automationHost_->server!=nullptr},
+        {"recoveryPolicy",deferRecovery_?"defer":"ask"},{"startupComplete",automationHost_->startupComplete},{"closing",automationHost_->closing},
+        {"busyReason",automationHost_->closing?QJsonValue("closing"):(busyReason()?QJsonValue(busyReason()):QJsonValue(QJsonValue::Null))},
+        {"selectionCount",static_cast<qint64>(canvas_->selection().size())},{"documentId",automationHost_->session+"-"+QString::number(history_.generation())},{"revision",QString::number(history_.revision())},
         {"dirty",history_.dirty()},{"file",file_},{"canUndo",history_.canUndo()},{"canRedo",history_.canRedo()},
-        {"selection",selection},{"busy",automationClosing_ || busyReason()!=nullptr},
+        {"selection",selection},{"busy",automationHost_->closing || busyReason()!=nullptr},
         {"run",automationRunState()}};
     if(!includeSelection)state.remove("selection");
     return state;
@@ -72,7 +73,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
     QJsonObject response{{"id",request.value("id")}};
     const auto selectionOption=request.value("params").toObject().value("includeSelection");
     const bool includeSelection=request.value("command")!=QJsonValue("status") || selectionOption!=QJsonValue(false);
-    if(automationSession_.isEmpty())automationSession_=QUuid::createUuid().toString(QUuid::WithoutBraces);
+    if(automationHost_->session.isEmpty())automationHost_->session=QUuid::createUuid().toString(QUuid::WithoutBraces);
     try {
         const auto command=requiredString(request,"command");
         if(request.contains("params") && !request.value("params").isObject())
@@ -86,7 +87,7 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
         if(!commands.contains(command))throw CommandError("UNKNOWN_COMMAND","Unknown automation command");
         const bool read=command=="capabilities" || command=="status" || command=="document.get" || command=="results.get" || command=="recovery.list" || command=="map.get" || command=="map.status" || command=="connector.suggest" || command=="document.schema" || command=="document.validate";
         if(!read) {
-            if(automationClosing_)throw CommandError("CLOSING","The editor is closing; inspect status instead of sending mutations");
+            if(automationHost_->closing)throw CommandError("CLOSING","The editor is closing; inspect status instead of sending mutations");
             const auto state=automationState(false);
             if(request.value("documentId")!=state.value("documentId") || request.value("expectedRevision")!=state.value("revision"))
                 throw CommandError("STALE_DOCUMENT","Read status and supply the current documentId and expectedRevision strings");

@@ -42,9 +42,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   on the Micro sentence. Answered (D505): the M6 benchmark sources ([ROADMAP](ROADMAP.md) M6.0);
   Micro's M6 gate may close before M10 and M11.
 - **Architecture** (includes checked per module since D494):
-  - **Split `EditorWindow` (D505): steps 1–3 done (D514 `BatchSession`, D517 `RunSession`, D518
-    `RecoverySession`; header 466 lines).** Next, one per commit with no behaviour change:
-    automation, the repeated object tabs (one helper), Macro/Meso functions onto their panels. `src/project/`
+  - **Split `EditorWindow` (D505): steps 1–4 done (D514 `BatchSession`, D517 `RunSession`, D518
+    `RecoverySession`, D519 `AutomationHost`; header 460 lines).** Next, one per commit with no
+    behaviour change: the repeated object tabs (one helper), Macro/Meso functions onto their panels. `src/project/`
     (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
   - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
     per-decision notes) still belongs in the contracts.

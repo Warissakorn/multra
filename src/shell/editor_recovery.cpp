@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_automation_state.hpp"
 #include "editor_recovery_state.hpp"
 #include "editor_run_state.hpp"
 #include "editor_batch_state.hpp"
@@ -66,7 +67,7 @@ void EditorWindow::buildRecovery() {
     // Recovering another draft adopts its lock, so offer the dialog either way; without a
     // lock the timer stays stopped rather than reporting the same failure every 15 seconds.
     if(locked)startAutosave();
-    QTimer::singleShot(0,this,[this]{if(!deferRecovery_)recoverDialog(true);automationStartupComplete_=true;});
+    QTimer::singleShot(0,this,[this]{if(!deferRecovery_)recoverDialog(true);automationHost_->startupComplete=true;});
 }
 void EditorWindow::startAutosave() {
     if(recoverySession_->lock && recoverySession_->lock->isLocked() && !recoverySession_->autosaveTimer.isActive())recoverySession_->autosaveTimer.start(15000);

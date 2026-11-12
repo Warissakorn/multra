@@ -1,6 +1,7 @@
 #include "recent_files.hpp"
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "editor_automation_state.hpp"
 #include "editor_run_state.hpp"
 #include "message_label.hpp"
 #include "node_analysis_panel.hpp"
@@ -165,7 +166,7 @@ QJsonObject EditorWindow::automationRunState() const {
         {"tick",static_cast<qint64>(runSession_->state.tick)},{"time",runSession_->state.time},{"seed",runSeed_->text()},
         {"runId",nullable(runSession_->identity.id)},{"status",status},{"lastRunId",nullable(runSession_->identity.lastId)},
         {"lastEndReason",runSession_->identity.lastEndReason},{"sourceRevision",active?QJsonValue(QString::number(runSession_->identity.revision)):QJsonValue(QJsonValue::Null)},
-        {"sourceDocumentId",active?QJsonValue(automationSession_+"-"+QString::number(runSession_->identity.generation)):QJsonValue(QJsonValue::Null)}};
+        {"sourceDocumentId",active?QJsonValue(automationHost_->session+"-"+QString::number(runSession_->identity.generation)):QJsonValue(QJsonValue::Null)}};
 }
 void EditorWindow::endRunUntil(const char* reason) {
     if(runSession_->identity.until.active) {

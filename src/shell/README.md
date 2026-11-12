@@ -29,7 +29,7 @@ replaced atomically (`QSaveFile`).
 | Street segments and Nodes | `editor_street_segments.cpp`, `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp`, `editor_nodes.cpp` |
 | Evaluation objects | `editor_counters.cpp`, `editor_sections.cpp` |
 | Runs and Results | `editor_run.cpp` (Run/Pause/Step/Reset, seed, speed; its state is `RunSession` in `editor_run_state.hpp`, D517), `editor_batch.cpp` (N seeds on one worker thread; its state is `BatchSession` in `editor_batch_state.hpp`, D514), `editor_compare.cpp` (the open project against a chosen file), `editor_macro.cpp`, `editor_meso.cpp`, `editor_results.cpp`, `editor_results_nodes.cpp` |
-| Map, lab, automation | `editor_map.cpp`, `editor_lab.cpp`, `editor_automation.cpp`, `editor_automation_lifecycle.cpp` |
+| Map, lab, automation | `editor_map.cpp`, `editor_lab.cpp`, `editor_automation.cpp`, `editor_automation_lifecycle.cpp` (state: `AutomationHost` in `editor_automation_state.hpp`, D519) |
 
 The other headers:
 
@@ -39,6 +39,7 @@ The other headers:
 | `editor_batch_state.hpp` | `BatchSession`: the batch and comparison worker's state and widgets, held by `EditorWindow` (D514) | [BATCH](../../docs/reference/BATCH.md) |
 | `editor_run_state.hpp` | `RunSession`: the single run's state (identity, timer, snapshot, `SimState`, accumulators, clamp rows), held by `EditorWindow` (D517) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `editor_recovery_state.hpp` | `RecoverySession`: the recovery folder and file, its lock, the autosave timer and last autosaved revision, held by `EditorWindow` (D518) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_automation_state.hpp` | `AutomationHost`: the automation server, endpoint, document session id and quit-handshake flags, held by `EditorWindow` (D519) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `editor_style.*` | Toolbar icons from the editor's glyphs (`../editor/editor_glyph.*`); the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
 | `example_menu.*` | File → *Open example*: `loadExampleProjects` reads `data/examples.json`, `fillExampleMenu` lists it in the current language (D498) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `recent_files.*` | File → *Open recent*: the person's last eight projects in `recent-files.json` beside their other local data; `rememberRecentFile` on open and save, `fillRecentMenu` lists them (D504) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
