@@ -227,9 +227,6 @@ slice, the next one is M9, then M11.5 and the M11 gate, M12. Each starts with it
   headless). M10.2's code is complete; the M10 gate stays open (rule 8).
 - **Owner:** look at the two dialogs and the page on Windows ([OWNER_SITTING](plans/OWNER_SITTING.md)
   item 42). Linux offscreen tests do not close that look.
-- **Build note:** a Debug desktop build with debug info filled this container's disk (23 GB);
-  configure with `-DCMAKE_CXX_FLAGS_DEBUG="-O0 -g0"` here. Qt needs `qt6-base-dev libproj-dev
-  libxkbcommon-dev nlohmann-json3-dev` from apt.
 
 ## M10.3 trip distribution — D1, D2 and D3 done (D473, D474, D476); stop for the owner
 
