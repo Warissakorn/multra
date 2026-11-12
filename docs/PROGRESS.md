@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — M6 S2-c: the fixed-cycle queue delay run (D538)
+
+- **D538:** contract first (M6_S2_RUN, rows S2C1–S2C6). Then:
+  - the in-memory projects (`tools/m6_s2_network.hpp`): 60.6 s cycle and 30.3 s green, the 16-slot phases on the 0.1 s grid;
+  - the paired reduction (`tools/m6_s2_summary.hpp`);
+  - `multra-m6-s2c-run`.
+- **Corrected in the contract before any run:** the cool-down adds ticks, not demand. The authored duration is therefore 4,500 s and the run lasts 4,800 s.
+- **The run:** seeds 42–81 × 6 projects on build `7e2d9ab`. Section Δ against FCTL `h · E D`:
+  - 11.83 against 10.98 s;
+  - 14.13 against 13.49 s;
+  - 19.79 against 19.57 s.
+
+  **All pass ±15 %.** [m6-s2c-first-run](evidence/m6-s2c-first-run.md).
+- **Verified on Linux:** `check` 334/334 (`m6s2` 5/5). The M6 run tools are registered in one CMake loop so `CMakeLists.txt` stays at 500 lines.
+
 ## 2026-11-12 — The S1 diagnostic: `t_x`, `L_hj` and `v_S` (D536, D537)
 
 - **D536:** contract (M6_S1_RUN §7, rows MS8–MS11), then an observer in `multra-m6-s1-run`

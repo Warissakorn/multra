@@ -305,6 +305,8 @@ base conditions the adjustments of Equations 20-16 and 20-17 are 0 (`P_HV` = 0, 
 |---|---|---|---|---|---|
 | `c_p` (veh/h) | 846.1 | 654.3 | 504.6 | 388.1 | 297.7 |
 
+**First run, S2-c (D538, 2026-11-12):** [m6-s2c-first-run](m6-s2c-first-run.md); passes at `x` = 0.5, 0.7 and 0.85.
+
 **First run, kind S1 (D535, 2026-11-12):** made with [M6_S1_RUN](../reference/M6_S1_RUN.md); results in [m6-s1-first-run](m6-s1-first-run.md). S1-a passes, S1-f misses, S1-d passes 3 of 8 banded ranks.
 
 **Before the first run:** the HCM 7 values were read 2026-11-12 (copy `74f4bc3`, page images

@@ -76,8 +76,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     ([evidence](evidence/m6-s1-diagnostic.md)): `L_hj` 7.95 m against 6.9 (+15 %, about two thirds of
     S1-f's gap), `t_x` 1.195 s against 1.17, `v_S` 43.5 against 45.1 km/h; the queue creeps through the red.
     **Ask** the owner whether any of these is to change (it would move S1-a too).
-    **D538: S2-c** ([M6_S2_RUN](reference/M6_S2_RUN.md), rows S2C1–S2C6): contract written; the builder,
-    `multra-m6-s2c-run` and the run are next. Then the S2
+    **D538: S2-c passes** ([evidence](evidence/m6-s2c-first-run.md)): 11.83, 14.13 and 19.79 s against
+    10.98, 13.49 and 19.57 s (+7.7, +4.7, +1.1 %). Next by §6: S2-b and S2-a (HCM `d1 + d2`, cycle 90 s with
+    amber), then U-c and U-a. Then the S2
     runs (S2-c first, `multra-fctl-reference`) and the U runs (U-c, U-a).
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
