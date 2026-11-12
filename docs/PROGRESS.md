@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — M6's first comparable run, kind S1 (D535)
+
+- **D535:** contract first (M6_S1_RUN, rows MS1–MS7, `fcb640b`). Then the one-lane project
+  (`m6-s1-approach`, builder `tools/m6_s1_network.hpp`, listed in File → Open example),
+  `multra-m6-s1-run` and its reductions (`tools/m6_s1_summary.hpp`).
+- **The run:** seeds 42–81 on build `2a9e2cc`, with 1,600 usable cycles and none dropped.
+  - S1-a: **1,944.0 ± 2.6 veh/h, pass** against 1,900.
+  - S1-f: **miss**, −6.7 % against 2,083.
+  - S1-d: ranks 3, 7 and 8 pass and 2, 4, 5, 6 and 9 miss against Lee & Chen. From rank 4 on it follows Bonneson's curve within 3.5 %.
+  - Recorded in [m6-s1-first-run](evidence/m6-s1-first-run.md); nothing was tuned.
+- **Verified on Linux:** desktop build; ctest passes, including the new `m6s1` (6/6) and `cli-m6-s1-run-*`. The project count in `studyperiods` went to 9.
+
 ## 2026-11-12 — Siegloch's regression for U-c's effective `t_c` (D534)
 
 - **D534:** the session fetched FHWA's Traffic Flow Theory chapter 8 and read §8.2.2 from the

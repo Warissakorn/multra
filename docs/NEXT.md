@@ -68,8 +68,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     references are in §6 (10.98, 13.49, 19.57 s at `x` = 0.5, 0.7, 0.85). S1-d's references are read (Bonneson 1992, D532; Lee & Chen 1986, D533).
     U-c's effective `t_c`: Siegloch's regression in `--priority-lines` (D534, PRIORITY_LINES §5,
     PL7–PL9). Every source the first comparable run needs is read and computed.
-    **D535: the first comparable run, kind S1** ([M6_S1_RUN](reference/M6_S1_RUN.md), rows MS1–MS7):
-    contract written; the builder, `multra-m6-s1-run` and the 40-seed run are next. S2 and U follow.
+    **D535: the first comparable run, kind S1, made** ([evidence](evidence/m6-s1-first-run.md)):
+    S1-a 1,944 veh/h passes (1,900 ±5 %); S1-f misses (−6.7 % against 2,083); S1-d passes ranks 3, 7, 8
+    and misses 2, 4, 5, 6, 9 against Lee & Chen. **Ask** the owner whether S1's gate is S1-a alone
+    or needs S1-f and S1-d too. Next by §6: the D530 diagnostic contract (S1-f missed), then the S2
+    runs (S2-c first, `multra-fctl-reference`) and the U runs (U-c, U-a).
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
     D531: S1 keeps the mean headway; the median and skewness beside it need a `--discharge`
