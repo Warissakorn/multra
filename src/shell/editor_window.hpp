@@ -31,6 +31,7 @@
 #include <QPointer>
 #include "run_identity.hpp"
 #include "object_tab.hpp"
+#include "object_tab_context.hpp"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -52,7 +53,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -315,11 +316,9 @@ private:
     std::string selectedOd() const;
     std::vector<std::pair<std::string, QString>> compositionChoices() const;
     // S1.1 (STUDY_PERIODS §8): the Study periods tab and the choices the OD dialog offers.
-    ObjectTab periodTab_;
-    void buildPeriods(); void translatePeriods(); void refreshPeriods(); void showPeriods();
-    void editPeriod(const std::string& id); // empty: a new period
-    std::string selectedPeriod() const;
+    StudyPeriodsPanel* periods_{}; // its own panel (study_periods_panel.hpp, D521)
     std::vector<std::pair<std::string, QString>> periodChoices() const;
+    ObjectTabContext objectTabContext(); // D521: what an object tab's panel needs from this window
     // S1.2 (STUDY_PERIODS §8, D269): the Modes tab -- installed modes read-only, owned ones edited.
     ObjectTab modeTab_;
     void buildModes(); void translateModes(); void refreshModes(); void showModes();

@@ -57,6 +57,14 @@ void pinWidth(QComboBox* combo) {
     combo->setProperty("editorOriginalMinimumWidth",width);combo->setFixedWidth(width);
 }
 }
+ObjectTabContext EditorWindow::objectTabContext() {
+    return {[this]()->const ProjectDocument&{return history_.document();},[this]{return history_.revision();},
+            [this](const std::string& key){return text(key);},
+            [this](const std::string& key,const std::function<void()>& run){return action(key,{},run);},
+            [this](const std::string& name,const std::function<void(ProjectDocument&)>& change){return execute(name,change);},
+            [this](const std::string& name,const std::function<void(ProjectDocument&)>& change){return commitChange(name,change);},
+            [this]{refresh(false);},[this](QWidget* page){objects_->setCurrentWidget(page);}};
+}
 void EditorWindow::addObjectPage(QWidget* page,const std::string& key) {
     objectPages_.emplace(key,page);objects_->addTab(page,QString());
 }
