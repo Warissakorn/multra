@@ -60,9 +60,10 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - **Left from D495:** phase 1's per-vehicle loop in `stepSimulation`, about 150 lines, is still
     one body; split it only with a callgrind run before and after (it is the hot path).
   - **Analytic rows against HCM: §6 written (D515), tolerance set (D516: S1 ±5 %, S2/U ±15 %).**
-    Before the first comparable run: the *to read* values in
-    [§6](evidence/m6-benchmark-options.md) read from the books, the S2-c script and a counter at a
-    priority line (U) built with their own rows.
+    HCM 7 values read (D527: `s0` 1,900; `g` = displayed green; d1/d2 and Eq. 20-18 forms; U-a's
+    `t_c` 6.2 s, `t_f` 3.3 s; references computed in [§6](evidence/m6-benchmark-options.md)).
+    Before the first comparable run: S1-d's papers (not in the book set), the S2-c script and a
+    counter at a priority line (U), each with its own rows.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
   - D497–D504 are done; the owner's look is OWNER_SITTING B45.
   - The Node analysis example uses the pocket template (D513).

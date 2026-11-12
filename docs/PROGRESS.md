@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — M6 §6's HCM 7 values read (D527)
+
+- **D527:** attached the owner's HCM 7 copy (`74f4bc3`) and read each *to read* value of
+  [M6 §6](evidence/m6-benchmark-options.md) from its page image: `s0` 1,900 pc/h/ln (Ex. 19-11);
+  Ch. 31's saturation-flow procedure; effective green = displayed green (Eq. 19-1, 19-3, which
+  withdraws the sheet's 41 s); d1/PF/d2 (Eq. 19-18 to 19-27); U-a's `t_c` 6.2 s and `t_f` 3.3 s
+  (Ex. 20-17, 20-18) with Eq. 20-18. Reference delays (S2) and capacities (U-a) computed from the
+  read forms before any run; no engine figure seen, no gate closed. Still open: S1-d's papers, the
+  S2-c script and the priority-line counter.
+
 ## 2026-11-12 — Paired comparison under `perInput` (D526)
 
 - **D526:** contract first (BATCH §7, rows CMP11–CMP14), then code. When both batches are

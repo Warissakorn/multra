@@ -150,13 +150,18 @@ of the pass.
 no parking, no bus stop, 300 m from source to stop line. A fixed-time head, cycle 90 s, green
 40 s, amber 3 s, red 47 s. Demand 1,200 veh/h, so every cycle starts with a standing queue
 longer than the last declared rank (a cycle that does not is reported unavailable, not dropped).
-`multra-cli --project F --discharge --discharge-warmup 900 --discharge-type car` with ranks 5 to
-the last queued vehicle (`--discharge-steady-first 5`, the 1985 HCM convention quoted in
-[LiPrev02]). The 7th edition's own field procedure (first and last rank) is *to read* in HCM 7 Ch.
-19/31; if it differs, its ranks replace these before the run. Figure: `3600 / h`, per lane and
-cycle, averaged over cycles, then over seeds. Reference: `s0`, HCM 7 Ch. 19 base saturation flow
-(*to read*: the exhibit and page; 1,900 pc/h/ln is the sheet's unread default), with every
-adjustment factor at its base value because the project is at base conditions.
+`multra-cli --project F --discharge --discharge-warmup 900 --discharge-type car
+--discharge-steady-first 5 --discharge-steady-last 12`. **Read 2026-11-12:** HCM 7 Ch. 31's field
+procedure (PDF p. 3095) times front axles at the stop line from the 4th queued vehicle to "the last
+vehicle surveyed (which may not be the last vehicle in the queue)", averages the headways of
+vehicles 5 to n, and asks for at least 15 cycles with more than eight vehicles in the initial
+queue. DISCHARGE declares its ranks before observation, so n is fixed at 12 (the S1-d ranks); a
+cycle without 12 queued vehicles is reported unavailable, not dropped. Figure, as HCM 7 reduces
+it: per seed, the mean of the per-cycle mean headways, then `3600 /` that mean (not the mean of
+per-cycle rates); then the mean over seeds. Reference: **`s0` = 1,900 pc/h/ln**, HCM 7 Exhibit
+19-11 (PDF p. 1430, image read), the default for a metropolitan area of 250,000 or more (1,750
+otherwise; a Thai city study is in the first class). Every adjustment factor is at its base value
+because the project is at base conditions.
 
 **S1-d (second), headway by queue position.** The same project and runs; the per-cycle crossings
 give the headway at ranks 1–12. References: the per-position headways of [Bonneson92] and
@@ -173,11 +178,22 @@ run. The vertical-queue offset (deceleration and acceleration around the line) i
 on a run with no signal at the same demand and subtracted, and the subtraction is stated.
 
 **S2-b (below saturation) and S2-a (across it), delay.** The S2-c project with amber restored
-(cycle 90 s, green 40 s, amber 3 s, effective green `g` = green + amber − 2 s lost time, a stated
-convention, *to check* against HCM 7's definition). `x` = 0.5, 0.7, 0.85, 0.95 for S2-b; 0.85,
-0.95, 1.0, 1.05 for S2-a with `T` = 1 h, `k` = 0.5, `I` = 1, `PF` = 1 and `d3` = 0 (HCM 2000
-forms; the 7th edition's form is *to read* before use, §4). Demand per `x` is `x·s·g/C` with the
-declared `s`. The same section, measured as above, and the same stated offset.
+(cycle 90 s, green 40 s, amber 3 s, effective green `g` by HCM 7: **checked 2026-11-12**, Equations 19-1 and 19-3 (PDF pp. 1415,
+1418, images read) give `g = D_p − l1 − l2` with `l1` = 2.0 s and `l2 = Y + R_c − e`, `e` = 2.0 s,
+so `g = G − l1 + e` = the displayed green, **40 s**; the earlier "green + amber − 2 s" (41 s) is
+withdrawn). `x` = 0.5, 0.7, 0.85, 0.95 for S2-b; 0.85,
+0.95, 1.0, 1.05 for S2-a with `T` = 1 h, `k` = 0.5, `I` = 1, `PF` = 1 and `d3` = 0. **Read
+2026-11-12:** HCM 7 keeps these forms, `d = d1 + d2 + d3` (Eq. 19-18), `d1 = PF · 0.5C(1 −
+g/C)² / [1 − min(1, X)g/C]` (19-19), `PF` from `P` (19-20, 19-21; random arrivals, `P = g/C`, give
+`PF` = 1) and `d2 = 900T[(X − 1) + √((X − 1)² + 8kIX/(cT))]` (19-26, 19-27; `k` = 0.5 for pretimed),
+PDF pp. 1474–1475 and 1479, images read. Demand per `x` is `x·s·g/C` with the declared `s`:
+`c` = 1,900 · 40 / 90 = 844.4 veh/h. The references this gives, computed from the read forms,
+before any run:
+
+| `x` | 0.5 | 0.7 | 0.85 | 0.95 | 1.0 | 1.05 |
+|---|---|---|---|---|---|---|
+| `v` (veh/h) | 422.2 | 591.1 | 717.8 | 802.2 | 844.4 | 886.7 |
+| `d1 + d2` (s/veh) | 19.98 | 25.09 | 33.90 | 54.34 | 86.94 | 147.81 | The same section, measured as above, and the same stated offset.
 
 **U-c (first), then U-a (rank 2), minor-movement capacity.** A four-leg Stop-controlled junction,
 two-lane major (one lane each way), car-only. The rank-2 movement in HCM terms is the minor right
@@ -187,16 +203,26 @@ veh/h, one project per level, each counted, not assumed. Figure: the minor movem
 hour of window, no cool-down. Translation from `t_c` to the rule (confirmed with the
 tolerance, B47, D516): `gapTime = t_c − τ`, where `τ` is
 the mean time the earlier major vehicle takes to clear the conflict area at the major speed (50
-km/h), computed from the area's drawn length; `headway` (metres) at the smallest value validation
-accepts (*to check*), so the time test decides. `t_f` is measured, not set:
+km/h), computed from the area's drawn length; `headway` (metres): validation accepts any positive value
+(**checked 2026-11-12**, `src/model/network/right_of_way.cpp`), so the run uses 0.1 m and the time
+test decides. `t_f` is measured, not set:
 the mean front-to-front time between queued minor vehicles leaving the Stop line, which needs a
 counter at a priority line that does not exist yet (§5); until it does, U-a cannot run. U-c
-uses the measured effective `t_c` and `t_f`; U-a uses the HCM 7 Ch. 20 base values (*to read*:
-the exhibit and page; the sheet's software-documentation values are not used).
+uses the measured effective `t_c` and `t_f`; U-a uses the HCM 7 Ch. 20 base values, **read
+2026-11-12**: right turn from the minor street, two-lane major, `t_c,base` = **6.2 s** (Exhibit
+20-17, PDF p. 1616) and `t_f,base` = **3.3 s** (Exhibit 20-18, PDF p. 1617), table images read; at
+base conditions the adjustments of Equations 20-16 and 20-17 are 0 (`P_HV` = 0, `G` = 0, and
+`t_3,LT` applies to a minor left turn at a T only). Potential capacity, Equation 20-18 (PDF p.
+1618, image read), `c_p = v_c e^(−v_c t_c/3600) / (1 − e^(−v_c t_f/3600))`, gives before any run:
 
-**Before the first run:** the S1-a/S1-d, U-a and S2
-values marked *to read* are read and cited here; the S2-c script and the priority-line counter
-exist and have their own rows.
+| `v_c` (veh/h) | 200 | 400 | 600 | 800 | 1,000 |
+|---|---|---|---|---|---|
+| `c_p` (veh/h) | 846.1 | 654.3 | 504.6 | 388.1 | 297.7 |
+
+**Before the first run:** the HCM 7 values were read 2026-11-12 (copy `74f4bc3`, page images
+read; cited above). Still open: the S1-d per-position headways of [Bonneson92] and [LiPrev02]
+(papers, not in the owner's book set); the S2-c script; the priority-line counter (U-a, U-c's
+`t_f`). Each has its own rows before it is used.
 
 ## 7. Owner questions (answer by letter, sitting B9)
 
