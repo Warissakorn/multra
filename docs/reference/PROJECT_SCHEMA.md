@@ -54,11 +54,10 @@ has its own exact-integer limits, separate from the stored format.
 
 ## Feature-selected save version
 
-`documentSchemaVersion(document)` is the writer's single feature-selection function.
-It performs no serialization or validation and does not retain an input file version.
-The highest applicable rule wins; absence of every newer feature selects 17. Opening
-an empty valid schema-57 project therefore still saves schema 17. Introducing a high
-version feature does not require populating unrelated lower-version features.
+`documentSchemaVersion(document)` is the writer's single feature-selection function. It performs
+no serialization or validation and does not retain an input file version. The highest applicable
+rule wins; absence of every newer feature selects 17. Opening an empty valid schema-57 project
+therefore still saves schema 17. A high version feature needs no unrelated lower-version feature.
 
 The following rows map the writer's feature families to their codec owners. A family
 row is not an exhaustive list of its nested keys or semantic constraints.
