@@ -1,6 +1,7 @@
 // S2.3 rows MA12, MA13 (docs/reference/MACRO_NETWORK.md §5, §7, §9, D275): a Macro run's settings,
 // its VDF read from data, and its link outputs in JSON and CSV. Each row first checks its forcing.
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/catalog_commands.hpp"

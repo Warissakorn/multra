@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "lane_fixture.hpp"
 #include "../src/core/routes.hpp"
 #include "../src/eval/sections.hpp"

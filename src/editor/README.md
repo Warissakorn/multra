@@ -30,6 +30,7 @@ reads `../commands/connector_commands.hpp` for its previews.
 | `canvas_markings.cpp` | Lane markings cut into true-length dashes per display type (D430) | [CANVAS_STYLE](../../docs/plans/CANVAS_STYLE.md) |
 | `canvas_image.*` | Bounded PNG export from an isolated authoring canvas (max 8192 px per edge, 32 Mpx), following the live display settings | [NETWORK_IMAGE](../../docs/reference/NETWORK_IMAGE.md) |
 | `road_crossbar.*` | A Run signal state's shape at a station, readable without hue | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `road_crossbar_geometry.hpp` | `RoadCrossbar` and its three constructors, the part `canvas.hpp` needs; split so a head's look rebuilds only its users | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `vehicle_pose.*` | Display-only pose from the front-bumper station on the whole route | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) |
 | `rear_axle_pose.*` | Rear-axle reference for a prescribed front-bumper track, no lateral slip | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md) |
 | `lane_change_pose.*` | A lane change's display journey, including overlapping changes and settling | [VEHICLE_POSE](../../docs/reference/VEHICLE_POSE.md), [LANE_CHANGE_DURATION](../../docs/reference/LANE_CHANGE_DURATION.md) |

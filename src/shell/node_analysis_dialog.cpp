@@ -1,4 +1,5 @@
 #include "node_analysis_dialog.hpp"
+#include "../project/latest_schema.hpp"
 #include "dialog_fit.hpp"
 #include "node_analysis_fill_dialog.hpp"
 #include "editor_interaction.hpp"

@@ -1,4 +1,5 @@
 #include "canvas.hpp"
+#include "road_crossbar.hpp"
 #include "canvas_style.hpp"
 #include "canvas_labels.hpp"
 #include <QGuiApplication>

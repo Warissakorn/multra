@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/project/batch_output.hpp"

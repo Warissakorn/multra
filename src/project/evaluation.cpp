@@ -1,5 +1,6 @@
 #include "evaluation.hpp"
 #include "csv_format.hpp"
+#include "random_streams_codec.hpp"
 #include "input_manifest.hpp"
 #include "los_output.hpp"
 #include "node_output.hpp"
@@ -188,6 +189,7 @@ Json movementJson(const MovementReport& r) {
     Json j;
     j["validated"] = false;
     j["measure"] = "simulated movement delay, not HCM control delay; one run";
+    if (r.randomStreams == RandomStreams::perInput) j["randomStreams"] = randomStreamsName(r.randomStreams); // IS8: only then, so shared keeps its bytes
     j["movements"] = Json::array();
     for (const auto& m : r.movements)
         j["movements"].push_back({{"movement", m.name}, {"vehicles", m.vehicles},
@@ -322,6 +324,7 @@ Json arrivalPhaseJson(const ArrivalPhaseReport& r) {
 std::string movementCsv(const MovementReport& r) {
     std::ostringstream out;
     out << "# MULTRA - not yet validated. Simulated movement delay, not HCM control delay; one run.\n";
+    if (r.randomStreams == RandomStreams::perInput) out << "# randomStreams: " << randomStreamsName(r.randomStreams) << '\n'; // IS8
     out << "movement,vehicles,meanDelay_s,meanTravelTime_s,unfinished\n";
     for (const auto& m : r.movements)
         out << csvQuoted(m.name) << ',' << m.vehicles << ',' << csvNumber(m.meanDelay) << ',' << csvNumber(m.meanTravelTime) << ',' << m.unfinished << '\n';

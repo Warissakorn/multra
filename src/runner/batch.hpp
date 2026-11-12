@@ -78,10 +78,12 @@ struct BatchReport {
     std::vector<BatchLotRow> lots; // M8.5; last, so existing brace-initialisations keep meaning
     std::optional<Estimate> redRunning; // B-9 (D238): only when the runs carry the keys
     std::vector<BatchNodeRow> nodes; // S0.3: one per Node; empty without any
+    RandomStreams randomStreams{}; // INPUT_STREAMS §5 (IS8): every run's mapping
     bool operator==(const BatchReport&) const = default;
 };
 // Sorts by seed first, so any permutation of the same runs gives the same report, bit for bit.
-// Throws on no runs, a duplicate seed, or runs whose movement, approach or section rows differ.
+// Throws on no runs, a duplicate seed, runs whose movement, approach or section rows differ, or
+// runs under different random-stream mappings (IS8).
 BatchReport aggregate(std::vector<SeedRun> runs);
 // Two-sided 95 % Student t quantile. Tabulated for df 1-30, 40, 60 and 120; between rows the
 // lower df is used, which widens the interval rather than narrowing it.

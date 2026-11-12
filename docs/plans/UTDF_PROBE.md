@@ -3,7 +3,7 @@
 Written 2026-10-28 for the owner's Synchro 12 and Vistro 2026; since D438 (2026-11-03) Vistro writes
 the golden file. The answers fix
 [UTDF_EXPORT](../reference/UTDF_EXPORT.md) §3 (field names, units) and §6 (left-hand traffic) before
-any writer code (D145). The sitting items are [OWNER_SITTING I](OWNER_SITTING.md#i--utdf-probe-m14-u0);
+any writer code (D145). The sitting items are [OWNER_SITTING I](OWNER_SITTING_WINDOWS.md#i--utdf-probe-m14-u0);
 this sheet holds the junction and the answer lines. MULTRA's own attempt at the file is
 [`tests/data/utdf/u0-handwritten.csv`](../../tests/data/utdf/u0-handwritten.csv).
 

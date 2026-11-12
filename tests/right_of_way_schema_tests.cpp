@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "right_of_way_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 #include "../src/project/network_fields.hpp"

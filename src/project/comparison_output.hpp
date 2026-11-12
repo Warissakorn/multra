@@ -16,6 +16,9 @@ struct ComparedBatch {
 // and cool-down. `duration` is each compiled scenario's.
 void requireSameEvaluationPeriod(const EvaluationSpec& base, double baseDuration,
                                  const EvaluationSpec& alternative, double alternativeDuration);
+// Refused before any run (INPUT_STREAMS §5, IS8): under different random-stream mappings the same
+// seed gives different draws, so the two batches would not be one seed list.
+void requireSameRandomStreams(const Scenario& base, const Scenario& alternative);
 Json comparisonJson(const Comparison&, const ComparedBatch& base, const ComparedBatch& alternative);
 std::string comparisonCsv(const Comparison&, const ComparedBatch& base, const ComparedBatch& alternative);
 }

@@ -64,6 +64,7 @@ struct MovementReport {
     std::vector<LotRow> lots; // M8.5: one per spec lot; empty without any
     std::size_t parked{};     // M8.5: in a lot, not yet released (released ones are pending)
     std::vector<NodeRow> nodes; // S0.3: one per Node; empty without any
+    RandomStreams randomStreams{}; // INPUT_STREAMS §5 (IS8): the run's mapping, so output can state it
     bool operator==(const MovementReport&) const = default;
 };
 // Delay a completed trip contributes: the same term as the run summary, so movements add up.

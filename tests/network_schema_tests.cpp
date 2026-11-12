@@ -1,4 +1,5 @@
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "network_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 #include "../src/project/document_envelope.hpp"

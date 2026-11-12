@@ -13,6 +13,6 @@ void addEvaluationPeriodJson(const AuthoringDefinition&, Json& definition);
 // cool-down is finite, >= 0 and on the time grid.
 void validateEvaluationPeriod(const AuthoringDefinition&);
 // The document a new project starts from: a 900 s warm-up, then one hour (4500 s in all), then a
-// 900 s cool-down (D146).
+// 900 s cool-down (D146), and random streams per input (INPUT_STREAMS §7 1 b, D510): saved at schema 74.
 ProjectDocument newProjectDocument();
 }

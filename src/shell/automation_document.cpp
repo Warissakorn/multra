@@ -1,4 +1,5 @@
 #include "automation_document.hpp"
+#include "../project/latest_schema.hpp"
 #include "automation_error.hpp"
 #include "automation_geometry.hpp"
 #include "../commands/history.hpp"

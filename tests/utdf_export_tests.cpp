@@ -1,6 +1,7 @@
 // UTDF U1 (UTDF_EXPORT §7 U1 contract, §10 UT0-UT5 and UT11's geometry): the writer's geometry
 // sections, the Node `number` (schema 65), and the section names against Vistro's golden file.
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/network_commands.hpp"

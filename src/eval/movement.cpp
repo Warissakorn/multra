@@ -194,6 +194,7 @@ MovementReport MovementAccumulator::report(const SimState& end) const {
     r.lots = lots_.report(end); r.parked = parkedCount(end); // M8.5
     r.unassigned = unassigned_;
     r.pending = pendingCount(end); r.active = end.vehicles.size(); r.time = end.time;
+    if (end.scenario) r.randomStreams = end.scenario->randomStreams; // IS8
     return r;
 }
 }

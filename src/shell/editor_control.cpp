@@ -42,6 +42,11 @@ void EditorWindow::editRunSettings() {
     auto* clock=new QTimeEdit(QTime(0,0).addSecs(static_cast<int>(def.clockStart)%86400),&dialog);clock->setObjectName("editorClockStart");
     clock->setDisplayFormat("HH:mm:ss");form->addRow(text("editorClockStart"),clock);
     const QTime clockShown=clock->time();
+    // INPUT_STREAMS §3 (D510): the run's random-number mapping, shown by its written values.
+    auto* streams=new QComboBox(&dialog);streams->setObjectName("editorRandomStreams");
+    streams->addItem(QStringLiteral("shared"),static_cast<int>(RandomStreams::shared));
+    streams->addItem(QStringLiteral("perInput"),static_cast<int>(RandomStreams::perInput));
+    streams->setCurrentIndex(streams->findData(static_cast<int>(def.randomStreams)));form->addRow(text("editorRandomStreams"),streams);
     // M3.2.8a.1 (MERGE_CLAMPS §3, D251; JOIN_ANTICIPATION §5, D255; LINE_APPROACH §7, D258): the clamp rules, labelled with their keys like the behaviour rows.
     const auto rule=[&](const char* key,const char* name,bool on){auto* box=new QCheckBox(QString::fromUtf8(key),&dialog);box->setObjectName(name);
         box->setChecked(on);form->addRow(box);return box;};
@@ -63,6 +68,7 @@ void EditorWindow::editRunSettings() {
         changeRunSettings(d,formNumber(duration),formNumber(dt));
         changeEvaluationPeriod(d,formNumber(warmup),period.end,formNumber(cooldown));
         if(clock->time()!=clockShown)demand(d).clockStart=QTime(0,0).secsTo(clock->time()); // untouched keeps a value past midnight
+        changeRandomStreams(d,static_cast<RandomStreams>(streams->currentData().toInt()));
         changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked(),standingStopFloor->isChecked()});});},[this](const char* key){return text(key);});
     dialog.exec();
 }

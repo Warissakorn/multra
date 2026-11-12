@@ -1,6 +1,7 @@
 // M8.2 rows Z1-Z6 (docs/reference/ZONES_AND_PARKING.md §7): the schema-31 zone layer's codec,
 // its two tiers of checks and its undoable commands.
 #include "test.hpp"
+#include "../src/project/latest_schema.hpp"
 #include "../src/commands/zone_commands.hpp"
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/connector_commands.hpp"

@@ -249,9 +249,9 @@ int main(int argc,char** argv) {
         if (it->is_regular_file() && it->path().extension()==".md") docs.emplace(path,read(it->path()));
     }
     // The reader's newest schema, from the one place the code states it.
-    std::smatch latest; const auto schemaSource=read(root/"src/project/document.hpp");
+    std::smatch latest; const auto schemaSource=read(root/"src/project/latest_schema.hpp");
     if (!std::regex_search(schemaSource,latest,std::regex("kLatestSchema\\s*=\\s*([0-9]+)"))) {
-        std::cerr << "Cannot read kLatestSchema from src/project/document.hpp\n"; return 2;
+        std::cerr << "Cannot read kLatestSchema from src/project/latest_schema.hpp\n"; return 2;
     }
     const auto errors=check(docs,files,std::stoi(latest[1]));
     for (const auto& error:errors) std::cerr << error << '\n';

@@ -50,6 +50,7 @@ ProjectDocument newProjectDocument() {
     ProjectDocument d;
     d.definition.emplace();
     d.definition->duration = 4500; d.definition->timeStep = 0.1;
+    d.definition->randomStreams = RandomStreams::perInput; // INPUT_STREAMS §7 choice 1 b (D505, D510)
     d.definition->evaluation = EvaluationPeriod{900, {}, 900};
     return d;
 }

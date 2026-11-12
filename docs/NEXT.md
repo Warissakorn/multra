@@ -23,18 +23,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **Shipped projects (D337, D492):** all stay; [their README](../data/projects/README.md) names each
   one's purpose and builder. `macro-four-step` (D492) is the Macro example: run
   `--procedure four-step`; regenerate with `multra-macro-example data <file>` after any change to
-  the four-step codecs' written form. **Owner's look:** open it, run *Procedure*, check the Macro
-  links table and say whether the example's size and story suit a first-time user. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
-  that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
+  the four-step codecs' written form (owner's look: OWNER_SITTING B46). `four-leg-signalised`
+  carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
+  `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## Route tool: one origin, several destinations (D507), Ctrl+right preview (D508) — done; owner's look
+## Owner checks waiting from recent sessions
 
-- **Owner, on Windows:** press `R`, click a Link once, then click two or three destinations; check
-  the status hint and that each destination is one Undo. Esc ends the origin.
-- Hold `Ctrl`+right on a road and move: the green (origin) or red (destination) bar follows until
-  release. Check the thin end bars beside inputs, decisions and signal heads.
-- D509: the tint between the bars, its inset at the road edges, and the bars while only
-  hovering. D509b/D509c: the owner chose a yellow tint at 50 %, inset 0.6 m (D509d); check it on Windows.
+All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI
+review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
+(random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
@@ -44,9 +41,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Owner only, from the purpose review:** the M5.7 rehearsal (OWNER_SITTING A3) and a second user
   on the Micro sentence. Answered (D505): the M6 benchmark sources ([ROADMAP](ROADMAP.md) M6.0);
   Micro's M6 gate may close before M10 and M11.
-- **Architecture:**
-  - Done (D494): every module's includes are checked, `editor` no longer includes `shell`, and
-    Macro, Meso and analysis are their own targets.
+- **Architecture** (includes checked per module since D494):
   - **Approved (D505), not started:** split `EditorWindow` (275 member functions in 52 files; its
     header is at the 500-line limit) in small steps with no behaviour change. `src/project/`
     (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
@@ -54,50 +49,33 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     per-decision notes) still belongs in the contracts.
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
-  - **Random streams per input: the engine runs both mappings (D506, slices 1–2); next is slice 3.**
-    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §8: the project switch at a schema step (new
-    documents `perInput`), the Run settings control, the summary/CSV field and `--compare`
-    refusing mixed values (IS8). Then slice 4: W74 traits and red runners keyed by the vehicle's
-    `streamKey`/`ordinal` (choice 2), and the paired comparison (choice 3) on its own. All before
-    the M6 runs (D505).
-  - Done (D495): source insertion and publication are out of `stepSimulation` (`tick.hpp`), with
-    byte-identical outputs. **Left:** phase 1's per-vehicle loop, about 150 lines, still one body;
-    split it only with a callgrind run before and after (it is the hot path).
+  - **Random streams per input: slices 1–3 done (D506, D510); next is slice 4.**
+    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §8: re-key W74 traits and red runners by the
+    vehicle's `streamKey`/`ordinal` under `perInput` (choice 2; `w74` and red-running hashes in
+    `src/core/`, rows in `inputstreams`), then the paired comparison (choice 3) on its own. All
+    before the M6 runs (D505). A new project is `perInput` at schema 74; shipped projects stay
+    `shared` until a recorded decision regenerates them.
+  - **Left from D495:** phase 1's per-vehicle loop in `stepSimulation`, about 150 lines, is still
+    one body; split it only with a callgrind run before and after (it is the hot path).
   - **Unblocked (D505), not started:** analytic rows against HCM. The sources are chosen; a row
     comparing engine saturation flow or delay with a formula still needs the option sheet's §6
     and a tolerance written down before the first comparable run.
-  - Done: `progressionFactor` returns its limit, 0, at P = 1; the `if` in `node_suggestions.cpp`
-    is on its own line.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
-  - Done (D497–D499): Results by level, *File → Open example* with an empty-drawing hint, one
-    Problems row per unprotected crossing, and the batch page's blank band. **Owner's look:**
-    OWNER_SITTING B45, [images](images/ui-review-d497/).
-  - Done (D500): `signalised-node-analysis.traffic.json` shows LOS and the HCM table
-    (`multra-node-example`).
-  - Fixed (D501): a placed routing decision reaches a pocket through the taper's second lane
-    path; an unserved destination is named. **Approved (D505), not started:** move the D500 example to
-    the pocket template (`signal-4-p3-major-far-pockets`); its file and test numbers are regenerated.
-  - Done (D503): the palette names its tools from 1440 px, not 1500 (owner's look: B45). Names
-    at 1366 px: not wanted (D505).
-  - Done (D504): *File → Open recent*, and the empty drawing points at it (owner's look: B45).
-  - No start page (D505): File already has recent files and examples. Reopen only if a real
+  - D497–D504 are done; the owner's look is OWNER_SITTING B45.
+  - **Approved (D505), not started:** move the D500 example (`signalised-node-analysis`) to the
+    pocket template (`signal-4-p3-major-far-pockets`, reachable since D501); its file and test
+    numbers are regenerated.
+  - Not wanted (D505): palette names at 1366 px. No start page (D505): File already has recent files and examples. Reopen only if a real
     user cannot find them.
 - **Process:**
   - **Owner, on GitHub:** require `Native C++` before merging to main (PRs 210 and 213 merged
     seconds after opening).
-  - Done (D502): `multra-check-docs` checks three stated facts (decision ids, schema numbers,
-    the shipped-project list); ROADMAP's M10, M11, M13 and M14 are one table row per slice with
-    the history archived; [USER_GUIDE](USER_GUIDE.md) walks the Micro sentence on the four-leg.
-  - Left: milestone status statements ("M10.2 implemented") are still not checked against code;
+  - Left from D502: milestone status statements ("M10.2 implemented") are still not checked against code;
     the user guide has no Thai edition and no pictures.
 
-## Tables like Excel (D490) — done; owner's look
+## Tables like Excel (D490) — done; owner's look is E35
 
-- Every table is a grid with numbered rows, cell blocks where several cells may be selected,
-  Ctrl+C as Excel text and table-owned Ctrl+A ([EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md)).
-- **Owner, on Windows:** paste a Links block and a Results table into Excel; check the grid and
-  row header at 100 % and high DPI; open and fold a Results note; check the Tables layout's
-  height and the Thai group picker (D490a). Linux offscreen tests do not close that look.
+- Contract: [EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md).
 - **Left from the compactness review:** the Results tab strip still scrolls at 1024 in Thai, and
   the clamp note has no not-validated statement of its own (both predate D490).
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
@@ -105,9 +83,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 ## Optimisation pass of 2026-11-07 (D487–D489) — follow-ups only
 
-- Owner, on Windows: the Properties summary height (D463) and the Run/Pause button after D487. The
-  `run-presentation-ui` relayout guard also runs on Windows CI; a failure there only is a Windows
-  LayoutRequest source, not a flaky test.
+- Owner: C14. A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
+  source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
   cause is keys or sloppiness, not size.
 - The engine's next lever is the per-tick containers (spans, refs, events), not single copies
@@ -115,21 +92,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 ## Canvas style — slices A–C done; stop for owner review
 
-- Owner-directed and separate from M13/M14: [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill
-  answers and slices A–E. Slice A (road surface, kerb, junction layers) is D423; slice B (label
-  halo and screen-space placement) is D424; slice B2 (Vistro-like boxed input/decision labels
-  with leaders) is D425; B3 (nearby labels stacked in columns, kept off roads) is D426.
-- D460 (owner review), D461 (display fixes), D462 (owner choices) and D463 (UI round 2:
-  Properties fits its panel, clipped summary ends on a row, short labels, one-line scope banner,
-  "—" in empty result cells) and D464 (a PNG export shows every rate and signal head; the LOD
-  threshold test measures real decoration again) are done. The owner checks them on Windows through
-  [the images](images/); the junction median spikes stay (Q5).
-- **Slice C (run vehicles) is done (D465), with the head/casing follow-up D466; stop for owner
-  review** of `docs/images/canvas-run-d465/` and `docs/images/canvas-heads-d466/`. Slice D (lane arrows, white stop line) starts only on the owner's go.
-- Owner-requested editor fixes D427–D431 and all 34 UI/data/sizing audit corrections D432
-  are implemented. Review the [remediation evidence](evidence/ui-audit-fixes.md) and check
-  Drawing/Tables/Results, density, modal retries and Lab on Windows through OWNER_SITTING E33/E34.
-  Linux regression evidence does not close those appearance items or authorize slice C.
+- [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill answers and slices A–E; A–C and their
+  fixes are D423–D426 and D460–D466. The junction median spikes stay (Q5).
+- **Stop for owner review:** C15 (slice C) and E33/E34 (D427–D432,
+  [remediation evidence](evidence/ui-audit-fixes.md)). Slice D (lane arrows, white stop line)
+  starts only on the owner's go.
 
 ## M13 — A9 implemented; stop for owner review
 
@@ -164,16 +131,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - SR, J1–J7, J6a and J4T are approved; the milestone stays open for UTDF's gates. Preserve
   [JUNCTION_TEMPLATES](reference/JUNCTION_TEMPLATES.md), D388–D418 and their passing rows,
   including natural polygon fitting, ownership, site drafts and corridor/reference guards.
-- **UTDF export:** U1 (D442), U2a (D443) and U2b are done. Contracts are in
-  [UTDF_EXPORT §7](reference/UTDF_EXPORT.md#7-slices).
-  - There are two ways to export:
-    - the CLI, `multra-cli --export-utdf`;
-    - the desktop, *File → UTDF for Synchro/Vistro…*, which shows the report first and writes UTM
-      when the project has a map reference.
-  - Nodes are numbered by template Apply or *Number Nodes*.
-  - Passing rows: UT0–UT9 and UT11.
-  - **Compass/NEMA:** mirrored mode keeps the group numbers, which are already right-hand NEMA
-    numbers (D443).
+- **UTDF export:** U1, U2a and U2b are done (D442, D443; `--export-utdf` and *File → UTDF for
+  Synchro/Vistro…*); contracts and rows UT0–UT9, UT11 in [UTDF_EXPORT §7](reference/UTDF_EXPORT.md#7-slices).
 - **Owner (OWNER_SITTING I.5, UT10):** import `tests/data/utdf/u2-u0-junction-geometric.csv` into
   Vistro 2026 and report:
   - whether geometry, volumes and timing match UTDF_PROBE §1–§3;
@@ -189,7 +148,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
 
 - Owner selected native object-table CSV export over the schema queue; packaged Windows checks are
-  [OWNER_SITTING G](plans/OWNER_SITTING.md#g--object-interchange). Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
+  [OWNER_SITTING G](plans/OWNER_SITTING_WINDOWS.md#g--object-interchange). Read [OBJECT_TABLE_CSV](reference/OBJECT_TABLE_CSV.md)
   for columns/units and nested JSON conventions before extending interchange. GeoJSON,
   imports/CRS mapping, recent-file/document workflow and measured rendering retain their scope.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
@@ -214,64 +173,20 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 ## Order of level work (D378)
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
-Micro ([PROBLEM](PROBLEM.md) §3). When the owner asks for an engine slice, the next one is
-**M10.2 and M10.3 (done, below)**, then M10.4, M9, M11.5 and the M11 gate, M12. Each starts with
-its contract. M13 is a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26
-(hybrid meso–micro; the user roles) is open.
+Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done (below); when the owner asks for an engine
+slice, the next one is M9, then M11.5 and the M11 gate, M12. Each starts with its contract. M13 is
+a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
+user roles) is open.
 
-## M10.2 trip generation — G1 and G2 done (D470, D471); stop for the owner's look
+## M10 four-step — G1–G2, D1–D4, E1–E2, N1, P1–P2 done (D470–D485); stop for the owner
 
-- [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14 records both slices. The editor has project-owned
-  rate sets (schema 66, *Trip-rate sets…* with Import/Export JSON), zone attributes in the Edit
-  Zone dialog, and a *Trip generation* Results page. Rows TG1–TG14 pass on Linux (desktop and
-  headless). M10.2's code is complete; the M10 gate stays open (rule 8).
-- **Owner:** look at the two dialogs and the page on Windows ([OWNER_SITTING](plans/OWNER_SITTING.md)
-  item 42). Linux offscreen tests do not close that look.
-- **Build note:** a Debug desktop build with debug info filled this container's disk (23 GB);
-  configure with `-DCMAKE_CXX_FLAGS_DEBUG="-O0 -g0"` here. Qt needs `qt6-base-dev libproj-dev
-  libxkbcommon-dev nlohmann-json3-dev` from apt.
-
-## M10.3 trip distribution — D1, D2 and D3 done (D473, D474, D476); stop for the owner
-
-- [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §14 records both slices:
-  - the pure gravity/Furness engine and the free-flow skim;
-  - deterrence sets (a catalog with none shipped, plus owned at schema 67);
-  - owned cost matrices that override skim cells and are the only source of diagonal costs;
-  - `--trip-distribution … [--cost-matrix]`;
-  - the *Trip distribution* Results page with *Deterrence sets…* and *Cost matrices…*.
-- Rows TD1–TD14 pass on Linux (desktop and headless). M10.3's code is complete; the M10 gate stays
-  open (rule 8).
-- **Owner:** the Windows look at the page and both dialogs
-  ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42).
-- **D3 done (D475 contract, D476 code):** origin-constrained purposes by a per-purpose
-  `constraint` in the deterrence set (schema 68), TRIP_DISTRIBUTION §15; rows TD15–TD20.
-- **Later:** destination-constrained purposes (booked by choice 1a); whether the Furness target
-  and cap become a document setting (open from D1).
-
-## M10.4 mode choice — E1, E2 and nested logit N1 done (D478, D479, D481); stop for the owner
-
-- [MODE_CHOICE](reference/MODE_CHOICE.md), after M0 read Ortúzar §5.4.4 and Ch. 6–7
-  ([evidence](evidence/ortuzar-ch6-7-mode-choice.md)): an MNL split per purpose, P-A to OD by
-  period shares, occupancy, and generated `odMatrices`.
-- **E1 done (D478, MODE_CHOICE §13):** the MNL engine, `periodFactors` at schema 69,
-  `runModeChoice`, JSON/CSV and `--mode-choice`/`--period`; rows MC1–MC10 pass on Linux.
-- **E2 done (D479, MODE_CHOICE §13):** owned `modeChoiceSets` and `generatedBy` at schema 70,
-  the *Mode choice* page, *Mode choice sets…*, *Period factors…* and *Write OD matrices*; rows
-  MC11–MC14 pass on Linux.
-  - M10.2–M10.4 now chain end to end: generation → distribution → mode choice → written
-    `odMatrices` → Run Macro.
-  - The M10 gate stays open (rule 8).
-- **Nested logit done (D480 contract, D481 N1, [NESTED_LOGIT](reference/NESTED_LOGIT.md)):** two
-  levels, φ per nest in (0, 1], nests at schema 71, the *Nests…* dialog; rows NL1–NL8 pass on
-  Linux, Example 6.3's ten rows included.
-- **Destination-constrained distribution done (D482, TRIP_DISTRIBUTION §16):** `constraint:
-  "destination"` at schema 72; rows TD21–TD26 pass on Linux.
-- **Procedure sequence contract written (D483, [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md)):**
-  owner chose a general step list, in-memory matrices, stored procedures (schema 73), feedback
-  later. **P1 done (D484):** schema 73, `runProcedure`, `--procedure`; rows PS1–PS9 pass on Linux.
-  **P2 done (D485):** *Procedures…* and the *Procedure* page (PS10).
-- **Owner:** the Windows look ([OWNER_SITTING](plans/OWNER_SITTING.md) item 42, extended for E2,
-  N1 and D4).
+- Code is complete and chains end to end: generation → distribution → mode choice → written
+  `odMatrices` → Run Macro, or one stored procedure (`--procedure`). Contracts and their rows:
+  [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14, [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md)
+  §14–§16, [MODE_CHOICE](reference/MODE_CHOICE.md) §13, [NESTED_LOGIT](reference/NESTED_LOGIT.md),
+  [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md). The M10 gate stays open (rule 8).
+- **Owner:** OWNER_SITTING item 42.
+- **Later (M10.3):** whether the Furness target and cap become a document setting (open from D1).
 - **Next, the owner's pick:**
   - congested-cost feedback on top of procedures (the next slice the owner booked, D483 4a);
   - congested-cost feedback (Ortúzar Ch. 11);
@@ -282,34 +197,21 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
 - **Open from S5:** restoring the full Macro or Meso table on reopen would need a new owner
   choice: the owner chose the cut source only (D331). The stored source and freshness line remain
   the reopen contract.
-- **Lateral: closed by owner choice (2026-11-04).** The audit's findings and the review's copies
-  are fixed (D444–D448; [audit](evidence/lateral-run-audit.md),
-  [crossing-window](evidence/lateral-crossing-window.md), [covered-sections](evidence/lateral-covered-sections.md),
-  [swap-lock](evidence/lateral-swap-lock.md), [refused-step-back](evidence/lateral-refused-step-back.md),
-  [start-filter](evidence/lateral-start-filter.md)). The long m2.6 waits are signal-queue congestion
-  that exists switched off too ([m26-long-waits](evidence/m26-long-waits.md)).
-  - **Gap seeking ([GAP_SEEKING](reference/GAP_SEEKING.md)):** slices 1 and 2 are done.
-    - **Slice 1 (D455):** a follower opens a gap for a refused stub anywhere in its span.
-    - **Slice 2 (D458, [evidence](evidence/gap-seeking-changer.md)):** switched on only (the
-      owner's choice), a refused changer falls back behind its blocker.
+- **Lateral: closed by owner choice (2026-11-04)** after D444–D448 ([audit](evidence/lateral-run-audit.md)).
+  The long m2.6 waits are signal-queue congestion that exists switched off too
+  ([m26-long-waits](evidence/m26-long-waits.md)).
+  - **Gap seeking ([GAP_SEEKING](reference/GAP_SEEKING.md)):** slices 1–2 done (D455, D458; slice 2
+    only switched on), D455's clamp cost fixed (D456).
     - **Deferred:** speeding up to slip in ahead, the lane-change state machine, a no-progress
       timer, and abandoning a change.
-    - **D455's clamp cost is fixed (D456, [evidence](evidence/dead-end-second-obstacle.md)):** a
-      stub's dead end is a second obstacle, so a nearer leader no longer hides it. Clamps on at ×1.0
-      23 → 0.
   - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
     The one exception is the [lateral lab](reference/LATERAL_LAB.md) (D457), a shipped project with
     four scenes carrying lab placeholder values. **The owner's check:** open it in the editor and
     watch the crossings, the straddling and keep-left (the D203 display).
     The +10–28 % wall cost switched on needs a profile before any work.
-- **Weaving (M3.4, D449–D455): the next step is the owner's choice.** The weaving lab
-  ([WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md), rows BA179–BA195), the weave-end lock fixes
-  D450–D454 and D456 ([weaving-lock](evidence/weaving-lock.md), [held-change](evidence/weaving-held-change.md),
-  [yield-cap](evidence/weaving-yield-cap.md)) and gap seeking slice 1 (D455,
-  [evidence](evidence/gap-seeking-follower.md)).
-  - **Two-entry weaves run (D459, [evidence](evidence/weaving-two-entries.md)):** joined chains
-    start on the weave. They are scene 4 of the lab; a routing decision on a weave is still not
-    supported.
+- **Weaving (M3.4, D449–D459): the next step is the owner's choice.** The lab is
+  [WEAVING_FIXTURE](reference/WEAVING_FIXTURE.md) (rows BA179–BA195; two-entry weaves are scene 4,
+  D459). A routing decision on a weave is still not supported.
   - **Results (D458, [evidence](evidence/gap-seeking-changer.md)):**
     - No seed of 10 locks at any factor (×0.3–×1.2), off or on.
     - Clamps are 0 at every factor, off and on.
@@ -328,8 +230,8 @@ its contract. M13 is a Node method serving all three; A4 waits for the owner. OW
   Boyles et al. 2025 (D315), then the tolerance and rows. Priority at a Node waits on Brilon and Wu
   (2001) and a cited `t_ij`; HCM 7 Ch. 20's headways are a citable candidate (BOOKS §4). M11.5
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
-- **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), a procedure sequence,
-  remains booked until M10.2–M10.4 provide its stages (D277).
+- **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), the procedure
+  sequence, is done (D484, D485).
 - **M3.3.3b — the W99 contract before code** (ROADMAP M3.3, D177): read the following-model
   requirements in [DRIVING_BEHAVIOUR](reference/DRIVING_BEHAVIOUR.md), then write a sourced state,
   equation and parameter contract with hand-checkable acceptance cases. Keep the unvalidated

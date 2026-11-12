@@ -141,6 +141,8 @@ void EditorWindow::compareWithFile(const QString& file) {
     }
     try{ requireSameEvaluationPeriod(*baseSpec,base->scenario.duration,*alternativeSpec,alternative->scenario.duration); }
     catch(const std::invalid_argument&){ error_->setText(text("editorCompareWindows")); return; }
+    try{ requireSameRandomStreams(base->scenario,alternative->scenario); } // IS8 (D510)
+    catch(const std::invalid_argument&){ error_->setText(text("editorCompareStreams")); return; }
     auto names=std::pair{baseName(file_,history_.dirty()),alternativeName.toStdString()};
     clearRun("replacedByComparison"); // one table at a time: this cancels any batch or comparison and the single run
     error_->clear();

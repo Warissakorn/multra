@@ -90,6 +90,21 @@ int main(int argc, char** argv) {
         require(w.history().document().definition->clockStart == 81900 && w.history().revision() == before + 1,
                 "clockStart was not one step");
 
+        // Run settings: randomStreams (INPUT_STREAMS §3, D510), shown by its written values, one step.
+        const auto streamsBefore = w.history().document().definition->randomStreams;
+        const auto other = streamsBefore == RandomStreams::shared ? RandomStreams::perInput : RandomStreams::shared;
+        before = w.history().revision();
+        answer([&](QDialog& d) {
+            auto* streams = field<QComboBox>(d, "editorRandomStreams");
+            require(streams->count() == 2 && streams->itemText(0) == "shared" && streams->itemText(1) == "perInput",
+                    "Random streams does not offer shared and perInput");
+            require(streams->currentData().toInt() == static_cast<int>(streamsBefore), "Random streams does not show the project's value");
+            streams->setCurrentIndex(streams->findData(static_cast<int>(other)));
+        });
+        trigger(w, "editorRunSettings");
+        require(w.history().document().definition->randomStreams == other && w.history().revision() == before + 1,
+                "randomStreams was not one step");
+
         // The OD dialog's Period choice writes periodId and no times.
         before = w.history().revision();
         answer([](QDialog& d) {

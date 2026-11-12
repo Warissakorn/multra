@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–73 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–74 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -54,11 +54,10 @@ has its own exact-integer limits, separate from the stored format.
 
 ## Feature-selected save version
 
-`documentSchemaVersion(document)` is the writer's single feature-selection function.
-It performs no serialization or validation and does not retain an input file version.
-The highest applicable rule wins; absence of every newer feature selects 17. Opening
-an empty valid schema-57 project therefore still saves schema 17. Introducing a high
-version feature does not require populating unrelated lower-version features.
+`documentSchemaVersion(document)` is the writer's single feature-selection function. It performs
+no serialization or validation and does not retain an input file version. The highest applicable
+rule wins; absence of every newer feature selects 17. Opening an empty valid schema-57 project
+therefore still saves schema 17. A high version feature needs no unrelated lower-version feature.
 
 The following rows map the writer's feature families to their codec owners. A family
 row is not an exhaustive list of its nested keys or semantic constraints.
@@ -120,6 +119,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 71 | `modeChoiceSets[i].purposes[k].nests` (two-level nested logit, φ in (0, 1], NESTED_LOGIT §3, D481); selected when any owned purpose carries nests; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `mode_choice_codec.cpp`, `document.cpp` |
 | 72 | `deterrenceSets[i].purposes[k].constraint` value `"destination"` (TRIP_DISTRIBUTION §16, D482); selected when any owned purpose uses it; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `deterrence_codec.cpp`, `document.cpp` |
 | 73 | Root `procedures` (PROCEDURE_SEQUENCE §2, D484): named step lists; selected when present; older versions refuse it (`EDIT_UNSUPPORTED_FIELD`) | `procedure_codec.cpp` |
+| 74 | `definition.randomStreams` (INPUT_STREAMS §3, D510): `"perInput"` written, `"shared"` read and never written (absent is `shared`); selected when `perInput`, which a new project is; other values `INVALID_RANDOM_STREAMS`; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `random_streams_codec.cpp`, `document.cpp` |
 | 65 | Node `number`: optional positive integer, the UTDF intersection id (UTDF_EXPORT §5, D442); only selected when a Node has one; older versions refuse it (`EDIT_NODE_INVALID`); validation refuses repeats (`NODE_NUMBER_DUPLICATE`) | `node_codec.cpp`, `nodes.cpp` |
 | 64 | Node `analysis.modelSource`: captured Micro-demand snapshot/window/HV provenance; only selected when present; older versions refuse at that field | `node_analysis_source_codec.cpp`, `node_codec.cpp` |
 
