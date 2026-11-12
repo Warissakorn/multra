@@ -176,9 +176,9 @@ M5.8b (below, D149).
 - **Runs.** Each project is parsed, compiled and run as its own batch (§1–§2) over the same
   `LIST`. Each run draws one random stream from its seed, and the two streams diverge as soon as
   the projects differ. So equal seeds are **not** common random numbers: the batches are treated
-  as independent samples and nothing is paired. Under `perInput` ([INPUT_STREAMS](INPUT_STREAMS.md))
-  an edit leaves the other inputs' draws alone, but the interval stays Welch until the paired
-  comparison (its §7 choice 3) is its own slice.
+  as independent samples and nothing is paired under `shared`. Under `perInput`
+  ([INPUT_STREAMS](INPUT_STREAMS.md)) an edit leaves the other inputs' draws alone, so a seed's two
+  runs share their unedited inputs' draws, and the rows are **paired** by seed (D526, below).
 - **Refused.** `--compare` needs `--project` and `--seeds`, and refuses what `--seeds` refuses:
   a single seed, the single-run diagnostic flags, `--scenario` and `--events`. Also refused:
   - before any run: evaluation periods that differ in warm-up, end or cool-down, because a
@@ -200,7 +200,21 @@ M5.8b (below, D149).
 - **Quantity.** Mean delay for movements, sections and the network; mean queue length for
   approaches. For a Node: delay of the Node, each in-leg and each turn, and the in-leg's mean
   queue. A Node's and a leg's delay is each seed's vehicle-weighted mean (NODES §13).
-- **Statistic.** Each row uses the two batches' estimates over seeds (`n`, mean, SD):
+- **Paired statistic (D526, INPUT_STREAMS §7 choice 3).** When both batches are `perInput`, each
+  row pairs the seeds that have a value on both sides (`m` pairs) and works on the per-seed
+  differences `dᵢ = alternativeᵢ − baseᵢ`:
+  - difference `d = mean(dᵢ)`; the base and alternative means shown stay each batch's own mean
+    over its own `n`, so `d` equals their difference whenever no seed lacks a value;
+  - `s_d` is the sample SD of the `dᵢ`; the half-width is `tQuantile975(m − 1) · s_d / √m` and the
+    degrees of freedom are `m − 1`;
+  - `m < 2` leaves the interval and df empty (and `d` empty when `m = 0`); `s_d = 0` gives a
+    half-width of 0 and df `m − 1`;
+  - JSON adds `"pairs": m` to each difference and `"interval": "paired"` at the top; the measure
+    line (JSON `measure`, CSV marker) says "paired by seed (per-input random streams); 95% CI by
+    the paired t". The CSV columns do not change; `df` is `m − 1`.
+
+  `shared` comparisons keep Welch below and their bytes.
+- **Statistic (`shared`, Welch).** Each row uses the two batches' estimates over seeds (`n`, mean, SD):
   - difference `d = mean_alternative − mean_base`;
   - standard error `SE = √(s_b²/n_b + s_a²/n_a)`;
   - Welch–Satterthwaite degrees of freedom
@@ -256,6 +270,10 @@ M5.8b (below, D149).
 | CMP8 | Node, leg and turn rows match by name at each level: each `d` is `welch` of the two estimates; a base-only Node, a duplicate leg and an alternative-only turn are listed (`"N / dup"` on the CSV line) and not compared; swapping negates every Node `d` | `compare` |
 | CMP9 | The T-junction with a Node (seeds 42–43): against itself every Node, leg and turn `d` is exactly 0; against a copy with one input raised by half every `d` equals the difference of the batches' own means, bit for bit, and one is not 0; the two Node blocks follow `network` | `compare` |
 | CMP10 | Without a Node (four-leg): no `nodes` key, no `unmatched.nodes`, no Node block | `compare` |
+| CMP11 | Paired by hand (D526): for explicit per-seed values `d`, `s_d`, the half-width and `m − 1`; a seed with a value on one side only is not a pair; `m < 2` gives no interval; equal differences give half-width 0 | `compare` |
+| CMP12 | Swapping base and alternative under `perInput` negates every paired `d` and leaves every half-width and df unchanged | `compare` |
+| CMP13 | `four-leg-signalised` as `perInput` against a copy with one input raised by half (seeds 42–51): every row is paired (`pairs` in JSON, `"interval": "paired"`), each `d` is the mean of the per-seed differences, and the network half-width is narrower than Welch's for the same estimates; the same projects as `shared` stay Welch, byte for byte as before | `compare` |
+| CMP14 | Editor: under `perInput` the Compare note and the Node comparison note say "paired"; the table's figures equal `compareBatches` of the two batches | `compare-run-ui` |
 
 ### Editor comparison (M5.8b, D149)
 

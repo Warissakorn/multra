@@ -159,4 +159,6 @@ slice; 4 before the M6 benchmark runs.
    settings step in `study-period-ui`.
 4. **Done (D512):** choice 2, W74 traits and red runners re-keyed by origin and ordinal (§4).
    Rows IS10–IS11, each forced as the others.
-5. **Next:** choice 3 (paired comparison) as its own slice.
+5. **Choice 3 (D526):** the paired comparison under `perInput`, contract and rows CMP11–CMP14 in
+   [BATCH §7](BATCH.md#7-scenario-comparison-m58-d148-d149). Each batch estimate keeps its per-seed
+   values (in seed order) so a comparison can pair them.
