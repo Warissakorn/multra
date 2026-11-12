@@ -23,6 +23,11 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   OWNER_SITTING split at its 500-line limit (sections C–I to `plans/OWNER_SITTING_WINDOWS.md`,
   item names unchanged) and gained B46, C14–C16, E35, E36; the container build note moved to
   BUILDING. NEXT ≈6,400 → ≈4,450 tokens (chars ÷ 4), 349 → 250 lines.
+- **Build pass (D511):** a schema step dirtied 542 objects through `document.hpp`; `kLatestSchema`
+  has its own header and a step now dirties 35 (66 s). A signal head's look dirtied 181 through
+  `canvas.hpp`; `road_crossbar_geometry.hpp` holds what the canvas needs, and it dirties 10 (13 s).
+  The UI executables' reused PCH was refused in the shared build (85 warnings); `ui_pch.cmake`
+  gives them one, 986 → 852 CPU-s. `check` 321/321 after each step.
 - **Verified on Linux:** desktop build, `check` (321/321, docs, file sizes, architecture), and the
   real CLI: a `perInput` copy of the T-junction writes `"randomStreams": "perInput"`, the shipped
   file writes none, and `--compare` between them is refused. Headless not rebuilt this session.
