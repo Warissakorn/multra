@@ -41,6 +41,7 @@ The other headers:
 | `editor_recovery_state.hpp` | `RecoverySession`: the recovery folder and file, its lock, the autosave timer and last autosaved revision, held by `EditorWindow` (D518) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `editor_automation_state.hpp` | `AutomationHost`: the automation server, endpoint, document session id and quit-handshake flags, held by `EditorWindow` (D519) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `object_tab.hpp` | `ObjectTab`: one object tab's table and the History revision its rows were built at; thirteen `EditorWindow` tabs hold one each (D520) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `object_selection.hpp` | `ObjectSelection`: the selection hub the object panels listen to; today, a cleared canvas selection (D522) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_context.hpp` | `ObjectTabContext`: what an object tab's panel needs from the window (document, revision, text, actions, History steps, refresh, show), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_panel.hpp` | `ObjectTabPanel`: the base of an object tab's panel (context, table and revision, its actions by key), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `cross_sections_panel.*` | `CrossSectionsPanel`: the Cross-sections object tab and its dialog (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |

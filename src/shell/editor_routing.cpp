@@ -1,6 +1,4 @@
 #include "editor_window.hpp"
-#include "counters_panel.hpp"
-#include "sections_panel.hpp"
 #include <QAbstractButton>
 #include <QComboBox>
 #include <QMenu>
@@ -26,11 +24,12 @@ std::string routeStartingOn(const AuthoringDefinition& definition,const std::str
 void EditorWindow::buildRouting() {
     canvas_->selectionCleared=[this]{
         // Clear both selection and current row: table commands must not revive an old target.
-        for(auto* table:{routeTable_,inputTable_,programTable_,decisionTable_,conflictTab_.table,counters_?counters_->table():nullptr,sections_?sections_->table():nullptr,nodeTab_.table,streetSegmentTab_.table}) {
+        for(auto* table:{routeTable_,inputTable_,programTable_,decisionTable_,conflictTab_.table,nodeTab_.table,streetSegmentTab_.table}) {
             if(!table)continue;
             const QSignalBlocker block(table);
             table->clearSelection();table->setCurrentItem(nullptr);
         }
+        objectSelection_.clear(); // D522: every object panel clears its own
     };
     canvas_->routeDestinationCommitted=[this](const auto& segments,auto position,auto destination){commitDrawnRoute(segments,position,destination);};
     canvas_->decisionMoved=[this](const auto& id,double position){

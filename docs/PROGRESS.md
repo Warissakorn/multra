@@ -23,7 +23,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   matrices (`OdPanel`), speed decisions, reduced-speed areas, queue counters,
   travel-time sections, Link types,
   Zones and Cross-sections (on the `ObjectTabPanel` base).
-- **Verified on Linux:** desktop build, ctest 321/321, `check` (after each of D517–D521).
+- **D522:** a selection hub (`ObjectSelection`) the panels subscribe to, after a look at how Vissim,
+  Aimsun and SUMO share one selection across views; the counter and section panels follow a
+  cleared canvas selection through it.
+- **Verified on Linux:** desktop build, ctest 321/321 after each step; `check` after D517–D520.
 
 ## 2026-11-12 — D505's approved items: streams slice 4, pocket example, EditorWindow step 1, M6 §6 (D512–D515)
 

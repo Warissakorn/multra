@@ -32,6 +32,7 @@
 #include "run_identity.hpp"
 #include "object_tab.hpp"
 #include "object_tab_context.hpp"
+#include "object_selection.hpp"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -283,6 +284,7 @@ private:
     StudyPeriodsPanel* periods_{}; // its own panel (study_periods_panel.hpp, D521)
     std::vector<std::pair<std::string, QString>> periodChoices() const;
     ObjectTabContext objectTabContext(); // D521: what an object tab's panel needs from this window
+    ObjectSelection objectSelection_; // D522: the selection hub the panels listen to
     // S1.2 (STUDY_PERIODS §8, D269): the Modes tab -- installed modes read-only, owned ones edited.
     ModesPanel* modes_{}; // its own panel (modes_panel.hpp, D521)
     std::vector<std::pair<std::string, QString>> modeChoices() const;

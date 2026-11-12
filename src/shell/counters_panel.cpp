@@ -29,6 +29,7 @@ QString describe(const MeasurementLine& l) {
 }
 }
 CountersPanel::CountersPanel(QWidget* parent, ObjectTabContext context) : ObjectTabPanel(parent, std::move(context)) {
+    followCanvasClear(); // D522
     auto* body = this; auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
