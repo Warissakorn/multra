@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — The S1 diagnostic: `t_x`, `L_hj` and `v_S` (D536, D537)
+
+- **D536:** contract (M6_S1_RUN §7, rows MS8–MS11), then an observer in `multra-m6-s1-run`
+  (`tools/m6_s1_diagnostic.hpp`). Its rerun reproduced every S1 figure but measured nothing: the
+  engine's queued vehicles never fall below 0.1 m/s, they creep through the red.
+- **D537 (owner: "measure at Go"):** the parts are read at each green start, and `moveTime` at the queue
+  definition's 5 km/h. The contract was rewritten first, then the code.
+- **The rerun:** 1,565 of 1,600 cycles measured.
+  - `L_hj` 7.95 m against 6.9 m;
+  - `t_x` 1.195 s against 1.17 s (Eq. 10 gives 1.194 s);
+  - `v_S` 43.5 km/h against 45.1 km/h.
+  - The jam spacing is about two thirds of S1-f's 0.13 s gap.
+  - [m6-s1-diagnostic](evidence/m6-s1-diagnostic.md); no parameter changed.
+- **Verified on Linux:** `check` 331/331 (`m6s1` 10/10).
+
 ## 2026-11-12 — M6's first comparable run, kind S1 (D535)
 
 - **D535:** contract first (M6_S1_RUN, rows MS1–MS7, `fcb640b`). Then the one-lane project

@@ -72,8 +72,10 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     S1-a 1,944 veh/h passes (1,900 ±5 %); S1-f misses (−6.7 % against 2,083); S1-d passes ranks 3, 7, 8
     and misses 2, 4, 5, 6, 9 against Lee & Chen. **Ask** the owner whether S1's gate is S1-a alone
     or needs S1-f and S1-d too. D536: the D530 diagnostic contract and observer; its rerun measured
-    nothing (the engine's queue creeps at ~0.1 m/s). D537 (owner): read the parts at Go, at 5 km/h;
-    code, rerun and evidence next. Then the S2
+    nothing (the engine's queue creeps at ~0.1 m/s). D537 (owner): read at Go, at 5 km/h. **Done**
+    ([evidence](evidence/m6-s1-diagnostic.md)): `L_hj` 7.95 m against 6.9 (+15 %, about two thirds of
+    S1-f's gap), `t_x` 1.195 s against 1.17, `v_S` 43.5 against 45.1 km/h; the queue creeps through the red.
+    **Ask** the owner whether any of these is to change (it would move S1-a too). Then the S2
     runs (S2-c first, `multra-fctl-reference`) and the U runs (U-c, U-a).
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
