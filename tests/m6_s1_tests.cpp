@@ -1,6 +1,6 @@
 #include "test.hpp"
 #include "../tools/m6_s1_network.hpp"
-#include "../tools/m6_s1_summary.hpp"
+#include "../tools/m6_s1_diagnostic.hpp"
 #include "../src/project/run.hpp"
 #include <cmath>
 #include <fstream>
@@ -99,4 +99,75 @@ TEST(m6s1, ms6_unavailable_cycles_are_counted_not_dropped) {
     CHECK(summary["s1d"]["available"] == false);
     CHECK(summary["s1d"]["ranks"][1]["verdict"] == "unavailable");
     CHECK(summary["s1d"]["ranks"][0]["verdict"] == "shown");
+}
+
+namespace {
+// §7 rows: hand-built ticks and cycles, no engine figure.
+SimState tick(double time, std::uint64_t id, double distance, double speed) {
+    SimState state;
+    state.time = time;
+    Vehicle v; v.id = id; v.distance = distance; v.speed = speed;
+    state.vehicles.push_back(v);
+    return state;
+}
+// Ranks spaced `spacing` m at standstill, moving `response` s apart, crossing at `speed` m/s.
+m6s1::DiagnosticCycle obeying(std::uint32_t seed, double go, double spacing, double response, double speed) {
+    m6s1::DiagnosticCycle c{seed, go, {}};
+    for (std::size_t r = 0; r < m6s1::kRanks; ++r)
+        c.ranks.push_back({299 - spacing * static_cast<double>(r), go + 1 + response * static_cast<double>(r), speed,
+                           go + 3 + 2.0 * static_cast<double>(r)});
+    return c;
+}
+}
+TEST(m6s1, ms8_observer_records_the_last_stand_first_move_and_line_speed) {
+    m6s1::DiagnosticObserver observer(300);
+    observer.observe(tick(1, 7, 250, 5));      // moving, never stood yet: no move time
+    observer.observe(tick(2, 7, 270, 0));      // stands
+    observer.observe(tick(3, 7, 271, 2));      // moves
+    observer.observe(tick(4, 7, 275, 0));      // stops again: both replaced
+    observer.observe(tick(5, 7, 275.001, .05));// still standing (< 0.1 m/s)
+    observer.observe(tick(6, 7, 280, 3));      // moves
+    observer.observe(tick(7, 7, 300.5, 9));    // front reaches the line
+    observer.observe(tick(8, 7, 301, 0));      // after the line: ignored
+    const auto& r = observer.records().at(7);
+    CHECK(near(*r.standDistance, 275.001, 1e-12));
+    CHECK(near(*r.moveTime, 6, 1e-12));
+    CHECK(near(*r.lineSpeed, 9, 1e-12) && near(*r.crossingTime, 7, 1e-12));
+    m6s1::DiagnosticObserver never(300);
+    never.observe(tick(1, 8, 299, 10)); never.observe(tick(2, 8, 300, 10));
+    CHECK(!never.records().at(8).standDistance && !never.records().at(8).moveTime);
+}
+TEST(m6s1, ms9_diagnostic_reduction_gives_hand_values) {
+    const std::vector<m6s1::DiagnosticCycle> cycles{obeying(42, 0, 7, 1.2, 12.5), obeying(42, 90, 7, 1.2, 12.5),
+                                                    obeying(43, 0, 8, 1.4, 10)};
+    const auto d = m6s1::diagnostic(cycles, {42, 43}, {});
+    CHECK(d.cycles == 3 && d.unavailable == 0);
+    CHECK(near(*d.jamSpacing.mean, 7.5, 1e-9));
+    CHECK(near(*d.responseMeasured.mean, 1.3, 1e-9));
+    CHECK(near(*d.saturationSpeed.mean, (45 + 36) / 2.0, 1e-9));
+    CHECK(near(*d.firstResponse.mean, 1, 1e-9));
+    CHECK(near(*d.lineSpeed[0].mean, 40.5, 1e-9) && near(*d.lineSpeed[11].mean, 40.5, 1e-9));
+    CHECK(d.responseEq10.n == 0);  // no headways given
+}
+TEST(m6s1, ms10_eq10_equals_the_measured_response_when_eq9_holds) {
+    const std::vector<m6s1::DiagnosticCycle> cycles{obeying(42, 0, 7, 1.2, 12.5), obeying(43, 0, 8, 1.4, 10)};
+    const std::map<std::uint32_t, double> headway{{42, 1.2 + 3.6 * 7 / 45.0}, {43, 1.4 + 3.6 * 8 / 36.0}};
+    const auto d = m6s1::diagnostic(cycles, {42, 43}, headway);
+    CHECK(d.responseEq10.n == 2);
+    CHECK(near(*d.responseEq10.mean, *d.responseMeasured.mean, 1e-9));
+}
+TEST(m6s1, ms11_a_cycle_without_records_is_counted_unavailable) {
+    auto broken = obeying(42, 90, 9, 2, 5);
+    broken.ranks[2].moveTime.reset();
+    const auto d = m6s1::diagnostic({obeying(42, 0, 7, 1.2, 12.5), broken}, {42}, {});
+    CHECK(d.cycles == 1 && d.unavailable == 1);
+    CHECK(near(*d.jamSpacing.mean, 7, 1e-9));
+    // A crossing vehicle the observer never saw maps to an empty record, so the cycle is incomplete.
+    auto c = cycle(42, 0, 3, 2, 2);
+    for (std::uint64_t i = 0; i < m6s1::kRanks; ++i) c.vehicleIds.push_back(100 + i);
+    std::map<std::uint64_t, m6s1::Record> records;
+    for (std::uint64_t i = 0; i < m6s1::kRanks; ++i) if (i != 5) records[100 + i] = {290.0, 1.0, 10.0, 3.0};
+    const auto mapped = m6s1::diagnosticCycle(c, records);
+    CHECK(mapped.ranks.size() == m6s1::kRanks && !mapped.complete());
+    CHECK(near(*mapped.ranks[4].standDistance, 290, 1e-12));
 }

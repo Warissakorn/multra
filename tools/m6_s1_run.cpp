@@ -1,7 +1,7 @@
 // M6 kind S1's first comparable run (D535, docs/reference/M6_S1_RUN.md §2): seeds 42-81 on the
 // one-lane approach, discharge per cycle, reduced by m6_s1_summary.hpp. Writes a fresh directory;
 // metadata.json with complete=true is written LAST, so its absence marks an incomplete run.
-#include "m6_s1_summary.hpp"
+#include "m6_s1_diagnostic.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/project/evaluation.hpp"
 #include "../src/project/input_manifest.hpp"
@@ -38,14 +38,15 @@ DischargeSpec spec(double duration) {
     validateDischargeSpec(s);
     return s;
 }
-Json run(const Scenario& scenario, const QueueDefinition& queue, const DischargeSpec& s, std::uint32_t seed) {
+Json run(const Scenario& scenario, const QueueDefinition& queue, const DischargeSpec& s, std::uint32_t seed,
+         m6s1::DiagnosticObserver& observer) {
     DischargeAccumulator discharge(s, queue);
     auto state = createSimulation(scenario, seed);
-    discharge.observe(state);
+    discharge.observe(state); observer.observe(state);
     const auto ticks = totalTicks(scenario);
     while (state.tick < ticks) {
         state = stepSimulation(std::move(state));
-        discharge.observe(state);
+        discharge.observe(state); observer.observe(state);
     }
     const auto pending = pendingCount(state);
     if (state.nextVehicleId - 1 != state.completed + state.vehicles.size() + pending)
@@ -73,20 +74,29 @@ int main(int argc, char** argv) {
         if (command.is_null()) throw std::invalid_argument("Missing m6_s1_run.cpp compiler command");
         Json sources = Json::array();
         const auto sourceDirectory = std::filesystem::path(command.at("file").get<std::string>()).parent_path();
-        for (const auto* name : {"m6_s1_run.cpp", "m6_s1_summary.hpp", "m6_s1_network.hpp"})
+        for (const auto* name : {"m6_s1_run.cpp", "m6_s1_summary.hpp", "m6_s1_network.hpp", "m6_s1_diagnostic.hpp"})
             sources.push_back({{"file", name}, {"sha256", inputSha256(bytes(sourceDirectory / name))}});
         inputs.validate();
         const auto& scenario = snapshot.scenario;
         const auto s = spec(scenario.duration);
+        // §7: the line's route distance; only the one-route, one-head layout of §1 is supported.
+        if (scenario.routes.size() != 1 || scenario.signalHeads.size() != 1 ||
+            scenario.routes[0].segmentIds.empty() || scenario.signalHeads[0].segmentId != scenario.routes[0].segmentIds[0])
+            throw std::invalid_argument("The S1 diagnostic needs one route with its one signal head on its first segment");
+        const double line = scenario.signalHeads[0].position;
         if (!std::filesystem::create_directory(directory)) throw std::runtime_error("Cannot create output directory");
-        auto runs = output(directory / "runs.jsonl"), csv = output(directory / "cycles.csv");
+        auto runs = output(directory / "runs.jsonl"), csv = output(directory / "cycles.csv"),
+             diag = output(directory / "diagnostic.csv");
+        diag << "seed,go,rank,vehicleId,standDistance,moveTime,crossingTime,lineSpeed\n";
+        std::vector<m6s1::DiagnosticCycle> diagnostics;
         csv << "seed,go,end,complete,reason,meanHeadway";
         for (std::size_t r = 1; r <= m6s1::kRanks; ++r) csv << ",t" << r;
         csv << '\n';
         std::vector<m6s1::Cycle> cycles;
         std::vector<std::uint32_t> seeds;
         for (std::uint32_t seed = 42; seed <= 81; ++seed) {
-            const auto result = run(scenario, evaluation.queue, s, seed);
+            m6s1::DiagnosticObserver observer(line);
+            const auto result = run(scenario, evaluation.queue, s, seed, observer);
             runs << result.dump() << '\n';
             seeds.push_back(seed);
             for (const auto& row : result["discharge"]["cycles"]) {
@@ -98,18 +108,32 @@ int main(int argc, char** argv) {
                     csv << ',' << (r < c.times.size() ? Json(c.times[r]).dump() : "");
                 csv << '\n';
                 cycles.push_back(c);
+                if (!m6s1::usable(c)) continue;
+                const auto d = m6s1::diagnosticCycle(c, observer.records());
+                const auto cell = [](const std::optional<double>& v) { return v ? Json(*v).dump() : std::string(); };
+                for (std::size_t r = 0; r < m6s1::kRanks; ++r) {
+                    const auto record = r < d.ranks.size() ? d.ranks[r] : m6s1::Record{};
+                    diag << seed << ',' << row["go"].dump() << ',' << r + 1 << ','
+                         << (r < c.vehicleIds.size() ? std::to_string(c.vehicleIds[r]) : "") << ','
+                         << cell(record.standDistance) << ',' << cell(record.moveTime) << ','
+                         << cell(record.crossingTime) << ',' << cell(record.lineSpeed) << '\n';
+                }
+                diagnostics.push_back(d);
             }
             std::cerr << "seed " << seed << " generated " << result["generated"] << " completed "
                       << result["completed"] << '\n';
         }
-        runs.close(); csv.close();
-        write(directory / "summary.json", m6s1::summaryJson(cycles, seeds).dump(2) + "\n");
+        runs.close(); csv.close(); diag.close();
+        auto summary = m6s1::summaryJson(cycles, seeds);
+        summary["diagnostic"] = m6s1::diagnosticJson(m6s1::diagnostic(
+            diagnostics, seeds, m6s1::seedHeadways(m6s1::saturation(cycles, seeds))));
+        write(directory / "summary.json", summary.dump(2) + "\n");
         Json outputs = Json::array();
-        for (const auto* name : {"runs.jsonl", "cycles.csv", "summary.json"}) {
+        for (const auto* name : {"runs.jsonl", "cycles.csv", "diagnostic.csv", "summary.json"}) {
             const auto captured = bytes(directory / name);
             outputs.push_back({{"file", name}, {"bytes", captured.size()}, {"sha256", inputSha256(captured)}});
         }
-        Json metadata{{"complete", true}, {"label", "M6 kind S1 first comparable run (D535)"},
+        Json metadata{{"complete", true}, {"label", "M6 kind S1 comparable run (D535) with the S1 diagnostic (D536)"},
             {"buildCommit", MULTRA_BUILD_COMMIT}, {"compiler", MULTRA_COMPILER},
             {"compilerCommand", command}, {"toolSources", sources}, {"outputs", outputs},
             {"inputManifest", inputs.json()}, {"timeStep", scenario.timeStep}, {"duration", scenario.duration},

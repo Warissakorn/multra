@@ -21,6 +21,7 @@ struct Cycle {
     std::string reason;                 // empty: usable
     std::optional<double> meanHeadway;  // ranks 5-12, from estimateDischarge
     std::vector<double> times;          // crossing times in rank order
+    std::vector<std::uint64_t> vehicleIds;  // the same crossings' vehicles (D536 diagnostic)
 };
 struct Figure {
     std::optional<double> mean, sd, halfWidth95;
@@ -137,7 +138,10 @@ inline Cycle cycleOf(std::uint32_t seed, const Json& row) {
     c.go = row.at("go").get<double>();
     c.reason = row.at("unavailableReason").get<std::string>();
     if (!row.at("meanHeadwaySeconds").is_null()) c.meanHeadway = row.at("meanHeadwaySeconds").get<double>();
-    for (const auto& x : row.at("crossings")) c.times.push_back(x.at("time").get<double>());
+    for (const auto& x : row.at("crossings")) {
+        c.times.push_back(x.at("time").get<double>());
+        c.vehicleIds.push_back(x.at("vehicleId").get<std::uint64_t>());
+    }
     return c;
 }
 

@@ -17,7 +17,7 @@ cmake --build build/headless --target check
 | `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
 | `fctl_reference.cpp` | `multra-fctl-reference` | Print M6 S2-c's analytic reference delay, the fixed-cycle traffic-light queue with Poisson arrivals (D529, [FCTL_REFERENCE](../docs/reference/FCTL_REFERENCE.md)) |
 | `m6_s1_network.hpp`, `m6_s1_fixture.cpp` | `multra-m6-s1-fixture` | Write M6 kind S1's one-lane approach, `data/projects/m6-s1-approach.traffic.json`, from its one builder (D535, [M6_S1_RUN](../docs/reference/M6_S1_RUN.md) §1) |
-| `m6_s1_summary.hpp`, `m6_s1_run.cpp` | `multra-m6-s1-run` | Run seeds 42–81 on that project and reduce S1-a, S1-d and S1-f against their bands; writes a fresh directory with `metadata.json` last (D535, M6_S1_RUN §2–§4); not in `check` except its help and refusal |
+| `m6_s1_summary.hpp`, `m6_s1_diagnostic.hpp`, `m6_s1_run.cpp` | `multra-m6-s1-run` | Run seeds 42–81 on that project and reduce S1-a, S1-d and S1-f against their bands, plus the S1 diagnostic (`t_x`, `L_hj`, `v_S`, D536, §7) in `diagnostic.csv`; writes a fresh directory with `metadata.json` last (D535, M6_S1_RUN §2–§4); not in `check` except its help and refusal |
 | `four_step_cli.*` | `multra-cli` | The four-step runs `--trip-generation`, `--trip-distribution` and `--mode-choice` (M10.2–M10.4), moved out of `run_simulation.cpp` (D478); `--procedure`, a saved procedure's steps (D484) |
 | `desktop_control.cpp` | `multra-control` | Send a JSON command to a visible desktop's local automation endpoint; desktop build only |
 | `check_architecture.cpp` | `multra-check-architecture` | Check every module's include boundary (engines import nothing; model, commands, geo and editor by layer) and forbidden nondeterministic APIs |
