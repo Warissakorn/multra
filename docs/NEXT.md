@@ -44,8 +44,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Architecture** (includes checked per module since D494):
   - **Split `EditorWindow` (D505): steps 1–5 done (D514 `BatchSession`, D517 `RunSession`, D518
     `RecoverySession`, D519 `AutomationHost`, D520 `ObjectTab`), and all 13 object tabs are panels
-    (D521–D523; header 398 lines).** Next, one per commit with no behaviour change: Macro/Meso
-    functions onto their panels. A metadata-driven generic object list (D522) needs an owner choice
+    (D521–D523), and the Macro/Meso runs' functions are on their panels (D524; header 396 lines).**
+    D505's listed steps are done. A metadata-driven generic object list (D522) needs an owner choice
     and its own contract first. `src/project/`
     (codecs, runs, outputs; `src/report/` is reserved) waits until report work starts.
   - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of

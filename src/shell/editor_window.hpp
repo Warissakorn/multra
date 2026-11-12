@@ -54,7 +54,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 class MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; class NodesPanel; class ConflictsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; class NodesPanel; class ConflictsPanel; struct MacroRun; class MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -281,9 +281,8 @@ public:
     bool mesoRunning() const; const MesoRun* mesoResult() const; bool mesoStale() const;
     bool mesoTabShown() const; // Export and Copy then write the Meso CSV
 private:
-    // M11.4, editor_meso.cpp: Run Meso on its own worker over the whole run; stale after an edit (D300).
-    std::unique_ptr<MesoPanel> meso_;
-    void buildMeso(QToolBar*, QVBoxLayout*); void refreshMeso(); void startMeso(); void discardMeso();
+    // M11.4: Run Meso on its own worker over the whole run; stale after an edit (D300).
+    std::unique_ptr<MesoPanel> meso_; // its functions are its own (meso_panel.hpp, D524)
     // S5.5a (STUDY_AREA §8-§9, D331), editor_side_files.cpp: the Macro and Meso side files.
     void loadSideFiles(); void writeMacroSide(); void writeMesoSide(const std::vector<std::string>& watched);
     StudyAreaSources studyAreaSources() const; const std::string& projectSha() const;

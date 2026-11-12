@@ -2,6 +2,7 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "macro_panel.hpp"
+#include "meso_panel.hpp"
 #include "editor_automation_state.hpp"
 #include "editor_run_state.hpp"
 #include "message_label.hpp"
@@ -261,7 +262,7 @@ void EditorWindow::refreshRun(){
     }
     actions_.at("editorStep")->setEnabled(!runSession_->timer.isActive());
     macro_->refresh(); // S2.4: its actions and stale note follow every refresh
-    refreshMeso(); // M11.4: and the Meso ones
+    meso_->refresh(); // M11.4: and the Meso ones
     const auto analysis=resultPages_.find("editorResultsTabNodeAnalysis");
     auto* panel=analysis==resultPages_.end()?nullptr:static_cast<NodeAnalysisPanel*>(analysis->second);if(panel)panel->refresh();
     const auto tripPage=resultPages_.find("editorResultsTabTripGeneration");

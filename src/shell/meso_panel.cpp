@@ -1,6 +1,5 @@
 #include "editor_interaction.hpp"
-#include "editor_meso.hpp"
-#include "editor_window.hpp"
+#include "meso_panel.hpp"
 #include "message_label.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/meso_output.hpp"
@@ -10,7 +9,6 @@
 #include <QAction>
 #include <QHeaderView>
 #include <QLabel>
-#include <QTabWidget>
 #include <QTableWidget>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -19,6 +17,7 @@
 // M11.4 (MESO_NETWORK §7, §20, D300): Run Meso, as Run Macro (S2.4). The document is copied on the UI
 // thread and runMeso runs on this panel's own worker over the whole run, posting each stage and its
 // step back. It is never an execute() step, so it adds no Undo step; an edit marks the result stale.
+// Its functions moved here from the window in D524; what they need from it is a MesoHooks entry.
 namespace multra {
 namespace {
 constexpr const char* kStageKeys[] = {"editorMesoStageInputs", "editorMesoStageGraph", "editorMesoStageDemand",
@@ -31,37 +30,36 @@ QTableWidgetItem* figure(double value, int decimals) {
     return item;
 }
 }
-bool EditorWindow::mesoRunning() const { return meso_ && meso_->running; }
-const MesoRun* EditorWindow::mesoResult() const { return meso_ && meso_->result ? &*meso_->result : nullptr; }
-bool EditorWindow::mesoStale() const { return mesoResult() && meso_->resultSha256 != projectSha(); } // S5.5a, as macroStale
-void EditorWindow::buildMeso(QToolBar* bar, QVBoxLayout* box) {
-    meso_->table = new QTableWidget(0, 0, box->parentWidget()); meso_->table->setObjectName("editorMesoTable");
-    meso_->table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    meso_->table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    meso_->table->verticalHeader()->setVisible(false);
-    meso_->table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    box->addWidget(meso_->table, 1);
-    bar->addAction(action("editorRunMeso", {}, [this] { startMeso(); }));
-    bar->addAction(action("editorCancelMeso", {}, [this] { if (meso_->cancel) *meso_->cancel = true; }));
+MesoPanel::MesoPanel(ObjectTabContext context, MesoHooks hooks) : context_(std::move(context)), hooks_(std::move(hooks)) {}
+bool MesoPanel::stale() const { return result && resultSha256 != hooks_.projectSha(); }
+void MesoPanel::build(QToolBar* bar, QVBoxLayout* box) {
+    table = new QTableWidget(0, 0, box->parentWidget()); table->setObjectName("editorMesoTable");
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    table->verticalHeader()->setVisible(false);
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    box->addWidget(table, 1);
+    bar->addAction(actions_["editorRunMeso"] = context_.action("editorRunMeso", [this] { start(); }));
+    bar->addAction(actions_["editorCancelMeso"] = context_.action("editorCancelMeso", [this] { if (cancel_) *cancel_ = true; }));
 }
-void EditorWindow::startMeso() {
-    if (meso_->running) return;
-    meso_->stop(); // the previous worker has posted its end; join it before a new one
-    meso_->stages.fill(Status::pending); meso_->step = meso_->steps = 0;
-    meso_->stages[0] = Status::done; // the inputs: this copy of the document
+void MesoPanel::start() {
+    if (running) return;
+    stop(); // the previous worker has posted its end; join it before a new one
+    stages.fill(Status::pending); step = steps = 0;
+    stages[0] = Status::done; // the inputs: this copy of the document
     auto cancel = std::make_shared<std::atomic<bool>>(false);
-    meso_->cancel = cancel; meso_->running = true;
-    const auto generation = ++meso_->generation, revision = history_.revision();
-    error_->clear();
-    meso_->worker = std::thread([this, document = history_.document(), data = data_, cancel, generation, revision] {
+    cancel_ = cancel; running = true;
+    const auto generation = ++generation_, ranOn = context_.revision();
+    hooks_.clearError();
+    worker_ = std::thread([this, document = context_.document(), data = context_.data, cancel, generation, ranOn] {
         // S5.5a (owner, D331): the kept Links are watched only when the study area cuts Meso.
         std::vector<std::string> watched;
         if (!document.zones.studyArea.nodes.empty() && document.zones.studyArea.flowSource == "meso")
             if (auto cut = studyAreaCut(document.network, document.zones.studyArea.nodes); cut.issues.empty()) watched = std::move(cut.links);
         const auto post = [this, generation](std::function<void(MesoPanel&)> change) {
             QMetaObject::invokeMethod(this, [this, generation, change = std::move(change)] {
-                if (generation != meso_->generation) return;
-                change(*meso_); refreshMeso();
+                if (generation != generation_) return;
+                change(*this); refresh();
             }, Qt::QueuedConnection);
         };
         int entered = 0;
@@ -85,59 +83,54 @@ void EditorWindow::startMeso() {
         }
         catch (const ValidationError& e) { issues = e.issues; }
         catch (const std::exception& e) { error = e.what(); }
-        QMetaObject::invokeMethod(this, [this, generation, revision, run, issues, error, entered, sha, watched] {
-            if (generation != meso_->generation) return; // replaced or discarded: stop() joined it
-            if (meso_->worker.joinable()) meso_->worker.join(); // it posted this as its last act
-            meso_->running = false;
-            auto& stages = meso_->stages;
+        QMetaObject::invokeMethod(this, [this, generation, ranOn, run, issues, error, entered, sha, watched] {
+            if (generation != generation_) return; // replaced or discarded: stop() joined it
+            if (worker_.joinable()) worker_.join(); // it posted this as its last act
+            running = false;
             for (auto& x : stages) if (x == Status::running) x = Status::done;
             if (!issues.empty() || !error.empty()) {
                 stages[static_cast<std::size_t>(entered)] = Status::refused; // no later stage ran
-                refreshRun();
-                if (!issues.empty()) showError(ValidationError(issues)); else showError(std::runtime_error(error));
+                hooks_.refreshRun();
+                if (!issues.empty()) context_.showError(ValidationError(issues)); else context_.showError(std::runtime_error(error));
                 return;
             }
-            if ((*run)->loading.cancelled) { stages[static_cast<std::size_t>(MesoStage::loading)] = Status::cancelled; refreshRun(); return; }
+            if ((*run)->loading.cancelled) { stages[static_cast<std::size_t>(MesoStage::loading)] = Status::cancelled; hooks_.refreshRun(); return; }
             stages[static_cast<std::size_t>(MesoStage::outputs)] = Status::done;
-            meso_->result = std::move(**run); meso_->revision = revision; meso_->resultSha256 = sha; ++meso_->serial;
-            writeMesoSide(watched);
-            objects_->setCurrentWidget(resultsPage_); resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMeso"));
-            refreshRun();
+            result = std::move(**run); revision = ranOn; resultSha256 = sha; ++serial;
+            hooks_.finished(watched); // the side file, then the Meso results, then every run refreshed
         }, Qt::QueuedConnection);
     });
-    refreshRun();
+    hooks_.refreshRun();
 }
-void EditorWindow::discardMeso() {
-    if (!meso_) return;
-    ++meso_->generation; meso_->stop();
-    meso_->running = false; meso_->result.reset(); meso_->stages.fill(Status::pending); ++meso_->serial;
-    meso_->side.reset(); meso_->sideSha256.clear(); meso_->staleKey.clear(); // read again by loadSideFiles
+void MesoPanel::discard() {
+    ++generation_; stop();
+    running = false; result.reset(); stages.fill(Status::pending); ++serial;
+    side.reset(); sideSha256.clear(); staleKey.clear(); // read again by loadSideFiles
 }
-void EditorWindow::refreshMeso() {
-    if (!meso_ || !meso_->note) return;
-    if (const auto a = actions_.find("editorRunMeso"); a != actions_.end()) a->second->setEnabled(!meso_->running);
-    if (const auto a = actions_.find("editorCancelMeso"); a != actions_.end()) a->second->setEnabled(meso_->running);
-    QStringList stages;
-    for (std::size_t s = 0; s < meso_->stages.size(); ++s)
-        stages << text(kStageKeys[s]) + ": " + text(kStatusKeys[static_cast<int>(meso_->stages[s])]);
-    QStringList lines{text("editorMesoNote")};
-    if (std::any_of(meso_->stages.begin(), meso_->stages.end(), [](Status s) { return s != Status::pending; })) lines << stages.join(" · ") + ".";
-    const auto* r = mesoResult();
-    if (meso_->running && meso_->steps) lines << text("editorMesoProgress").arg(meso_->step).arg(meso_->steps);
+void MesoPanel::refresh() {
+    if (!note) return;
+    if (const auto a = actions_.find("editorRunMeso"); a != actions_.end()) a->second->setEnabled(!running);
+    if (const auto a = actions_.find("editorCancelMeso"); a != actions_.end()) a->second->setEnabled(running);
+    QStringList stageText;
+    for (std::size_t s = 0; s < stages.size(); ++s)
+        stageText << context_.text(kStageKeys[s]) + ": " + context_.text(kStatusKeys[static_cast<int>(stages[s])]);
+    QStringList lines{context_.text("editorMesoNote")};
+    if (std::any_of(stages.begin(), stages.end(), [](Status s) { return s != Status::pending; })) lines << stageText.join(" · ") + ".";
+    const auto* r = (result ? &*result : nullptr);
+    if (running && steps) lines << context_.text("editorMesoProgress").arg(step).arg(steps);
     if (r) {
         const auto j = mesoJson(*r);
-        if (!r->odPathRule.empty()) lines << text("editorMesoStreetSegmentOdPaths");
-        lines << text("editorMesoSummary").arg(r->duration, 0, 'f', 0).arg(r->settings.step, 0, 'g', 3)
+        if (!r->odPathRule.empty()) lines << context_.text("editorMesoStreetSegmentOdPaths");
+        lines << context_.text("editorMesoSummary").arg(r->duration, 0, 'f', 0).arg(r->settings.step, 0, 'g', 3)
                      .arg(j["totals"]["vht"].get<double>(), 0, 'f', 1).arg(j["totals"]["delay"].get<double>(), 0, 'f', 1);
     }
-    if (mesoStale()) lines << text("editorMesoStale").arg(meso_->revision).arg(history_.revision());
-    if (!r && meso_->side) lines << text(mesoSideStale() ? "editorMesoSideStale" : "editorMesoSideFresh"); // S5.5a: after a reopen
-    meso_->note->setText(lines.join(" "));
-    auto* table = meso_->table;
-    if (meso_->shown == meso_->serial && table->rowCount() == (r ? static_cast<int>(r->graph.links.size()) : 0)) return;
-    meso_->shown = meso_->serial;
-    const QStringList headers{text("editorMacroSource"), text("editorMacroStations"), text("editorMesoEntered"), text("editorMesoLeft"),
-                              text("editorMesoTravelTime"), text("editorMesoMaxQueue"), text("editorMesoSpillBack")};
+    if (stale()) lines << context_.text("editorMesoStale").arg(revision).arg(context_.revision());
+    if (!r && side) lines << context_.text(hooks_.sideStale() ? "editorMesoSideStale" : "editorMesoSideFresh"); // S5.5a: after a reopen
+    note->setText(lines.join(" "));
+    if (shown == serial && table->rowCount() == (r ? static_cast<int>(r->graph.links.size()) : 0)) return;
+    shown = serial;
+    const QStringList headers{context_.text("editorMacroSource"), context_.text("editorMacroStations"), context_.text("editorMesoEntered"), context_.text("editorMesoLeft"),
+                              context_.text("editorMesoTravelTime"), context_.text("editorMesoMaxQueue"), context_.text("editorMesoSpillBack")};
     table->setColumnCount(static_cast<int>(headers.size())); table->setHorizontalHeaderLabels(headers);
     table->setRowCount(r ? static_cast<int>(r->graph.links.size()) : 0);
     if (!r) return;

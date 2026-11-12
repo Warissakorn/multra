@@ -7,7 +7,7 @@
 #include "message_label.hpp"
 #include "automation_server.hpp"
 #include "macro_panel.hpp"
-#include "editor_meso.hpp"
+#include "meso_panel.hpp"
 #include "editor_storage.hpp"
 #include <nlohmann/json.hpp>
 #include <QAction>
@@ -92,7 +92,7 @@ void EditorWindow::recoverFile(const QString& file) {
     if(!lock->tryLock())throw RecoveryError("RECOVERY_BUSY");
     auto document=readEditorDocument(file);
     // Restored documents are untitled, so Save asks for a destination before replacing anything.
-    clearRecovery();clearRun();macro_->discard();discardMeso();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
+    clearRecovery();clearRun();macro_->discard();meso_->discard();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
     conflicts_->invalidate();
     recoverySession_->lock=std::move(lock);recoverySession_->file=file;recoverySession_->autosavedRevision.reset();startAutosave();
     canvas_->select("");refresh();canvas_->fitNetwork();error_->setText(text("editorRecovered"));

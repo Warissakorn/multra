@@ -5,7 +5,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-12 — M6 tolerance set (D516); `EditorWindow` steps 2–6 (D517–D523)
+## 2026-11-12 — M6 tolerance set (D516); `EditorWindow` steps 2–6 (D517–D524)
 
 - **D516:** owner answered B47 with (a): S1 ±5 %, S2 ±15 %, U ±15 % of the reference, on the mean
   over seeds 42–81, CI shown beside it; U's `gapTime = t_c − τ` confirmed. Recorded in the option
@@ -29,6 +29,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D523:** a written contract ([OBJECT_PANELS_NODES_CONFLICTS](plans/OBJECT_PANELS_NODES_CONFLICTS.md)), then
   Nodes (`NodesPanel`, hooks `NodesHooks`) and Conflict areas (`ConflictsPanel`, `ConflictsHooks`, with
   the automatic areas) as panels: all 13 object tabs are panels; header 412 → 398 lines.
+- **D524:** the Macro and Meso runs' functions (build, start, discard, refresh) moved onto `MacroPanel`
+  and `MesoPanel` (`macro_panel.*`, `meso_panel.*`), with `MacroHooks`/`MesoHooks`; the window keeps
+  the side files and read-only getters; header 398 → 396 lines.
 - **Verified on Linux:** desktop build, ctest 321/321 after each step; `check` after D517–D520.
 
 ## 2026-11-12 — D505's approved items: streams slice 4, pocket example, EditorWindow step 1, M6 §6 (D512–D515)

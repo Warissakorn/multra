@@ -14,7 +14,7 @@
 #include "editor_storage.hpp"
 #include "macro_panel.hpp"
 #include "message_label.hpp"
-#include "editor_meso.hpp"
+#include "meso_panel.hpp"
 #include "node_analysis_panel.hpp"
 #include "trip_generation_panel.hpp"
 #include "trip_distribution_panel.hpp"
@@ -137,8 +137,11 @@ void EditorWindow::buildResults() {
             writeMacroSide();objects_->setCurrentWidget(resultsPage_);resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMacro"));refreshRun();}});
     auto* macroBox=tab(macro_->note,"editorMacroNote","editorResultsTabMacro");
     macro_->build(localBar(macroBox,"editorMacroToolbar"),macroBox); // D524
-    meso_=std::make_unique<MesoPanel>();auto* mesoBox=tab(meso_->note,"editorMesoNote","editorResultsTabMeso");
-    buildMeso(localBar(mesoBox,"editorMesoToolbar"),mesoBox);
+    meso_=std::make_unique<MesoPanel>(objectTabContext(),MesoHooks{[this]()->const std::string&{return projectSha();},[this]{return mesoSideStale();},
+        [this]{error_->clear();},[this]{refreshRun();},[this](const std::vector<std::string>& watched){
+            writeMesoSide(watched);objects_->setCurrentWidget(resultsPage_);resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMeso"));refreshRun();}});
+    auto* mesoBox=tab(meso_->note,"editorMesoNote","editorResultsTabMeso");
+    meso_->build(localBar(mesoBox,"editorMesoToolbar"),mesoBox); // D524
     auto* analysis=new NodeAnalysisPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
         [this]{return history_.generation();},[this]{return file_;},data_,[this](const char* key){return text(key);},
         [this]{return NodeAnalysisMicroBatchView{batch_?&batch_->report:nullptr,batch_&&!batch_->runs.empty()?&batch_->runs.front().report:nullptr,batchSession_->generation};},
@@ -308,10 +311,13 @@ void EditorWindow::refreshClamps() {
     }
     clampNote_->setText(text("editorClampNote").arg(runSession_->clamps.size()));
 }
-// D524: the Macro run's state and functions are MacroPanel's; these read it for Export, Copy and tests.
+// D524: the Macro and Meso runs' state and functions are their panels'; these read it for Export, Copy and tests.
 bool EditorWindow::macroRunning() const { return macro_ && macro_->running; }
 const MacroRun* EditorWindow::macroResult() const { return macro_ && macro_->result ? &*macro_->result : nullptr; }
 bool EditorWindow::macroStale() const { return macro_ && macro_->stale(); }
+bool EditorWindow::mesoRunning() const { return meso_ && meso_->running; }
+const MesoRun* EditorWindow::mesoResult() const { return meso_ && meso_->result ? &*meso_->result : nullptr; }
+bool EditorWindow::mesoStale() const { return meso_ && meso_->stale(); }
 bool EditorWindow::macroTabShown() const {
     return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMacro");
 }

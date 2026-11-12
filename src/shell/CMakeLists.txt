@@ -10,7 +10,7 @@ target_sources(multra_shell PRIVATE vehicle_color_dialog.cpp object_export.cpp u
 target_sources(multra_shell PRIVATE automation_server.cpp editor_automation.cpp editor_automation_lifecycle.cpp automation_geometry.cpp automation_document.cpp)
 target_sources(multra_shell PRIVATE trip_generation_panel.cpp trip_rate_dialog.cpp trip_distribution_panel.cpp mode_choice_panel.cpp mode_choice_nests_dialog.cpp procedure_panel.cpp procedures_dialog.cpp period_factors_dialog.cpp owned_list_dialog.cpp macro_panel.cpp editor_link_types.cpp link_types_panel.cpp macro_run_dialog.cpp street_segment_zone_dialog.cpp) # Macro dialogs
 target_sources(multra_shell PRIVATE editor_street_segments.cpp street_segments_panel.cpp cross_sections_panel.cpp editor_crossings.cpp) # S3.3b (D307), S3.5 (D309)
-target_sources(multra_shell PRIVATE editor_meso.cpp) # M11.4 (D300)
+target_sources(multra_shell PRIVATE meso_panel.cpp) # M11.4 (D300)
 target_sources(multra_shell PRIVATE editor_side_files.cpp) # S5.5a (D331)
 target_sources(multra_shell PRIVATE editor_results_nodes.cpp) # S0.6 (D278)
 target_sources(multra_shell PRIVATE legacy_storage.cpp) # D286
