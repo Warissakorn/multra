@@ -1,5 +1,4 @@
 #include "study_periods_panel.hpp"
-#include "table_layout.hpp"
 #include "form_values.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/zone_commands.hpp"
@@ -7,10 +6,8 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
-#include <QHeaderView>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QSignalBlocker>
 #include <QSpinBox>
 #include <QTableWidget>
 #include <QTimeEdit>
@@ -19,7 +16,8 @@
 #include <algorithm>
 #include <cmath>
 
-// S1.1 (D268, docs/reference/STUDY_PERIODS.md §8): the Study periods tab, its own panel since D521.
+// S1.1 (D268, docs/reference/STUDY_PERIODS.md §8): the Study periods tab, its own panel since D521;
+// its table is the metadata-driven ObjectTable since D525 (the pilot).
 namespace multra {
 QString clockText(double seconds) {
     const auto s = static_cast<long long>(std::llround(seconds));
@@ -31,49 +29,28 @@ StudyPeriodsPanel::StudyPeriodsPanel(QWidget* parent, ObjectTabContext context) 
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(this); layout->addWidget(bar);
-    tab_.table = new QTableWidget(0, 4, this); tab_.table->setObjectName("editorPeriodTable");
-    tab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
-    tab_.table->horizontalHeader()->setStretchLastSection(true); tab_.table->verticalHeader()->hide();
-    layout->addWidget(tab_.table);
+    table_ = new ObjectTable(this, context_, objectTableModel(ObjectTableSpec<StudyPeriod>{
+        [](const ProjectDocument& d) -> const std::vector<StudyPeriod>& { return d.zones.studyPeriods; },
+        [](const StudyPeriod& p) { return p.id; },
+        {{"id", "editorColumnId", CellKind::id, [](const StudyPeriod& p) { return QString::fromStdString(p.id); }},
+         {"name", "editorColumnName", CellKind::text, [](const StudyPeriod& p) { return QString::fromStdString(p.name); }},
+         {"start", "editorPeriodStart", CellKind::number, [](const StudyPeriod& p) { return clockText(p.start); }},
+         {"end", "editorPeriodEnd", CellKind::number, [](const StudyPeriod& p) { return clockText(p.end); }}}}),
+        "editorPeriodTable");
+    layout->addWidget(table_);
     bar->addAction(context_.action("editorAddPeriod", [this] { edit({}); }));
     bar->addAction(edit_ = context_.action("editorEditPeriod", [this] { const auto id = selected(); if (!id.empty()) edit(id); }));
     bar->addAction(delete_ = context_.action("editorDeletePeriod", [this] {
         const auto id = selected(); if (id.empty()) return;
         context_.execute("editorDeletePeriod", [&](auto& d) { deleteStudyPeriod(d, id); });
     }));
-    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) { const auto id = selected(); if (!id.empty()) edit(id); });
-    connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
+    connect(table_->table(), &QTableWidget::cellDoubleClicked, this, [this](int, int) { const auto id = selected(); if (!id.empty()) edit(id); });
+    connect(table_->table(), &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
 }
-void StudyPeriodsPanel::translate() {
-    const auto& text = context_.text;
-    tab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorPeriodStart"), text("editorPeriodEnd")});
-    tab_.invalidate();
-}
-std::string StudyPeriodsPanel::selected() const {
-    const auto* cell = tab_.table->item(tab_.table->currentRow(), 0);
-    return cell && !tab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
-}
+void StudyPeriodsPanel::translate() { table_->translate(); }
+std::string StudyPeriodsPanel::selected() const { return table_->selected(); }
 void StudyPeriodsPanel::refresh() {
-    const auto& periods = context_.document().zones.studyPeriods;
-    if (tab_.revision != context_.revision() || tab_.table->rowCount() != static_cast<int>(periods.size())) {
-        const auto keep = selected();
-        const QSignalBlocker block(tab_.table);
-        tab_.table->setRowCount(static_cast<int>(periods.size()));
-        for (int r = 0; r < tab_.table->rowCount(); ++r) {
-            const auto& p = periods[static_cast<std::size_t>(r)];
-            const QStringList values{QString::fromStdString(p.id), QString::fromStdString(p.name), clockText(p.start), clockText(p.end)};
-            for (int col = 0; col < values.size(); ++col) {
-                auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(p.id));
-                if (col != 1) editorDesign::setNumericText(cell, col >= 2);
-                tab_.table->setItem(r, col, cell);
-            }
-            if (p.id == keep) tab_.table->selectRow(r);
-        }
-        fitTableColumns(tab_.table);
-        tab_.revision = context_.revision();
-    }
+    table_->refresh();
     const bool chosen = !selected().empty();
     edit_->setEnabled(chosen); delete_->setEnabled(chosen);
 }
@@ -118,8 +95,7 @@ void StudyPeriodsPanel::edit(const std::string& id) {
     },[&text](const char* key){return text(key);});
     if(dialog.exec()==QDialog::Accepted) {
         context_.show(this);
-        for (int r = 0; r < tab_.table->rowCount(); ++r)
-            if (tab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) tab_.table->selectRow(r);
+        table_->selectRow(created);
     }
 }
 std::vector<std::pair<std::string, QString>> studyPeriodChoices(const ProjectDocument& document) {

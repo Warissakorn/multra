@@ -44,6 +44,8 @@ The other headers:
 | `object_selection.hpp` | `ObjectSelection`: the selection hub the object panels listen to; today, a cleared canvas selection (D522) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_context.hpp` | `ObjectTabContext`: what an object tab's panel needs from the window (document, revision, text, actions, History steps, refresh, show), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `object_tab_panel.hpp` | `ObjectTabPanel`: the base of an object tab's panel (context, table and revision, its actions by key), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `object_columns.hpp` | `ObjectColumn<T>`/`ObjectTableSpec<T>`: an object type's column metadata, and the untyped model `ObjectTable` reads (D525) | [OBJECT_TABLE](../../docs/plans/OBJECT_TABLE.md) |
+| `object_table.*` | `ObjectTable`: the metadata-driven object table (headers, rows, kept selection, formats); piloted on Study periods (D525) | [OBJECT_TABLE](../../docs/plans/OBJECT_TABLE.md) |
 | `street_segments_panel.*` | `StreetSegmentsPanel`: the Street segments object tab, its template combo and dialog, and the Street segment tool's preview and commit (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
 | `nodes_panel.*` | `NodesPanel`: the Nodes object tab, its rename dialog, actions and the Node tool's commit; window parts reached through `NodesHooks` (D523) | [NODES](../../docs/reference/NODES.md) |
 | `conflicts_panel.*` | `ConflictsPanel`: the Conflict areas object tab, its dialogs, priority actions and the automatic areas; window parts reached through `ConflictsHooks` (D523) | [M3_PLAN](../../docs/plans/M3_PLAN.md) |
