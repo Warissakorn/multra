@@ -52,7 +52,7 @@ namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 class AutomationServer;
 struct MacroPanel;
-struct BatchSession; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -187,27 +187,10 @@ private:
     void stepRun();
     void tickRun();
     void clearRun(const char* reason = "documentChanged");
-    RunIdentity runIdentity_;
+    std::unique_ptr<RunSession> runSession_; // the single run's state (editor_run_state.hpp, D517)
     QJsonObject automationRunState() const;
     void checkAutomationRunId(const QJsonObject&,bool required = false) const;
     void pauseRun();
-    QTimer runTimer_;
-    QElapsedTimer runElapsed_;
-    double runCredit_{};
-    std::optional<RunSnapshot> runSnapshot_;
-    SimState runState_;
-    // Fed every step, exactly as the retired M0 window did: the clamp count is the only signal
-    // that the prototype car-following is being pushed, so it has to be visible where the run is.
-    SummaryAccumulator runSummary_;
-    // M2.5: per-movement delay and approach queues, fed the same states as runSummary_.
-    std::optional<MovementAccumulator> runMovements_;
-    // D144: queue discharge with the CLI's default spec, fed the same states; the reason it
-    // could not be set up, if any, is shown instead of a table.
-    std::optional<DischargeAccumulator> runDischarge_;
-    std::string runDischargeError_;
-    // D144: one row per SafetyClampEvent, read off the published vehicle (blank once it left).
-    struct ClampRow { double time{}; std::uint64_t vehicleId{}; std::string typeId, routeId, segmentId; };
-    std::vector<ClampRow> runClamps_;
     QWidget* resultsPage_{};
     QTabWidget* resultsTabs_{};
     QTableWidget *movementTable_{}, *queueTable_{}, *dischargeTable_{}, *clampTable_{};
@@ -391,11 +374,9 @@ private:
     QComboBox* runSpeed_{};
     QLabel* runInfo_{};
 public:
-    const SimState& runState() const { return runState_; }
-    RunSummary runSummary() const { return runSummary_.summary(); }
-    std::optional<MovementReport> runReport() const {
-        return runMovements_ ? std::optional(runMovements_->report(runState_)) : std::nullopt;
-    }
+    const SimState& runState() const;
+    RunSummary runSummary() const;
+    std::optional<MovementReport> runReport() const;
     // The finished run's report as the CLI's CSV, replaced atomically; throws before the end.
     // With a finished batch, the batch's CSV instead (`--seeds --csv`); with a finished
     // comparison, the comparison's (`--compare --csv`).

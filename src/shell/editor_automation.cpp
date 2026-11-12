@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_run_state.hpp"
 #include "message_label.hpp"
 #include "automation_error.hpp"
 #include "automation_geometry.hpp"
@@ -223,13 +224,13 @@ QJsonObject EditorWindow::automationRequest(const QJsonObject& request) {
                     throw CommandError("RUN_NOT_READY","The document cannot be simulated; inspect diagnostics",
                         {{"diagnostics",diagnosticJson(runDiagnostics(history_.document(),data_,&sources))}});
                 }
-                if(command=="simulation.start") {if(!runTimer_.isActive())toggleRun();}
+                if(command=="simulation.start") {if(!runSession_->timer.isActive())toggleRun();}
                 else {
                     pauseRun();
                     for(int i=0;i<steps && !runFinished();++i) {
-                        runState_=stepSimulation(std::move(runState_));observeRun();
+                        runSession_->state=stepSimulation(std::move(runSession_->state));observeRun();
                     }
-                    canvas_->setRunFrame(runState_);refreshRun();
+                    canvas_->setRunFrame(runSession_->state);refreshRun();
                 }
             }
         } else if(command=="results.get") {

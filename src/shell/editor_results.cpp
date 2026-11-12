@@ -4,6 +4,7 @@
 #include "editor_interaction.hpp"
 #include "table_layout.hpp"
 #include "editor_window.hpp"
+#include "editor_run_state.hpp"
 #include "editor_batch_state.hpp"
 #include "folded_note.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -258,16 +259,16 @@ void EditorWindow::refreshResults() {
 void EditorWindow::refreshDischarge() {
     if(!dischargeTable_->isVisible())return;
     dischargeTable_->setRowCount(0);
-    if(!runDischarge_){
-        dischargeNote_->setText(runDischargeError_.empty()?text("editorResultsEmpty")
-                                 :text("editorDischargeUnavailable").arg(text(runDischargeError_.c_str())));
+    if(!runSession_->discharge){
+        dischargeNote_->setText(runSession_->dischargeError.empty()?text("editorResultsEmpty")
+                                 :text("editorDischargeUnavailable").arg(text(runSession_->dischargeError.c_str())));
         return;
     }
     struct Head { std::string head,lane; int greens{},estimates{},startups{}; double headway{},rate{},startup{};
                   std::map<std::string,int> reasons; };
     std::vector<Head> heads;
-    DischargeSpec spec; spec.windowEnd=runState_.scenario->duration;
-    for(const auto& cycle:runDischarge_->report()){
+    DischargeSpec spec; spec.windowEnd=runSession_->state.scenario->duration;
+    for(const auto& cycle:runSession_->discharge->report()){
         auto at=std::find_if(heads.begin(),heads.end(),[&](const auto& h){return h.head==cycle.headId&&h.lane==cycle.laneId;});
         if(at==heads.end()){heads.push_back({cycle.headId,cycle.laneId});at=heads.end()-1;}
         const auto e=estimateDischarge(cycle,spec); ++at->greens;
@@ -292,15 +293,15 @@ void EditorWindow::refreshDischarge() {
 }
 void EditorWindow::refreshClamps() {
     if(!clampTable_->isVisible())return;
-    clampTable_->setRowCount(static_cast<int>(runClamps_.size()));
+    clampTable_->setRowCount(static_cast<int>(runSession_->clamps.size()));
     for(int r=0;r<clampTable_->rowCount();++r){
-        const auto& c=runClamps_[static_cast<std::size_t>(r)];
+        const auto& c=runSession_->clamps[static_cast<std::size_t>(r)];
         clampTable_->setItem(r,0,figure(c.time,1)); clampTable_->setItem(r,1,figure(double(c.vehicleId),0));
         clampTable_->setItem(r,2,new QTableWidgetItem(QString::fromStdString(c.typeId)));
         clampTable_->setItem(r,3,new QTableWidgetItem(QString::fromStdString(c.routeId)));
         clampTable_->setItem(r,4,new QTableWidgetItem(QString::fromStdString(c.segmentId)));
     }
-    clampNote_->setText(text("editorClampNote").arg(runClamps_.size()));
+    clampNote_->setText(text("editorClampNote").arg(runSession_->clamps.size()));
 }
 bool EditorWindow::macroTabShown() const {
     return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMacro");
@@ -309,7 +310,7 @@ bool EditorWindow::mesoTabShown() const {
     return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMeso");
 }
 bool EditorWindow::runFinished() const {
-    return runState_.scenario && runState_.tick>=totalTicks(*runState_.scenario);
+    return runSession_->state.scenario && runSession_->state.tick>=totalTicks(*runSession_->state.scenario);
 }
 std::string EditorWindow::resultsCsv() const {
     if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabNodeAnalysis"))

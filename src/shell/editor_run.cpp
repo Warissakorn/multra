@@ -1,6 +1,7 @@
 #include "recent_files.hpp"
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "editor_run_state.hpp"
 #include "message_label.hpp"
 #include "node_analysis_panel.hpp"
 #include "trip_generation_panel.hpp"
@@ -26,6 +27,11 @@
 #include <QResizeEvent>
 #include <algorithm>
 namespace multra {
+const SimState& EditorWindow::runState() const { return runSession_->state; }
+RunSummary EditorWindow::runSummary() const { return runSession_->summary.summary(); }
+std::optional<MovementReport> EditorWindow::runReport() const {
+    return runSession_->movements ? std::optional(runSession_->movements->report(runSession_->state)) : std::nullopt;
+}
 namespace {
 // D282: the run status changes every Step. Inside the central layout its label invalidated the
 // whole window's layout each time; in a host without a layout a new text posts a LayoutRequest the
@@ -53,23 +59,23 @@ private:
 // Every path that advances the run funnels through here. SimState::events holds the latest
 // step only, so a step whose events are not accumulated is one whose clamps are lost for good.
 void EditorWindow::observeRun() {
-    for (const auto& event : runState_.events) {
-        runSummary_.add(event);
+    for (const auto& event : runSession_->state.events) {
+        runSession_->summary.add(event);
         if (const auto* clamp = std::get_if<SafetyClampEvent>(&event)) {
-            ClampRow row{clamp->time, clamp->vehicleId, {}, {}, {}};
-            const auto& vehicles = runState_.vehicles; // sorted by id
+            RunSession::ClampRow row{clamp->time, clamp->vehicleId, {}, {}, {}};
+            const auto& vehicles = runSession_->state.vehicles; // sorted by id
             const auto v = std::lower_bound(vehicles.begin(), vehicles.end(), clamp->vehicleId,
                                             [](const auto& x, std::uint64_t id) { return x.id < id; });
             if (v != vehicles.end() && v->id == clamp->vehicleId) {
-                const auto& scenario = *runState_.scenario;
+                const auto& scenario = *runSession_->state.scenario;
                 row.typeId = scenario.vehicleTypes[v->typeIndex].id; row.routeId = scenario.routes[v->routeIndex].id;
-                row.segmentId = locateVehicle(scenario, *v, *runState_.index).segmentId;
+                row.segmentId = locateVehicle(scenario, *v, *runSession_->state.index).segmentId;
             }
-            runClamps_.push_back(std::move(row));
+            runSession_->clamps.push_back(std::move(row));
         }
     }
-    if (runMovements_) runMovements_->observe(runState_);
-    if (runDischarge_) runDischarge_->observe(runState_);
+    if (runSession_->movements) runSession_->movements->observe(runSession_->state);
+    if (runSession_->discharge) runSession_->discharge->observe(runSession_->state);
 }
 void EditorWindow::buildRunControls() {
     auto* bar=addToolBar(QString());bar->setObjectName("editorRunToolbar");texts_["editorRunToolbar"]=bar;
@@ -95,20 +101,20 @@ void EditorWindow::buildRunControls() {
     qobject_cast<QVBoxLayout*>(canvasHost_->layout())->insertWidget(0,new RunInfoHost(runInfo_,canvasHost_));
     canvas_->stopRequested=[this]{pauseRun();};
     connect(runSeed_,&QLineEdit::textChanged,this,[this]{clearRun("seedChanged");});
-    connect(&runTimer_,&QTimer::timeout,this,[this]{tickRun();});
+    connect(&runSession_->timer,&QTimer::timeout,this,[this]{tickRun();});
 }
-void EditorWindow::pauseRun(){endRunUntil("paused");runTimer_.stop();runCredit_=0;refreshRun();}
+void EditorWindow::pauseRun(){endRunUntil("paused");runSession_->timer.stop();runSession_->credit=0;refreshRun();}
 void EditorWindow::clearRun(const char* reason){
     endRunUntil(reason);
-    if(!runIdentity_.id.isEmpty()) {
-        runIdentity_.lastId=runIdentity_.id;runIdentity_.lastEndReason=QString::fromLatin1(reason);runIdentity_.id.clear();
+    if(!runSession_->identity.id.isEmpty()) {
+        runSession_->identity.lastId=runSession_->identity.id;runSession_->identity.lastEndReason=QString::fromLatin1(reason);runSession_->identity.id.clear();
     }
     cancelBatch(); // every edit, Undo, Open and Reset passes here, so it also ends a batch (M5.6)
-    runTimer_.stop();runCredit_=0;runSnapshot_.reset();runState_={};runSummary_={};runMovements_.reset();
-    runDischarge_.reset();runDischargeError_.clear();runClamps_.clear();canvas_->clearRunFrame();refreshRun();
+    runSession_->timer.stop();runSession_->credit=0;runSession_->snapshot.reset();runSession_->state={};runSession_->summary={};runSession_->movements.reset();
+    runSession_->discharge.reset();runSession_->dischargeError.clear();runSession_->clamps.clear();canvas_->clearRunFrame();refreshRun();
 }
 bool EditorWindow::prepareRun(const std::function<void(const RunSnapshot&)>& check) {
-    if(runSnapshot_){if(check)check(*runSnapshot_);return true;}
+    if(runSession_->snapshot){if(check)check(*runSession_->snapshot);return true;}
     const auto sources=studyAreaSources(); // S5.5a (D331)
     try {
         std::uint32_t seed{};
@@ -122,17 +128,17 @@ bool EditorWindow::prepareRun(const std::function<void(const RunSnapshot&)>& che
         // The CLI's --discharge defaults: the whole run, no warmup, ranks 3-5 steady and 1-2 startup.
         try {
             DischargeSpec discharge; discharge.windowEnd=snapshot.scenario.duration; validateDischargeSpec(discharge);
-            runDischarge_.emplace(discharge,evaluation.queue);
-        }catch(const std::exception& e){runDischarge_.reset();runDischargeError_=e.what();}
-        runSnapshot_=std::move(snapshot);runState_=std::move(state);runMovements_.emplace(std::move(movements));
+            runSession_->discharge.emplace(discharge,evaluation.queue);
+        }catch(const std::exception& e){runSession_->discharge.reset();runSession_->dischargeError=e.what();}
+        runSession_->snapshot=std::move(snapshot);runSession_->state=std::move(state);runSession_->movements.emplace(std::move(movements));
         if(batchShown())cancelBatch(); // one table at a time: a single run replaces the batch or comparison
         // createSimulation can already emit events at t=0; start the count from them, not from
         // the first step, or a departure at time zero is missing from every later figure.
-        runSummary_={};runClamps_.clear();observeRun();
-        canvas_->setRunNetwork(runSnapshot_->network);canvas_->setRunFrame(runState_);
-        runIdentity_.until={};
-        runIdentity_.id=QUuid::createUuid().toString(QUuid::WithoutBraces);
-        runIdentity_.generation=history_.generation();runIdentity_.revision=history_.revision();
+        runSession_->summary={};runSession_->clamps.clear();observeRun();
+        canvas_->setRunNetwork(runSession_->snapshot->network);canvas_->setRunFrame(runSession_->state);
+        runSession_->identity.until={};
+        runSession_->identity.id=QUuid::createUuid().toString(QUuid::WithoutBraces);
+        runSession_->identity.generation=history_.generation();runSession_->identity.revision=history_.revision();
         error_->clear();return true;
     }catch(const CommandError&){throw;}catch(const std::exception& e){
         diagnostics_=runDiagnostics(history_.document(),data_,&sources);diagnosticRevision_=history_.revision();
@@ -143,28 +149,28 @@ void EditorWindow::checkAutomationRunId(const QJsonObject& params,bool required)
     if(!required && !params.contains("runId"))return;
     if(!params.value("runId").isString() || params.value("runId").toString().isEmpty())
         throw CommandError("INVALID_PARAMS","A nonempty runId string is required",{{"path","params.runId"}});
-    if(runIdentity_.id.isEmpty() || params.value("runId").toString()!=runIdentity_.id)
-        throw CommandError("STALE_RUN","The requested single run is no longer current",{{"runId",runIdentity_.id.isEmpty()?QJsonValue(QJsonValue::Null):QJsonValue(runIdentity_.id)}});
+    if(runSession_->identity.id.isEmpty() || params.value("runId").toString()!=runSession_->identity.id)
+        throw CommandError("STALE_RUN","The requested single run is no longer current",{{"runId",runSession_->identity.id.isEmpty()?QJsonValue(QJsonValue::Null):QJsonValue(runSession_->identity.id)}});
 }
 QJsonObject EditorWindow::automationRunState() const {
-    const bool active=!runIdentity_.id.isEmpty();
+    const bool active=!runSession_->identity.id.isEmpty();
     const auto nullable=[](const QString& s){return s.isEmpty()?QJsonValue(QJsonValue::Null):QJsonValue(s);};
-    const QString status=!active?"idle":runFinished()?"completed":runTimer_.isActive()?"running":runState_.tick?"paused":"prepared";
-    const auto& until=runIdentity_.until;
+    const QString status=!active?"idle":runFinished()?"completed":runSession_->timer.isActive()?"running":runSession_->state.tick?"paused":"prepared";
+    const auto& until=runSession_->identity.until;
     QJsonObject target{{"active",until.active},{"runId",nullable(until.runId)},{"outcome",until.outcome},
         {"targetTick",QString::number(until.targetTick)},{"timeoutMs",until.timeoutMs},
-        {"targetTime",runState_.scenario?QJsonValue(until.targetTick*runState_.scenario->timeStep):QJsonValue(QJsonValue::Null)}};
-    return {{"until",target},{"timeStep",runState_.scenario?QJsonValue(runState_.scenario->timeStep):QJsonValue(QJsonValue::Null)},
-        {"duration",runState_.scenario?QJsonValue(runState_.scenario->duration):QJsonValue(QJsonValue::Null)},{"prepared",runSnapshot_.has_value()},{"running",runTimer_.isActive()},{"finished",runFinished()},
-        {"tick",static_cast<qint64>(runState_.tick)},{"time",runState_.time},{"seed",runSeed_->text()},
-        {"runId",nullable(runIdentity_.id)},{"status",status},{"lastRunId",nullable(runIdentity_.lastId)},
-        {"lastEndReason",runIdentity_.lastEndReason},{"sourceRevision",active?QJsonValue(QString::number(runIdentity_.revision)):QJsonValue(QJsonValue::Null)},
-        {"sourceDocumentId",active?QJsonValue(automationSession_+"-"+QString::number(runIdentity_.generation)):QJsonValue(QJsonValue::Null)}};
+        {"targetTime",runSession_->state.scenario?QJsonValue(until.targetTick*runSession_->state.scenario->timeStep):QJsonValue(QJsonValue::Null)}};
+    return {{"until",target},{"timeStep",runSession_->state.scenario?QJsonValue(runSession_->state.scenario->timeStep):QJsonValue(QJsonValue::Null)},
+        {"duration",runSession_->state.scenario?QJsonValue(runSession_->state.scenario->duration):QJsonValue(QJsonValue::Null)},{"prepared",runSession_->snapshot.has_value()},{"running",runSession_->timer.isActive()},{"finished",runFinished()},
+        {"tick",static_cast<qint64>(runSession_->state.tick)},{"time",runSession_->state.time},{"seed",runSeed_->text()},
+        {"runId",nullable(runSession_->identity.id)},{"status",status},{"lastRunId",nullable(runSession_->identity.lastId)},
+        {"lastEndReason",runSession_->identity.lastEndReason},{"sourceRevision",active?QJsonValue(QString::number(runSession_->identity.revision)):QJsonValue(QJsonValue::Null)},
+        {"sourceDocumentId",active?QJsonValue(automationSession_+"-"+QString::number(runSession_->identity.generation)):QJsonValue(QJsonValue::Null)}};
 }
 void EditorWindow::endRunUntil(const char* reason) {
-    if(runIdentity_.until.active) {
-        runIdentity_.until.active=false;runIdentity_.until.outcome=QString::fromLatin1(reason);
-        runCredit_=0;runElapsed_.start(); // Fast stepping must not become accumulated playback time.
+    if(runSession_->identity.until.active) {
+        runSession_->identity.until.active=false;runSession_->identity.until.outcome=QString::fromLatin1(reason);
+        runSession_->credit=0;runSession_->elapsed.start(); // Fast stepping must not become accumulated playback time.
     }
 }
 void EditorWindow::runUntil(const QJsonObject& params) {
@@ -188,70 +194,70 @@ void EditorWindow::runUntil(const QJsonObject& params) {
                 invalid("time","Time must be on the scenario time grid, within duration and exact tick range");
             target=static_cast<std::uint64_t>(ticks);
         }
-        if(runSnapshot_ && target<runState_.tick)invalid("time","Target cannot precede the current simulation tick");
+        if(runSession_->snapshot && target<runSession_->state.tick)invalid("time","Target cannot precede the current simulation tick");
     };
     if(!prepareRun(check)) {
         QJsonArray rows;for(const auto& d:diagnostics_)rows.append(QJsonObject{{"code",QString::fromStdString(d.code)},
             {"path",QString::fromStdString(d.path)},{"objectId",QString::fromStdString(d.objectId)}});
         throw CommandError("RUN_NOT_READY","The document cannot be simulated; inspect diagnostics",{{"diagnostics",rows}});
     }
-    auto& goal=runIdentity_.until;
+    auto& goal=runSession_->identity.until;
     if(goal.active) {
         if(goal.targetTick==target && goal.timeoutMs==static_cast<int>(ms))return;
         throw CommandError("RUN_TARGET_ACTIVE","Pause the existing target before choosing another");
     }
-    goal={};goal.runId=runIdentity_.id;goal.targetTick=target;goal.timeoutMs=static_cast<int>(ms);
-    goal.active=runState_.tick<target;goal.outcome=goal.active?"running":"reached";goal.deadline.start();
-    runCredit_=0;runElapsed_.start();if(goal.active)runTimer_.start(16);else runTimer_.stop();refreshRun();
+    goal={};goal.runId=runSession_->identity.id;goal.targetTick=target;goal.timeoutMs=static_cast<int>(ms);
+    goal.active=runSession_->state.tick<target;goal.outcome=goal.active?"running":"reached";goal.deadline.start();
+    runSession_->credit=0;runSession_->elapsed.start();if(goal.active)runSession_->timer.start(16);else runSession_->timer.stop();refreshRun();
 }
 void EditorWindow::toggleRun(){
-    if(runTimer_.isActive()){pauseRun();return;}
+    if(runSession_->timer.isActive()){pauseRun();return;}
     if(!prepareRun())return;
-    if(runState_.tick>=totalTicks(*runState_.scenario)){refreshRun();return;}
-    runElapsed_.start();runCredit_=0;runTimer_.start(16);refreshRun();
+    if(runSession_->state.tick>=totalTicks(*runSession_->state.scenario)){refreshRun();return;}
+    runSession_->elapsed.start();runSession_->credit=0;runSession_->timer.start(16);refreshRun();
 }
 void EditorWindow::stepRun(){
     if(!prepareRun())return;
-    if(runState_.tick<totalTicks(*runState_.scenario)){runState_=stepSimulation(std::move(runState_));observeRun();}
-    if(runState_.tick>=totalTicks(*runState_.scenario))runTimer_.stop();
-    canvas_->setRunFrame(runState_);refreshRun();
+    if(runSession_->state.tick<totalTicks(*runSession_->state.scenario)){runSession_->state=stepSimulation(std::move(runSession_->state));observeRun();}
+    if(runSession_->state.tick>=totalTicks(*runSession_->state.scenario))runSession_->timer.stop();
+    canvas_->setRunFrame(runSession_->state);refreshRun();
 }
 void EditorWindow::tickRun(){
-    if(!runSnapshot_)return;
-    auto& goal=runIdentity_.until;
+    if(!runSession_->snapshot)return;
+    auto& goal=runSession_->identity.until;
     if(goal.active) {
         QElapsedTimer slice;slice.start();int budget=200;
-        while(runTimer_.isActive() && runState_.tick<goal.targetTick && budget-->0 && slice.elapsed()<8 && !goal.deadline.hasExpired(goal.timeoutMs)) {
-            runState_=stepSimulation(std::move(runState_));observeRun();
+        while(runSession_->timer.isActive() && runSession_->state.tick<goal.targetTick && budget-->0 && slice.elapsed()<8 && !goal.deadline.hasExpired(goal.timeoutMs)) {
+            runSession_->state=stepSimulation(std::move(runSession_->state));observeRun();
         }
-        if(runState_.tick>=goal.targetTick){endRunUntil("reached");runTimer_.stop();}
-        else if(goal.deadline.hasExpired(goal.timeoutMs)){endRunUntil("timeout");runTimer_.stop();}
-        canvas_->setRunFrame(runState_);refreshRun();return;
+        if(runSession_->state.tick>=goal.targetTick){endRunUntil("reached");runSession_->timer.stop();}
+        else if(goal.deadline.hasExpired(goal.timeoutMs)){endRunUntil("timeout");runSession_->timer.stop();}
+        canvas_->setRunFrame(runSession_->state);refreshRun();return;
     }
-    runCredit_+=std::min(.25,runElapsed_.restart()/1000.)*runSpeed_->currentData().toDouble();
+    runSession_->credit+=std::min(.25,runSession_->elapsed.restart()/1000.)*runSpeed_->currentData().toDouble();
     // Bound work per callback, preserving every fixed step while keeping the UI responsive.
     int budget=200;
-    while(runCredit_>=runState_.scenario->timeStep && runTimer_.isActive() && budget-->0) {
-        runCredit_-=runState_.scenario->timeStep;
-        runState_=stepSimulation(std::move(runState_));observeRun();
-        if(runState_.tick>=totalTicks(*runState_.scenario))runTimer_.stop();
+    while(runSession_->credit>=runSession_->state.scenario->timeStep && runSession_->timer.isActive() && budget-->0) {
+        runSession_->credit-=runSession_->state.scenario->timeStep;
+        runSession_->state=stepSimulation(std::move(runSession_->state));observeRun();
+        if(runSession_->state.tick>=totalTicks(*runSession_->state.scenario))runSession_->timer.stop();
     }
-    runCredit_=std::min(runCredit_,5.);
-    canvas_->setRunFrame(runState_);refreshRun();
+    runSession_->credit=std::min(runSession_->credit,5.);
+    canvas_->setRunFrame(runSession_->state);refreshRun();
 }
 void EditorWindow::refreshRun(){
     if(!runInfo_)return;
     refreshResults(); refreshNodeProposals(); // S4.4: a new result proposes
-    if(runProtection_)runProtection_->setVisible(runSnapshot_.has_value()); // M3.2.4: shown with every run
+    if(runProtection_)runProtection_->setVisible(runSession_->snapshot.has_value()); // M3.2.4: shown with every run
     // D487: only when Run/Pause changes (or translate() reset the text). Setting the same text
     // and a new icon every Step relaid out the whole window, half of a Run view Step.
-    if(auto* run=actions_.at("editorRun");run->text()!=text(runTimer_.isActive()?"editorPause":"editorRun")
-        ||run->property("editorRunShowsPause")!=QVariant(runTimer_.isActive())) {
-        run->setText(text(runTimer_.isActive()?"editorPause":"editorRun"));
-        run->setIcon(editorIcon(runTimer_.isActive()?EditorIcon::pause:EditorIcon::run));
-        run->setProperty("editorRunShowsPause",runTimer_.isActive());
+    if(auto* run=actions_.at("editorRun");run->text()!=text(runSession_->timer.isActive()?"editorPause":"editorRun")
+        ||run->property("editorRunShowsPause")!=QVariant(runSession_->timer.isActive())) {
+        run->setText(text(runSession_->timer.isActive()?"editorPause":"editorRun"));
+        run->setIcon(editorIcon(runSession_->timer.isActive()?EditorIcon::pause:EditorIcon::run));
+        run->setProperty("editorRunShowsPause",runSession_->timer.isActive());
     }
-    actions_.at("editorStep")->setEnabled(!runTimer_.isActive());
+    actions_.at("editorStep")->setEnabled(!runSession_->timer.isActive());
     refreshMacro(); // S2.4: its actions and stale note follow every refresh
     refreshMeso(); // M11.4: and the Meso ones
     const auto analysis=resultPages_.find("editorResultsTabNodeAnalysis");
@@ -272,15 +278,15 @@ void EditorWindow::refreshRun(){
     for(const char* key:{"editorRunSeeds","editorCompareSeeds"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(!batchRunning());
     if(const auto e=actions_.find("editorCancelSeeds");e!=actions_.end())e->second->setEnabled(batchRunning());
-    runSpeed_->setEnabled(!runIdentity_.until.active);
+    runSpeed_->setEnabled(!runSession_->identity.until.active);
     runSeed_->setAccessibleName(text("seed"));runSpeed_->setAccessibleName(text("speed"));
-    if(!runSnapshot_){runInfo_->setText(text(history_.document().network.links.empty()?(hasRecentFiles()?"editorEmptyHintRecent":"editorEmptyHint"):"editorRunReady"));runInfo_->setAccessibleDescription({});return;}
+    if(!runSession_->snapshot){runInfo_->setText(text(history_.document().network.links.empty()?(hasRecentFiles()?"editorEmptyHintRecent":"editorEmptyHint"):"editorRunReady"));runInfo_->setAccessibleDescription({});return;}
     // All diagnostic figures wrap above the canvas; their interpretation is in the Shortcuts dialog (F1).
     runInfo_->setAccessibleDescription(text("editorRunStatusNote"));
-    const auto summary=runSummary_.summary();
-    runInfo_->setText((runIdentity_.until.active?text("editorRunUntilTarget").arg(runIdentity_.until.targetTick*runState_.scenario->timeStep,0,'f',1):QString())+text("editorRunStatus").arg(runSnapshot_->revision).arg(runState_.seed)
-        .arg(runState_.time,0,'f',1).arg(runState_.vehicles.size()).arg(pendingCount(runState_)).arg(runState_.completed)
+    const auto summary=runSession_->summary.summary();
+    runInfo_->setText((runSession_->identity.until.active?text("editorRunUntilTarget").arg(runSession_->identity.until.targetTick*runSession_->state.scenario->timeStep,0,'f',1):QString())+text("editorRunStatus").arg(runSession_->snapshot->revision).arg(runSession_->state.seed)
+        .arg(runSession_->state.time,0,'f',1).arg(runSession_->state.vehicles.size()).arg(pendingCount(runSession_->state)).arg(runSession_->state.completed)
         .arg(summary.meanDelay?QString::number(*summary.meanDelay,'f',2):text("empty")).arg(summary.safetyClamps)
-        +(runState_.lots.empty()?QString():text("editorRunParked").arg(parkedCount(runState_)))); // M8.6b: closes the count
+        +(runSession_->state.lots.empty()?QString():text("editorRunParked").arg(parkedCount(runSession_->state)))); // M8.6b: closes the count
 }
 }

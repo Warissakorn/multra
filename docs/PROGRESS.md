@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — M6 tolerance set (D516); `EditorWindow` step 2, `RunSession` (D517)
+
+- **D516:** owner answered B47 with (a): S1 ±5 %, S2 ±15 %, U ±15 % of the reference, on the mean
+  over seeds 42–81, CI shown beside it; U's `gapTime = t_c − τ` confirmed. Recorded in the option
+  sheet's §6, ROADMAP M6.0 and OWNER_SITTING. No run made, no gate closed.
+- **D517:** the single run's state is `RunSession` (`editor_run_state.hpp`); the three run getters
+  moved out of line; header 488 → 469 lines; no behaviour change.
+- **Verified on Linux:** desktop build, ctest 321/321, `check`.
+
 ## 2026-11-12 — D505's approved items: streams slice 4, pocket example, EditorWindow step 1, M6 §6 (D512–D515)
 
 - **D512 (INPUT_STREAMS §8 slice 4, choice 2):** W74 traits and red runners hash

@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_run_state.hpp"
 #include "editor_batch_state.hpp"
 #include "message_label.hpp"
 #include "automation_server.hpp"
