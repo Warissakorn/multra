@@ -31,6 +31,10 @@
     { "file": "lateral-lab.traffic.json",
       "name": { "en": "Lateral lab", "th": "ห้องทดลองตำแหน่งด้านข้าง" },
       "purpose": { "en": "A development bed, not a study: timed lane changes, straddling and keep-left with placeholder values.",
-                   "th": "พื้นที่ทดลองสำหรับพัฒนา ไม่ใช่การศึกษา: การเปลี่ยนช่องแบบมีระยะเวลา การคร่อมเส้น และการชิดซ้าย ด้วยค่าสมมติ" } }
+                   "th": "พื้นที่ทดลองสำหรับพัฒนา ไม่ใช่การศึกษา: การเปลี่ยนช่องแบบมีระยะเวลา การคร่อมเส้น และการชิดซ้าย ด้วยค่าสมมติ" } },
+    { "file": "m6-s1-approach.traffic.json",
+      "name": { "en": "Saturation-flow benchmark (M6 S1)", "th": "กรณีเทียบอัตราการไหลอิ่มตัว (M6 S1)" },
+      "purpose": { "en": "One lane to a fixed-time signal at base conditions: the project M6's S1 comparison runs; run it to watch the queue discharge.",
+                   "th": "หนึ่งช่องจราจรเข้าสัญญาณไฟเวลาคงที่ในสภาพพื้นฐาน: project ที่ใช้รันเทียบ M6 S1 กดเริ่มจำลองเพื่อดูการปล่อยแถวคอย" } }
   ]
 }
