@@ -53,7 +53,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -306,14 +306,8 @@ private:
     std::string selectedZone() const;
     std::string selectedZoneConnector() const;
     // M8.6b (D162): the OD matrices tab, the lot dialog and the catalog's compositions for both.
-    ObjectTab odTab_;
-    void buildOd();
-    void translateOd();
-    void refreshOd();
-    void showOd();
-    void editOd(const std::string& id); // empty: a new matrix
+    OdPanel* od_{}; // its own panel (od_panel.hpp, D521)
     void editLot(const std::string& zoneId);
-    std::string selectedOd() const;
     std::vector<std::pair<std::string, QString>> compositionChoices() const;
     // S1.1 (STUDY_PERIODS §8): the Study periods tab and the choices the OD dialog offers.
     StudyPeriodsPanel* periods_{}; // its own panel (study_periods_panel.hpp, D521)
