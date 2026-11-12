@@ -13,6 +13,7 @@
 #include "sections_panel.hpp"
 #include "link_types_panel.hpp"
 #include "zones_panel.hpp"
+#include "cross_sections_panel.hpp"
 #include "editor_automation_state.hpp"
 #include "editor_recovery_state.hpp"
 #include "editor_run_state.hpp"
@@ -201,7 +202,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         execute("editorMoveHead",[&](auto& d){moveSignalHead(d,id,station);});
     };
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
-    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); counters_=new CountersPanel(objects_,objectTabContext());addObjectPage(counters_,"editorCounterTable"); canvas_->counterDraftCommitted=[this](std::vector<MeasurementLine> lines){counters_->add(std::move(lines));}; sections_=new SectionsPanel(objects_,objectTabContext());addObjectPage(sections_,"editorSectionTable"); canvas_->sectionCommitted=[this](SectionLine start,SectionLine end){sections_->commitTool(start,end);}; speedDecisions_=new SpeedDecisionsPanel(objects_,objectTabContext());addObjectPage(speedDecisions_,"editorSpeedDecisionTable"); speedAreas_=new SpeedAreasPanel(objects_,objectTabContext());addObjectPage(speedAreas_,"editorReducedSpeedAreaTable"); zones_=new ZonesPanel(objects_,objectTabContext(),{[this](const std::string& id){editLot(id);},[this]{return selectedStreetSegment();}});addObjectPage(zones_,"editorZoneTable"); canvas_->zoneCommitted=[this](std::vector<Point> polygon){return zones_->commitTool(std::move(polygon));}; buildNodes(); od_=new OdPanel(objects_,objectTabContext(),{[this]{return compositionChoices();},[this]{return periodChoices();},[this]{return modeChoices();}});addObjectPage(od_,"editorOdTable"); periods_=new StudyPeriodsPanel(objects_,objectTabContext());addObjectPage(periods_,"editorPeriodTable"); modes_=new ModesPanel(objects_,objectTabContext(),[this]{return compositionChoices();});addObjectPage(modes_,"editorModeTable"); linkTypes_=new LinkTypesPanel(objects_,objectTabContext());addObjectPage(linkTypes_,"editorLinkTypeTable"); buildStreetSegments(); buildCrossSections(); buildRecovery(); buildPalette();
+    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); counters_=new CountersPanel(objects_,objectTabContext());addObjectPage(counters_,"editorCounterTable"); canvas_->counterDraftCommitted=[this](std::vector<MeasurementLine> lines){counters_->add(std::move(lines));}; sections_=new SectionsPanel(objects_,objectTabContext());addObjectPage(sections_,"editorSectionTable"); canvas_->sectionCommitted=[this](SectionLine start,SectionLine end){sections_->commitTool(start,end);}; speedDecisions_=new SpeedDecisionsPanel(objects_,objectTabContext());addObjectPage(speedDecisions_,"editorSpeedDecisionTable"); speedAreas_=new SpeedAreasPanel(objects_,objectTabContext());addObjectPage(speedAreas_,"editorReducedSpeedAreaTable"); zones_=new ZonesPanel(objects_,objectTabContext(),{[this](const std::string& id){editLot(id);},[this]{return selectedStreetSegment();}});addObjectPage(zones_,"editorZoneTable"); canvas_->zoneCommitted=[this](std::vector<Point> polygon){return zones_->commitTool(std::move(polygon));}; buildNodes(); od_=new OdPanel(objects_,objectTabContext(),{[this]{return compositionChoices();},[this]{return periodChoices();},[this]{return modeChoices();}});addObjectPage(od_,"editorOdTable"); periods_=new StudyPeriodsPanel(objects_,objectTabContext());addObjectPage(periods_,"editorPeriodTable"); modes_=new ModesPanel(objects_,objectTabContext(),[this]{return compositionChoices();});addObjectPage(modes_,"editorModeTable"); linkTypes_=new LinkTypesPanel(objects_,objectTabContext());addObjectPage(linkTypes_,"editorLinkTypeTable"); buildStreetSegments(); crossSections_=new CrossSectionsPanel(objects_,objectTabContext(),[this]{return crossSectionRows();});addObjectPage(crossSections_,"editorCrossSectionTable"); buildRecovery(); buildPalette();
     buildMapActions();resize(1440,900);buildWorkspace();
     history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
@@ -247,7 +248,7 @@ void EditorWindow::translate() {
         if(english)for(int column=0;column<table->columnCount();++column)
             if(auto* item=table->horizontalHeaderItem(column))item->setText(item->text().toUpper());
     }
-    translateDemand(); translateResults(); translateConflicts(); counters_->translate(); sections_->translate(); speedDecisions_->translate(); speedAreas_->translate(); zones_->translate(); translateNodes(); od_->translate(); periods_->translate(); modes_->translate(); linkTypes_->translate(); translateStreetSegments(); translateCrossSections(); translatePalette(); refreshToolHint();
+    translateDemand(); translateResults(); translateConflicts(); counters_->translate(); sections_->translate(); speedDecisions_->translate(); speedAreas_->translate(); zones_->translate(); translateNodes(); od_->translate(); periods_->translate(); modes_->translate(); linkTypes_->translate(); translateStreetSegments(); crossSections_->translate(); translatePalette(); refreshToolHint();
     if (lab_) lab_->retranslate();
     canvas_->setDemandLabels(text("editorInputRateUnit"),text("editorInputCanvasPeriods"));
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
@@ -300,7 +301,7 @@ void EditorWindow::refresh(bool modelChanged) {
     if(property("editorViewGeneration")!=generation) {
         const bool replacing=property("editorViewGeneration").isValid();setProperty("editorViewGeneration",generation);
         tableRevision_=diagnosticRevision_=automaticRevision_=conflictTab_.revision=UINT64_MAX;counters_->invalidate();sections_->invalidate();
-        speedDecisions_->invalidate();speedAreas_->invalidate();zones_->invalidate();nodeTab_.revision=streetSegmentTab_.revision=crossSectionTab_.revision=UINT64_MAX;
+        speedDecisions_->invalidate();speedAreas_->invalidate();zones_->invalidate();crossSections_->invalidate();nodeTab_.revision=streetSegmentTab_.revision=UINT64_MAX;
         periods_->invalidate();modes_->invalidate();od_->invalidate();linkTypes_->invalidate();
         diagnostics_.clear();rejected_.clear();readiness_.clear();readinessChecked_=false;
         if(replacing)error_->clear();
@@ -343,6 +344,6 @@ void EditorWindow::refresh(bool modelChanged) {
     bgX_->setValue(b.x);bgY_->setValue(b.y);bgScale_->setValue(b.metresPerPixel);bgAngle_->setValue(b.rotation);bgOpacity_->setValue(b.opacity);
     actions_.at("editorDeleteSelected")->setEnabled(!canvas_->selection().empty());
     actions_.at("editorRotate")->setEnabled(canvas_->rotationPivot().has_value());
-    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();counters_->refresh();sections_->refresh();speedDecisions_->refresh();speedAreas_->refresh();zones_->refresh();refreshNodes();od_->refresh();periods_->refresh();modes_->refresh();linkTypes_->refresh();refreshLinkTypeField();refreshStreetSegments();refreshCrossSections();refreshDiagnostics();refreshRun();
+    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();counters_->refresh();sections_->refresh();speedDecisions_->refresh();speedAreas_->refresh();zones_->refresh();refreshNodes();od_->refresh();periods_->refresh();modes_->refresh();linkTypes_->refresh();refreshLinkTypeField();refreshStreetSegments();crossSections_->refresh();refreshDiagnostics();refreshRun();
 }
 }
