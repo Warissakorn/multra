@@ -2,6 +2,7 @@
 #include "csv_format.hpp"
 #include "los_output.hpp"
 #include "node_output.hpp"
+#include "random_streams_codec.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 
@@ -37,6 +38,7 @@ Json batchJson(const BatchReport& r, const std::vector<SeedRun>& runs) {
     j["validated"] = false;
     j["measure"] = measure(r.seeds.size());
     j["seeds"] = r.seeds;
+    if (r.randomStreams == RandomStreams::perInput) j["randomStreams"] = randomStreamsName(r.randomStreams); // IS8: only then, so shared keeps its bytes
     j["overloadedSeeds"] = r.overloadedSeeds;
     j["movements"] = Json::array();
     for (const auto& m : r.movements)
@@ -108,6 +110,7 @@ std::string batchCsv(const BatchReport& r, const std::vector<SeedRun>& runs) {
             << csvNumber(runs.front().report.evaluationEnd) << " s\n";
     if (!runs.empty() && runs.front().report.cooldown) // M5.9
         out << "# Cool-down: " << csvNumber(*runs.front().report.cooldown) << " s after the demand ends\n";
+    if (r.randomStreams == RandomStreams::perInput) out << "# randomStreams: " << randomStreamsName(r.randomStreams) << '\n'; // IS8
     out << "movement,n,meanDelay_s,ci95_s,sd_s,vehicles_mean,meanTravelTime_s,unfinished_mean\n";
     for (const auto& m : r.movements)
         out << csvQuoted(m.name) << ',' << m.meanDelay.n << ',' << csvNumber(m.meanDelay.mean) << ','

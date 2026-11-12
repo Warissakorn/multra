@@ -40,6 +40,7 @@ keeps its schema and bytes.
 | `evaluation_period.*` | The evaluation period and cool-down; `newProjectDocument` | [BATCH](../../docs/reference/BATCH.md) |
 | `behaviour_library.*` | The project-owned behaviour library: names and model tags, vehicle classes, link behaviour types, assignment | [DRIVING_BEHAVIOUR §7](../../docs/reference/DRIVING_BEHAVIOUR.md) |
 | `clamp_rules.*` | `definition.clampRules`, three booleans true when absent | [MERGE_CLAMPS §3](../../docs/reference/MERGE_CLAMPS.md) |
+| `random_streams_codec.*` | `definition.randomStreams` (schema 74, written only as `perInput`) and the name run, batch and comparison output state | [INPUT_STREAMS §3, §5](../../docs/reference/INPUT_STREAMS.md) |
 | `lane_preference.*` | A vehicle type's `kerbLanes` | [LANE_PREFERENCE](../../docs/reference/LANE_PREFERENCE.md) |
 | `speed_curve.*` | A vehicle type's desired-speed range and cumulative curve | [SPEED_DISTRIBUTION](../../docs/reference/SPEED_DISTRIBUTION.md) |
 | `speed_decisions.*` | Desired-speed decisions in the file and compiled per lane | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |

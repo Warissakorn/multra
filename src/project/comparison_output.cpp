@@ -1,6 +1,7 @@
 #include "comparison_output.hpp"
 #include "batch_output.hpp"
 #include "csv_format.hpp"
+#include "random_streams_codec.hpp"
 #include <cmath>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
@@ -125,11 +126,16 @@ void requireSameEvaluationPeriod(const EvaluationSpec& base, double baseDuration
         base.cooldown != alternative.cooldown)
         throw std::invalid_argument("compare: the projects have different evaluation periods (warm-up, end or cool-down)");
 }
+void requireSameRandomStreams(const Scenario& base, const Scenario& alternative) {
+    if (base.randomStreams != alternative.randomStreams)
+        throw std::invalid_argument("compare: the projects use different random streams (shared and perInput)");
+}
 Json comparisonJson(const Comparison& c, const ComparedBatch& base, const ComparedBatch& alternative) {
     Json j;
     j["validated"] = false;
     j["measure"] = measure(c.seeds.size());
     j["seeds"] = c.seeds;
+    if (c.randomStreams == RandomStreams::perInput) j["randomStreams"] = randomStreamsName(c.randomStreams); // IS8: only then, so shared keeps its bytes
     j["base"] = sideJson(base);
     j["alternative"] = sideJson(alternative);
     if (!base.runs.empty()) {
@@ -174,6 +180,7 @@ std::string comparisonCsv(const Comparison& c, const ComparedBatch& base, const 
         out << "# Evaluation period: " << csvNumber(first.warmup) << " s to " << csvNumber(first.evaluationEnd) << " s\n";
         if (first.cooldown) out << "# Cool-down: " << csvNumber(*first.cooldown) << " s after the demand ends\n";
     }
+    if (c.randomStreams == RandomStreams::perInput) out << "# randomStreams: " << randomStreamsName(c.randomStreams) << '\n'; // IS8
     blockCsv(out, "movement", "meanDelay", "s", c.movements);
     if (hasSections(c)) { out << '\n'; blockCsv(out, "section", "meanDelay", "s", c.sections); }
     out << '\n';

@@ -147,6 +147,7 @@ int runComparison(const std::filesystem::path& baseFile, const std::filesystem::
                   const std::vector<std::uint32_t>& seeds, unsigned threads) {
     const auto base = prepare(baseFile, data, csvFile), alternative = prepare(alternativeFile, data, csvFile);
     requireSameEvaluationPeriod(base.spec, base.snapshot.scenario.duration, alternative.spec, alternative.snapshot.scenario.duration);
+    requireSameRandomStreams(base.snapshot.scenario, alternative.snapshot.scenario); // IS8
     ComparedBatch b{baseFile.filename().string(), {}, runAll(base, seeds, "base ", threads)};
     ComparedBatch a{alternativeFile.filename().string(), {}, runAll(alternative, seeds, "alternative ", threads)};
     b.report = aggregate(b.runs);

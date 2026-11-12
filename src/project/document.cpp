@@ -8,6 +8,7 @@
 #include "behaviour_library.hpp"
 #include "evaluation_period.hpp"
 #include "clamp_rules.hpp"
+#include "random_streams_codec.hpp"
 #include "macro_settings.hpp"
 #include "meso_settings.hpp"
 #include "study_period_codec.hpp"
@@ -101,7 +102,7 @@ int documentSchemaVersion(const ProjectDocument& d) {
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return !p.nests.empty();});});
     const bool toDestinations=std::any_of(d.deterrenceSets.begin(),d.deterrenceSets.end(),[](const auto& s){
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint==std::optional<std::string>("destination");});});
-    return !d.procedures.empty() ? 73 : toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    return ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -214,7 +215,7 @@ Json documentJson(const ProjectDocument& d) {
     // tags them, not only one with a library: owned catalogs with an evaluation period (22) and no
     // library were written untagged and could not be reopened (found by M4.2, D147).
     if (schema >= 21 && d.definition) addBehaviourLibraryJson(*d.definition, definition);
-    if (d.definition) {addEvaluationPeriodJson(*d.definition, definition);addClampRulesJson(*d.definition, definition);addMacroSettingsJson(*d.definition, definition);addMesoSettingsJson(*d.definition, definition);addClockStartJson(*d.definition, definition);addRouteDestinationsJson(*d.definition,definition);addSpeedDecisionsJson(*d.definition,definition);addSpeedAreasJson(*d.definition,definition);}
+    if (d.definition) {addEvaluationPeriodJson(*d.definition, definition);addClampRulesJson(*d.definition, definition);addRandomStreamsJson(*d.definition, definition);addMacroSettingsJson(*d.definition, definition);addMesoSettingsJson(*d.definition, definition);addClockStartJson(*d.definition, definition);addRouteDestinationsJson(*d.definition,definition);addSpeedDecisionsJson(*d.definition,definition);addSpeedAreasJson(*d.definition,definition);}
     Json result={{"format", "TrafficSim"}, {"schemaVersion", schema}, {"nextId", d.nextId}, {"revision", d.revision}, {"network", network},
         {"definition", definition}, {"background", {{"pngBase64", *b.pngBase64}, {"x", b.x}, {"y", b.y},
             {"metresPerPixel", b.metresPerPixel}, {"rotation", b.rotation}, {"opacity", b.opacity}}}};
@@ -331,6 +332,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 45) rejectClampRulesBefore45(j);
     if (version < 46) rejectJoinAnticipationBefore46(j);
     if (version < 47) rejectStandingStopFloorBefore47(j);
+    if (version < 74) rejectRandomStreamsBefore74(j); // INPUT_STREAMS §8 slice 3 (D510)
     d.network = parseNetwork(j.at("network"), version);
     d.network.nodes = parseNodes(j.at("network"), version); // S0.1 (NODES §2)
     readLinkTypeIds(j.at("network"), d.network); // S2.1 (MACRO_NETWORK §4)
@@ -347,6 +349,7 @@ ProjectDocument parseDocument(const Json& j) {
         if (version >= 21) parseBehaviourLibrary(j.at("definition"), *d.definition);
         if (version >= 22) d.definition->evaluation = parseEvaluationPeriod(j.at("definition"));
         if (version >= 45) d.definition->clampRules = parseClampRules(j.at("definition")); // D251
+        d.definition->randomStreams = parseRandomStreams(j.at("definition")); // D510, gated above
         d.definition->clockStart = parseClockStart(j.at("definition")); // S1.1, gated above
         d.definition->macroSettings = parseMacroSettings(j.at("definition")); // S2.3, gated above
         d.definition->mesoSettings = parseMesoSettings(j.at("definition")); // M11.2, gated above

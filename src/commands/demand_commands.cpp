@@ -155,6 +155,7 @@ void changeRunSettings(ProjectDocument& d, double duration, double timeStep) {
     auto& def=demand(d); def.duration=duration; def.timeStep=timeStep;
 }
 void changeClampRules(ProjectDocument& d, ClampRules rules) { demand(d).clampRules = rules; }
+void changeRandomStreams(ProjectDocument& d, RandomStreams streams) { demand(d).randomStreams = streams; }
 void changeMacroSettings(ProjectDocument& d, std::optional<MacroSettings> settings) {
     if (settings) if (auto issues = macroSettingsIssues(*settings); !issues.empty()) throw ValidationError(std::move(issues));
     demand(d).macroSettings = settings;

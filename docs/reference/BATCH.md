@@ -176,14 +176,21 @@ M5.8b (below, D149).
 - **Runs.** Each project is parsed, compiled and run as its own batch (§1–§2) over the same
   `LIST`. Each run draws one random stream from its seed, and the two streams diverge as soon as
   the projects differ. So equal seeds are **not** common random numbers: the batches are treated
-  as independent samples and nothing is paired.
+  as independent samples and nothing is paired. Under `perInput` ([INPUT_STREAMS](INPUT_STREAMS.md))
+  an edit leaves the other inputs' draws alone, but the interval stays Welch until the paired
+  comparison (its §7 choice 3) is its own slice.
 - **Refused.** `--compare` needs `--project` and `--seeds`, and refuses what `--seeds` refuses:
   a single seed, the single-run diagnostic flags, `--scenario` and `--events`. Also refused:
   - before any run: evaluation periods that differ in warm-up, end or cool-down, because a
     difference over different windows is not the scenario's effect; an existing `--csv` file,
     checked once each project compiles, as for `--seeds`;
-  - before any output: two batches whose seed lists differ (the CLI runs both on one list; the
-    check guards every other caller).
+  - before any run: projects whose `randomStreams` differ (INPUT_STREAMS §5, D510), because the
+    same seed then draws different numbers; the desktop names it in the Compare page's error line;
+  - before any output: two batches whose seed lists or random-stream mappings differ (the CLI runs
+    both on one list; the check guards every other caller).
+- **Stated mapping (IS8).** Under `perInput` the JSON carries `"randomStreams": "perInput"` and
+  the CSV a `# randomStreams: perInput` line, as single runs and `--seeds` batches do; `shared`
+  writes neither, so outputs written before D510 keep their bytes.
 - **Rows.** Movements, sections and approaches are matched by name, block by block, in the
   base's order. A name found in only one batch, or more than once in either, is not compared. It
   is listed as base-only, alternative-only or ambiguous, in JSON `unmatched` and on a

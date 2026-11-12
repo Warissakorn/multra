@@ -54,12 +54,13 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     per-decision notes) still belongs in the contracts.
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
-  - **Random streams per input: the engine runs both mappings (D506, slices 1–2); next is slice 3.**
-    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §8: the project switch at a schema step (new
-    documents `perInput`), the Run settings control, the summary/CSV field and `--compare`
-    refusing mixed values (IS8). Then slice 4: W74 traits and red runners keyed by the vehicle's
-    `streamKey`/`ordinal` (choice 2), and the paired comparison (choice 3) on its own. All before
-    the M6 runs (D505).
+  - **Random streams per input: slices 1–3 done (D506, D510); next is slice 4.**
+    [INPUT_STREAMS](reference/INPUT_STREAMS.md) §8: re-key W74 traits and red runners by the
+    vehicle's `streamKey`/`ordinal` under `perInput` (choice 2; `w74` and red-running hashes in
+    `src/core/`, rows in `inputstreams`), then the paired comparison (choice 3) on its own. All
+    before the M6 runs (D505). A new project is `perInput` at schema 74; shipped projects stay
+    `shared` until a recorded decision regenerates them. **Owner's look:** *Run settings → Random
+    streams* on Windows, and the Compare page's refusal line for two mappings.
   - Done (D495): source insertion and publication are out of `stepSimulation` (`tick.hpp`), with
     byte-identical outputs. **Left:** phase 1's per-vehicle loop, about 150 lines, still one body;
     split it only with a callgrind run before and after (it is the hot path).

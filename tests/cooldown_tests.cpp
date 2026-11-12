@@ -79,7 +79,7 @@ TEST(cooldown, cd1_older_schemas_and_bad_cool_downs_are_refused) {
 TEST(cooldown, a_new_project_has_a_cool_down_and_history_undoes_it) {
     const auto fresh = newProjectDocument();
     CHECK(fresh.definition->evaluation); CHECK(fresh.definition->evaluation->cooldown == 900);
-    CHECK(documentJson(fresh)["schemaVersion"] == 27);
+    CHECK(documentJson(fresh)["schemaVersion"] == 74); // D510: a new project is perInput (INPUT_STREAMS §7 1 b)
     CHECK(parseDocument(documentJson(fresh)) == fresh);
     History h; h.reset(routed());
     CHECK(h.execute("cool-down", [](auto& doc) { changeEvaluationPeriod(doc, 0, std::nullopt, 120); }));

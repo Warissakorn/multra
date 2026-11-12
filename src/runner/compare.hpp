@@ -46,8 +46,10 @@ struct Comparison {
     Difference network;                             // network mean delay, s
     Unmatched unmatchedMovements, unmatchedSections, unmatchedQueues;
     std::vector<ComparisonNodeRow> nodes; Unmatched unmatchedNodes; // S0.8a; empty without a Node
+    RandomStreams randomStreams{}; // INPUT_STREAMS §5 (IS8): both batches' mapping
     bool operator==(const Comparison&) const = default;
 };
-// Rows matched by name in the base's order. Throws when the batches ran different seed lists.
+// Rows matched by name in the base's order. Throws when the batches ran different seed lists or
+// different random-stream mappings (IS8): the same seed then means different draws.
 Comparison compareBatches(const BatchReport& base, const BatchReport& alternative);
 }

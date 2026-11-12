@@ -70,8 +70,11 @@ Difference welch(const Estimate& base, const Estimate& alternative) {
 }
 Comparison compareBatches(const BatchReport& base, const BatchReport& alternative) {
     if (base.seeds != alternative.seeds) throw std::invalid_argument("compare: the batches ran different seed lists");
+    if (base.randomStreams != alternative.randomStreams)
+        throw std::invalid_argument("compare: the batches used different random streams (shared and perInput)");
     Comparison c;
     c.seeds = base.seeds;
+    c.randomStreams = base.randomStreams;
     c.movements = matchValue(base.movements, alternative.movements, [](const BatchMovementRow& r) { return r.meanDelay; },
                              c.unmatchedMovements);
     c.sections = matchValue(base.sections, alternative.sections, [](const BatchSectionRow& r) { return r.meanDelay; },

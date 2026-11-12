@@ -109,8 +109,10 @@ BatchReport aggregate(std::vector<SeedRun> runs) {
             for (std::size_t k = 0; same && k < b.turns.size(); ++k) same = a.turns[k].name == b.turns[k].name;
         }
         if (!same) throw std::invalid_argument("aggregate: runs have different movements, approaches or lots");
+        if (run.report.randomStreams != first.randomStreams) throw std::invalid_argument("aggregate: runs used different random streams");
     }
     const auto& first = runs.front().report;
+    r.randomStreams = first.randomStreams;
     for (std::size_t i = 0; i < first.movements.size(); ++i) {
         const auto row = [i](const SeedRun& run) -> const MovementRow& { return run.report.movements[i]; };
         r.movements.push_back({first.movements[i].name,

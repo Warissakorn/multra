@@ -1,9 +1,9 @@
 # Random streams per input (contract)
 
-**Status on 2026-11-11: the engine runs both mappings (D506, §8 slices 1–2); nothing outside
-core and tests sets `perInput` yet.** The owner answered §7 (D505). Slice 3 (the project switch,
-its schema step, Run settings and the IS8 output field) is next. Milestone status lives in
-[ROADMAP](../ROADMAP.md).
+**Status on 2026-11-12: slices 1–3 are done (D506, D510).** A project carries the switch as
+`definition.randomStreams` (schema 74); a new project is `perInput`, a file saved before keeps
+`shared`; Run settings sets it; run, batch and comparison output state it and a comparison refuses
+two mappings (IS8). Slice 4 (choice 2) is next. Milestone status lives in [ROADMAP](../ROADMAP.md).
 Verification platform for the measurements quoted here: Linux, GCC 13.3.
 
 ## 1. The problem
@@ -92,10 +92,16 @@ construction.
 
 ## 5. What the user sees
 
-Nothing in the editor's controls. A run's summary and each CSV gain one field,
-`randomStreams`, so a report states which mapping produced it. Results of a `shared` and a
-`perInput` run of the same seed differ and are never compared as one batch: `compareBatches`
-refuses two batches with different values, as it refuses different seed lists.
+One control: *Run settings → Random streams*, a list of the two written values (`shared`,
+`perInput`; parameter names are never translated). A run's JSON and each CSV state the mapping
+under `perInput` — `"randomStreams": "perInput"` and a `# randomStreams: perInput` line — in the
+single run (`movementJson`/`movementCsv`), the `--seeds` batch and the comparison. `shared` writes
+neither, so every output written before D510 keeps its bytes (IS1): an output without the field was
+produced under `shared`. The bare scenario summary (`multra-cli 42`, `summaryJson`) is unchanged:
+a scenario file cannot set the switch. Results of a `shared` and a `perInput` run of the same seed
+differ and are never compared as one batch: `aggregate` refuses runs under two mappings,
+`compareBatches` two batches, and `requireSameRandomStreams` refuses two projects before any run
+(the CLI's `--compare` and the desktop's Compare page), as different seed lists are refused.
 
 ## 6. Acceptance rows (failure-first, before code)
 
@@ -140,7 +146,11 @@ slice; 4 before the M6 benchmark runs.
    output's bytes.
 2. **Done (D506):** input and lot streams; hashed routing draws. IS6b (added): a lot's initial
    occupants and dwell ends do not move when an input is added.
-3. **Next:** the project switch at a schema step (new documents `perInput`, choice 1 b), the Run
-   settings control, the summary/CSV field and `compareBatches` refusing mixed values (IS8).
-4. Choice 2 (W74 traits and red runners re-keyed by origin and ordinal; the vehicle already
+3. **Done (D510):** `definition.randomStreams` at schema 74 (`random_streams_codec.*`), written only
+   as `perInput`; `newProjectDocument` sets `perInput` (choice 1 b), so a new project saves at 74 and
+   a reopened older one stays `shared` at its version; shipped projects are not regenerated. The Run
+   settings list (`editorRandomStreams`, one Undo step), the IS8 output field, and the refusals.
+   Rows in `tests/input_streams_project_tests.cpp` (group `inputstreamsproject`) and the Run
+   settings step in `study-period-ui`.
+4. **Next:** choice 2 (W74 traits and red runners re-keyed by origin and ordinal; the vehicle already
    carries both); choice 3 (paired comparison) as its own slice.
