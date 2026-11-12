@@ -65,6 +65,9 @@ void EditorWindow::commitDrawnRoute(const std::vector<std::string>& segmentIds,s
                 if(!decision.typeRules.empty())throw std::invalid_argument("EDIT_ROUTING_TARGETS_LOCKED");
                 value=decision;break;
             }
+            // D507: the origin stays picked, so the same destination is easy to click twice.
+            for(const auto& existing:value.routes)for(const auto& route:demand(d).routes)
+                if(route.id==existing.routeId && route.id!=created && route.segmentIds==segmentIds)throw std::invalid_argument("EDIT_ROUTE_DUPLICATE");
             value.routes.push_back({created,1,{},std::vector<double>(value.intervals.size(),1)});
             putRoutingDecision(d,value);
         }})) {

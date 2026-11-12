@@ -5,6 +5,70 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-11 — Route marks: bright ends, a tint between them, hover previews (D509)
+
+- **D509d (follow-up, 2026-11-12):** owner: "เปลี่ยนระยะ offset เป็น 0.6m". The tint's inset is
+  0.6 m (was D509c's 0.8 m), still at most a quarter of the narrowest lane. Images:
+  `docs/images/route-tint-d509d/` (`before.png` is D509c).
+- **D509c (follow-up, 2026-11-12):** owner: "ตกลงทั้ง 2 ข้อ" to a 50 % yellow and a wider inset.
+  The tint is 50 % stored and 35 % preview (2.25:1 on the road; lane marks 2.3:1 through it), and
+  its own inset is 0.8 m, at most a quarter of the narrowest lane (was the conflict area's 0.5 m and
+  a fifth), so a grey edge shows between it and the selection outline. Only the selected route is
+  tinted, as before. Images: `docs/images/route-tint-d509c/` (`before.png` is D509b).
+- **D509b (follow-up, 2026-11-12):** owner: "สีเหลืองเพิ่มความทึบ" after the violet, yellow and white
+  tints were compared on the road. `routeTintHex` is `#FACC15`, 59 % stored and 43 % preview (was
+  violet at 39 % and 27 %): 2.5:1 on the road `#5A5D61` against violet's 1.2:1, and the lane marks
+  still read through it at 2.1:1. White was not taken (it greys the road and is the lane-mark and
+  car colour). Images: `docs/images/route-tint-d509b/` (`before.png` is the violet tint).
+- **D509a (follow-up):** owner: "บาร์ปลายทางยังมีกรอบสีขาวอยู่". The moving bars lost their Base
+  casing too; no route end has a white frame now.
+
+- **Owner:** the destination bar should show while pointing; the tint should not look like the
+  selection blue and should be inset like a conflict area; the tint past the destination is cut;
+  the end colours were too dark (measured 1.0:1 on the road) and option 3 (brighter canvas tones)
+  was chosen.
+- **D509:** `canvas_route_overlay.cpp` (moved out of `canvas_demand.cpp`) draws a route's violet
+  tint between its green origin and red destination bars, inset 0.5 m (at most a fifth of the
+  narrowest lane) from the road's outer edges once the Link/Connector seams are closed. Hover sets
+  `routeHover_`: before a route starts a green bar shows the origin; with a draft the red bar and
+  the tint's end follow the pointer, re-cut in place (`retintRoutePreview`) along one road. New
+  tokens `routeStartHex`, `routeEndHex`, `routeTintHex`; the tint colour was my recommendation
+  and is one token to change.
+- **Images:** `docs/images/route-tint-d509/` (hover origin, hover destination, stored route, the
+  inset at a Link/Connector join; `before.png` is D508's stored route).
+- **Rows:** `station-routing-ui` hovers the origin and destination bars, checks their colours, that
+  the tint item moves in place and stops at the hovered bar.
+
+## 2026-11-11 — Ctrl+right previews the route's ends; thin end bars (D508)
+
+- **Owner:** a correct preview of the origin and destination while Ctrl + the button is held, movable
+  until release; and end bars shaped like the other canvas objects. Chose the inputs' thin bar and
+  an origin at the release point.
+- **D508:** `EditorCanvas::applyRoutePress` re-applies a press snapshot on each move, so the green
+  origin or red destination bar sits where the release will put it; `finishRoutePress` places it.
+  An origin mid-Link opens or joins that Link's routing decision at the station (within 10 px of
+  the start it stays a whole-Link route); a destination near its far end keeps the boundary marker.
+  Route ends lose D435's width and casing, sit above a placed decision's bar, and a draft that is
+  only its origin no longer shows a red bar at the origin's far end.
+- **Images:** `docs/images/route-press-d508/` (held origin, held destination, the stored route, and
+  the earlier wide ends for comparison).
+- **Rows:** `station-routing-ui` holds, slides and releases an origin and a destination and checks
+  the stored station, destination and thin bar; `demand-ui` presses its whole-Link route at the
+  Link's first metre.
+
+## 2026-11-11 — Pick the origin once, then several destinations (D507)
+
+- **Owner:** "ต้องการให้เลือกต้นทางครั้งเดียว และเลือกปลายทางได้หลายอัน" (pick the origin once, then
+  several destinations).
+- **D507:** after the Route tool saves a traced destination, `EditorCanvas::commitRouteDraft` keeps
+  the start object and station, so the next click is another destination from the same origin and
+  joins the same routing decision. A click back on the origin's line does nothing; the same
+  destination by the same roads is refused (`EDIT_ROUTE_DUPLICATE`, en/th); Esc or Backspace on the
+  bare origin ends it. The status hint says the origin stays. `Ctrl`+right/`Enter` is unchanged.
+- **Rows:** `station-routing-ui` now draws two destinations from one origin click and checks the
+  no-op click, the refused duplicate, Esc and Backspace; `road-crossbar-ui` expects the bare origin
+  after a commit. Verified: Linux, desktop ctest 312/312 and `check`; Windows is the owner's.
+
 ## 2026-11-11 — Random streams per input in the engine (D506)
 
 - **Owner:** "ทำตามคำแนะนำ" after D505: the recommendations, in their order. B9 and B43 needed no
@@ -155,72 +219,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   shown); `studyperiods` counts eight projects.
 - **Verified:** Linux, GCC 13.3: desktop ctest and headless `check`. Windows is the owner's (B45). Images:
   [HCM table](images/node-example-d500/hcm-table.png), [LOS after five seeds](images/node-example-d500/los-sections.png).
-
-## 2026-11-10 — UI review: Results by level, Open example, crossing rows, the batch band (D497–D499)
-
-- **Owner:** chose four of the UI review's five proposals; the fifth (an example that shows LOS and
-  the HCM table) is to be a new shipped project, next, not a change to `four-leg-signalised`.
-- **The batch band (a bug):** `refreshBatch` hid the single run's two tables but not the frame
-  around them, which kept half the page. The frame goes with them. `batch-run-ui` failed on the
-  new row before the fix.
-- **D497, Results by level:** a picker at the head of the Results toolbar shows Micro, Meso, Macro
-  or Node (HCM); tabs are ordered by level, Macro in the study chain's order. Parking lots and
-  Nodes leave the strip while the project has none; a one-tab level shows no strip. Making any tab
-  current picks its level, so every existing jump (`setCurrentWidget`) works unchanged
-  (`results_levels.*`). Found while testing: Qt makes the next tab shown the current one while the
-  current tab is hidden, so the current tab is set first.
-- **D498, File → Open example:** `data/examples.json` lists the seven projects with names and
-  purposes in both languages; an example opens untitled. An empty drawing's status line points at
-  the Link tool and the menu (`example_menu.*`).
-- **D499, crossing rows:** Check runnability adds one advisory per place where two roads cross with
-  no conflict area, from `automaticConflicts` and `conflictGroups`; selecting it selects a road.
-  In the shell only: `runDiagnostics`, the CLI and readiness are unchanged.
-- **Tests:** new `example-menu-ui`, `crossing-problem-ui`; rows added to `results-tabs-ui` and
-  `batch-run-ui`. `tables-ui` asserted "no findings" on `crossing.json`, which has an unprotected
-  crossing: it now asserts that every row is that advisory. `src/shell/CMakeLists.txt` gains
-  `multra_ui_test` and five registrations use it (the file was at 500 lines).
-- **Seen in the window** (Linux, 1440 × 900): [images](images/ui-review-d497/). The run view's
-  protection line gained one short sentence and wraps to two lines at this width.
-- **Verified:** Linux only. Desktop build and ctest 314/314; headless `check` passes (ctest 204/204,
-  architecture, docs, file sizes). Windows and high DPI are the owner's look (B45).
-
-## 2026-11-10 — Engine review: the tick's phases split; streams contract (D495, D496)
-
-- **Owner:** "ทำต่อ ข้อเสนอของรีวิว engine"; on random streams chose the contract first, code later.
-- **D495:** `stepSimulation` loses two of its phases to `tick.hpp`: `insertArrivals`
-  (`insertion.cpp`) and `publishMoves` (`publish.cpp`). The lines are the same lines; `simulation.cpp`
-  goes 500 → 380. Phase 1's per-vehicle loop stays one body (the hot path; split it with a
-  callgrind run).
-  - **Evidence:** 30 outputs compared before and after, byte-identical: six shipped projects at
-    seeds 42 and 47 with every diagnostic flag, and M0 event streams at seeds 7, 42, 43.
-  - **Cost:** `multra-engine-benchmark 12 120` under callgrind, Release: 249.14 M → 247.45 M
-    instructions (−0.7 %). One run each; the count is deterministic, wall time was not compared.
-- **D496:** [INPUT_STREAMS](reference/INPUT_STREAMS.md), a proposed contract for one random stream
-  per input. Today every draw shares `randomState`, so one edited input moves every arrival
-  (D459 measured 7 %). Rows IS1–IS9 and four owner choices (OWNER_SITTING B44). No code.
-- **Not done, and why:** rows comparing the engine with HCM need a tolerance; M6.0 keeps engine
-  numbers out until the owner chooses the benchmark (B9), so none was written.
-- **Small:** `progressionFactor` returns 0 at P = 1 (its limit; 0/0 as written, unreachable from
-  the product), with rows in NA3; an `if` in `node_suggestions.cpp` moved to its own line.
-- **Verified:** Linux only. Desktop build and ctest 312/312; headless `check` passes (ctest 204/204,
-  architecture, docs, file sizes). Windows not checked.
-
-## 2026-11-10 — Architecture review: every module's includes are checked (D494)
-
-- **Owner:** "ทำต่อ ข้อเสนอของรีวิวสถาปัตยกรรม" (the architecture review's proposals).
-- **D494, the checker:** `multra-check-architecture` gains one rule per layer above the engines:
-  `model` (engines only, no Qt or JSON), `commands` and `geo` (never the UI, no Qt) and `editor`
-  (never `shell` or `lab`). Negative fixtures in `--self-test`. Two mutations (a shell include in
-  `canvas_cursors.cpp`; `<QString>` in `geometry.cpp`) each failed the check.
-- **`editor` no longer includes `shell`:** `path.hpp` moved to `src/editor/`; `EditorIcon` and
-  `paintEditorGlyph` moved out of `shell/editor_style.*` into `editor/editor_glyph.*`. No behaviour
-  changes: the same code in another file.
-- **Targets:** `multra_macro`, `multra_meso` and `multra_analysis` are their own libraries, linked
-  by `multra_model`; they were sources of `multra_core`. A stray include between engines now also
-  fails to link.
-- **ARCHITECTURE:** a *Module dependencies* table (what each module may include, Qt, JSON), checked
-  against the real include counts.
-- **Not done, the owner's choice first:** splitting `src/project/` and `EditorWindow`; both stay
-  **Ask** in [NEXT](NEXT.md). `shell` has no rule: it may include every module.
-- **Verified:** Linux only. Desktop build and ctest 312/312; headless `check` passes (ctest 204/204,
-  architecture, docs, file sizes). Windows not checked; the moved headers are compiled there by CI.

@@ -3,6 +3,8 @@
 #include "../src/commands/network_commands.hpp"
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
+#include "../src/editor/ui_design_tokens.hpp"
+#include "../src/editor/canvas_style.hpp"
 #include <QApplication>
 #include <QAction>
 #include <QComboBox>
@@ -66,10 +68,59 @@ int main(int argc,char** argv) {
         }
         require(overlay,"Committed Route has no overlay");
         require(documentJson(w.history().document())["schemaVersion"]==30,"Destination not persisted in schema 30");
-        click(canvas,{at,0});hover(canvas,{170,50});click(canvas,{170,50});
+        // D507: the origin is picked once; each further click is another destination from it.
+        require(canvas->routeDraft()==std::vector<std::string>({a}) && canvas->routeStartPosition()==at,
+            "The origin was not kept after a destination");
+        const auto kept=w.history().revision();click(canvas,{at,0});
+        require(w.history().revision()==kept && canvas->routeDraft()==std::vector<std::string>({a}),
+            "A click back on the origin's line authored a zero-length route");
+        hover(canvas,{170,50});click(canvas,{170,50});
         require(w.history().document().definition->routingDecisions.size()==1 && decision(w).routes.size()==2,
-            "Starting on the same line did not group the second route");
+            "A second destination from the kept origin did not join its decision");
+        require(canvas->routeDraft()==std::vector<std::string>({a}),"The origin was lost after the second destination");
+        const auto twice=w.history().revision();hover(canvas,{170,0});click(canvas,{170,0});
+        require(w.history().revision()==twice && decision(w).routes.size()==2,"The same destination was added twice");
+        QTest::keyClick(canvas,Qt::Key_Escape);QApplication::processEvents();
+        require(canvas->routeDraft().empty() && !canvas->routeStartPosition(),"Esc did not end the origin");
+        click(canvas,{at,0});QTest::keyClick(canvas,Qt::Key_Backspace);QApplication::processEvents();
+        require(canvas->routeDraft().empty(),"Backspace on the bare origin did not end it");
         undo(w);require(decision(w).routes.size()==1,"Undo did not remove the second route atomically");
+        // D508: a held Ctrl+right press shows the bar where the release places it, and slides it.
+        const auto press=[&](Point p){QTest::mousePress(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
+        const auto release=[&](Point p){QTest::mouseRelease(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
+        const auto barX=[&](const char* kind){double x=-1;for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)
+            if(auto* line=dynamic_cast<QGraphicsLineItem*>(item))x=line->line().center().x();return x;};
+        const auto itemOf=[&](const char* kind)->QGraphicsItem*{for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)return item;return nullptr;};
+        // D509: before the press, the green bar already shows where the origin would go.
+        hover(canvas,{60,0});hover(canvas,{65,0});
+        require(std::abs(barX("route-start")-65)<1,"Hovering a Link showed no origin bar at the pointer");
+        require(static_cast<QGraphicsLineItem*>(itemOf("route-start"))->pen().color()==canvasStyle::routeStart(),"The origin bar is not the route green");
+        press({70,0});
+        require(canvas->routeDraft()==std::vector<std::string>({a}) && std::abs(*canvas->routeStartPosition()-70)<1 &&
+                std::abs(barX("route-start")-70)<1,"A held press showed no origin where it will be placed");
+        hover(canvas,{80,0});require(std::abs(barX("route-start")-80)<1,"The held origin did not follow the pointer");
+        // A Link holds one decision: releasing near its station joins it (snapped within 10 px).
+        release({at+1,0});require(canvas->routeStartPosition()==at,"The release did not place and snap the origin");
+        // D509: hovering the destination road shows the red bar and the tint's end at the pointer,
+        // moved in place along the road.
+        hover(canvas,{150,50});auto* tint=itemOf("route-draft");hover(canvas,{160,50});
+        require(std::abs(barX("route-end")-160)<1 && itemOf("route-draft")==tint,"The hovered destination bar did not follow in place");
+        require(std::abs(tint->boundingRect().right()-160)<1,"The tint did not stop at the hovered destination");
+        require(static_cast<QGraphicsLineItem*>(itemOf("route-end"))->pen().color()==canvasStyle::routeEnd(),"The destination bar is not the route red");
+        press({150,50});require(std::abs(barX("route-end")-150)<1,"A held press showed no destination bar");
+        hover(canvas,{190,50});release({190,50});
+        hover(canvas,{170,0}); // hovering elsewhere keeps the placed destination
+        require(std::abs(barX("route-end")-190)<1,"Hover moved the placed destination");
+        const auto revisionBefore=w.history().revision();
+        QTest::keyClick(canvas,Qt::Key_Return);QApplication::processEvents();
+        require(w.history().revision()!=revisionBefore && decision(w).routes.size()==2 && decision(w).position==at,
+            "The Ctrl+right route did not join the decision at its station");
+        require(std::abs(w.history().document().definition->routeDestinations.at(decision(w).routes.back().routeId).station-70)<1,
+            "The destination lost the released station");
+        bool thin=true;for(auto* item:canvas->scene()->items())if(item->data(0).toString()=="route-start")
+            if(auto* line=dynamic_cast<QGraphicsLineItem*>(item))thin=line->pen().widthF()<=editorDesign::crossbarPixels;
+        require(thin,"Route ends are not the inputs' thin bar");
+        undo(w);
         w.findChild<QComboBox*>("editorTool")->setCurrentIndex(0);
         const auto p=canvas->mapFromScene(at,0),q=canvas->mapFromScene(60,0);
         const auto revision=w.history().revision();QTest::mousePress(canvas->viewport(),Qt::LeftButton,{},p);

@@ -205,6 +205,7 @@ void EditorCanvas::mouseReleaseEvent(QMouseEvent* e) {
         if(degrees!=0 && rotateRequested)rotateRequested(pivot,degrees);
         return;
     }
+    if(e->button()==Qt::RightButton && finishRoutePress(e->pos())) {panning_=false;return;} // D508
     if(e->button()==Qt::RightButton && creating_) {
         // The release position is authoritative: native platforms may coalesce the final move.
         draft_.back()=world(e->pos());

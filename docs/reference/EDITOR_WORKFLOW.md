@@ -126,27 +126,44 @@ Routes use an explicit trace gesture (D116, owner request):
 | Move over connected roads | Previews the actual path; passing a branch remembers that choice |
 | Move back onto an earlier route object | Trims the preview back to that object |
 | Click the destination road | Saves the complete preview as one undoable edit |
-| `Backspace` | Removes the last object from the trace |
-| `Esc`, tool/level change or focus loss | Cancels without storing anything |
-| `Ctrl`+right-click | Retains the earlier start/append gesture; `Enter` saves it |
+| Click further destinations | The origin stays picked (D507): each click saves one more route from the same start, in the same routing decision |
+| `Backspace` | Removes the last object from the trace; on the bare origin, ends it |
+| `Esc`, tool/level change or focus loss | Cancels without storing anything; after a destination, ends the kept origin |
+| `Ctrl`+right press, move, release | The earlier start/append gesture; `Enter` saves it. While the button is held, a bar shows where the origin or destination will be placed and follows the pointer; the release places it (D508) |
 | `V`, then `Ctrl`+right-click a Link | Opens a vehicle input on that Link, with or without a route |
 | Right-click a stored route or input | Edit, delete, or show in its table |
 
+A click back on the kept origin's line (within 10 px of its station) does nothing, and a
+destination the origin's decision already reaches by the same roads is refused
+(`EDIT_ROUTE_DUPLICATE`). Undo removes one destination at a time; Undo, Open and
+`Ctrl`+right/`Enter` routes do not keep an origin.
 An unreachable or equally ambiguous path is rejected. Pass over the desired intermediate
 branch to disambiguate it; the gesture does not guess a turn. Hover never mutates the document.
 Double-click adds no second commit. Other authoring tools retain D84's Ctrl+right gesture.
 
-Route start/end, vehicle inputs and signal heads share three-pixel cosmetic crossbars with
-wider hit regions. Bars intersect the road normal with the actual lane rails. A route's
-static blue surface tint follows its compiled spans, including mid-Link arrivals; it has no
-straight rubber band, moving dashes or repeated arrows. A plain destination click places the end crossbar at the projected pointer station;
-hovering within the same road moves just that crossbar, without rebuilding the route.
+Route start/end, vehicle inputs and signal heads share three-pixel cosmetic crossbars (D508: route
+ends no longer widen; D509a: no Base casing either, even on a bar that follows the pointer) with
+wider hit regions. Bars intersect the road normal with the actual lane rails. Route ends use
+canvas-only tones (D509: green `#5BE39A`, red `#FF6B6B`, at least 2.4:1 on every shipped road
+colour), not the semantic text inks. A route's static yellow surface tint (D509, D509b–D509d: 50 %, a
+preview 35 %; not the accent, which means selection and hover) follows its compiled spans from the
+origin bar to the destination bar, inset 0.6 m from the road's outer edges (at most a quarter of
+the narrowest lane). Only the selected route is tinted: the Routes table's row, the route an
+Inputs row feeds, or the route just created; deselecting it removes the tint; past the destination bar it is not drawn, although vehicles still drive on to the
+road's end. It has no straight rubber band, moving dashes or repeated arrows. Before a route
+starts, a green bar shows where a click or `Ctrl`+right release would put the origin on the
+hovered road; with a draft, hovering a reachable road shows the red bar and the tint's end at the
+pointer (in `Ctrl`+right mode as the release would place it: the far end within 10 px). A plain
+destination click places the end crossbar at the projected pointer station;
+hovering within the same road moves that crossbar and re-cuts the tint, without rebuilding the route.
 The click is re-read even when Qt coalesces its last move. The marker persists as
 `definition.routeDestinations[routeId] = { objectId, station }` (schema 30), with Link
 stations on the reference polyline and Connector stations on its bundle centreline.
 It is editor presentation only: runtime routes and their full compiled tint still
-extend to their existing object boundaries. Older routes and Ctrl+right/Enter keep
-boundary markers. Backspace drops the preview destination; Escape/tool/level/focus
+extend to their existing object boundaries. Older routes keep boundary markers. A `Ctrl`+right
+origin released within 10 px of its Link's start routes the whole Link, as before; elsewhere it opens
+(or, within 10 px, joins) the Link's routing decision at that station. A destination released within
+10 px of its object's far end keeps the boundary marker. Backspace drops the preview destination; Escape/tool/level/focus
 changes cancel it. Save/Open and Undo retain the committed point. Route deletion
 removes it; removing its road or changing the destination road drops it; reversing a Link mirrors its
 station; splitting remaps it to the appropriate child, refusing the 0.2 m cut gap.

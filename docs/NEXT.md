@@ -27,6 +27,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   links table and say whether the example's size and story suit a first-time user. `four-leg-signalised` now carries a 300 s cool-down (schema 27): a test
   that needs the bare drawing clears it with `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Route tool: one origin, several destinations (D507), Ctrl+right preview (D508) — done; owner's look
+
+- **Owner, on Windows:** press `R`, click a Link once, then click two or three destinations; check
+  the status hint and that each destination is one Undo. Esc ends the origin.
+- Hold `Ctrl`+right on a road and move: the green (origin) or red (destination) bar follows until
+  release. Check the thin end bars beside inputs, decisions and signal heads.
+- D509: the tint between the bars, its inset at the road edges, and the bars while only
+  hovering. D509b/D509c: the owner chose a yellow tint at 50 %, inset 0.6 m (D509d); check it on Windows.
+
 ## Review of 2026-11-10 — queued proposals (D493)
 
 The first review's proposals are done (D493, [PROGRESS](PROGRESS.md)). The rest wait here in review
