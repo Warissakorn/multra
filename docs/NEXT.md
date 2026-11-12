@@ -69,6 +69,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     2002; owner to supply) and U-c's effective `t_c` method, each with its own rows.
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
+    D531: S1 keeps the mean headway; the median and skewness beside it need a `--discharge`
+    contract.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
   - D497–D504 are done; the owner's look is OWNER_SITTING B45.
   - The Node analysis example uses the pocket template (D513).

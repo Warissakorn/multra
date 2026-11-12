@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-12 — Shao & Liu (2012): the S1 headway estimator (D531)
+
+- **D531:** the owner attached a Thai Markdown rendering of Shao & Liu (2012). Its point, that
+  queue discharge headways are right-skewed so a mean-based `s` sits below a median-based one,
+  is about as large as the S1 band. S1-a and S1-f keep the mean, as their references do; the
+  engine's median and skewness are shown beside the figure, with no band. Docs only; the
+  `--discharge` output for them needs its own contract. Not S1-d's papers; Wani et al. (2019)
+  was noted in NEXT for later mixed-traffic work.
+
 ## 2026-11-12 — Murat & Cetin (2019) read: a citation and an S1 diagnostic (D530)
 
 - **D530:** the owner's third paper is not one of S1-d's. Its validation re-tabulates Akçelik &

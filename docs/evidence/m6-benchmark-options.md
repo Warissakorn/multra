@@ -178,6 +178,15 @@ time after green at which rank `k` = 1 … 12 crosses, against the `t` at which 
 `n_s(t) = k` with Table 1's average `q_n` = 2,086 veh/h, `m_q` = 0.369 and `t_r` = 0 (p. 5–6). The
 paper fits each site; its average row stands for no site, and the comparison says so.
 
+**The headway estimator (D531).** S1-a and S1-f reduce headways by the **mean**, as their
+references do (HCM 7 Ch. 31's `3600 /` the mean headway; [AkcBes02]'s average saturation
+headway), so the engine figure and the reference use the same estimator. [ShaoLiu12] found
+queue discharge headways right-skewed at all 11 Beijing sites, with the mean above the median
+(§4.2, Table 1), so a median-based `s` can sit several per cent above a mean-based one (Table 3) —
+as much as the S1 band. The engine's per-seed median headway and skewness over the same ranks are
+**shown beside the figure, with no band**; how `--discharge` reports them is left to its own
+contract (*to write*).
+
 **S1 diagnostic (D530), no band.** Used only when S1-a or S1-f misses its band; it decides
 nothing. The engine's saturation headway is split into the queue departure response time `t_x`,
 the jam spacing `L_hj` (vehicle length plus the standing gap) and the saturation speed `v_S`, as
@@ -349,6 +358,12 @@ Thai study of these quantities found none that could be verified (leads in §7, 
 - **[RR67]** Kimber, R.M., McDonald, M., Hounsell, N.B. (1986). *The prediction of saturation
   flows for road junctions controlled by traffic signals.* TRRL Research Report RR67. Transport
   and Road Research Laboratory. [TRID](https://trid.trb.org/View/237965)
+- **[ShaoLiu12]** Shao, C.-q., Liu, X.-m. (2012). Estimation of saturation flow rates at
+  signalized intersections. *Discrete Dynamics in Nature and Society* 2012, Article ID 720474.
+  [doi:10.1155/2012/720474](https://doi.org/10.1155/2012/720474). Read from the owner's Thai
+  Markdown rendering (repository `research-article-estimation-of-saturation-flow-rates-at-signalized-intersections-md`,
+  `d1c2f63`), not from page images: used for its argument only, no number is a reference. That
+  rendering notes two Table 3 values that do not recompute (site 7, Eq. 3.3; site 2, Eq. 6.8).
 - **[Siegloch73]** Siegloch, W. (1973). *Die Leistungsermittlung an Knotenpunkten ohne
   Lichtsignalsteuerung.* Forschung Straßenbau und Straßenverkehrstechnik, Heft 154. Bonn:
   Bundesminister für Verkehr. Not read; cited through [TFT8].
