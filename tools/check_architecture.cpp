@@ -5,6 +5,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace {
 // Deliberately restricted include syntax: literal same-directory headers and a
@@ -94,6 +95,25 @@ std::string runnerContract(std::string source) {
     const std::regex allowed(R"(#include "\.\./(core|eval)/[a-z_]+\.hpp")");
     return std::regex_replace(source, allowed, "#include <vector>");
 }
+// D511: three edits that cost near-full rebuilds once, kept from coming back. A schema step must not
+// touch document.hpp (542 objects), a signal head's look must not reach canvas.hpp's includers (181),
+// and a UI executable must reuse the PCH GCC accepts in the shared build (ui_pch.cmake), not
+// multra_shell's. Comments are stripped first: `//` for sources, `#` for CMake.
+struct FanoutRule { const char* path; const char* refused; bool cmake; };
+constexpr FanoutRule fanoutRules[]{
+    {"src/project/document.hpp", R"(kLatestSchema|latest_schema\.hpp)", false},
+    {"src/editor/canvas.hpp", R"(#\s*include\s*"road_crossbar\.hpp")", false},
+    {"src/shell/*.cmake", R"(REUSE_FROM\s+multra_shell\s*\))", true}};
+bool fanoutGuard(const std::string& source, const FanoutRule& rule) {
+    const std::regex refused(rule.refused);
+    std::istringstream stream(source); std::string line;
+    while (std::getline(stream, line)) {
+        // `#include` is code in a source, a comment in CMake.
+        const auto cut = rule.cmake ? line.find('#') : line.find("//");
+        if (std::regex_search(line.substr(0, cut), refused)) return false;
+    }
+    return true;
+}
 }
 int main(int argc, char** argv) {
     if (argc != 2) return 2;
@@ -120,6 +140,13 @@ int main(int argc, char** argv) {
         for (const auto* bad : {"#include \"../shell/editor_window.hpp\"", "#include <QWidget>"})
             if (layerBoundary(bad, layerRules[1]) || layerBoundary(bad, layerRules[2])) { std::cerr << "Layer guard accepted: " << bad << '\n'; return 1; }
         if (layerBoundary("#include \"../shell/path.hpp\"", layerRules[3]) || !layerBoundary("#include <QWidget>\n#include \"../commands/history.hpp\"\n", layerRules[3])) return 1;
+        // D511: each old form is refused, the current one and a comment naming it are not.
+        for (const auto* bad : {"inline constexpr int kLatestSchema = 74;", "#include \"latest_schema.hpp\""})
+            if (fanoutGuard(bad, fanoutRules[0])) { std::cerr << "Fan-out guard accepted: " << bad << '\n'; return 1; }
+        if (fanoutGuard("#include \"road_crossbar.hpp\"", fanoutRules[1]) ||
+            !fanoutGuard("#include \"road_crossbar_geometry.hpp\"\n// not road_crossbar.hpp: D511\n", fanoutRules[1])) return 1;
+        if (fanoutGuard("target_precompile_headers(t REUSE_FROM multra_shell)", fanoutRules[2]) ||
+            !fanoutGuard("target_precompile_headers(t REUSE_FROM ${MULTRA_UI_PCH})\n# was REUSE_FROM multra_shell)\n", fanoutRules[2])) return 1;
         return check("#include <vector>\n#include <cmath>\n", {}) ? 0 : 1;
     }
     bool valid = true;
@@ -157,5 +184,17 @@ int main(int argc, char** argv) {
             std::ifstream file(entry.path()); std::string source((std::istreambuf_iterator<char>(file)), {});
             if (!file || !layerBoundary(source, rule)) { std::cerr << "Layer boundary violation: " << entry.path() << '\n'; valid = false; }
         }
+    for (const auto& rule : fanoutRules) {
+        const auto root = std::filesystem::path(argv[1]);
+        std::vector<std::filesystem::path> files;
+        if (std::string(rule.path) == "src/shell/*.cmake") {
+            for (const auto& entry : std::filesystem::directory_iterator(root / "src/shell"))
+                if (entry.path().extension() == ".cmake" || entry.path().filename() == "CMakeLists.txt") files.push_back(entry.path());
+        } else files.push_back(root / rule.path);
+        for (const auto& path : files) {
+            std::ifstream file(path); std::string source((std::istreambuf_iterator<char>(file)), {});
+            if (!file || !fanoutGuard(source, rule)) { std::cerr << "Rebuild fan-out (D511): " << path << '\n'; valid = false; }
+        }
+    }
     return valid ? 0 : 1;
 }
