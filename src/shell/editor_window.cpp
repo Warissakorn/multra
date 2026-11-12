@@ -4,6 +4,7 @@
 #include "presentation.hpp"
 #include "automation_server.hpp"
 #include "editor_window.hpp"
+#include "nodes_panel.hpp"
 #include "study_periods_panel.hpp"
 #include "modes_panel.hpp"
 #include "od_panel.hpp"
@@ -249,7 +250,7 @@ void EditorWindow::translate() {
         if(english)for(int column=0;column<table->columnCount();++column)
             if(auto* item=table->horizontalHeaderItem(column))item->setText(item->text().toUpper());
     }
-    translateDemand(); translateResults(); translateConflicts(); counters_->translate(); sections_->translate(); speedDecisions_->translate(); speedAreas_->translate(); zones_->translate(); translateNodes(); od_->translate(); periods_->translate(); modes_->translate(); linkTypes_->translate(); streetSegments_->translate(); crossSections_->translate(); translatePalette(); refreshToolHint();
+    translateDemand(); translateResults(); translateConflicts(); counters_->translate(); sections_->translate(); speedDecisions_->translate(); speedAreas_->translate(); zones_->translate(); nodes_->translate(); od_->translate(); periods_->translate(); modes_->translate(); linkTypes_->translate(); streetSegments_->translate(); crossSections_->translate(); translatePalette(); refreshToolHint();
     if (lab_) lab_->retranslate();
     canvas_->setDemandLabels(text("editorInputRateUnit"),text("editorInputCanvasPeriods"));
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
@@ -302,7 +303,7 @@ void EditorWindow::refresh(bool modelChanged) {
     if(property("editorViewGeneration")!=generation) {
         const bool replacing=property("editorViewGeneration").isValid();setProperty("editorViewGeneration",generation);
         tableRevision_=diagnosticRevision_=automaticRevision_=conflictTab_.revision=UINT64_MAX;counters_->invalidate();sections_->invalidate();
-        speedDecisions_->invalidate();speedAreas_->invalidate();zones_->invalidate();crossSections_->invalidate();streetSegments_->invalidate();nodeTab_.revision=UINT64_MAX;
+        speedDecisions_->invalidate();speedAreas_->invalidate();zones_->invalidate();crossSections_->invalidate();streetSegments_->invalidate();nodes_->invalidate();
         periods_->invalidate();modes_->invalidate();od_->invalidate();linkTypes_->invalidate();
         diagnostics_.clear();rejected_.clear();readiness_.clear();readinessChecked_=false;
         if(replacing)error_->clear();
@@ -345,6 +346,6 @@ void EditorWindow::refresh(bool modelChanged) {
     bgX_->setValue(b.x);bgY_->setValue(b.y);bgScale_->setValue(b.metresPerPixel);bgAngle_->setValue(b.rotation);bgOpacity_->setValue(b.opacity);
     actions_.at("editorDeleteSelected")->setEnabled(!canvas_->selection().empty());
     actions_.at("editorRotate")->setEnabled(canvas_->rotationPivot().has_value());
-    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();counters_->refresh();sections_->refresh();speedDecisions_->refresh();speedAreas_->refresh();zones_->refresh();refreshNodes();od_->refresh();periods_->refresh();modes_->refresh();linkTypes_->refresh();refreshLinkTypeField();streetSegments_->refresh();crossSections_->refresh();refreshDiagnostics();refreshRun();
+    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();counters_->refresh();sections_->refresh();speedDecisions_->refresh();speedAreas_->refresh();zones_->refresh();nodes_->refresh();od_->refresh();periods_->refresh();modes_->refresh();linkTypes_->refresh();refreshLinkTypeField();streetSegments_->refresh();crossSections_->refresh();refreshDiagnostics();refreshRun();
 }
 }

@@ -54,7 +54,7 @@ namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
 struct MacroPanel;
-struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; class NodesPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
@@ -256,9 +256,9 @@ private:
     SpeedAreasPanel* speedAreas_{}; // its own panel (speed_areas_panel.hpp, D521)
     // M8.6a (D161): the Zones tab -- zones, the selected zone's connectors, and their dialogs.
     ZonesPanel* zones_{}; // its own panel (zones_panel.hpp, D521)
-    // S0.1 (NODES §6): the Nodes tab -- the drawn polygons, rename and delete.
-    ObjectTab nodeTab_;
-    void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
+    // S0.1 (NODES §6): the Nodes tab, its own panel (nodes_panel.hpp, D523); built in editor_proposals.cpp.
+    NodesPanel* nodes_{};
+    void buildNodes(); void showNodes();
     void editCoarse(const std::string& id); // S3.6b (D311): editor_coarse.cpp
     // S4.4 (D317): Node proposals from the Macro and Meso results, editor_proposals.cpp.
     QTableWidget* nodeProposalTable_{}; QLabel* nodeProposalNote_{}; std::array<std::uint64_t, 3> nodeProposalKey_{UINT64_MAX, UINT64_MAX, UINT64_MAX};
@@ -271,7 +271,6 @@ private:
     void seamChecksDialog(); // S3.7 (D312): editor_seams.cpp
     double seamSpeedJump_{20}; // km/h, a display choice kept for the session (STREET_SEGMENTS §7)
     std::string selectedStreetSegment() const;
-    std::string selectedNode() const;
     // M8.6b (D162): the OD matrices tab, the lot dialog and the catalog's compositions for both.
     OdPanel* od_{}; // its own panel (od_panel.hpp, D521)
     void editLot(const std::string& zoneId);

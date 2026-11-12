@@ -274,7 +274,7 @@ Each row first asserts that its forcing worked (AGENTS).
   - `EditorCanvas::Tool::node` shares the zone draft (Ctrl+right-click, then plain clicks, Enter, Backspace, Esc) and
     hands it to `nodeCommitted`.
   - `drawNodes` draws a soft shade (lighter while `generated`) with no outline at rest, with the name at the centroid (D434).
-  - The Nodes tab is `src/shell/editor_nodes.cpp`, in the Measurement group: table, rename dialog
+  - The Nodes tab is `src/shell/nodes_panel.cpp` (D523; was `editor_nodes.cpp`), in the Measurement group: table, rename dialog
     and delete. Tool 13 has the chord `N` and reuses the zone icon until a node icon is drawn.
 - **Rows.** N1–N4 are in `tests/node_tests.cpp` (ctest `nodes`) and N5 in `tests/node_ui_tests.cpp`
   (ctest `node-ui`). The workspace and object-group UI tests list the new tool and page.

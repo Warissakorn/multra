@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "nodes_panel.hpp"
 #include "table_grid.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/macro_run.hpp"
@@ -144,8 +145,7 @@ void EditorWindow::jumpTo(int row) {
     if (id.empty()) {
         const auto object=cell->data(Qt::UserRole+1).toString().toStdString();
         // S5.5b (D332): a Node's row selects it on the Nodes tab, which lights it (D288).
-        for (int r=0; nodeTab_.table && r<nodeTab_.table->rowCount(); ++r)
-            if (nodeTab_.table->item(r,0)->data(Qt::UserRole).toString().toStdString()==object) { nodeTab_.table->selectRow(r); return; }
+        if (nodes_->selectRow(object)) return;
         if (!selectConflict(object)) selectDemand(object); // M3.2.4: authored controls have a tab
         return;
     }
