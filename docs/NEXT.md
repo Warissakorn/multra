@@ -30,7 +30,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 ## Owner checks waiting from recent sessions
 
 All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI
-review), B46 (Macro example), B47 (M6 tolerance), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
+review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
 (random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
 ## Review of 2026-11-10 — queued proposals (D493)
@@ -57,8 +57,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     `shared` until a recorded decision regenerates them.
   - **Left from D495:** phase 1's per-vehicle loop in `stepSimulation`, about 150 lines, is still
     one body; split it only with a callgrind run before and after (it is the hot path).
-  - **Analytic rows against HCM: §6 written (D515); waits on the owner's tolerance (OWNER_SITTING
-    B47).** Before the first comparable run: the *to read* values in
+  - **Analytic rows against HCM: §6 written (D515), tolerance set (D516: S1 ±5 %, S2/U ±15 %).**
+    Before the first comparable run: the *to read* values in
     [§6](evidence/m6-benchmark-options.md) read from the books, the S2-c script and a counter at a
     priority line (U) built with their own rows.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):

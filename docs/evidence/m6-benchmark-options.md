@@ -4,7 +4,7 @@ Prepared by a session for Q4, open since 2026-09-10: *which published benchmarks
 tolerance?* ([D143](../decisions/RECORD-D001-D199.md#d143), R2 (b); the 2026-10-03 review's
 [O2 and S0](../archive/ROADMAP-review-2026-10-03.md)). The owner answers by letter in the
 owner sitting (B9). **Answered 2026-11-11 ([D505](../decisions/RECORD.md#d505)): the owner took §7's
-recommendation in every row.** That chooses sources only. §6 is written (2026-11-12, D515); the tolerance is still to set.
+recommendation in every row.** That chooses sources only. §6 is written (2026-11-12, D515) and the tolerance is set (B47 (a), D516).
 
 ## 1. Rules of this sheet
 
@@ -12,7 +12,8 @@ recommendation in every row.** That chooses sources only. §6 is written (2026-1
   appears in it. Every number below is a published value or an input a comparison would set.
   Choosing a benchmark the engine already happens to match would undo the pre-registration, as
   D34's blind C0 was meant to prevent.
-- **No tolerance.** The tolerance is the owner's next decision. It is chosen after the options
+- **No tolerance** when this sheet was written; the owner set it on 2026-11-12 (B47 (a), D516, §6).
+  The tolerance is the owner's decision. It is chosen after the options
   and before the first comparable run, then published in the docs and shown in the app (ROADMAP
   M6).
 - **Published sources only.** At least two per benchmark kind. A comparison with another
@@ -117,10 +118,20 @@ minor right turn is the minor left turn.
 ## 6. What a comparison fixes before it runs
 
 The checklist a session writes down, with the tolerance, before the first comparable run. **Written
-2026-11-12 for the sources D505 chose; the tolerance is still the owner's (OWNER_SITTING B47).**
+2026-11-12 for the sources D505 chose; the tolerance is the owner's B47 answer (a), D516.**
 Nothing here was set by looking at an engine figure; no comparable run has been made. Every
 value marked *to read* comes from the book or paper, never from memory. The session that fills it
 in reads the page image ([BOOKS](../reference/BOOKS.md)) and cites the page.
+
+**Tolerance (B47 (a), D516, set before any comparable run).** The engine's mean over the 40 seeds
+passes when it lies within the band of the reference; the 95 % CI is shown beside it and is not part
+of the pass.
+
+| Kind | Band |
+|---|---|
+| S1 (S1-a; S1-d per rank) | ±5 % of the reference saturation flow (or headway) |
+| S2 (S2-c, S2-b, S2-a) | ±15 % of the reference delay, after the stated offset |
+| U (U-c, U-a) | ±15 % of the reference capacity at each major-flow level |
 
 **Common to every row**
 
@@ -173,8 +184,8 @@ two-lane major (one lane each way), car-only. The rank-2 movement in HCM terms i
 turn of a right-hand drawing, so on this left-hand drawing it is the **minor left turn**. Minor
 demand 900 veh/h (above capacity at every level). Major flows `v_c` = 200, 400, 600, 800, 1,000
 veh/h, one project per level, each counted, not assumed. Figure: the minor movement's vehicles per
-hour of window, no cool-down. Translation from `t_c` to the rule (proposed; §7 says it is
-decided with the tolerance, so the owner confirms it in B47): `gapTime = t_c − τ`, where `τ` is
+hour of window, no cool-down. Translation from `t_c` to the rule (confirmed with the
+tolerance, B47, D516): `gapTime = t_c − τ`, where `τ` is
 the mean time the earlier major vehicle takes to clear the conflict area at the major speed (50
 km/h), computed from the area's drawn length; `headway` (metres) at the smallest value validation
 accepts (*to check*), so the time test decides. `t_f` is measured, not set:
@@ -183,7 +194,7 @@ counter at a priority line that does not exist yet (§5); until it does, U-a can
 uses the measured effective `t_c` and `t_f`; U-a uses the HCM 7 Ch. 20 base values (*to read*:
 the exhibit and page; the sheet's software-documentation values are not used).
 
-**Before the first run:** the owner sets the tolerance per kind (B47); the S1-a/S1-d, U-a and S2
+**Before the first run:** the S1-a/S1-d, U-a and S2
 values marked *to read* are read and cited here; the S2-c script and the priority-line counter
 exist and have their own rows.
 

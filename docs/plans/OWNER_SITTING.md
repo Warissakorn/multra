@@ -151,7 +151,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     taken from the published field scatter of each source (needs the sources read first).
     *Session's recommendation:* **(a)** now, because (b) narrows as seeds are added and (c) waits on
     reading. The bands are a starting proposal, not derived from any engine figure. Also confirm U's
-    `t_c` → `gapTime` translation (`gapTime = t_c − τ`, §6). *Owner:*
+    `t_c` → `gapTime` translation (`gapTime = t_c − τ`, §6). *Owner:* **(a), with the translation, 2026-11-12 (D516).**
 
 ## C–I — on the Windows machine
 
