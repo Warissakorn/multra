@@ -1,5 +1,8 @@
 #include "../src/shell/editor_window.hpp"
 #include "../src/shell/procedure_panel.hpp"
+#include <QSpinBox>
+#include <QDoubleSpinBox>
+#include <QGroupBox>
 #include "ui_test_storage.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
@@ -100,6 +103,33 @@ int main(int argc, char** argv) {
         require(j["schemaVersion"] == 73 && j["procedures"][0]["steps"][3]["active"] == false, "PS10: save writes schema 73");
         item<QAction>(w, "editorUndo")->trigger(); QApplication::processEvents();
         require(d().procedures[0].steps[3].active, "PS10: Undo restores the step");
+
+        // FB10 (PROCEDURE_FEEDBACK §4, D547): the Feedback group is off by default; a blank tolerance is refused in place;
+        // turning it on is one Undo step; the page lists the iterations; saving writes schema 75.
+        modal([&] { item<QPushButton>(*panel, "editorProceduresOpen")->click(); }, [&](QDialog& dlg) {
+            auto* group = item<QGroupBox>(dlg, "editorProcedureFeedback");
+            require(!group->isChecked() && item<QDoubleSpinBox>(dlg, "editorFeedbackWeight")->value() == 0.25 &&
+                    item<QSpinBox>(dlg, "editorFeedbackMaxIterations")->value() == 30, "FB10: feedback off, CW 0.25 and 30 proposed");
+            group->setChecked(true);
+            item<QSpinBox>(dlg, "editorFeedbackMaxIterations")->setValue(4);
+            confirm(dlg);
+            require(dlg.isVisible() && item<QLabel>(dlg, "editorProceduresError")->text().contains("procedures[0].feedback.tolerance"),
+                    "FB10: a blank tolerance is refused in place");
+            item<QLineEdit>(dlg, "editorFeedbackTolerance")->setText("0");
+            confirm(dlg);
+        });
+        require(d().procedures[0].feedback && d().procedures[0].feedback->maxIterations == 4 && *d().procedures[0].feedback->weight == 0.25 &&
+                w.history().undoName() == "editorProceduresChange", "FB10: the feedback is one edit");
+        runPanel(panel);
+        auto* iterations = item<QTableWidget>(*panel, "editorProcedureIterations");
+        require(panel->exportable() && iterations->isVisibleTo(panel) && iterations->rowCount() == 4 && iterations->item(0, 2)->text() == "—",
+                (std::string("FB10: four iterations listed: ") + note->text().toStdString()).c_str());
+        require(note->text().contains("limit") && panel->csv().find("iteration,weight,tmf,rse,assignmentGap") != std::string::npos,
+                "FB10: the outcome and the CSV iterations");
+        w.saveFile(saved);
+        require(readJson(saved.toStdString())["schemaVersion"] == 75, "FB10: save writes schema 75");
+        item<QAction>(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(!d().procedures[0].feedback, "FB10: Undo removes the feedback");
         std::cout << "procedure-ui: passed\n";
         return 0;
     } catch (const std::exception& e) {

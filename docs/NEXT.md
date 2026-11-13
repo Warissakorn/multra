@@ -216,18 +216,22 @@ slice, the next one is M9, then M11.5 and the M11 gate, M12. Each starts with it
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
 
-## M10 four-step — G1–G2, D1–D4, E1–E2, N1, P1–P2 done (D470–D485); stop for the owner
+## M10 four-step — G1–G2, D1–D4, E1–E2, N1, P1–P2, F1–F2 done (D470–D485, D547); stop for the owner
 
 - Code is complete and chains end to end: generation → distribution → mode choice → written
   `odMatrices` → Run Macro, or one stored procedure (`--procedure`). Contracts and their rows:
   [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14, [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md)
   §14–§16, [MODE_CHOICE](reference/MODE_CHOICE.md) §13, [NESTED_LOGIT](reference/NESTED_LOGIT.md),
-  [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md). The M10 gate stays open (rule 8).
+  [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md), [PROCEDURE_FEEDBACK](reference/PROCEDURE_FEEDBACK.md). The M10
+  gate stays open (rule 8).
+- **Feedback (D547, done):** a procedure's `feedback` (schema 75) iterates distribution and mode choice on the
+  assignment's congested times, averaging the OD-mode matrices by CW (book `w`, 0.25 proposed) or MSA, stopping on
+  TMF. Ortúzar Example 11.3 reproduces the hand fixed point (CW 999.80 / 999.07 against 999.79 / 999.08). Naive
+  feedback converged at λ = 0.34 here, against the book's Figure 11.3 (FB7 amended to λ = 0.6, §5). **Owner:** the
+  dialog and page on Windows.
 - **Owner:** OWNER_SITTING item 42.
 - **Later (M10.3):** whether the Furness target and cap become a document setting (open from D1).
 - **Next, the owner's pick:**
-  - congested-cost feedback on top of procedures (the next slice the owner booked, D483 4a);
-  - congested-cost feedback (Ortúzar Ch. 11);
   - logsum feedback from mode choice into distribution (G/MS/D/A, §6.5.2).
 
 ## Next session — the owner's pick

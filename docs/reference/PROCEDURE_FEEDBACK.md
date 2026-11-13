@@ -183,8 +183,8 @@ Each row first asserts that its forcing worked.
 | Slice | Content | Rows |
 |---|---|---|
 | F0 | This contract and §7's answers | — |
-| F1 | Codec at schema 75, the congested skim, the loop, JSON and CLI | FB1–FB9 |
-| F2 | The dialog group and the page's iterations table | FB10 |
+| F1 | Codec at schema 75, the congested skim, the loop, JSON and CLI. **Implemented (§8)** | FB1–FB9 |
+| F2 | The dialog group and the page's iterations table. **Implemented (§9)** | FB10 |
 
 ## 7. Owner choices
 
@@ -251,4 +251,28 @@ The options as they were put:
   | `cw-034` | 10 | 999.074 | 999.078 |
   | `msa-034` | 49 | 999.64 | 999.078 |
   | `naive-060` | 100, not converged | — | — |
+
+## 9. As implemented (F2, 2026-11-13)
+
+- **`src/shell/procedures_dialog.cpp`: the *Feedback* group,** a check box off by default, holding:
+  - *Averaging*: constant weight or MSA;
+  - *Weight w*: 0.25 proposed, disabled for MSA;
+  - *Maximum iterations*: 30 proposed;
+  - *Tolerance*: blank until typed, with a placeholder suggesting 1 % of the trips.
+
+  A blank tolerance is refused in place at `procedures[i].feedback.tolerance`. OK is the same
+  single `setProcedures` History step.
+- **`src/shell/procedure_panel.cpp`:**
+  - an iterations table (`editorProcedureIterations`, shown only with feedback): iteration, w,
+    TMF, RSE and the assignment gap in %;
+  - the outcome line, *converged after n iterations* or *stopped at the limit*;
+  - the CSV appends an `iteration,weight,tmf,rse,assignmentGap` section.
+- **Rows:** `procedure-ui` (FB10) checks:
+  - the defaults;
+  - the refusal of a blank tolerance;
+  - one Undo step;
+  - four iterations listed with a limit outcome;
+  - the CSV section;
+  - saving at 75;
+  - Undo.
 
