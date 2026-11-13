@@ -1663,6 +1663,8 @@
   "INVALID_PROCEDURE": "ลำดับขั้นตอนหรือขั้นใดขั้นหนึ่งไม่ถูกต้อง",
   "PROCEDURE_UNKNOWN": "ไม่พบลำดับขั้นตอนที่เลือก",
   "PROCEDURE_STEP_INPUT_MISSING": "ขั้นนี้ไม่มีขั้นก่อนหน้าที่เปิดใช้ให้รับข้อมูล",
+  "MODE_CHOICE_STRUCTURE_INVALID": "โครงสร้าง G/D/MS/A กับต้นทุนรวม logsum ใช้ไม่ได้เมื่อ β ของ distribution มากกว่า λ ของ mode choice (Ortúzar Eq. 6.11)",
+  "editorModeChoiceLogsum": "Purpose %1: distribution ใช้ต้นทุนรวมแบบ logsum (G/D/MS/A, Ortúzar Eq. 6.10; ต้องมีสัมประสิทธิ์ต้นทุนเดียวและ β ≤ λ)",
   "editorProcedureFeedback": "Feedback: ป้อนต้นทุนช่วงติดขัดกลับเข้า distribution และ mode choice",
   "editorFeedbackMethod": "การเฉลี่ย",
   "editorFeedbackConstantWeight": "น้ำหนักคงที่ (CW)",

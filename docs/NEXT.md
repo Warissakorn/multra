@@ -216,7 +216,7 @@ slice, the next one is M9, then M11.5 and the M11 gate, M12. Each starts with it
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
 
-## M10 four-step — G1–G2, D1–D4, E1–E2, N1, P1–P2, F1–F2 done (D470–D485, D547); stop for the owner
+## M10 four-step — G1–G2, D1–D4, E1–E2, N1, P1–P2, F1–F2, L1–L2 done (D470–D485, D547, D548); stop for the owner
 
 - Code is complete and chains end to end: generation → distribution → mode choice → written
   `odMatrices` → Run Macro, or one stored procedure (`--procedure`). Contracts and their rows:
@@ -229,10 +229,14 @@ user roles) is open.
   TMF. Ortúzar Example 11.3 reproduces the hand fixed point (CW 999.80 / 999.07 against 999.79 / 999.08). Naive
   feedback converged at λ = 0.34 here, against the book's Figure 11.3 (FB7 amended to λ = 0.6, §5). **Owner:** the
   dialog and page on Windows.
+- **Logsum (D548, done, [MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md)):** a mode-choice purpose's
+  `distributionCost: "logsum"` (schema 76) gives its distribution Ortúzar Eq. 6.10's composite (G/D/MS/A); β > λ is
+  refused (Eq. 6.11); one shared cost coefficient. Example 6.3's C_B 49.23 and a hand table reproduce. Switched in the
+  *Nests* dialog. **Owner:** that dialog on Windows. G/MS/D/A is not built (D548 choice 1).
 - **Owner:** OWNER_SITTING item 42.
 - **Later (M10.3):** whether the Furness target and cap become a document setting (open from D1).
-- **Next, the owner's pick:**
-  - logsum feedback from mode choice into distribution (G/MS/D/A, §6.5.2).
+- **Next, the owner's pick:** G/MS/D/A (Ortúzar Eq. 6.12–6.13, mode split by origin then per-mode gravity), if a
+  study needs it; otherwise M10 waits for the owner's checks.
 
 ## Next session — the owner's pick
 

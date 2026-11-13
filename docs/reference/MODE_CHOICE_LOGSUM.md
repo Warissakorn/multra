@@ -159,7 +159,7 @@ Each row first asserts that its forcing worked.
 |---|---|---|
 | L0 | This contract | — |
 | L1 | Codec at 76, `logsum` in `src/macro/mode_choice`, the composite and the re-run in `runModeChoice`, JSON. **Implemented (§9)** | LS1–LS8 |
-| L2 | The switch in the *Nests* dialog | LS9 |
+| L2 | The switch in the *Nests* dialog. **Implemented (§10)** | LS9 |
 
 ## 9. As implemented (L1, 2026-11-13)
 
@@ -185,4 +185,18 @@ Each row first asserts that its forcing worked.
   pass against the hand values of §6.
   - The first test run indexed zones by position; generation orders them by id. The test now
     looks them up by id. No value changed.
+
+## 10. As implemented (L2, 2026-11-13)
+
+- **`src/shell/mode_choice_nests_dialog.cpp`:** one check box per purpose,
+  `editorModeChoiceLogsum-<purpose>`, below the nests table. OK writes or erases
+  `distributionCost` and validates the set with the codec, so differing coefficients are refused
+  in place at `set.purposes[p].distributionCost`.
+- **Commit:** the change goes through the *Mode choice sets* dialog's existing single History step.
+- **Rows:** `nested-logit-ui` gains LS9. It uses a second owned set whose alternatives share one
+  coefficient, and checks:
+  - the refusal;
+  - one step;
+  - saving at 76;
+  - Undo.
 

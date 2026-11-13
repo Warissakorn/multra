@@ -428,7 +428,7 @@ tolerance; same inputs give the same bytes; non-convergence is flagged.
 | M10.2 trip generation | [TRIP_GENERATION](reference/TRIP_GENERATION.md) (D468, D469) | G1 engine, run, outputs, `--trip-generation` (D470); G2 owned rate sets at schema 66, zone attributes, the page (D471) | The owner's Windows look |
 | M10.3 trip distribution | [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) (D472) | D1 engine, skim, outputs, `--trip-distribution` (D473); D2 owned deterrence sets and cost matrices, schema 67 (D474); singly constrained purposes (D475, D476); D4 destination-constrained, schema 72 (D482) | — |
 | Procedure sequence | [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md) (D483) | P1, schema 73, `--procedure` (D484); P2 dialog and Procedure page (D485); feedback F1–F2, schema 75 ([PROCEDURE_FEEDBACK](reference/PROCEDURE_FEEDBACK.md), D547) | The owner's Windows look of feedback |
-| M10.4 mode choice | D477, [NESTED_LOGIT](reference/NESTED_LOGIT.md) (D480) | E1 (D478); E2 owned sets, the page, Write OD matrices (D479); N1 nested logit, schema 71 (D481) | The owner's Windows look |
+| M10.4 mode choice | D477, [NESTED_LOGIT](reference/NESTED_LOGIT.md) (D480) | E1 (D478); E2 owned sets, the page, Write OD matrices (D479); N1 nested logit, schema 71 (D481); logsum composite into distribution, schema 76 ([MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md), D548) | The owner's Windows look |
 
 ### M11 — Meso engine
 

@@ -1663,6 +1663,8 @@
   "INVALID_PROCEDURE": "A procedure or one of its steps is invalid.",
   "PROCEDURE_UNKNOWN": "The selected procedure does not exist.",
   "PROCEDURE_STEP_INPUT_MISSING": "This step has no earlier active step to take its input from.",
+  "MODE_CHOICE_STRUCTURE_INVALID": "G/D/MS/A with the logsum composite is wrong when the distribution's β exceeds the mode choice's λ (Ortúzar Eq. 6.11).",
+  "editorModeChoiceLogsum": "Purpose %1: distribution uses the logsum composite cost (G/D/MS/A, Ortúzar Eq. 6.10; needs one cost coefficient and β ≤ λ)",
   "editorProcedureFeedback": "Feedback: congested costs back into distribution and mode choice",
   "editorFeedbackMethod": "Averaging",
   "editorFeedbackConstantWeight": "Constant weight",
