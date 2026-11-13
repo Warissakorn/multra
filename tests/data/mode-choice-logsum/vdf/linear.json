@@ -1,0 +1,8 @@
+{
+  "id": "linear",
+  "form": "bpr",
+  "alpha": 1,
+  "beta": 1,
+  "source": "Fixture: BPR with alpha 1 and beta 1 is linear, t = t0 (1 + V / c), Ortuzar Example 10.4",
+  "capacityBasis": "practical"
+}

@@ -102,7 +102,9 @@ int documentSchemaVersion(const ProjectDocument& d) {
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return !p.nests.empty();});});
     const bool toDestinations=std::any_of(d.deterrenceSets.begin(),d.deterrenceSets.end(),[](const auto& s){
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint==std::optional<std::string>("destination");});});
-    return std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    const bool logsum=std::any_of(d.modeChoiceSets.begin(),d.modeChoiceSets.end(),[](const auto& s){
+        return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.distributionCost.has_value();});});
+    return logsum ? 76 : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -305,6 +307,14 @@ ProjectDocument parseDocument(const Json& j) {
             for (std::size_t k = 0; k < set.at("purposes").size(); ++k)
                 if (set.at("purposes")[k].is_object() && set.at("purposes")[k].contains("nests"))
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].nests"}});
+        }
+    if (version < 76 && j.contains("modeChoiceSets") && j.at("modeChoiceSets").is_array()) // D548 (MODE_CHOICE_LOGSUM §2)
+        for (std::size_t i = 0; i < j.at("modeChoiceSets").size(); ++i) {
+            const auto& set = j.at("modeChoiceSets")[i];
+            if (!set.is_object() || !set.contains("purposes") || !set.at("purposes").is_array()) continue;
+            for (std::size_t k = 0; k < set.at("purposes").size(); ++k)
+                if (set.at("purposes")[k].is_object() && set.at("purposes")[k].contains("distributionCost"))
+                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].distributionCost"}});
         }
     d.modeChoiceSets = parseOwnedModeChoiceSets(j); // M10.4 E2
     if (version < 73 && j.contains("procedures")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures"}});

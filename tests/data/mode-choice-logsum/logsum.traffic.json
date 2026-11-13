@@ -1,0 +1,558 @@
+{
+  "background": {
+    "metresPerPixel": 1.0,
+    "opacity": 0.5,
+    "pngBase64": "",
+    "rotation": 0.0,
+    "x": 0.0,
+    "y": 0.0
+  },
+  "definition": {
+    "behaviours": [
+      {
+        "additiveSafetyDistance": 2.0,
+        "amberDeceleration": 3.0,
+        "followingTime": 1.5,
+        "id": "wiedemann-inspired-prototype",
+        "maxDecelerationCooperativeBraking": 3.0,
+        "model": "prototype",
+        "multiplicativeSafetyDistance": 3.0,
+        "speedThreshold": 0.2,
+        "standstillDistance": 2.0
+      }
+    ],
+    "compositions": [
+      {
+        "id": "car-only",
+        "types": [
+          {
+            "share": 1.0,
+            "vehicleTypeId": "car"
+          }
+        ]
+      },
+      {
+        "id": "urban-mixed",
+        "types": [
+          {
+            "share": 0.95,
+            "vehicleTypeId": "car"
+          },
+          {
+            "share": 0.05,
+            "vehicleTypeId": "heavy-vehicle"
+          }
+        ]
+      }
+    ],
+    "duration": 3600.0,
+    "inputs": [],
+    "linkTypes": [
+      {
+        "id": "feeder",
+        "name": "Feeder",
+        "freeSpeed": 100.0,
+        "capacityPerLane": 1000000.0,
+        "vdfId": "linear",
+        "source": "Fixture: Ortuzar Example 11.3 (shared parts made negligible)"
+      },
+      {
+        "id": "bypass",
+        "name": "Bypass",
+        "freeSpeed": 10.0,
+        "capacityPerLane": 3000.0,
+        "vdfId": "linear",
+        "source": "Fixture: Ortuzar Example 10.4, t = 15 + 0.005 V"
+      },
+      {
+        "id": "town",
+        "name": "Town centre",
+        "freeSpeed": 15.0,
+        "capacityPerLane": 500.0,
+        "vdfId": "linear",
+        "source": "Fixture: Ortuzar Example 10.4, t = 10 + 0.02 V"
+      }
+    ],
+    "routes": [],
+    "signalPrograms": [],
+    "timeStep": 0.5,
+    "vehicleTypes": [
+      {
+        "axles": {
+          "frontOverhang": 0.9,
+          "rearOverhang": 0.9,
+          "wheelbase": 2.7
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 2.0,
+        "desiredSpeed": {
+          "max": 16.67,
+          "min": 11.11
+        },
+        "id": "car",
+        "length": 4.5,
+        "maxAcceleration": 2.5,
+        "maxDeceleration": 8.0,
+        "pcu": {
+          "source": "Test values",
+          "value": 1.0
+        },
+        "width": 1.8
+      },
+      {
+        "axles": {
+          "frontOverhang": 2.0,
+          "rearOverhang": 4.0,
+          "wheelbase": 6.0
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 1.5,
+        "desiredSpeed": {
+          "max": 13.89,
+          "min": 11.11
+        },
+        "id": "heavy-vehicle",
+        "length": 12.0,
+        "maxAcceleration": 1.0,
+        "maxDeceleration": 6.0,
+        "pcu": {
+          "source": "Test values",
+          "value": 2.0
+        },
+        "width": 2.5
+      }
+    ],
+    "macroSettings": {
+      "targetGap": 1e-09,
+      "maxIterations": 2000
+    }
+  },
+  "format": "TrafficSim",
+  "network": {
+    "connectors": [
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-entry",
+          "linkId": "entry",
+          "station": 1.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 2,
+            "y": 0
+          }
+        ],
+        "id": "to-bypass",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "",
+        "to": {
+          "laneId": "lane-bypass",
+          "linkId": "bypass",
+          "station": 0.0
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-entry",
+          "linkId": "entry",
+          "station": 1.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 2,
+            "y": 10
+          }
+        ],
+        "id": "to-town",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "",
+        "to": {
+          "laneId": "lane-town",
+          "linkId": "town",
+          "station": 0.0
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-bypass",
+          "linkId": "bypass",
+          "station": 9000.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 9002,
+            "y": 0
+          },
+          {
+            "x": 9003,
+            "y": 5
+          }
+        ],
+        "id": "from-bypass",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "",
+        "to": {
+          "laneId": "lane-exit",
+          "linkId": "exit",
+          "station": 0.0
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-town",
+          "linkId": "town",
+          "station": 9000.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 9002,
+            "y": 10
+          },
+          {
+            "x": 9003,
+            "y": 5
+          }
+        ],
+        "id": "from-town",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "",
+        "to": {
+          "laneId": "lane-exit",
+          "linkId": "exit",
+          "station": 0.0
+        },
+        "toLaneCount": 1
+      }
+    ],
+    "drivingSide": "left",
+    "id": "network",
+    "links": [
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 5
+          }
+        ],
+        "id": "entry",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-entry",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "linkType": "feeder",
+        "name": ""
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 2,
+            "y": 0
+          },
+          {
+            "x": 9002,
+            "y": 0
+          }
+        ],
+        "id": "bypass",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-bypass",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "linkType": "bypass",
+        "name": ""
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 2,
+            "y": 10
+          },
+          {
+            "x": 9002,
+            "y": 10
+          }
+        ],
+        "id": "town",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-town",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "linkType": "town",
+        "name": ""
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 9003,
+            "y": 5
+          },
+          {
+            "x": 9004,
+            "y": 5
+          }
+        ],
+        "id": "exit",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-exit",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "linkType": "feeder",
+        "name": ""
+      }
+    ],
+    "signalHeads": []
+  },
+  "nextId": 100,
+  "revision": 0,
+  "schemaVersion": 73,
+  "zones": [
+    {
+      "attributes": {
+        "workers": 100,
+        "jobs": 0
+      },
+      "id": "O",
+      "name": "",
+      "polygon": [
+        [
+          -20.0,
+          0.0
+        ],
+        [
+          -10.0,
+          5.0
+        ],
+        [
+          -20.0,
+          10.0
+        ]
+      ]
+    },
+    {
+      "attributes": {
+        "workers": 0,
+        "jobs": 100
+      },
+      "id": "D1",
+      "name": "",
+      "polygon": [
+        [
+          100.0,
+          0.0
+        ],
+        [
+          110.0,
+          5.0
+        ],
+        [
+          100.0,
+          10.0
+        ]
+      ]
+    },
+    {
+      "attributes": {
+        "workers": 0,
+        "jobs": 100
+      },
+      "id": "D2",
+      "name": "",
+      "polygon": [
+        [
+          200.0,
+          0.0
+        ],
+        [
+          210.0,
+          5.0
+        ],
+        [
+          200.0,
+          10.0
+        ]
+      ]
+    }
+  ],
+  "studyPeriods": [
+    {
+      "id": "period-am",
+      "name": "AM peak",
+      "start": 25200,
+      "end": 28800
+    }
+  ],
+  "costMatrices": [
+    {
+      "id": "car-times",
+      "name": "Car, hand",
+      "unit": "min",
+      "zoneIds": [
+        "O",
+        "D1",
+        "D2"
+      ],
+      "rows": [
+        [
+          null,
+          10,
+          20
+        ],
+        [
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "walk-times",
+      "name": "Walk, hand",
+      "unit": "min",
+      "zoneIds": [
+        "O",
+        "D1",
+        "D2"
+      ],
+      "rows": [
+        [
+          null,
+          15,
+          60
+        ],
+        [
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "bus-times",
+      "name": "Bus, Example 6.3",
+      "unit": "min",
+      "zoneIds": [
+        "O",
+        "D1",
+        "D2"
+      ],
+      "rows": [
+        [
+          null,
+          50,
+          50
+        ],
+        [
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null
+        ]
+      ]
+    }
+  ],
+  "periodFactors": [
+    {
+      "purposeId": "all",
+      "periodId": "period-am",
+      "productionToAttraction": 1.0,
+      "attractionToProduction": 0
+    }
+  ],
+  "procedures": [
+    {
+      "id": "logsum",
+      "name": "Logsum, hand",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "hand"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "origin-005",
+          "costMatrix": "car-times"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "logsum-hand",
+          "periods": [
+            "period-am"
+          ]
+        }
+      ]
+    }
+  ]
+}

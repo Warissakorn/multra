@@ -1,0 +1,28 @@
+{
+  "id": "skim-hand",
+  "name": "Car and walk, skim",
+  "source": {
+    "citation": "Hand-computed fixture (MODE_CHOICE_LOGSUM \u00a76)"
+  },
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "alternatives": [
+        {
+          "id": "car",
+          "costMatrix": "car-times",
+          "constant": 0,
+          "timeCoefficient": -0.1,
+          "occupancy": 1
+        },
+        {
+          "id": "walk",
+          "costMatrix": "walk-times",
+          "constant": -0.5,
+          "timeCoefficient": -0.1
+        }
+      ]
+    }
+  ]
+}

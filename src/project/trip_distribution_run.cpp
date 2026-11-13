@@ -16,7 +16,8 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
                                         const std::string& deterrenceSetId, const std::string& mode, const std::string& costMatrixId,
                                         InputManifest* manifest,
                                         const std::function<void(TripDistributionStage)>& stage, const DistributionSettings& settings,
-                                        const std::vector<double>* linkTimes) {
+                                        const std::vector<double>* linkTimes, const std::map<std::string, DistributionMatrix>* purposeCosts,
+                                        std::vector<ValidationIssue>* deferred) {
     const auto enter = [&](TripDistributionStage s) { if (stage) stage(s); };
     TripDistributionRun run;
     run.mode = mode; run.costMatrix = costMatrixId;
@@ -65,6 +66,8 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
         // With an intrazonal share the diagonal leaves the gravity model (choice 2a); otherwise a matrix's
         // diagonal cell, if any, takes part (an absent one is infinite: f = 0).
         auto costs = run.costs;
+        if (purposeCosts) // D548 (MODE_CHOICE_LOGSUM §4): a logsum purpose's composite replaces the skim
+            if (const auto own = purposeCosts->find(purpose.id); own != purposeCosts->end()) { costs = own->second; purpose.costSource = "logsum"; }
         if (purpose.intrazonalShare > 0) for (std::size_t z = 0; z < costs.size(); ++z) costs[z][z] = std::numeric_limits<double>::infinity();
         purpose.result = distributeTrips({costs, ends.productions, ends.attractions, purpose.beta, purpose.intrazonalShare, true, purpose.constraint}, settings);
         for (const auto& i : purpose.result.issues) {
@@ -82,7 +85,8 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
         purpose.productionsModelled.clear();   // D4 (§16): the row sums, which float when destination-constrained
         for (const auto& row : purpose.result.trips) { double t = 0; for (const double x : row) t += x; purpose.productionsModelled.push_back(t); }
     }
-    if (!issues.empty()) throw ValidationError(std::move(issues));
+    if (deferred) *deferred = issues;
+    else if (!issues.empty()) throw ValidationError(std::move(issues));
     if (manifest) { manifest->validate(); run.generation.inputManifest = manifest->json(); }
     return run;
 }

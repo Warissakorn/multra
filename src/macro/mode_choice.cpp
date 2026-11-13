@@ -35,6 +35,39 @@ std::vector<double> nestedLogitShares(const std::vector<double>& v, const std::v
     for (std::size_t b = 0; b < own.size(); ++b) shares[own[b]] = branch[phi.size() + b];
     return shares;
 }
+double logsum(const std::vector<double>& v, const std::vector<int>& nestOf, const std::vector<double>& phi) {
+    const auto none = -std::numeric_limits<double>::infinity();
+    std::vector<double> w;
+    for (std::size_t n = 0; n < phi.size(); ++n) {
+        double top = none;
+        for (std::size_t k = 0; k < v.size(); ++k) if (nestOf[k] == static_cast<int>(n) && std::isfinite(v[k])) top = std::max(top, v[k]);
+        if (!std::isfinite(top)) continue;
+        double sum = 0;
+        for (std::size_t k = 0; k < v.size(); ++k) if (nestOf[k] == static_cast<int>(n) && std::isfinite(v[k])) sum += std::exp((v[k] - top) / phi[n]);
+        w.push_back(top + phi[n] * std::log(sum));
+    }
+    for (std::size_t k = 0; k < v.size(); ++k) if ((nestOf.empty() || nestOf[k] < 0) && std::isfinite(v[k])) w.push_back(v[k]);
+    if (w.empty()) return none;
+    const double top = *std::max_element(w.begin(), w.end());
+    double sum = 0;
+    for (const double x : w) sum += std::exp(x - top);
+    return top + std::log(sum);
+}
+DistributionMatrix compositeCost(const std::vector<ModeAlternativeInput>& alternatives, const ModeNests& nests, double lambda) {
+    const auto n = alternatives.empty() ? 0 : alternatives.front().costs.size();
+    DistributionMatrix k(n, std::vector<double>(n, std::numeric_limits<double>::infinity()));
+    std::vector<double> v(alternatives.size());
+    for (std::size_t i = 0; i < n; ++i)
+        for (std::size_t j = 0; j < n; ++j) {
+            for (std::size_t a = 0; a < alternatives.size(); ++a) {
+                const double c = alternatives[a].costs[i][j];
+                v[a] = std::isfinite(c) ? alternatives[a].constant - lambda * c : std::numeric_limits<double>::quiet_NaN();
+            }
+            const double ls = logsum(v, nests.nestOf, nests.phi);
+            if (std::isfinite(ls)) k[i][j] = -ls / lambda;
+        }
+    return k;
+}
 ModeSplit splitModes(const DistributionMatrix& trips, const std::vector<ModeAlternativeInput>& alternatives, const ModeNests& nests) {
     const auto n = trips.size();
     ModeSplit out;

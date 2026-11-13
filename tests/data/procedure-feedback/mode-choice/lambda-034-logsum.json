@@ -1,0 +1,29 @@
+{
+  "id": "lambda-034-logsum",
+  "name": "Example 11.3: car or rail, lambda 0.34, logsum",
+  "source": {
+    "citation": "Fixture (MODE_CHOICE_LOGSUM LS7)"
+  },
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "distributionCost": "logsum",
+      "alternatives": [
+        {
+          "id": "car",
+          "modeId": "car",
+          "constant": 0,
+          "timeCoefficient": -0.34,
+          "occupancy": 1
+        },
+        {
+          "id": "rail",
+          "costMatrix": "rail-times",
+          "constant": 0,
+          "timeCoefficient": -0.34
+        }
+      ]
+    }
+  ]
+}

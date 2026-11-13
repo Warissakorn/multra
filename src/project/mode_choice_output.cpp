@@ -43,6 +43,8 @@ Json modeChoiceJson(const ModeChoiceRun& r) {
             for (const auto& n : q->nests) nests.push_back({{"id", n.id}, {"phi", n.phi}, {"alternatives", n.alternatives}});
             purpose["nests"] = nests;
         }
+        if (const auto q = std::find_if(ps.begin(), ps.end(), [&](const auto& x) { return x.id == p.id; }); q != ps.end() && q->distributionCost)
+            purpose["distributionCost"] = *q->distributionCost; // D548: echoed only when used
         j["purposes"].push_back(std::move(purpose));
     }
     for (const auto& s : r.periods) {

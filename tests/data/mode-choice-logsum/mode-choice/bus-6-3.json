@@ -1,0 +1,38 @@
+{
+  "id": "bus-6-3",
+  "name": "Ortuzar Example 6.3: red and blue bus",
+  "source": {
+    "citation": "Hand-computed fixture (MODE_CHOICE_LOGSUM \u00a76)"
+  },
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "alternatives": [
+        {
+          "id": "red",
+          "costMatrix": "bus-times",
+          "constant": 0,
+          "timeCoefficient": -0.1
+        },
+        {
+          "id": "blue",
+          "costMatrix": "bus-times",
+          "constant": 0,
+          "timeCoefficient": -0.1
+        }
+      ],
+      "nests": [
+        {
+          "id": "bus",
+          "phi": 0.11111111111111112,
+          "alternatives": [
+            "red",
+            "blue"
+          ]
+        }
+      ],
+      "distributionCost": "logsum"
+    }
+  ]
+}

@@ -158,5 +158,31 @@ Each row first asserts that its forcing worked.
 | Slice | Content | Rows |
 |---|---|---|
 | L0 | This contract | — |
-| L1 | Codec at 76, `logsum` in `src/macro/mode_choice`, the composite and the re-run in `runModeChoice`, JSON | LS1–LS8 |
+| L1 | Codec at 76, `logsum` in `src/macro/mode_choice`, the composite and the re-run in `runModeChoice`, JSON. **Implemented (§9)** | LS1–LS8 |
 | L2 | The switch in the *Nests* dialog | LS9 |
+
+## 9. As implemented (L1, 2026-11-13)
+
+- **Code:**
+  - `src/macro/mode_choice.*`: `logsum` (ln Σ exp W over the branches) and `compositeCost`.
+  - `src/project/mode_choice_codec.*`: `ModeChoicePurpose::distributionCost`, read, written and
+    refused as §2.
+  - `document.cpp`: schema 76 and its gate; `kLatestSchema` is 76.
+  - `runTripDistribution` takes optional `purposeCosts` (a logsum purpose's K, which sets
+    `costSource`) and an optional `deferred` list of balancing refusals.
+  - `runModeChoice` builds every purpose's alternative inputs first. It then checks Eq. 6.11,
+    re-runs the distribution with the composites (keeping the first run's input manifest), and only
+    then splits.
+- **Refusals of the skim pass are held until the set is known.** A logsum purpose may be feasible
+  on its composite while infeasible on the skim, for example where only walk reaches a zone.
+  - With no logsum purpose, the held refusals are thrown in their old order and at the old stage.
+  - A refusal of the set itself still comes after a held distribution refusal, as before D548.
+- **The stage observer** sees `set` only once the held refusals are known not to apply.
+- **Fixture:** `tests/data/mode-choice-logsum/`, with the project and the sets
+  `logsum-hand`, `skim-hand`, `logsum-nest-1` and `bus-6-3`. `lambda-034-logsum` is in
+  `tests/data/procedure-feedback/mode-choice/` for LS7.
+- **Rows:** `tests/mode_choice_logsum_tests.cpp` (group `modechoicelogsum`) covers LS1–LS8. All
+  pass against the hand values of §6.
+  - The first test run indexed zones by position; generation orders them by id. The test now
+    looks them up by id. No value changed.
+

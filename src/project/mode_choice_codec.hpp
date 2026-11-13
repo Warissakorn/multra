@@ -29,6 +29,7 @@ struct ModeChoicePurpose {
     std::string id;
     std::vector<ModeAlternative> alternatives;
     std::vector<ModeChoiceNest> nests;       // empty: the MNL
+    std::optional<std::string> distributionCost; // D548 (MODE_CHOICE_LOGSUM §2): "logsum" or absent (the skim)
     bool operator==(const ModeChoicePurpose&) const = default;
 };
 struct ModeChoiceSet {

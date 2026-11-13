@@ -1,0 +1,16 @@
+{
+  "id": "origin-020",
+  "name": "Origin-constrained, beta 0.2",
+  "source": {
+    "citation": "Hand-computed fixture (MODE_CHOICE_LOGSUM \u00a76)"
+  },
+  "function": "exponential",
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "beta": 0.2,
+      "constraint": "origin"
+    }
+  ]
+}

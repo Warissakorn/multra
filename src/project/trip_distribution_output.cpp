@@ -39,6 +39,7 @@ Json tripDistributionJson(const TripDistributionRun& r) {
         if (p.constraint == DistributionConstraint::origin) { item["constraint"] = "origin"; item["attractionsModelled"] = p.attractionsModelled; }
         // D4 (§16): likewise for a destination-constrained purpose, with the floating row sums.
         if (p.constraint == DistributionConstraint::destination) { item["constraint"] = "destination"; item["productionsModelled"] = p.productionsModelled; }
+        if (!p.costSource.empty()) item["costSource"] = p.costSource; // D548: "logsum" only when used
         j["purposes"].push_back(std::move(item));
     }
     return j;
