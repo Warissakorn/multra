@@ -25,7 +25,7 @@
 
 namespace {
 using namespace multra;
-std::filesystem::path routeCostsFile; // --route-costs (DYNAMIC_ASSIGNMENT §5, D549)
+std::filesystem::path routeCostsFile, dynamicOut; // --route-costs, --dynamic-assignment (DYNAMIC_ASSIGNMENT §5-§6, D549)
 // A project run steps the engine itself so the movement evaluation sees every state.
 int runProject(const std::filesystem::path& file, const std::filesystem::path& csvFile,
                const std::filesystem::path& data, std::uint32_t seed, bool laneChanges, bool segmentTimes, bool stopLines, bool priorityLines,
@@ -240,6 +240,7 @@ int main(int argc, char** argv) {
         std::vector<std::string> periods; // --period, repeatable (M10.4)
         std::filesystem::path utdfFile;
         bool meso = false, nodeAnalysis = false, utdfUnsignalised = false;
+        std::optional<int> iterations; std::optional<double> gap; // --dynamic-assignment (D549)
         bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false, priorityLines = false;
         bool arrivalPhases = false, waitCauses = false;
         DischargeOptions discharge;
@@ -278,6 +279,7 @@ int main(int argc, char** argv) {
                              "  Frank-Wolfe and reports every link's flow, V/C and time (S2.3). PERIOD is a study period\n"
                              "  id, or matrix:ID for a matrix with its own times.\n"
                              "--macro-run ID (with --project, alone) runs a saved Macro definition's period and settings.\n"
+                             "--dynamic-assignment OUT [--iterations N] [--gap G] (with --project) runs the M9 MSA loop.\n"
                              "--route-costs FILE (with --project, a single run or --seeds) uses a dynamic assignment's weights.\n"
                              "--procedure ID (with --project, alone) runs a saved procedure's steps in order (JSON only).\n"
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
@@ -312,7 +314,8 @@ int main(int argc, char** argv) {
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
                 arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
                 arg == "--threads" || arg == "--macro" || arg == "--trip-generation" || arg == "--trip-distribution" ||
-                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--mode-choice" || arg == "--period" || arg == "--macro-run" || arg == "--procedure" || arg == "--export-utdf" || arg == "--utdf-mode" || arg == "--route-costs") {
+                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--mode-choice" || arg == "--period" || arg == "--macro-run" || arg == "--procedure" || arg == "--export-utdf" || arg == "--utdf-mode" || arg == "--route-costs" ||
+                arg == "--dynamic-assignment" || arg == "--iterations" || arg == "--gap") {
                 if (++i == argc) throw std::invalid_argument("Missing value for " + arg);
                 if (arg == "--seed") {
                     if (seedSet) throw std::invalid_argument("Specify seed only once");
@@ -350,6 +353,9 @@ int main(int argc, char** argv) {
                     if (slot) throw std::invalid_argument("Specify " + arg + " only once");
                     slot = argv[i];
                 }
+                else if (arg == "--dynamic-assignment") dynamicOut = argv[i];
+                else if (arg == "--iterations") iterations = std::stoi(argv[i]);
+                else if (arg == "--gap") gap = std::stod(argv[i]);
                 else if (arg == "--route-costs") {
                     if (!routeCostsFile.empty()) throw std::invalid_argument("Specify --route-costs only once");
                     routeCostsFile = argv[i];
@@ -426,6 +432,10 @@ int main(int argc, char** argv) {
         if (!routeCostsFile.empty() && (projectFile.empty() || procedureId || modeChoice || tripDistribution || tripRateSet || macroPeriod ||
                                         macroRunId || meso || nodeAnalysis || !utdfFile.empty() || !compareFile.empty()))
             throw std::invalid_argument("--route-costs needs --project and works with a single run or --seeds");
+        if ((iterations || gap) && dynamicOut.empty()) throw std::invalid_argument("--iterations and --gap need --dynamic-assignment");
+        if (!dynamicOut.empty() && (projectFile.empty() || procedureId || modeChoice || tripDistribution || tripRateSet || macroPeriod || macroRunId ||
+                                    meso || nodeAnalysis || !utdfFile.empty() || !compareFile.empty() || seeds || !routeCostsFile.empty() || !csvFile.empty()))
+            throw std::invalid_argument("--dynamic-assignment needs --project and takes only --iterations, --gap, --seed and --data-dir");
         if (utdfMode && utdfFile.empty()) throw std::invalid_argument("--utdf-mode needs --export-utdf");
         if (utdfUnsignalised && utdfFile.empty()) throw std::invalid_argument("--utdf-unsignalised needs --export-utdf");
         if (!utdfFile.empty() && (projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges ||
@@ -442,6 +452,7 @@ int main(int argc, char** argv) {
             if (!scenarioFile.empty() || !eventsFile.empty())
                 throw std::invalid_argument("--project cannot be combined with --scenario or --events");
             if (procedureId) return runProcedureProject(projectFile, data, *procedureId);
+            if (!dynamicOut.empty()) return runDynamicAssignmentProject(projectFile, dynamicOut, data, seed, iterations.value_or(20), gap.value_or(0.05));
             if (modeChoice) return runModeChoiceProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""),
                                                         costMatrix.value_or(""), *modeChoice, periods);
             if (tripDistribution) return runTripDistributionProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""), costMatrix.value_or(""));

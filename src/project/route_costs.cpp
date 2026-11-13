@@ -94,7 +94,7 @@ RouteCosts parseRouteCosts(const Json& j) {
             for (std::size_t k = 0; k < choices.size(); ++k) {
                 const auto kp = cp + ".choices[" + std::to_string(k) + "]";
                 const double w = number(field(choices[k], "weight", kp), kp + ".weight");
-                if (w < 0) invalid(kp + ".weight");
+                if (w < 0 || (!cell.interval && w == 0)) invalid(kp + ".weight"); // a default flow must be > 0 (§13.1)
                 sum += w;
                 cell.weight.push_back(w);
                 cell.cost.push_back(number(field(choices[k], "cost", kp), kp + ".cost"));

@@ -154,7 +154,7 @@ listed cell's flows with its weights at compile.
 (`dynamic assignment: iteration n, delta d`).
 - Exit code 0 even when not converged. In that case a final stderr line says
   `dynamic assignment: not converged after N iterations (delta d)`, so a batch is not broken.
-- Every refusal is the project's usual JSON issue list, with exit 1.
+- Every refusal prints as the CLI's usual `MULTRA: CODE: path` lines, with exit 1 (amended in §14).
 
 ## 7. Hand values and rows
 
@@ -210,7 +210,7 @@ Each row first asserts that its forcing worked.
 | A1 | The pure loop in `src/project/dynamic_assignment.*` behind a cost-provider callback. **Implemented (§10)** | DA1–DA3 |
 | A2 | Measurement from a Micro run, the file codec, `--route-costs`; unplaced decisions only (§11). **Implemented (§12)** | DA4–DA6, DA9 |
 | A2b | Placed and positioned decisions (route families), before or after A3 as the owner picks | — |
-| A3 | The loop over real runs, `--dynamic-assignment`, fixture (b) | DA7–DA8 |
+| A3 | The loop over real runs, `--dynamic-assignment`, fixture (b). **Implemented (§14)** | DA7–DA8 |
 | A4 | Later, the owner's choice: the editor, and weights written back into the project (a schema bump) | — |
 
 `src/core` stays unchanged unless a decision's passage time is not observable from outside. If it
@@ -306,3 +306,99 @@ recorded openly.
   input's end (900 s), which the project refuses (`INVALID_INTERVAL`). The input now ends at
   650 s too.
 - `src/core` is unchanged.
+
+## 13. Fixture (b), fixed before any run (A3, 2026-11-13)
+
+This replaces §7 (b)'s sketch with the drawing A3 builds (`tools/two_route_network.hpp`,
+`fixture::twoRoute()`). It was written before the network existed or any run was made.
+
+- **Geometry.** Left-hand traffic; one lane everywhere, 3.5 m wide.
+  - **Origin O:** (0, 0) → (100, 0).
+  - **Short route:** link S (110, 0) → (400, 0), with a fixed-time signal head 1 m before its
+    end: cycle 60 s, green 20 s, amber 3 s. Then a connector S → D.
+  - **Long route:** link L (110, 10) → (150, 150) → (350, 150) → (390, 10), about 490 m,
+    unsignalised. Then a connector L → D.
+  - **Destination D:** (410, 0) → (600, 0). Both connectors join D's lane at its start, so their
+    order is derived (M3.1).
+- **Demand:** one car input of 900 veh/h over 0–900 s, with a 300 s cool-down.
+- **Decision:** one unplaced decision {short, long} at 1 : 1 with no intervals, so one `default`
+  cell.
+- **Loop:** seed 42, `maxIterations` 20, `gap` 0.05.
+- **Why the equilibrium should be interior** (rough, before running):
+  - free flow is about 37 s on the short route and 50 s on the long;
+  - the short route's signal passes about 1,900 × 20/60 ≈ 630 veh/h, below 900.
+- **DA7's criteria stay as §7 wrote them.** Any miss is recorded as an amendment with its figures,
+  never tuned away.
+- **DA8 without a CMake test.**
+  - CMakeLists.txt is at 500 lines, and a CLI test needs two commands.
+  - DA8's stderr lines and the normal return are asserted on `runDynamicAssignment`, which
+    `--dynamic-assignment` calls with `std::cerr`. The CLI's own flags are checked by hand.
+
+### 13.1 Amendment after the first DA7 run (2026-11-13), recorded with its figures
+
+The first DA7 run, at seed 42 from the 1 : 1 start, gave:
+- short route 73.31 s (109 vehicles), long route 69.42 s (118 vehicles);
+- δ = 0.0269 at iteration 1, so the loop stopped converged at n = 1;
+- a cost difference of 5.6 %, which fails §7's second criterion.
+
+Two faults of the contract, not of the code:
+
+1. **The start did not force the loop.** 1 : 1 is already within the gap, so DA7 exercised no
+   MSA step. **Amended:** the fixture's decision starts at 1 : 0 (all on the short route), as
+   Ortúzar's Example 10.6 starts all on one route. A new forcing requires the first run's δ to
+   exceed 0.05.
+2. **The 5 % cost criterion contradicts the stopping rule.** δ ≤ 0.05 at shares near ½ allows a
+   difference of about 2 × 0.05 between two routes' costs. **Amended:** DA7 asserts the stopping
+   rule alone (converged, δ ≤ 0.05, within 20 runs). The final costs and shares are written as
+   observed (§14), not asserted.
+
+Nothing else changes: not the geometry, the demand, the seed, the gap or the iteration cap.
+
+**Correction to fault 1, found when building it.**
+- A 1 : 0 start cannot be authored. A decision entry's whole-period `relativeFlow` must be > 0
+  (`INVALID_SHARE`), though interval flows may be 0.
+- So the start is **19 : 1** (95 % on the short route). The forcing (first δ > 0.05) is unchanged.
+- **The same rule constrains the loop and the file:**
+  - From a positive start, MSA never writes 0 to a default cell, since each weight is at least
+    w¹/n.
+  - A route-costs file whose `default` cell holds a 0 weight is `ROUTE_COSTS_INVALID` at that
+    choice's `weight`.
+
+## 14. As implemented (A3, 2026-11-13)
+
+- **Code:**
+  - `src/project/dynamic_assignment_loop.*`: `runDynamicAssignment`. It runs `iterateMsa` with
+    each iteration's weights written into a copy of the document and measured by
+    `measureDecisionCosts`, logs one line per iteration plus the "not converged" line, and returns
+    the last run's `RouteCosts`.
+  - `tools/two_route_network.hpp`: `fixture::twoRoute()`, the §13 drawing at 19 : 1 (§13.1).
+  - `multra-cli --dynamic-assignment OUT [--iterations N] [--gap G]`, alone with `--project`,
+    `--seed` and `--data-dir`. It refuses an existing OUT before running and exits 0 when
+    unconverged.
+  - Refusals print as the CLI's usual `MULTRA: CODE: path` lines, with exit 1. A JSON issue list
+    is not written; §6 is amended to that.
+- **Observed at seed 42.** Simulated, not validated (rule 4).
+
+| n | δ | short (s, vehicles) | long (s, vehicles) |
+|---|---|---|---|
+| 1 (19 : 1) | 0.8103 | 170.42 (216) | 92.04 (11) |
+| 2 (0.475 : 0.525) | 0.0108 | 70.19 (111) | 68.68 (116) |
+
+  - The loop stops converged at n = 2.
+  - **Before §13.1,** the 1 : 1 start gave 73.31 / 69.42 s with δ = 0.0269 at n = 1.
+  - **Two MSA iterations are not a measure of MSA's speed here.** The one step from 19 : 1 halves
+    to 0.475 short, which happens to lie inside the gap.
+- **Rows:** `tests/dynamic_assignment_loop_tests.cpp` (group `dynassignloop`) covers DA7 and DA8.
+- **By hand, the CLI on the fixture's JSON** (generated in a scratch directory, not committed):
+  - two runs were `cmp`-identical;
+  - `--iterations 2 --gap 0` printed the "not converged after 2 iterations" line and exited 0;
+  - an existing OUT was refused;
+  - `--route-costs` with the written file ran (227 completed).
+- **The M9 gate.** ROADMAP's "Done when" asks for:
+  - an analytic two-route fixture converging within the stated tolerance (A1, Example 10.6 → 11.1,
+    exact; A3, the Micro pair within δ 0.05);
+  - same inputs giving the same bytes (DA8);
+  - non-convergence flagged (DA1, DA8).
+
+  Every part is now asserted by a row. Closing the gate is the owner's call (rule 8). Placed and
+  positioned decisions (A2b) stay open.

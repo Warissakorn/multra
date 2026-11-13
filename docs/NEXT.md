@@ -212,11 +212,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
 Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done (below); when the owner asks for an engine
-slice, the next one is M9 (contract D549, A1–A2 done; A3 next, A2b for placed decisions), then M11.5 and the M11 gate, M12. Each starts with its contract. M13 is
+slice, the next one is M9 (D549, A1–A3 done; the gate is the owner's; A2b for placed decisions), then M11.5 and the M11 gate, M12. Each starts with its contract. M13 is
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
 
-## M9 dynamic assignment — contract (D549), A1 and A2 done; A3 next
+## M9 dynamic assignment — A1–A3 done (D549); stop for the owner
 
 - [DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9. Owner chose every recommended option:
   MSA with all-or-nothing auxiliary shares per decision × interval cell, cost from the decision to arrival,
@@ -227,8 +227,11 @@ user roles) is open.
   `<input>/path-k` (`withRoutingDecisions`, `expandRouteless`), so no event names it. `DepartedEvent` carries
   `scheduledTime`. Mapping a vehicle to its entry needs the compiled route's families or link sequence.
 - **A2 done (unplaced decisions only, §11):** `dynamic_assignment_run.*`, `route_costs.*`, `--route-costs` (DA4–DA6, DA9, group `dynassignrun`). Placed and positioned decisions are refused as `DYNAMIC_ASSIGNMENT_UNSUPPORTED` until A2b.
-- **Next:** A3, `--dynamic-assignment` and the two-route Micro fixture (DA7–DA8), built on an unplaced decision.
-  A2b (placed and positioned decisions) and A4 (editor, weights into the project) only on the owner's pick.
+- **A3 done:** `runDynamicAssignment`, `--dynamic-assignment OUT [--iterations N] [--gap G]`, `fixture::twoRoute()`
+  (DA7–DA8, group `dynassignloop`). Amended after the first run (§13.1, figures recorded): start 19 : 1, since 1 : 1
+  was already inside the gap; the 5 % cost criterion dropped as inconsistent with δ. Converged at n = 2 (δ 0.0108).
+- **Owner:** whether the M9 gate's rows (DYNAMIC_ASSIGNMENT §14) close it (rule 8). **Next on the owner's pick:**
+  A2b (placed and positioned decisions), A4 (editor, weights into the project), or M11.5 reusing the loop.
 
 ## M10 four-step — G1–G2, D1–D4, E1–E2, N1, P1–P2, F1–F2, L1–L2 done (D470–D485, D547, D548); stop for the owner
 

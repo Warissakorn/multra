@@ -154,6 +154,8 @@ TEST(dynassignrun, da9_route_costs_file) { // DA9
     CHECK(has(refuses([&] { parseRouteCosts(format); }), "ROUTE_COSTS_INVALID", "format"));
     auto negative = json; negative["decisions"][0]["cells"][0]["choices"][0]["weight"] = -1;
     CHECK(has(refuses([&] { parseRouteCosts(negative); }), "ROUTE_COSTS_INVALID", "decisions[0].cells[0].choices[0].weight"));
+    auto defaultZero = json; defaultZero["decisions"][0]["cells"][2]["choices"][1]["weight"] = 0; // §13.1
+    CHECK(has(refuses([&] { parseRouteCosts(defaultZero); }), "ROUTE_COSTS_INVALID", "decisions[0].cells[2].choices[1].weight"));
     auto zero = json;
     for (auto& c : zero["decisions"][0]["cells"][0]["choices"]) c["weight"] = 0;
     CHECK(has(refuses([&] { parseRouteCosts(zero); }), "ROUTE_COSTS_INVALID", "decisions[0].cells[0]"));

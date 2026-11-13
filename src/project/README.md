@@ -99,6 +99,7 @@ keeps its schema and bytes.
 | `period_factor_codec.*` | The project's `periodFactors` at schema 69: per purpose and study period, the P→A and A→P shares; unknown periods and repeated pairs refused | [MODE_CHOICE §5-§6](../../docs/reference/MODE_CHOICE.md) |
 | `mode_choice_run.*` | One mode-choice run: distribution, the set, a skim per mode, the logit split per purpose, then per study period the directional OD, vehicles by occupancy and each mode's vehicle matrix, with document paths on refusal; `generatedOdMatrices` (moved from commands, D484) | [MODE_CHOICE §3-§7](../../docs/reference/MODE_CHOICE.md) |
 | `dynamic_assignment_run.*` | M9 over a project (D549): the cells of unplaced routing decisions, their weights, and their costs measured from one Micro run (departure to arrival, censored counted, empty choices free-flow-filled) |
+| `dynamic_assignment_loop.*` | M9 (D549): `runDynamicAssignment`, the MSA loop over real Micro runs returning the last run's route costs |
 | `route_costs.*` | M9 (D549): the `MultraRouteCosts` file, its codec and `applyRouteCosts` with STALE/INVALID refusals |
 | `dynamic_assignment.*` | M9 dynamic assignment ([DYNAMIC_ASSIGNMENT](../../docs/reference/DYNAMIC_ASSIGNMENT.md), D549): the pure MSA loop over decision cells behind a cost provider, all-or-nothing shares, the δ indicator |
 | `mode_choice_output.*` | Its JSON (per purpose and period, persons, vehicles and costs) and CSV (period, alternative and pair rows plus totals), both marked with the unit conditional | [MODE_CHOICE §7](../../docs/reference/MODE_CHOICE.md) |

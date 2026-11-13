@@ -413,7 +413,7 @@ byte-identical; editor tools and the OD table ship in the milestone.
 
 ### M9 — Dynamic assignment (Micro)
 
-**Open; contract written ([DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), D549), code not started.** Iterative between-run path-cost loop (MSA) over the existing routing decisions;
+**Open; A1–A3 implemented ([DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), D549), gate rows in place, closing is the owner's; placed decisions wait for A2b.** Iterative between-run path-cost loop (MSA) over the existing routing decisions;
 costs in a separate file with provenance; convergence reported. En-route rerouting is excluded.
 **Done when:** an analytic two-route fixture converges to its equilibrium split within the stated
 tolerance; same inputs give the same bytes; non-convergence is flagged.

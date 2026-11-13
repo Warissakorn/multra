@@ -11,6 +11,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Hand values:** Example 10.6's MSA trace (book p. 371) computed exactly; every row equals the printed table (row 7 printed rounded), reaching Example 11.1's 600 / 1400 at 22 min at n = 10 with δ = 0.
 - **A1:** `src/project/dynamic_assignment.*` (`iterateMsa` behind a cost provider, `allOrNothing`, `msaStep`, `msaDelta`); group `dynassign` passes DA1–DA3 against that table to 1e-9.
 - **A2:** amendments recorded before code (§11: unplaced decisions only, placed ones refused until A2b; cost = departure to arrival; free-flow fill by authored route length over the mean desired speed); measurement, the `MultraRouteCosts` codec and `--route-costs`; group `dynassignrun` passes DA4–DA6 and DA9.
+- **A3:** fixture (§13) fixed before running; the first run showed the 1 : 1 start already inside the gap (δ 0.027) and the 5 % cost criterion inconsistent with δ, so §13.1 amends both openly (start 19 : 1; δ alone). `runDynamicAssignment`, `--dynamic-assignment`, `fixture::twoRoute()`; δ 0.810 → 0.0108, converged at n = 2 with 0.475 / 0.525 at 70.2 / 68.7 s. Group `dynassignloop` passes DA7–DA8; two CLI runs `cmp`-identical.
 
 ## 2026-11-13 — Logsum composite cost into distribution, G/D/MS/A (D548)
 
