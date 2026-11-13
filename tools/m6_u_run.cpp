@@ -20,7 +20,7 @@
 
 using namespace multra;
 namespace {
-constexpr const char* kUsage = "usage: multra-m6-u-run run|split <data-dir> <compile_commands.json> <new-output-dir> [--candidate base|B|C]\n";
+constexpr const char* kUsage = "usage: multra-m6-u-run run|split <data-dir> <compile_commands.json> <new-output-dir> [--candidate base|B|C|D|E|DE]\n";
 std::string bytes(const std::filesystem::path& path) {
     std::ifstream stream(path, std::ios::binary);
     if (!stream) throw std::runtime_error("Cannot read " + path.string());

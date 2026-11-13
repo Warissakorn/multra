@@ -403,7 +403,7 @@ if(BUILD_TESTING)
     add_test(NAME cli-m6-u-run-refused COMMAND multra-m6-u-run run ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/data)
     set_tests_properties(cli-m6-s1-run-refused cli-m6-s2-run-refused cli-m6-u-run-refused PROPERTIES PASS_REGULAR_EXPRESSION "Output already exists")
     add_test(NAME cli-m6-sweep-refused COMMAND multra-m6-u-run run ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json x --candidate X)
-    add_test(NAME cli-m6-sweep-refused-mode COMMAND multra-m6-s2-run c ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json x --candidate B)
+    add_test(NAME cli-m6-sweep-refused-mode COMMAND multra-m6-s2-run c ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json x --candidate E)
     set_tests_properties(cli-m6-sweep-refused cli-m6-sweep-refused-mode PROPERTIES PASS_REGULAR_EXPRESSION "Unknown candidate|--candidate needs mode ab")
     # S2.3 (MACRO_NETWORK §9, D275): one period's static assignment, and its refusals.
     add_test(NAME cli-macro COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --macro matrix:am)

@@ -14,9 +14,10 @@ FollowingResult followingAcceleration(double speed, double desiredSpeed, double 
     double acceleration = free;
     auto mode = FollowingMode::free;
     if (leader) {
-        const double desiredGap = behaviour.standstillDistance +
+        // M6_SWEEP §4 (D546), lever D: behind a leader slower than 0.1 m/s, the standstill gap alone.
+        const double desiredGap = behaviour.standstillDistance + (behaviour.standingTarget && leader->speed < 0.1 ? 0.0 :
             (behaviour.additiveSafetyDistance + behaviour.multiplicativeSafetyDistance * driverFactor) *
-            std::sqrt(std::max(0.0, speed));
+            std::sqrt(std::max(0.0, speed)));
         const double closing = speed - leader->speed;
         const double room = std::max(0.01, leader->gap - desiredGap);
         const auto following = [&] {

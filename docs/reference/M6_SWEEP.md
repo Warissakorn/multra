@@ -88,13 +88,23 @@ target, and DE combines them.
 
 Phase 1 found D544's U arithmetic too optimistic for both B and C.
 
+**Rows amended after the first test run, before any sweep figure (as SU4 was):**
+- **SW7** first asked for the gap to stay at or above `standstillDistance` in the bare law. With D the
+  law is underdamped and dips about 0.08 m below it. In the engine, the hard cap (`leaderCap`, the
+  leader's gap less the standstill gap) holds the standstill gap. The row now asks that the vehicle
+  does not touch the obstacle.
+- **SW9** first asked `E` for more pairs than base. On seed 42's 600 s, `E` alone leaves the pairs
+  unchanged: without D, a car enters the Stop reach already below 0.1 m/s, so the 0.5 m/s test
+  never applies. E is forced through `DE` against `D` instead.
+- No definition changed.
+
 | Row | Statement | Group |
 |---|---|---|
 | SW5 | `D`, `E` and `DE` set only their flags, and change no number on any behaviour. Every flag is false on a compiled `junction(200)` and after `base` | `m6sweep` |
 | SW6 | The prototype law with `D`: behind a leader at 0.05 m/s, the acceleration equals base's with `additiveSafetyDistance` and `multiplicativeSafetyDistance` both 0. Behind a leader at 0.2 m/s, it equals base's | `m6sweep` |
-| SW7 | From 10 m/s, 50 m behind a standing obstacle, with `followingAcceleration` and `integrate` at 0.1 s: with `D` the speed reaches 0 within 30 s and the gap never falls below `standstillDistance` − 1e-6. Base is still moving (speed above 0) at that tick | `m6sweep` |
+| SW7 | From 10 m/s, 50 m behind a standing obstacle, with `followingAcceleration` and `integrate` at 0.1 s: with `D` the speed reaches 0 within 30 s without touching the obstacle (gap above 0). Base is still moving (speed above 0) at that tick | `m6sweep` |
 | SW8 | `stopMade`, the arrival test `refreshStops` uses: a vehicle at 0.3 m/s, 1 m before a Stop line, has made the Stop with `E` and not without it. At 0.05 m/s it has made it either way | `m6sweep` |
-| SW9 | `junction(200)` cut to 600 s, seed 42: `D` gives a smaller mean `standDistance` than base; `E` gives more follow-up pairs than base (the forcing) | `m6sweep` |
+| SW9 | `junction(200)` cut to 600 s, seed 42: `D` gives a smaller mean `standDistance` than base, and `DE` gives a shorter mean follow-up headway than `D` (the forcing) | `m6sweep` |
 | SW10 | The S2 tool refuses `--candidate E` with mode `c` (SW4's test, now with `E`) | `cli-m6-sweep-refused-mode` |
 
 Return to [the reference index](README.md).
