@@ -87,9 +87,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     jam spacing, start-up response and amber use. **D542: U-c and U-a run** ([evidence](evidence/m6-u-first-run.md)):
     the Stop-controlled rank-2 turn carries 228.5 … 81.6 veh/h at `v_c` 200 … 1,000 (HCM 846 … 298); both miss
     at every level; the engine's follow-up headway is 13.7 s (HCM 3.3 s), so the Stop service, not the gap
-    test, limits the movement. Every kind now has its first run. **Next (owner's choice):** a diagnostic
-    that splits the 13.7 s (move-up, reaching < 0.1 m/s at the line, the one-tick service, receiving space),
-    contract first; then the one held calibration decision (D540) covering S1, S2 and U.
+    test, limits the movement. Every kind now has its first run. **D543** ([evidence](evidence/m6-u-split.md)):
+    of the 13.7 s, the move-up to the line takes 10.7–12.2 s (the last 0.5 m alone 3.75 s, the creep), the
+    service 0.1 s, the release 1.6 s, almost never blocked. **Next: the owner's one held calibration decision
+    (D540)** — the engine's approach to a standing target (S1 creep and jam spacing, U move-up), start-up
+    response and amber use, which move S1, S2 and U together.
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
     D531: S1 keeps the mean headway; the median and skewness beside it need a `--discharge`
