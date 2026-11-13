@@ -84,9 +84,12 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     **D541** ([evidence](evidence/m6-s2-green.md)): the engine's capacity is 913 veh/h (HCM 844): effective
     green 42.3 s, lost time 0.73 s (HCM 3 s). At its own values HCM `d1 + d2` is within ±15 % at every
     level, so S2-b/S2-a miss on capacity, not queueing. The held calibration question (D540) now covers
-    jam spacing, start-up response and amber use. **Next: U-c and U-a.** **Held for the owner:** any S1 calibration, decided once after every kind's first
-    run. Then U-c and U-a. Then the S2
-    runs (S2-c first, `multra-fctl-reference`) and the U runs (U-c, U-a).
+    jam spacing, start-up response and amber use. **D542: U-c and U-a run** ([evidence](evidence/m6-u-first-run.md)):
+    the Stop-controlled rank-2 turn carries 228.5 … 81.6 veh/h at `v_c` 200 … 1,000 (HCM 846 … 298); both miss
+    at every level; the engine's follow-up headway is 13.7 s (HCM 3.3 s), so the Stop service, not the gap
+    test, limits the movement. Every kind now has its first run. **Next (owner's choice):** a diagnostic
+    that splits the 13.7 s (move-up, reaching < 0.1 m/s at the line, the one-tick service, receiving space),
+    contract first; then the one held calibration decision (D540) covering S1, S2 and U.
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
     D531: S1 keeps the mean headway; the median and skewness beside it need a `--discharge`

@@ -5,6 +5,12 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-13 — Kind U first run: U-c and U-a (D542)
+
+- **D542** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_U_RUN](reference/M6_U_RUN.md), rows U1–U6), then `tools/m6_u_network.hpp`, `m6_u_summary.hpp` and `multra-m6-u-run`. A left-hand T, Stop on the minor left turn's merge, `gapTime` 5.804 s from `t_c` 6.2 s, minor demand 1,800 veh/h, seeds 42–81.
+- **Result** ([evidence](evidence/m6-u-first-run.md)): 228.5, 196.0, 159.4, 119.2, 81.6 veh/h at `v_c` 200 … 1,000; U-a (HCM 846 … 298) and U-c miss at every level. The follow-up headway is 13.7 s, so the Stop service caps the movement. Nothing tuned.
+- `CMakeLists.txt`: the scattered `add_dependencies(check …)` lines folded into one to stay at 500 lines.
+
 ## 2026-11-13 — The engine's effective green, and the references at its own values (D541)
 
 - **D541** (owner: as recommended): contract first (M6_S2_RUN §8, rows S2E1–S2E4), then `tools/m6_s2_green.hpp` and mode `green` of `multra-m6-s2-run`. Every crossing per cycle is counted on the saturated S1 project, amber included.
