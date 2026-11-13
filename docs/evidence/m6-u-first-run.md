@@ -8,7 +8,7 @@ major flows, against Eq. 20-18 at the engine's own `t_c`/`t_f` (U-c) and at HCM 
 ## 1. The run
 
 ```bash
-./build/desktop/bin/multra-m6-u-run data build/desktop/compile_commands.json <new-output-dir>
+./build/desktop/bin/multra-m6-u-run run data build/desktop/compile_commands.json <new-output-dir>   # no mode at build a880783
 ```
 
 - **Build and seeds:** build `a880783`, seeds 42–81, five levels, 200 runs (about 18 minutes).

@@ -1,9 +1,11 @@
 // M6 kind U (docs/reference/M6_U_RUN.md, D542): the minor left turn's capacity under Stop at five
 // major flows, seeds 42-81, counted by the priority-line counter (D528), against Eq. 20-18 at the
 // engine's pooled Siegloch t_c and follow-up t_f (U-c) and at HCM 7's 6.2 / 3.3 s (U-a).
+// Mode `split` (D543, §6) splits each Stop follow-up headway into the engine's own events.
 // Writes a fresh directory; metadata.json with complete=true is written LAST.
 #include "m6_u_network.hpp"
 #include "m6_u_summary.hpp"
+#include "m6_u_split.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/project/evaluation.hpp"
 #include "../src/project/input_manifest.hpp"
@@ -17,7 +19,7 @@
 
 using namespace multra;
 namespace {
-constexpr const char* kUsage = "usage: multra-m6-u-run <data-dir> <compile_commands.json> <new-output-dir>\n";
+constexpr const char* kUsage = "usage: multra-m6-u-run run|split <data-dir> <compile_commands.json> <new-output-dir>\n";
 std::string bytes(const std::filesystem::path& path) {
     std::ifstream stream(path, std::ios::binary);
     if (!stream) throw std::runtime_error("Cannot read " + path.string());
@@ -42,19 +44,21 @@ struct Level { double vc{}; std::string name; ProjectDocument document; RunSnaps
 }
 int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--help") { std::cout << kUsage; return 0; }
-    if (argc != 4) { std::cerr << kUsage; return 2; }
+    const std::string mode = argc == 5 ? argv[1] : "";
+    if (mode != "run" && mode != "split") { std::cerr << kUsage; return 2; }
     try {
-        const std::filesystem::path data = argv[1], directory = argv[3];
+        const bool split = mode == "split";
+        const std::filesystem::path data = argv[2], directory = argv[4];
         if (std::filesystem::exists(directory)) throw std::invalid_argument("Output already exists: " + directory.string());
         InputManifest inputs;
-        const auto commands = readInputJson(argv[2], "build/compile_commands.json", &inputs);
+        const auto commands = readInputJson(argv[3], "build/compile_commands.json", &inputs);
         Json command;
         for (const auto& entry : commands)
             if (std::filesystem::path(entry.at("file").get<std::string>()).filename() == "m6_u_run.cpp") command = entry;
         if (command.is_null()) throw std::invalid_argument("Missing m6_u_run.cpp compiler command");
         Json sources = Json::array();
         const auto sourceDirectory = std::filesystem::path(command.at("file").get<std::string>()).parent_path();
-        for (const auto* name : {"m6_u_run.cpp", "m6_u_network.hpp", "m6_u_summary.hpp", "m6_s1_summary.hpp"})
+        for (const auto* name : {"m6_u_run.cpp", "m6_u_network.hpp", "m6_u_summary.hpp", "m6_u_split.hpp", "m6_s1_summary.hpp"})
             sources.push_back({{"file", name}, {"sha256", inputSha256(bytes(sourceDirectory / name))}});
         std::vector<Level> levels;
         Json documents = Json::array();
@@ -75,16 +79,29 @@ int main(int argc, char** argv) {
         std::string csv = "vc,seed,minorPerHour,majorPerHour,minorCrossed,majorEntered,followUps,followUpMean,sieglochGaps,share,excluded\n";
         std::vector<std::vector<PriorityLineRow>> rows(levels.size());
         std::vector<PriorityLineRow> all;
+        std::vector<std::vector<std::vector<m6u::Pair>>> pairs(levels.size());
+        std::string splitCsv = "vc,seed,headway,moveUp,settle,moveDistance,peakSpeed,dwell,release,blocked,free,standDistance\n";
         for (std::size_t k = 0; k < levels.size(); ++k) {
             const auto& scenario = levels[k].snapshot.scenario;
             if (scenario.conflictZones.size() != 1) throw std::invalid_argument("Expected the junction's one area");
             for (std::uint32_t seed = 42; seed <= 81; ++seed) {
                 PriorityLineAccumulator counter(levels[k].evaluation);
+                m6u::SplitObserver observer(m6u::kWarmup, m6u::kDuration, levels[k].evaluation.queue.beginSpeed);
                 auto state = createSimulation(scenario, seed);
                 counter.observe(state);
+                if (split) observer.observe(state);
                 for (const auto ticks = totalTicks(scenario); state.tick < ticks;) {
                     state = stepSimulation(std::move(state));
                     counter.observe(state);
+                    if (split) observer.observe(state);
+                }
+                if (split) {
+                    pairs[k].push_back(observer.pairs());
+                    for (const auto& p : pairs[k].back())
+                        splitCsv += Json(levels[k].vc).dump() + "," + std::to_string(seed) + "," + Json(p.phases.headway).dump() + "," +
+                            Json(p.phases.moveUp).dump() + "," + Json(p.approach.settle).dump() + "," + Json(p.approach.moveDistance).dump() + "," +
+                            Json(p.approach.peakSpeed).dump() + "," + Json(p.phases.dwell).dump() + "," + Json(p.phases.release).dump() + "," +
+                            Json(p.phases.blocked).dump() + "," + Json(p.phases.free).dump() + "," + Json(p.standDistance).dump() + "\n";
                 }
                 const auto r = counter.report().rows.at(0);
                 rows[k].push_back(r); all.push_back(r);
@@ -95,6 +112,49 @@ int main(int argc, char** argv) {
                     std::to_string(r.sieglochGaps) + "," + (s ? Json(*s).dump() : std::string()) + "," + std::to_string(r.excluded) + "\n";
                 std::cerr << "vc " << levels[k].vc << " seed " << seed << " minor " << r.minorPerHour << " major " << r.majorPerHour << '\n';
             }
+        }
+        if (split) {
+            // §6: per level, each measure's mean over seeds of each seed's mean over its pairs.
+            using Get = double (*)(const m6u::Pair&);
+            const std::vector<std::pair<const char*, Get>> measures{
+                {"headway", [](const m6u::Pair& p) { return p.phases.headway; }}, {"moveUp", [](const m6u::Pair& p) { return p.phases.moveUp; }},
+                {"settle", [](const m6u::Pair& p) { return p.approach.settle; }}, {"moveDistance", [](const m6u::Pair& p) { return p.approach.moveDistance; }},
+                {"peakSpeed", [](const m6u::Pair& p) { return p.approach.peakSpeed; }}, {"dwell", [](const m6u::Pair& p) { return p.phases.dwell; }},
+                {"release", [](const m6u::Pair& p) { return p.phases.release; }}, {"blocked", [](const m6u::Pair& p) { return p.phases.blocked; }},
+                {"free", [](const m6u::Pair& p) { return p.phases.free; }}, {"standDistance", [](const m6u::Pair& p) { return p.standDistance; }}};
+            Json out = Json::array();
+            for (std::size_t k = 0; k < levels.size(); ++k) {
+                Json level{{"vcNominal", levels[k].vc}};
+                std::size_t n = 0;
+                for (const auto& seedPairs : pairs[k]) n += seedPairs.size();
+                level["pairs"] = n;
+                level["counterFollowUps"] = [&] { std::uint64_t c = 0; for (const auto& r : rows[k]) c += r.followUps; return c; }();
+                level["counterFollowUpMean"] = opt(m6u::pooledFollowUp(rows[k]));
+                for (const auto& [name, get] : measures) {
+                    std::vector<double> perSeed;
+                    for (const auto& seedPairs : pairs[k]) {
+                        if (seedPairs.empty()) continue;
+                        double sum = 0;
+                        for (const auto& p : seedPairs) sum += get(p);
+                        perSeed.push_back(sum / static_cast<double>(seedPairs.size()));
+                    }
+                    level[name] = m6s1::figureJson(m6s1::figure(perSeed));
+                }
+                out.push_back(level);
+            }
+            write(directory / "split.csv", splitCsv);
+            write(directory / "summary.json", Json{{"label", "M6 kind U follow-up split (D543); no band, decides nothing"},
+                {"gapTime", m6u::gapTime(levels[0].areaLength)}, {"headwayRule", m6u::kHeadway}, {"levels", out}}.dump(2) + "\n");
+            Json outputs = Json::array();
+            for (const auto* name : {"split.csv", "summary.json"}) {
+                const auto captured = bytes(directory / name);
+                outputs.push_back({{"file", name}, {"bytes", captured.size()}, {"sha256", inputSha256(captured)}});
+            }
+            write(directory / "metadata.json", Json{{"complete", true}, {"label", "M6 kind U follow-up split (D543)"},
+                {"buildCommit", MULTRA_BUILD_COMMIT}, {"compiler", MULTRA_COMPILER}, {"compilerCommand", command},
+                {"toolSources", sources}, {"documents", documents}, {"outputs", outputs}, {"inputManifest", inputs.json()},
+                {"firstSeed", 42}, {"lastSeed", 81}}.dump(2) + "\n");
+            return 0;
         }
         // §4: U-c's one t_c from the pooled Siegloch points, t_f the pooled follow-up mean.
         const auto pooledFit = sieglochFit(m6u::pool(all));

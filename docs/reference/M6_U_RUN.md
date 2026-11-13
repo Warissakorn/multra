@@ -161,7 +161,7 @@ queue at the line is dense. Both counts are reported.
 | SU1 | Hand times give `moveUp`, `dwell` and `release` that sum to the headway; hand blocked flags give `blocked` and `free` that sum to `release` | `m6u` |
 | SU2 | The block test on hand values: `d` = headway blocks; `d` = 10 m at 2 m/s blocks with `gapTime` 5.804 s (5 s) and does not at 1 m/s (10 s); `d / speed` exactly `gapTime` does not block; a standing vehicle beyond `headway` does not; occupying blocks until the rear passes `exitAt` | `m6u` |
 | SU3 | `settle`, `moveDistance` and `peakSpeed` on a hand trace give hand values | `m6u` |
-| SU4 | `junction(600)` cut to 300 s with a 60 s warm-up, seed 42, has pairs. Every pair's phases sum to its headway within 1e−9. Every `dwell` equals `(ticks + 1)·dt` = 0.2 s (the forcing: the service is what `restsAtStop` says) | `m6u` |
+| SU4 | `junction(200)` cut to 600 s with a 60 s warm-up, seed 42, has pairs (at `v_c` 600 a 240 s window rarely holds a follow-up with no major entry, so the row was moved to 200 before any split figure). Every pair's phases sum to its headway within 1e−9. Every `dwell` equals one tick, 0.1 s: the observer first sees a service in the state after the step that made it (`since` + 1), and the vehicle is served from tick `since + ticks + 1` (the forcing: the service is what `restsAtStop` says). The row first required `(ticks + 1)·dt` = 0.2 s, reading `s0` as `since`; the first test run showed 0.1 s for all 12 pairs, so the row was corrected, with no definition changed | `m6u` |
 | SU5 | The usage line lists `run\|split` | `cli-m6-u-run-help` |
 
 Return to [the reference index](README.md).

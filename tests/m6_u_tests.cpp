@@ -1,6 +1,7 @@
 #include "test.hpp"
 #include "../tools/m6_u_network.hpp"
 #include "../tools/m6_u_summary.hpp"
+#include "../tools/m6_u_split.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/project/run.hpp"
 #include "../src/project/evaluation.hpp"
@@ -85,4 +86,46 @@ TEST(m6u, u5_a_short_run_counts_the_near_stream_only) {
     CHECK(row.minorCrossed > 0);
     const auto share = m6u::share(row);
     CHECK(share && *share >= 0 && *share <= 1);
+}
+// D543 (M6_U_RUN §6): the follow-up split, rows SU1-SU4.
+TEST(m6u, su1_phases_sum_to_the_headway_and_release_splits) {
+    const auto p = m6u::phases(100.25, 108, 108.2, 113.85, 1.5);
+    CHECK(near(p.headway, 13.6, 1e-12) && near(p.moveUp, 7.75, 1e-12) && near(p.dwell, .2, 1e-12) && near(p.release, 5.65, 1e-12));
+    CHECK(near(p.moveUp + p.dwell + p.release, p.headway, 1e-12));
+    CHECK(near(p.blocked, 1.5, 1e-12) && near(p.blocked + p.free, p.release, 1e-12));
+}
+TEST(m6u, su2_the_block_test_follows_the_rule) {
+    CHECK(m6u::blocks(.1, 0, false, 5.804, .1));       // d = headway
+    CHECK(m6u::blocks(10, 2, false, 5.804, .1));       // 5 s
+    CHECK(!m6u::blocks(10, 1, false, 5.804, .1));      // 10 s
+    CHECK(!m6u::blocks(11.608, 2, false, 5.804, .1));  // exactly gapTime
+    CHECK(!m6u::blocks(5, 0, false, 5.804, .1));       // standing beyond headway
+    CHECK(m6u::blocks(-1, 10, true, 5.804, .1));       // occupying
+    CHECK(!m6u::blocks(-6, 10, false, 5.804, .1));     // rear past the exit
+}
+TEST(m6u, su3_approach_on_a_hand_trace) {
+    const std::vector<m6u::Sample> trace{{9, 90, 0}, {10, 90, .05}, {11, 92, 2}, {12, 95, 3}, {13, 96.4, 1}, {14, 96.6, .3}, {15, 96.8, .05}};
+    const auto a = m6u::approach(trace, 10, 15);
+    CHECK(near(a.moveDistance, 6.8, 1e-12) && near(a.peakSpeed, 3, 1e-12));
+    CHECK(near(a.settle, 15 - 13, 1e-12)); // 96.4 is the first within 0.5 m of 96.8
+}
+TEST(m6u, su4_a_short_run_splits_every_pair_and_the_service_is_one_observed_tick) {
+    const auto j = m6u::junction(200);
+    const auto data = test::root() / "data";
+    auto snapshot = compileDocument(j.document, data);
+    const auto spec = evaluationSpec(j.document, snapshot, data);
+    auto s = snapshot.scenario;
+    s.duration = 600;
+    for (auto& in : s.inputs) in.endTime = 600;
+    m6u::SplitObserver observer(60, 600, spec.queue.beginSpeed);
+    auto state = createSimulation(s, 42);
+    observer.observe(state);
+    while (state.tick < totalTicks(s)) { state = stepSimulation(std::move(state)); observer.observe(state); }
+    const auto pairs = observer.pairs();
+    CHECK(!pairs.empty());
+    for (const auto& p : pairs) {
+        CHECK(near(p.phases.moveUp + p.phases.dwell + p.phases.release, p.phases.headway, 1e-9));
+        CHECK(near(p.phases.dwell, .1, 1e-9));
+        CHECK(p.phases.blocked >= 0 && p.phases.free >= -1e-9);
+    }
 }
