@@ -36,9 +36,10 @@ RouteCosts routeCostsFor(const AuthoringDefinition& def, const DaPlan& plan, con
 }
 Json routeCostsJson(const RouteCosts& r) {
     Json j{{"format", "MultraRouteCosts"}, {"version", 1}, {"notValidated", true}};
-    j["provenance"] = {{"project", r.provenance.project}, {"seed", r.provenance.seed},
-                       {"maxIterations", r.provenance.settings.maxIterations}, {"gap", r.provenance.settings.gap},
-                       {"tool", r.provenance.tool}};
+    if (r.level == DaLevel::meso) j["level"] = "meso";
+    j["provenance"] = {{"project", r.provenance.project}, {"maxIterations", r.provenance.settings.maxIterations},
+                       {"gap", r.provenance.settings.gap}, {"tool", r.provenance.tool}};
+    if (r.level == DaLevel::micro) j["provenance"]["seed"] = r.provenance.seed;
     j["converged"] = r.converged;
     j["iterations"] = Json::array();
     for (std::size_t n = 0; n < r.deltas.size(); ++n) j["iterations"].push_back({{"n", n + 1}, {"delta", r.deltas[n]}});
@@ -66,9 +67,13 @@ RouteCosts parseRouteCosts(const Json& j) {
     if (!j.is_object() || j.value("format", "") != "MultraRouteCosts") invalid("format");
     if (!j.contains("version") || j["version"] != 1) invalid("version");
     RouteCosts r;
+    if (j.contains("level")) {
+        if (j["level"] == "meso") r.level = DaLevel::meso;
+        else if (j["level"] != "micro") invalid("level");
+    }
     const auto& p = field(j, "provenance", "");
     r.provenance.project = field(p, "project", "provenance").get<std::string>();
-    r.provenance.seed = field(p, "seed", "provenance").get<std::uint32_t>();
+    if (r.level == DaLevel::micro) r.provenance.seed = field(p, "seed", "provenance").get<std::uint32_t>();
     r.provenance.settings.maxIterations = field(p, "maxIterations", "provenance").get<int>();
     r.provenance.settings.gap = number(field(p, "gap", "provenance"), "provenance.gap");
     r.provenance.tool = field(p, "tool", "provenance").get<std::string>();
@@ -110,7 +115,8 @@ RouteCosts parseRouteCosts(const Json& j) {
     r.skipped = field(j, "skipped", "").get<std::vector<std::string>>();
     return r;
 }
-ProjectDocument applyRouteCosts(ProjectDocument doc, const RouteCosts& r) {
+ProjectDocument applyRouteCosts(ProjectDocument doc, const RouteCosts& r, DaLevel run) {
+    if (r.level != run) throw ValidationError({{"ROUTE_COSTS_STALE", "level"}});
     if (!doc.definition) throw ValidationError({{"ROUTE_COSTS_STALE", "decisions"}});
     auto& def = *doc.definition;
     std::vector<ValidationIssue> issues;

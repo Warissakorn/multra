@@ -17,6 +17,7 @@ struct RouteCostsCell {
 struct RouteCostsDecision { std::string id; std::vector<RouteCostsCell> cells; };
 struct RouteCosts {
     RouteCostsProvenance provenance;
+    DaLevel level{DaLevel::micro}; // written as "level": "meso" only for Meso, which has no seed (D550)
     bool converged{};
     std::vector<double> deltas; // per iteration, n = 1 first
     std::vector<RouteCostsDecision> decisions;
@@ -30,5 +31,6 @@ nlohmann::json routeCostsJson(const RouteCosts&);
 RouteCosts parseRouteCosts(const nlohmann::json&);
 // Each listed cell's weights replace its flows; ROUTE_COSTS_STALE at decisions[d] when the decision is missing or its
 // entry count or interval bounds differ.
-ProjectDocument applyRouteCosts(ProjectDocument, const RouteCosts&);
+// ROUTE_COSTS_STALE at `level` when the file's level is not the run's.
+ProjectDocument applyRouteCosts(ProjectDocument, const RouteCosts&, DaLevel run = DaLevel::micro);
 }

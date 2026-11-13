@@ -9,5 +9,6 @@ namespace multra {
 // line per iteration to `log` and, when the loop stops at maxIterations, a "not converged" line; never throws for
 // non-convergence. `projectName` is the file name only (§5).
 RouteCosts runDynamicAssignment(const ProjectDocument&, const std::filesystem::path& data, const DaSettings&,
-                                std::uint32_t seed, const std::string& projectName, std::ostream& log);
+                                std::uint32_t seed, const std::string& projectName, std::ostream& log,
+                                DaLevel level = DaLevel::micro); // Meso ignores the seed (MESO_ASSIGNMENT §3)
 }

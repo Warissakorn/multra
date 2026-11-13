@@ -9,6 +9,8 @@
 #include <vector>
 
 namespace multra {
+// The level a loop measures at: Micro runs (D549) or Meso runs (MESO_ASSIGNMENT, D550).
+enum class DaLevel { micro, meso };
 // One decision x one of its intervals; no interval is the decision's whole-period ("default") cell.
 struct DaCellRef { std::size_t decision{}; std::optional<std::size_t> interval; };
 struct DaPlan {

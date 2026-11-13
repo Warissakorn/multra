@@ -144,7 +144,7 @@ mean is 45.5 / 10 = **4.55 s**, and the censored range is **3 PCU** (7 → 10).
 | Slice | Content | Rows |
 |---|---|---|
 | S0 | This contract | — |
-| S1 | `src/project/meso_assignment.*` (the cohort integral and the Meso measurement); the level in `runDynamicAssignment`, the file and the CLI; the fixture | MA1–MA8 |
+| S1 | `src/project/meso_assignment.*` (the cohort integral and the Meso measurement); the level in `runDynamicAssignment`, the file and the CLI; the fixture. **Implemented (§9)** | MA1–MA8 |
 
 ## 7. Out
 
@@ -167,3 +167,41 @@ mean is 45.5 / 10 = **4.55 s**, and the censored range is **3 PCU** (7 → 10).
 4. **Decisions.**
    - **(a) Unplaced only, as A2 (chosen).**
    - (b) Placed as well.
+
+## 9. As implemented (S1, 2026-11-13)
+
+- **Code:**
+  - `src/project/meso_assignment.*`: `cohortTimeIntegral`, `cohortMeanTime` and
+    `measureMesoDecisionCosts`. It runs `runMeso` once and costs each commodity whose path
+    `source` is an entry, over the cell's windows. The cohorts are counted from the path's own
+    demand intervals, exactly.
+  - `DaLevel` in `dynamic_assignment_run.hpp`. `runDynamicAssignment(..., level)` selects the
+    provider.
+  - `RouteCosts::level` is written as `"level": "meso"`, with no seed. `applyRouteCosts(..., run)`
+    refuses a mismatch at `level`.
+  - `--dynamic-assignment OUT --meso` runs the Meso loop, and `--route-costs FILE --meso` reads the
+    file inside `runMesoProject`.
+- **Deviations from §2, no value affected:**
+  - **Units.** The loading's commodity curves are already in vehicles: `entered` and `arrived` are
+    divided by the class PCU, and the demand is counted per vehicle. So cohorts and counts are
+    vehicles, and no PCU conversion is applied.
+  - **Rounding.** `censored` is rounded to whole vehicles, as `DaMeasurement` holds a count.
+  - **Shared routes.** A route shared by an input outside the decision is one commodity. Its count
+    includes those vehicles, and its cost is the same route's cost.
+- **Rows:** `tests/meso_assignment_tests.cpp` (group `mesoassign`) covers MA1–MA8, and all passed
+  on the first run.
+- **Observed** (simulated, not validated), gap 0.01, with δ by iteration:
+
+| n | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| δ | 0.4593 | 0.6691 | 0.4593 | 0.1290 | 0.4593 | 0.0094 |
+
+  - It converged at n = 6 with a short share of 0.583333, against x* = 0.590914 (−0.0076).
+  - The costs are 107.49 s short and 109.905 s long. Deterministic queueing at 0.5833 gives
+    105.36 s short. The LTM's discretisation and its spill-back on S1 give 2.1 s more.
+  - The analytic reference (§5) stopped at n = 11. The LTM costs differ, so the trace differs.
+- **By hand, the CLI** on the fixture's JSON (generated in a scratch directory, not committed):
+  - two `--dynamic-assignment --meso` runs were `cmp`-identical;
+  - the file carries `"level": "meso"`;
+  - `--meso --route-costs` ran;
+  - the same file without `--meso` was refused as `ROUTE_COSTS_STALE: level`.

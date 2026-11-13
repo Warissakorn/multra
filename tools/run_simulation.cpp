@@ -191,7 +191,7 @@ int runMacroPeriod(const std::filesystem::path& file, const std::filesystem::pat
 int runMesoProject(const std::filesystem::path& file, const std::filesystem::path& csvFile, const std::filesystem::path& data) {
     if (!std::filesystem::exists(file)) throw std::runtime_error("Cannot read project: " + file.string());
     InputManifest inputs;
-    const auto document = parseDocument(readInputJson(file, "project", &inputs));
+    const auto document = withRouteCostsFile(parseDocument(readInputJson(file, "project", &inputs)), routeCostsFile, true);
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
         throw std::invalid_argument("CSV output already exists: " + csvFile.string());
     const auto run = runMeso(document, data, &inputs);
@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
                              "  Frank-Wolfe and reports every link's flow, V/C and time (S2.3). PERIOD is a study period\n"
                              "  id, or matrix:ID for a matrix with its own times.\n"
                              "--macro-run ID (with --project, alone) runs a saved Macro definition's period and settings.\n"
-                             "--dynamic-assignment OUT [--iterations N] [--gap G] (with --project) runs the M9 MSA loop.\n"
+                             "--dynamic-assignment OUT [--meso] [--iterations N] [--gap G] (with --project) runs the M9/M11.5 MSA loop.\n"
                              "--route-costs FILE (with --project, a single run or --seeds) uses a dynamic assignment's weights.\n"
                              "--procedure ID (with --project, alone) runs a saved procedure's steps in order (JSON only).\n"
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
@@ -430,12 +430,12 @@ int main(int argc, char** argv) {
                             discharge.enabled || !compareFile.empty() || threads || !utdfFile.empty()))
             throw std::invalid_argument("--procedure needs --project and takes only --data-dir");
         if (!routeCostsFile.empty() && (projectFile.empty() || procedureId || modeChoice || tripDistribution || tripRateSet || macroPeriod ||
-                                        macroRunId || meso || nodeAnalysis || !utdfFile.empty() || !compareFile.empty()))
+                                        macroRunId || nodeAnalysis || !utdfFile.empty() || !compareFile.empty()))
             throw std::invalid_argument("--route-costs needs --project and works with a single run or --seeds");
         if ((iterations || gap) && dynamicOut.empty()) throw std::invalid_argument("--iterations and --gap need --dynamic-assignment");
         if (!dynamicOut.empty() && (projectFile.empty() || procedureId || modeChoice || tripDistribution || tripRateSet || macroPeriod || macroRunId ||
-                                    meso || nodeAnalysis || !utdfFile.empty() || !compareFile.empty() || seeds || !routeCostsFile.empty() || !csvFile.empty()))
-            throw std::invalid_argument("--dynamic-assignment needs --project and takes only --iterations, --gap, --seed and --data-dir");
+                                    nodeAnalysis || !utdfFile.empty() || !compareFile.empty() || seeds || !routeCostsFile.empty() || !csvFile.empty()))
+            throw std::invalid_argument("--dynamic-assignment needs --project and takes only --meso, --iterations, --gap, --seed and --data-dir");
         if (utdfMode && utdfFile.empty()) throw std::invalid_argument("--utdf-mode needs --export-utdf");
         if (utdfUnsignalised && utdfFile.empty()) throw std::invalid_argument("--utdf-unsignalised needs --export-utdf");
         if (!utdfFile.empty() && (projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges ||
@@ -452,7 +452,7 @@ int main(int argc, char** argv) {
             if (!scenarioFile.empty() || !eventsFile.empty())
                 throw std::invalid_argument("--project cannot be combined with --scenario or --events");
             if (procedureId) return runProcedureProject(projectFile, data, *procedureId);
-            if (!dynamicOut.empty()) return runDynamicAssignmentProject(projectFile, dynamicOut, data, seed, iterations.value_or(20), gap.value_or(0.05));
+            if (!dynamicOut.empty()) return runDynamicAssignmentProject(projectFile, dynamicOut, data, seed, iterations.value_or(20), gap.value_or(0.05), meso);
             if (modeChoice) return runModeChoiceProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""),
                                                         costMatrix.value_or(""), *modeChoice, periods);
             if (tripDistribution) return runTripDistributionProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""), costMatrix.value_or(""));
