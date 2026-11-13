@@ -30,12 +30,14 @@ double msaDelta(const std::vector<DaCellCosts>& cells) {
     }
     return base > 0 ? excess / base : 0.0;
 }
-DaResult iterateMsa(std::vector<std::vector<double>> w, const DaCostProvider& provider, const DaSettings& settings) {
+DaResult iterateMsa(std::vector<std::vector<double>> w, const DaCostProvider& provider, const DaSettings& settings,
+                    const std::function<bool(int)>& keepGoing) {
     if (settings.maxIterations < 2 || settings.maxIterations > 200)
         throw std::invalid_argument("dynamic assignment: maxIterations must be in [2, 200]");
     if (!std::isfinite(settings.gap) || settings.gap < 0) throw std::invalid_argument("dynamic assignment: gap must be finite and >= 0");
     DaResult result;
     for (int n = 1; n <= settings.maxIterations; ++n) {
+        if (keepGoing && !keepGoing(n)) { result.cancelled = true; break; }
         if (n > 1) {
             const auto& last = result.iterations.back();
             for (std::size_t c = 0; c < w.size(); ++c) w[c] = msaStep(w[c], allOrNothing(last.costs[c].cost), n);

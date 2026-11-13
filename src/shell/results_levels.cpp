@@ -14,7 +14,7 @@ namespace {
 // The study chain's order within Macro: generation, distribution, mode choice, assignment, procedure.
 const std::vector<std::pair<const char*, std::vector<const char*>>> levels{
     {"editorSeamMicro", {"editorResultsTabMovements", "editorResultsTabDischarge", "editorResultsTabClamps",
-                         "editorResultsTabLots", "editorResultsTabNodes"}},
+                         "editorResultsTabLots", "editorResultsTabNodes", "editorResultsTabDynamic"}},
     {"editorSeamMeso", {"editorResultsTabMeso"}},
     {"editorSeamMacro", {"editorResultsTabTripGeneration", "editorResultsTabTripDistribution", "editorResultsTabModeChoice",
                          "editorResultsTabMacro", "editorResultsTabProcedure"}},

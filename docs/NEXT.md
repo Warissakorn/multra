@@ -224,8 +224,10 @@ user roles) is open.
 - **A2b done (D551):** placed and positioned decisions join the loop (DYNAMIC_ASSIGNMENT §15–§16, DA10–DA13; MA9 as
   amended in MESO_ASSIGNMENT §10.1). Positioned decisions are refused for Meso (neutral weights in its loading); a placed
   decision cannot choose between routes to one destination (shared family).
-- **Next on the owner's pick:** A4 (editor, weights into the project), whether Meso should follow positioned weights (a
-  loading change), or the M11 gate's benchmark (Boyles et al. 2025, D315); M12 compares the levels after.
+- **A4 done (D552):** the *Dynamic assignment* Results page at the Micro level (DYNAMIC_ASSIGNMENT §17–§18, DA14–DA17):
+  Run/Cancel on a worker, δ and cell tables, *Apply weights* as one Undo step, *Save route costs…*. **Owner:** C17.
+- **Next on the owner's pick:** whether Meso should follow positioned weights (a loading change), or the M11 gate's
+  benchmark (Boyles et al. 2025, D315); M12 compares the levels after.
 
 ## M9 dynamic assignment — A1–A3 done (D549); stop for the owner
 

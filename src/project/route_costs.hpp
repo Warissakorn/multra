@@ -19,6 +19,7 @@ struct RouteCosts {
     RouteCostsProvenance provenance;
     DaLevel level{DaLevel::micro}; // written as "level": "meso" only for Meso, which has no seed (D550)
     bool converged{};
+    bool cancelled{}; // D552: the loop was stopped; never written to the file
     std::vector<double> deltas; // per iteration, n = 1 first
     std::vector<RouteCostsDecision> decisions;
     std::vector<std::string> skipped;

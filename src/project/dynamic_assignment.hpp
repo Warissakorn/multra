@@ -20,7 +20,7 @@ struct DaIteration {
     std::vector<DaCellCosts> costs;           // what the run measured with them
     double delta{};
 };
-struct DaResult { std::vector<DaIteration> iterations; bool converged{}; };
+struct DaResult { std::vector<DaIteration> iterations; bool converged{}, cancelled{}; };
 // Runs the provider with weights w for every cell and returns each cell's costs, in cell order.
 using DaCostProvider = std::function<std::vector<DaCellCosts>(const std::vector<std::vector<double>>& w)>;
 
@@ -32,5 +32,7 @@ std::vector<double> msaStep(const std::vector<double>& w, const std::vector<doub
 double msaDelta(const std::vector<DaCellCosts>& cells);
 // Iteration 1 runs w1; iteration n >= 2 steps 1/n towards the all-or-nothing shares of iteration n - 1's costs.
 // Stops after the first run with delta <= gap, or at maxIterations unconverged.
-DaResult iterateMsa(std::vector<std::vector<double>> w1, const DaCostProvider& provider, const DaSettings& settings);
+// D552: `keepGoing(n)`, when given, is asked before iteration n; false stops the loop with `cancelled`.
+DaResult iterateMsa(std::vector<std::vector<double>> w1, const DaCostProvider& provider, const DaSettings& settings,
+                    const std::function<bool(int)>& keepGoing = {});
 }

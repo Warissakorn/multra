@@ -124,9 +124,9 @@ int main(int argc, char** argv) {
         require(shownTabs() == 3 + (shown.network.nodes.empty() ? 0 : 1), "Micro shows tabs of another level or a tab without data");
         require(!inner->isTabVisible(inner->indexOf(lotsPage)) && !inner->isTabVisible(inner->indexOf(macroPage)), "A hidden tab is shown");
         // The strip is ordered by level, Macro in the study chain's order with assignment fourth.
-        require(inner->indexOf(mesoPage) == 5 && inner->indexOf(macroPage) == 9, "Tabs are not ordered by level");
+        require(inner->indexOf(mesoPage) == 6 && inner->indexOf(macroPage) == 10, "Tabs are not ordered by level"); // D552: Dynamic assignment ends Micro
         level->setCurrentIndex(2); QApplication::processEvents();
-        require(shownTabs() == 5 && inner->currentIndex() == 6 && !inner->tabBar()->isHidden(), "Macro does not show its five tabs from the first");
+        require(shownTabs() == 5 && inner->currentIndex() == 7 && !inner->tabBar()->isHidden(), "Macro does not show its five tabs from the first");
         // A level with one tab shows no strip (D462).
         level->setCurrentIndex(1); QApplication::processEvents();
         require(shownTabs() == 1 && inner->currentWidget() == mesoPage && inner->tabBar()->isHidden(), "Meso is not one page without a strip");
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
         inner->setCurrentWidget(macroPage); QApplication::processEvents();
         require(level->currentIndex() == 2 && inner->currentWidget() == macroPage && shownTabs() == 5, "A jump to Macro links did not pick Macro");
         level->setCurrentIndex(3); QApplication::processEvents();
-        require(shownTabs() == 1 && inner->currentIndex() == 11, "Node (HCM) is not the analysis page alone");
+        require(shownTabs() == 1 && inner->currentIndex() == 12, "Node (HCM) is not the analysis page alone");
         // A tab without data still opens when something jumps to it, and its level follows.
         inner->setCurrentWidget(lotsPage); QApplication::processEvents();
         require(level->currentIndex() == 0 && inner->currentWidget() == lotsPage && inner->isTabVisible(inner->indexOf(lotsPage)), "A jump to an empty tab was lost");

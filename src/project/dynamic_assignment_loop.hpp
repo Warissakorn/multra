@@ -10,5 +10,6 @@ namespace multra {
 // non-convergence. `projectName` is the file name only (§5).
 RouteCosts runDynamicAssignment(const ProjectDocument&, const std::filesystem::path& data, const DaSettings&,
                                 std::uint32_t seed, const std::string& projectName, std::ostream& log,
-                                DaLevel level = DaLevel::micro); // Meso ignores the seed (MESO_ASSIGNMENT §3)
+                                DaLevel level = DaLevel::micro, // Meso ignores the seed (MESO_ASSIGNMENT §3)
+                                const std::function<bool(int)>& keepGoing = {}); // D552: false before iteration n cancels
 }

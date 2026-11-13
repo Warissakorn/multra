@@ -62,6 +62,12 @@ screen settings apply here unchanged. Item names (C1, E32, I.5) are the same as 
     `shared` and `perInput`, a new project `perInput`, and a shipped project `shared`? Compare a
     `perInput` project with a `shared` one: is the refusal line on the Compare page clear? *Owner:*
 
+17. **Dynamic assignment page** (listed 2026-11-13, D552, DYNAMIC_ASSIGNMENT §17). Open a project with a
+    routing decision. In *Results → Micro → Dynamic assignment*, Run at Micro, then at Meso (the seed is greyed).
+    Check four things: the δ and cell tables fit; Cancel stops; *Apply weights* is one Undo step and greys after any
+    edit; *Save route costs…* writes a file. Is the page where you expect it, and is the wording clear in
+    Thai? *Owner:*
+
 ## D — Right-of-way on the drawing
 
 2. **D109/D110 conflict controls, Bézier coverage** (listed 2026-10-05). Curved Connector after an

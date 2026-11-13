@@ -102,7 +102,7 @@ keeps its schema and bytes.
 | `dynamic_assignment_loop.*` | M9 (D549): `runDynamicAssignment`, the MSA loop over real Micro runs returning the last run's route costs |
 | `meso_assignment.*` | M11.5 (D550): Meso route costs from FIFO cumulative curves (`cohortTimeIntegral`, `cohortMeanTime`, `measureMesoDecisionCosts`) for M9's loop |
 | `route_costs.*` | M9 (D549): the `MultraRouteCosts` file, its codec and `applyRouteCosts` with STALE/INVALID refusals |
-| `dynamic_assignment.*` | M9 dynamic assignment ([DYNAMIC_ASSIGNMENT](../../docs/reference/DYNAMIC_ASSIGNMENT.md), D549): the pure MSA loop over decision cells behind a cost provider, all-or-nothing shares, the δ indicator |
+| `dynamic_assignment.*` | M9 dynamic assignment ([DYNAMIC_ASSIGNMENT](../../docs/reference/DYNAMIC_ASSIGNMENT.md), D549): the pure MSA loop over decision cells behind a cost provider, all-or-nothing shares, the δ indicator; `keepGoing(n)` cancels (D552) |
 | `mode_choice_output.*` | Its JSON (per purpose and period, persons, vehicles and costs) and CSV (period, alternative and pair rows plus totals), both marked with the unit conditional | [MODE_CHOICE §7](../../docs/reference/MODE_CHOICE.md) |
 | `procedure_codec.*` | The project's named procedures (root `procedures`, schema 73): steps `tripGeneration`, `tripDistribution`, `modeChoice`, `assignment`, with `active` (D484) | [PROCEDURE_SEQUENCE §2](../../docs/reference/PROCEDURE_SEQUENCE.md) |
 | `procedure_run.*` | One procedure run: each active step runs its unit on the nearest earlier input; an assignment on an in-memory copy carrying the nearest mode choice's generated matrices; a refusal stops the rest; Cancel (D484) | [PROCEDURE_SEQUENCE §3](../../docs/reference/PROCEDURE_SEQUENCE.md) |
