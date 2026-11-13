@@ -477,3 +477,51 @@ and the placed-is-stale rule of A2 is dropped.
   between routes to the same destination, because they share a family. Use a positioned decision
   (Micro) or an unplaced one (Micro and Meso). MESO_ASSIGNMENT §10.1 records the fixture that
   showed it.
+
+## 17. A4: the Dynamic assignment Results page (D552, contract before code, 2026-11-13)
+
+The owner picked A4 and answered both questions with the recommended option:
+- a self-owned Results page at the Micro level;
+- an **Apply weights** button that is one History step.
+
+The run never edits the document.
+
+**The page** is `editorResultsTabDynamic`, at the Micro level after Nodes. It holds:
+- **Settings:**
+  - `editorDynamicLevel` (Micro, Meso);
+  - `editorDynamicIterationCap` (2–200, default 20);
+  - `editorDynamicGap` (≥ 0, default 0.05);
+  - `editorDynamicSeed` (default 42, disabled for Meso).
+- **Buttons:** `editorDynamicRun`, `editorDynamicCancel`, `editorDynamicApply` and
+  `editorDynamicSave`.
+- **The note** `editorDynamicNote`: the outcome (converged, or capped with δ), refusals and the
+  not-validated marker.
+- **Two tables:**
+  - `editorDynamicIterations`: n and δ;
+  - `editorDynamicCells`: decision, cell, entry, weight, cost (s), count, censored, free-flow
+    filled.
+  - Copy and Export give CSV of both tables, marked.
+
+**Run.**
+- It runs on a worker, `runDynamicAssignment` with the chosen level.
+- `iterateMsa` gains an optional `keepGoing(n)` callback, asked before each iteration. When it
+  returns false, the result is `cancelled`.
+- **Cancelled:** the page shows the iterations done, says so, and leaves Apply off.
+- **Refusal:** the issue codes and paths go to the note.
+
+**Apply weights.**
+- One History step, "Apply dynamic assignment weights". It applies the result through
+  `applyRouteCosts(document, result, level)`.
+- It is on only for a finished (converged or capped) run of the document as it is now. Any History
+  change after the run marks the result stale and turns Apply off.
+- Undo restores the flows. The fields are the existing ones, so no schema changes.
+
+**Save route costs…** writes `routeCostsJson(result)` to a chosen file. The file dialog asks before
+overwriting.
+
+| Row | Asserts |
+|---|---|
+| DA14 | The page exists at the Micro level. A run of A3's two-route fixture (gap 0.05) shows δ rows equal to `runDynamicAssignment`'s, and cells equal to its file's |
+| DA15 | Apply is one Undo step. Afterwards the decision's shares equal the result's weights; Undo restores 19 : 1; the saved schema is unchanged |
+| DA16 | An edit after the run makes it stale and turns Apply off. A project with no decision shows `DYNAMIC_ASSIGNMENT_INVALID` in the note |
+| DA17 | Meso on the M11.5 fixture runs, with the seed disabled. Cancel before iteration 2 stops cancelled, with Apply off |
