@@ -91,7 +91,8 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     // The check and the expansion walk the same routeless paths; walk them once.
     RoutelessWalks walks(d.network,authored);
     if(auto issues=routelessIssues(walks).blocking;!issues.empty())throw ValidationError(std::move(issues));
-    auto definition=expandRouteless(walks,resolveCatalogs(authored,data,manifest));
+    std::map<std::string, std::vector<std::string>> families;
+    auto definition=expandRouteless(walks,resolveCatalogs(authored,data,manifest),&families);
     // M3.3.2b (D127): road assignments become per-segment selections; the library is authoring
     // data, sliced away by resolveCatalogs, so it is read from the document itself.
     definition.segmentBehaviours=compileBehaviourAssignments(d.network,*d.definition);
@@ -109,6 +110,6 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     // by that duration, so the engine releases no new demand in it; extended only here, after every
     // expansion that reads the authored duration, and for every caller (CLI, batch, editor).
     if(d.definition->evaluation)scenario.duration+=d.definition->evaluation->cooldown;
-    return {d.revision,d.network,std::move(scenario),std::move(routeOrigins)};
+    return {d.revision,d.network,std::move(scenario),std::move(routeOrigins),std::move(families)};
 }
 }

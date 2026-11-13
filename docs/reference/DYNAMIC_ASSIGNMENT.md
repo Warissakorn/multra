@@ -209,7 +209,7 @@ Each row first asserts that its forcing worked.
 | A0 | This contract | — |
 | A1 | The pure loop in `src/project/dynamic_assignment.*` behind a cost-provider callback. **Implemented (§10)** | DA1–DA3 |
 | A2 | Measurement from a Micro run, the file codec, `--route-costs`; unplaced decisions only (§11). **Implemented (§12)** | DA4–DA6, DA9 |
-| A2b | Placed and positioned decisions (route families), before or after A3 as the owner picks | — |
+| A2b | Placed and positioned decisions (route families). **Implemented (§15–§16, D551)** | DA10–DA13 |
 | A3 | The loop over real runs, `--dynamic-assignment`, fixture (b). **Implemented (§14)** | DA7–DA8 |
 | A4 | Later, the owner's choice: the editor, and weights written back into the project (a schema bump) | — |
 
@@ -450,3 +450,30 @@ and the placed-is-stale rule of A2 is dropped.
 | DA11 | The same decision at `position` 50 m. Each entry's cost equals the mean of arrival − that vehicle's `RoutingEvent` time, grouped by the event's chosen route's last Link, with the cell by passage time, to 1e-9 |
 | DA12 | Refusals at their paths: two entries with one final object; a positioned decision on Meso (MESO_ASSIGNMENT §10) |
 | DA13 | The loop over the placed decision repeats byte for byte; `maxIterations` 2 is flagged |
+
+## 16. As implemented (A2b, 2026-11-13)
+
+- **Code:**
+  - `expandRouteless(..., RouteFamilies*)` fills `RunSnapshot::routeFamilies` in
+    `compileDocument`.
+  - `decisionFamilyName` mirrors `familyName`.
+  - `planDynamicAssignment(def, level)`:
+    - drops the A2 refusal of placed decisions;
+    - refuses entries sharing a final object;
+    - for Meso, refuses positioned decisions.
+  - `measureDecisionCosts` tags a vehicle per decision. Placed decisions are tagged at departure,
+    by the departure route's families; positioned decisions at their `RoutingEvent`, by the chosen
+    route's families. A vehicle may carry several tags.
+  - The positioned free-flow fill subtracts the gate distance (`RouteDecision::at`).
+  - `applyRouteCosts` no longer treats a placed decision as stale.
+- **Rows:** `tests/dynamic_assignment_placed_tests.cpp` (group `dynassignplaced`) covers DA10–DA13.
+  DA9's placed-refusal line now asserts DA12's Meso refusal, as D551 changes that rule.
+- **One test fix, no value changed.** The first DA10 and DA11 runs mapped a vehicle to its entry
+  by its *departure* route in the independent recomputation. On a stub, which a turn's other lane
+  is, that route ends before the exit, so 8 and 5 of the left-turners were dropped. The
+  recomputation now maps by the route the vehicle *arrives* on, or is on at the end. Then every
+  cell's count and mean cost equal the measurement to 1e-9.
+- **Consequence of §15's family rule.** A placed decision without a position cannot choose
+  between routes to the same destination, because they share a family. Use a positioned decision
+  (Micro) or an unplaced one (Micro and Meso). MESO_ASSIGNMENT §10.1 records the fixture that
+  showed it.

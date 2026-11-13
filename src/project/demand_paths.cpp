@@ -204,7 +204,7 @@ ScenarioDefinition expandRouteless(const Network& network, const AuthoringDefini
     RoutelessWalks walks(network, authored); // one expansion over one unchanged Network (D140)
     return expandRouteless(walks, std::move(resolved));
 }
-ScenarioDefinition expandRouteless(RoutelessWalks& shared, ScenarioDefinition resolved) {
+ScenarioDefinition expandRouteless(RoutelessWalks& shared, ScenarioDefinition resolved, RouteFamilies* familiesOut) {
     const auto& network = shared.network;
     const auto& authored = shared.definition;
     // M2.7b: every signal group becomes an ordinary core program here, the one compile step
@@ -271,6 +271,7 @@ ScenarioDefinition expandRouteless(RoutelessWalks& shared, ScenarioDefinition re
                             if (!after.empty()) full.back().after.push_back(after);
                         }
                     }
+                    if (familiesOut) for (const auto& tag : w.families[k]) (*familiesOut)[route.id].push_back(tag.name);
                     stationRoutes.push_back({route,w.families[k]});
                     resolved.routes.push_back(std::move(route));
                 }

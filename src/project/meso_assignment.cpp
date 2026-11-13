@@ -1,9 +1,11 @@
 // MESO_ASSIGNMENT §2-§3 (D550): Meso route costs from FIFO cumulative curves.
 #include "meso_assignment.hpp"
 #include "meso_run.hpp"
+#include "run.hpp"
 #include "../core/validate.hpp"
 #include <algorithm>
 #include <cmath>
+#include <map>
 
 namespace multra {
 double cohortTimeIntegral(const std::vector<double>& at, double step, double n0, double n1) {
@@ -60,6 +62,18 @@ DaMeasurement measureMesoDecisionCosts(const ProjectDocument& doc, const std::fi
     const auto& def = *doc.definition;
     const auto run = runMeso(doc, data);
     const double step = run.loading.step;
+    // D551 (§10): a placed decision's paths carry Micro's routeless route ids; their families name the entry.
+    std::map<std::string, std::vector<std::string>> families;
+    if (std::any_of(plan.decisions.begin(), plan.decisions.end(), [&](std::size_t i) { return !def.routingDecisions[i].linkId.empty(); }))
+        families = compileDocument(doc, data).routeFamilies;
+    const auto entryOf = [&](const RoutingDecision& d, const std::string& source) -> std::size_t {
+        for (std::size_t k = 0; k < d.routes.size(); ++k) {
+            if (d.linkId.empty()) { if (d.routes[k].routeId == source) return k; continue; }
+            const auto f = families.find(source);
+            if (f != families.end() && std::find(f->second.begin(), f->second.end(), decisionFamilyName(def, d, k)) != f->second.end()) return k;
+        }
+        return d.routes.size();
+    };
     DaMeasurement m;
     m.censored.assign(plan.cells.size(), 0);
     for (std::size_t c = 0; c < plan.cells.size(); ++c) {
@@ -70,9 +84,8 @@ DaMeasurement measureMesoDecisionCosts(const ProjectDocument& doc, const std::fi
         double censored = 0;
         for (const auto& commodity : run.loading.commodities) {
             const auto& path = run.classes.at(commodity.cls).paths.at(commodity.path);
-            const auto entry = std::find_if(d.routes.begin(), d.routes.end(), [&](const auto& e) { return e.routeId == path.source; });
-            if (entry == d.routes.end()) continue;
-            const auto k = static_cast<std::size_t>(entry - d.routes.begin());
+            const auto k = entryOf(d, path.source);
+            if (k == d.routes.size()) continue;
             const double horizon = static_cast<double>(commodity.arrived.size() - 1) * step;
             for (const auto& [s, e] : windows(d, plan.cells[c], horizon)) {
                 const double n0 = demandBy(path, s), n1 = demandBy(path, e);
@@ -87,7 +100,7 @@ DaMeasurement measureMesoDecisionCosts(const ProjectDocument& doc, const std::fi
             if (cell.count[k] > 0) { cell.cost[k] = time[k] / cell.count[k]; continue; }
             const MesoPath* path = nullptr;
             for (const auto& cls : run.classes) {
-                for (const auto& p : cls.paths) if (p.source == d.routes[k].routeId) { path = &p; break; }
+                for (const auto& p : cls.paths) if (entryOf(d, p.source) == k) { path = &p; break; }
                 if (path) break;
             }
             if (!path) throw ValidationError({{"DYNAMIC_ASSIGNMENT_INVALID", "routingDecisions[" + std::to_string(plan.cells[c].decision) +

@@ -64,7 +64,10 @@ private:
 };
 // The same two over walks already shared by the caller; `walks` must be over the same Network
 // and definition passed here.
-ScenarioDefinition expandRouteless(RoutelessWalks& walks, ScenarioDefinition resolved);
+// D551 (DYNAMIC_ASSIGNMENT §15): `families`, when given, receives each routeless route's family names
+// (`<decision>><final object>` or `<decision>>route-k`); nothing else changes.
+using RouteFamilies = std::map<std::string, std::vector<std::string>>;
+ScenarioDefinition expandRouteless(RoutelessWalks& walks, ScenarioDefinition resolved, RouteFamilies* families = nullptr);
 RoutelessIssues routelessIssues(RoutelessWalks& walks);
 // M2.1.2: an input's periods (inputPeriods) cut at every breakpoint inside them, each piece at
 // its period's volume. Pieces of zero length are not produced.

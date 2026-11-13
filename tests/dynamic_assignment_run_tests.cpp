@@ -164,8 +164,9 @@ TEST(dynassignrun, da9_route_costs_file) { // DA9
     CHECK(has(refuses([&] { planDynamicAssignment(*none.definition); }), "DYNAMIC_ASSIGNMENT_INVALID", "routingDecisions"));
     auto typed = w.document; typed.definition->routingDecisions[0].typeRules.push_back({"car", {1, 1}, {}});
     CHECK(has(refuses([&] { planDynamicAssignment(*typed.definition); }), "DYNAMIC_ASSIGNMENT_INVALID", "routingDecisions[0]"));
-    auto placed = w.document; placed.definition->routingDecisions[0].linkId = "somewhere";
-    CHECK(has(refuses([&] { planDynamicAssignment(*placed.definition); }), "DYNAMIC_ASSIGNMENT_UNSUPPORTED", "routingDecisions[0]"));
+    // D551 lifted A2's refusal of placed decisions; a positioned one is still refused for Meso (DA12).
+    auto placed = w.document; placed.definition->routingDecisions[0].linkId = "somewhere"; placed.definition->routingDecisions[0].position = 10;
+    CHECK(has(refuses([&] { planDynamicAssignment(*placed.definition, DaLevel::meso); }), "DYNAMIC_ASSIGNMENT_UNSUPPORTED", "routingDecisions[0]"));
     auto single = w.document; single.definition->routingDecisions.push_back({"lone", "", {{w.routes[0], 1}}});
     const auto withLone = planDynamicAssignment(*single.definition);
     CHECK(withLone.skipped == std::vector<std::string>{"lone"} && withLone.cells.size() == 3);

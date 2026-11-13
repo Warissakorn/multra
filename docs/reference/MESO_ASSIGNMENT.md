@@ -220,3 +220,33 @@ mean is 45.5 / 10 = **4.55 s**, and the censored range is **3 PCU** (7 → 10).
 - **MA9.** The Meso fixture with its decision placed on the origin Link and a routeless input.
   Both entries are costed (forcing). At the same weights, both entries' costs equal the unplaced
   fixture's to 1e-9, because the paths are the same.
+
+### 10.1 Amendment after the first MA9 run (2026-11-13)
+
+**What happened.** The first MA9 run was refused with `DYNAMIC_ASSIGNMENT_UNSUPPORTED` at
+`routingDecisions[0].routes[1]`.
+- Both of the fixture's routes end on the same destination Link, so they share one family name.
+- DYNAMIC_ASSIGNMENT §15 refuses that case on purpose: the walk cannot tell the entries apart.
+- So MA9's fixture contradicted the contract written beside it. No value was involved.
+
+**Consequence: route choice to one destination is not possible with a placed decision.**
+- A placed decision without a position cannot express route choice between alternatives to the
+  same destination, in Micro or Meso.
+- In Micro, a positioned decision can (`route-k` families).
+- In Meso, positioned decisions are refused (§10).
+- So Meso route choice to one destination stays with unplaced (M2.4) decisions.
+
+**MA9 amended:**
+- **(a)** On the bottleneck fixture, the placed decision is refused at `routingDecisions[0].routes[1]`.
+- **(b)** Meso's placed path is checked on the four-leg West decision of DA10, whose entries
+  (through and left) end on different exit Links.
+  - Link types are owned test values: arterial, 1,000 pcu/h/lane, 10 m/s, jam density 150. Car
+    PCU is 1.
+  - At the shares 0.6 : 0.4, its placed and unplaced forms give equal counts and costs per entry
+    to 1e-9.
+
+## 11. As implemented (A2b, 2026-11-13)
+
+- `measureMesoDecisionCosts` maps a placed decision's `MesoPath.source` through `routeFamilies`,
+  from one `compileDocument` per run, taken only when a placed decision is planned.
+- MA9, as amended in §10.1, passes in `tests/dynamic_assignment_placed_tests.cpp`.

@@ -19,8 +19,12 @@ struct DaPlan {
     std::vector<DaCellRef> cells;       // per decision: its intervals in order, then default
 };
 // Refuses (ValidationError): no decision at all or none with two entries, a decision with type rules or an
-// all-zero default (DYNAMIC_ASSIGNMENT_INVALID), a placed decision (DYNAMIC_ASSIGNMENT_UNSUPPORTED, §11).
-DaPlan planDynamicAssignment(const AuthoringDefinition&);
+// all-zero default (DYNAMIC_ASSIGNMENT_INVALID).
+// D551: placed decisions join; for Meso, a positioned one is DYNAMIC_ASSIGNMENT_UNSUPPORTED at routingDecisions[i], and
+// placed entries sharing a final object are DYNAMIC_ASSIGNMENT_UNSUPPORTED at routingDecisions[i].routes[k].
+DaPlan planDynamicAssignment(const AuthoringDefinition&, DaLevel level = DaLevel::micro);
+// DYNAMIC_ASSIGNMENT §15: the family name the routeless walk gives entry k of decision `d` (familyName's rule).
+std::string decisionFamilyName(const AuthoringDefinition&, const RoutingDecision& d, std::size_t k);
 // Each cell's entry flows normalised to shares; an all-zero interval takes the default shares.
 std::vector<std::vector<double>> decisionWeights(const AuthoringDefinition&, const DaPlan&);
 // Writes the shares back: the default cell to relativeFlow, interval k to intervalFlows[k].

@@ -8,7 +8,7 @@ namespace multra {
 RouteCosts runDynamicAssignment(const ProjectDocument& doc, const std::filesystem::path& data, const DaSettings& settings,
                                 std::uint32_t seed, const std::string& projectName, std::ostream& log, DaLevel level) {
     if (!doc.definition) throw ValidationError({{"DYNAMIC_ASSIGNMENT_INVALID", "routingDecisions"}});
-    const auto plan = planDynamicAssignment(*doc.definition);
+    const auto plan = planDynamicAssignment(*doc.definition, level);
     DaMeasurement last;
     const auto result = iterateMsa(decisionWeights(*doc.definition, plan), [&](const std::vector<std::vector<double>>& w) {
         auto run = doc;

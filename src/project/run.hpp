@@ -18,6 +18,7 @@ struct RunSnapshot {
     Network network;
     Scenario scenario;
     CompiledRouteOrigins routeOrigins;
+    std::map<std::string, std::vector<std::string>> routeFamilies; // D551: routeless definition route -> family names
     std::optional<StudyAreaProvenance> studyArea; // S5.5a (D331): set for a run over a study area
 };
 // S5.5a (D331): `sources` are the side files a study area's cut may read (study_area_run.hpp).

@@ -124,7 +124,7 @@ ProjectDocument applyRouteCosts(ProjectDocument doc, const RouteCosts& r, DaLeve
         const auto path = "decisions[" + std::to_string(d) + "]";
         const auto& listed = r.decisions[d];
         const auto found = std::find_if(def.routingDecisions.begin(), def.routingDecisions.end(), [&](const auto& x) { return x.id == listed.id; });
-        if (found == def.routingDecisions.end() || !found->linkId.empty()) { issues.push_back({"ROUTE_COSTS_STALE", path}); continue; }
+        if (found == def.routingDecisions.end()) { issues.push_back({"ROUTE_COSTS_STALE", path}); continue; }
         bool stale = false;
         for (const auto& c : listed.cells)
             if (c.weight.size() != found->routes.size() || (c.interval && (*c.interval >= found->intervals.size() ||

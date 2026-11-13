@@ -221,8 +221,11 @@ user roles) is open.
 - [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md), rows MA1–MA8 pass: M9's loop with a Meso provider (FIFO cumulative-curve
   costs), `--dynamic-assignment --meso`, `"level": "meso"` in the route-costs file. The bottleneck fixture converged at
   n = 6 with short share 0.5833 against the hand x* = 0.5909 (§9).
-- **Next on the owner's pick:** A2b (placed and positioned decisions, Micro and Meso), A4 (editor), or the M11 gate's
-  benchmark (Boyles et al. 2025, D315) when the copy arrives; M12 compares the levels after.
+- **A2b done (D551):** placed and positioned decisions join the loop (DYNAMIC_ASSIGNMENT §15–§16, DA10–DA13; MA9 as
+  amended in MESO_ASSIGNMENT §10.1). Positioned decisions are refused for Meso (neutral weights in its loading); a placed
+  decision cannot choose between routes to one destination (shared family).
+- **Next on the owner's pick:** A4 (editor, weights into the project), whether Meso should follow positioned weights (a
+  loading change), or the M11 gate's benchmark (Boyles et al. 2025, D315); M12 compares the levels after.
 
 ## M9 dynamic assignment — A1–A3 done (D549); stop for the owner
 
