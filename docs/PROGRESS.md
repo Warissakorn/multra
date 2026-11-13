@@ -5,6 +5,11 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-13 — Sensitivity sweep phase 2: engine levers D and E (D546)
+
+- **D546** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_SWEEP](reference/M6_SWEEP.md) §4, rows SW5–SW10), then runtime-only `DriverBehaviour` flags `standingTarget` (D) and `stopArrival` (E), off by default (`following.cpp`, `conflicts.cpp` `stopMade`), and candidates `D`, `E`, `DE`. Rows SW7 and SW9 were amended after the first test run, before any sweep figure; no definition changed. No `src/core` split was needed (largest file 469 lines).
+- **Result** ([evidence](evidence/m6-sweep-phase2.md)): D: S1 1,910.2 veh/h (jam spacing 6.50 m, `t_x` 1.35 s), S2 misses shrink, U `t_f` 6.91 s with U-c passing at `v_c` 200 and 400; E alone equals base; DE `t_f` 5.82 s. U-a misses everywhere. Nothing adopted.
+
 ## 2026-11-13 — No calibration on M6; sensitivity sweep phase 1 (D544, D545)
 
 - **D544** (owner asked for calibration options and chose "ไม่ calibrate + sweep"): [options sheet](evidence/m6-calibration-options.md) with five options A–E and estimated effects; D540's hold is closed as no calibration on M6.

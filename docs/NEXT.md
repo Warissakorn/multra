@@ -92,9 +92,10 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     service 0.1 s, the release 1.6 s, almost never blocked. **D544** (owner): no calibration on M6; the
     misses stand as known deviations until independent data (U-e inD, R7; Thai data, Q4 (d)); D540's hold is closed.
     **D545 sweep phase 1** ([evidence](evidence/m6-sweep-phase1.md)): B and C move S1 as estimated, raise S2
-    capacity (misses grow) and cut U's `t_f` only 0.7–0.8 s; nothing adopted. **Next: sweep phase 2** — D (stop
-    at the standstill gap behind a standing target) and E (Stop target is the line), each a runtime switch off by
-    default with its own contract; split the `src/core/` files they touch first.
+    capacity (misses grow) and cut U's `t_f` only 0.7–0.8 s; nothing adopted. **D546 sweep phase 2** ([evidence](evidence/m6-sweep-phase2.md)):
+    runtime flags off by default; D (standstill gap behind a standing target) halves U's `t_f` (6.91 s; DE 5.82)
+    and gives S1 6.5 m spacing but 1,910 veh/h (`t_x` 1.35 s); E alone changes nothing; nothing adopted. The
+    sweep is complete. **Next on M6:** nothing until independent data (R7 inD, Q4 (d)); the gate stays open.
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
     D531: S1 keeps the mean headway; the median and skewness beside it need a `--discharge`

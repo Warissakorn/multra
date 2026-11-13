@@ -1,0 +1,167 @@
+{
+  "buildCommit": "92620c00c7b1",
+  "candidate": "E",
+  "compiler": "GNU-13.3.0",
+  "compilerCommand": {
+    "command": "/usr/bin/c++ -DMULTRA_COMPILER=\\\"GNU-13.3.0\\\" -DMULTRA_VERSION=\\\"0.2.0\\\" -I/home/user/multra/build/desktop/generated -g -std=c++20 -fPIE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off -Wno-missing-field-initializers -Winvalid-pch -include /home/user/multra/build/desktop/CMakeFiles/multra-four-leg-fixture.dir/cmake_pch.hxx -o CMakeFiles/multra-m6-u-run.dir/tools/m6_u_run.cpp.o -c /home/user/multra/tools/m6_u_run.cpp",
+    "directory": "/home/user/multra/build/desktop",
+    "file": "/home/user/multra/tools/m6_u_run.cpp",
+    "output": "CMakeFiles/multra-m6-u-run.dir/tools/m6_u_run.cpp.o"
+  },
+  "complete": true,
+  "documents": [
+    {
+      "file": "vc0200.traffic.json",
+      "sha256": "2fb7e0c44067a99883ae8c453fee71e9876824d40d00c8fa5ed09b7e87a3e5a8"
+    },
+    {
+      "file": "vc0400.traffic.json",
+      "sha256": "ae0d2df8df168eaceda2b945398f88d2d55c9896d6ca5f3dc538a7d1001afd8d"
+    },
+    {
+      "file": "vc0600.traffic.json",
+      "sha256": "9bad53ac3a0e17a7fac0f1c96fd0b11ae883876199dcf16b5339d82f9e02cd09"
+    },
+    {
+      "file": "vc0800.traffic.json",
+      "sha256": "6e5b93116ed487a8fcc2449d389be92dc2989cb4d1b97394bf1014a6aacdff5b"
+    },
+    {
+      "file": "vc1000.traffic.json",
+      "sha256": "2a22a6d0a0970b0dc2da21adddac2fb5a2a139df64abbaaddf4f37fce6362df2"
+    }
+  ],
+  "firstSeed": 42,
+  "inputManifest": {
+    "algorithm": "SHA-256",
+    "coverage": "exact bytes parsed from project, catalog and evaluation files actually read",
+    "fallbacks": [],
+    "files": [
+      {
+        "bytes": 618879,
+        "logicalPath": "build/compile_commands.json",
+        "reads": 1,
+        "sha256": "f6c920ad4c50f856a7f82ecca045dcbcc685ff490667f8cbb337b74eac621100"
+      },
+      {
+        "bytes": 76,
+        "logicalPath": "catalog/compositions/car-only.json",
+        "reads": 5,
+        "sha256": "01e212b12301f5fe6f208c60a078f2ea81ef467d1cfd30bf9e289ecc19b702dd"
+      },
+      {
+        "bytes": 555,
+        "logicalPath": "catalog/compositions/urban-diverse.json",
+        "reads": 5,
+        "sha256": "f80ba845c53612a32e4d1ae261b849b267130dcc6fe2164b9e491825cf281480"
+      },
+      {
+        "bytes": 147,
+        "logicalPath": "catalog/compositions/urban-mixed.json",
+        "reads": 5,
+        "sha256": "13618f4f33b0d86a8d2c53c1afa9995af9f809ef75f814009d1761fbe3669531"
+      },
+      {
+        "bytes": 255,
+        "logicalPath": "catalog/driver-behaviour/default.json",
+        "reads": 5,
+        "sha256": "5c196dbad0fcead42ef31009d201430cf3c3314b006fecffb59bc323eff3f65f"
+      },
+      {
+        "bytes": 466,
+        "logicalPath": "catalog/priority-rules/default.json",
+        "reads": 5,
+        "sha256": "133a43fa486ddbc45be23d0f62a100ddd351fabec8996ba01dc2b69ad676da51"
+      },
+      {
+        "bytes": 353,
+        "logicalPath": "catalog/vehicle-types/bus.json",
+        "reads": 5,
+        "sha256": "c3226d0125e71b329807928838f5f28d77b82cd2a7cb2e3f84961b7653cd4e7c"
+      },
+      {
+        "bytes": 308,
+        "logicalPath": "catalog/vehicle-types/car.json",
+        "reads": 5,
+        "sha256": "c8d99f76ed01dec7d91866d239b40ed1e682a1f4358a9c8ca084fc4dec8d87e9"
+      },
+      {
+        "bytes": 313,
+        "logicalPath": "catalog/vehicle-types/heavy-vehicle.json",
+        "reads": 5,
+        "sha256": "158e88a84ef482b054c727900a5c91d41732dae639c5804667f8fe6d73ddaca8"
+      },
+      {
+        "bytes": 367,
+        "logicalPath": "catalog/vehicle-types/motorcycle.json",
+        "reads": 5,
+        "sha256": "63ebe79c979101abcd1c972fb42076e59346b10cfa95e92686876661e804db09"
+      },
+      {
+        "bytes": 359,
+        "logicalPath": "catalog/vehicle-types/pickup.json",
+        "reads": 5,
+        "sha256": "473ccb098937b2da22be3b038f019e622ebcc8a2a326e8032b13a42eee983c6a"
+      },
+      {
+        "bytes": 368,
+        "logicalPath": "catalog/vehicle-types/rigid-truck.json",
+        "reads": 5,
+        "sha256": "a6f22c8d5356a9ac0fb0cb90403eb82a0f75c73660b62f8b67c3416a4087bffb"
+      },
+      {
+        "bytes": 353,
+        "logicalPath": "catalog/vehicle-types/van.json",
+        "reads": 5,
+        "sha256": "79f206d00a23f3cbd75293a62df389ff876135db97445e90ab718583e4baf653"
+      },
+      {
+        "bytes": 236,
+        "logicalPath": "evaluation/queue-counter.json",
+        "reads": 5,
+        "sha256": "04bff220abb06e80db644e1b94afb53f3e0af790ffe2371e06eff5f2b82a1de9"
+      }
+    ],
+    "schemaVersion": 1
+  },
+  "label": "M6 kind U first comparable run (D542)",
+  "lastSeed": 81,
+  "outputs": [
+    {
+      "bytes": 13741,
+      "file": "runs.csv",
+      "sha256": "26be1f0aab63e21c69fd123f582e379b555138ab3dee3d9f68b9549653217c86"
+    },
+    {
+      "bytes": 6894,
+      "file": "summary.json",
+      "sha256": "0eb7f49cdcb85a7542aa8de1300a5138b69a10062b1bcc89c6b25cf00fa7238d"
+    }
+  ],
+  "toolSources": [
+    {
+      "file": "m6_u_run.cpp",
+      "sha256": "cd3776503e9c35d804cdb936bcf55ed2cea3758f11f052c96845c363d63a62f1"
+    },
+    {
+      "file": "m6_u_network.hpp",
+      "sha256": "a5df4d778cd52b12398d379eec8880021bb5aada4ae8431738159fb58d352ee8"
+    },
+    {
+      "file": "m6_u_summary.hpp",
+      "sha256": "37b7218c4b8f18cc89f9ccd9dddb27bc17d2595e1aadf61fa0241681fadc529c"
+    },
+    {
+      "file": "m6_u_split.hpp",
+      "sha256": "5084ac93ff6c9683d0369783ed04a6e45571bb9c9025e0af6432ed49620be826"
+    },
+    {
+      "file": "m6_s1_summary.hpp",
+      "sha256": "57fb5f1b5d0ec9ae94b3ccabd0af07a23f37d3baa6c23008938af7a9cd386b60"
+    },
+    {
+      "file": "m6_candidates.hpp",
+      "sha256": "a0db60237aec2c132d5361729aa03841af926c2ea2d922722a8804e394021432"
+    }
+  ]
+}
