@@ -11,6 +11,7 @@
 #include "../src/project/side_files.hpp"
 #include "../src/project/macro_output.hpp"
 #include "four_step_cli.hpp"
+#include "dynamic_assignment_cli.hpp"
 #include "../src/project/meso_output.hpp"
 #include "../src/project/node_analysis_run.hpp"
 #include "../src/project/node_analysis_report.hpp"
@@ -24,6 +25,7 @@
 
 namespace {
 using namespace multra;
+std::filesystem::path routeCostsFile; // --route-costs (DYNAMIC_ASSIGNMENT §5, D549)
 // A project run steps the engine itself so the movement evaluation sees every state.
 int runProject(const std::filesystem::path& file, const std::filesystem::path& csvFile,
                const std::filesystem::path& data, std::uint32_t seed, bool laneChanges, bool segmentTimes, bool stopLines, bool priorityLines,
@@ -32,7 +34,7 @@ int runProject(const std::filesystem::path& file, const std::filesystem::path& c
     if (!stream) throw std::runtime_error("Cannot read project: " + file.string());
     InputManifest inputs;
     auto* manifest=discharge.enabled?&inputs:nullptr;
-    const auto document = parseDocument(manifest?readInputJson(file,"project",manifest):Json::parse(stream));
+    const auto document = withRouteCostsFile(parseDocument(manifest?readInputJson(file,"project",manifest):Json::parse(stream)), routeCostsFile);
     const auto sources = readStudyAreaSources(file); // S5.5b (D332): the side files beside the project, as the editor reads them
     const auto snapshot = compileDocument(document, data, manifest, &sources);
     const auto marking = exportMarking(document, snapshot.studyArea);
@@ -101,7 +103,7 @@ struct Prepared { RunSnapshot snapshot; EvaluationSpec spec; ExportMarking marki
 Prepared prepare(const std::filesystem::path& file, const std::filesystem::path& data, const std::filesystem::path& csvFile) {
     std::ifstream stream(file);
     if (!stream) throw std::runtime_error("Cannot read project: " + file.string());
-    const auto document = parseDocument(Json::parse(stream));
+    const auto document = withRouteCostsFile(parseDocument(Json::parse(stream)), routeCostsFile);
     const auto sources = readStudyAreaSources(file); // S5.5b (D332)
     auto snapshot = compileDocument(document, data, nullptr, &sources);
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
@@ -276,6 +278,7 @@ int main(int argc, char** argv) {
                              "  Frank-Wolfe and reports every link's flow, V/C and time (S2.3). PERIOD is a study period\n"
                              "  id, or matrix:ID for a matrix with its own times.\n"
                              "--macro-run ID (with --project, alone) runs a saved Macro definition's period and settings.\n"
+                             "--route-costs FILE (with --project, a single run or --seeds) uses a dynamic assignment's weights.\n"
                              "--procedure ID (with --project, alone) runs a saved procedure's steps in order (JSON only).\n"
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
                              "  transmission model and reports each link's flows, density, travel time and queue by slice (M11.4).\n"
@@ -309,7 +312,7 @@ int main(int argc, char** argv) {
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
                 arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
                 arg == "--threads" || arg == "--macro" || arg == "--trip-generation" || arg == "--trip-distribution" ||
-                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--mode-choice" || arg == "--period" || arg == "--macro-run" || arg == "--procedure" || arg == "--export-utdf" || arg == "--utdf-mode") {
+                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--mode-choice" || arg == "--period" || arg == "--macro-run" || arg == "--procedure" || arg == "--export-utdf" || arg == "--utdf-mode" || arg == "--route-costs") {
                 if (++i == argc) throw std::invalid_argument("Missing value for " + arg);
                 if (arg == "--seed") {
                     if (seedSet) throw std::invalid_argument("Specify seed only once");
@@ -346,6 +349,10 @@ int main(int argc, char** argv) {
                                : arg == "--skim-mode" ? skimMode : arg == "--cost-matrix" ? costMatrix : modeChoice;
                     if (slot) throw std::invalid_argument("Specify " + arg + " only once");
                     slot = argv[i];
+                }
+                else if (arg == "--route-costs") {
+                    if (!routeCostsFile.empty()) throw std::invalid_argument("Specify --route-costs only once");
+                    routeCostsFile = argv[i];
                 }
                 else if (arg == "--procedure") {
                     if (procedureId) throw std::invalid_argument("Specify --procedure only once");
@@ -416,6 +423,9 @@ int main(int argc, char** argv) {
                             nodeAnalysis || seeds || seedSet || laneChanges || segmentTimes || stopLines || priorityLines || arrivalPhases || waitCauses ||
                             discharge.enabled || !compareFile.empty() || threads || !utdfFile.empty()))
             throw std::invalid_argument("--procedure needs --project and takes only --data-dir");
+        if (!routeCostsFile.empty() && (projectFile.empty() || procedureId || modeChoice || tripDistribution || tripRateSet || macroPeriod ||
+                                        macroRunId || meso || nodeAnalysis || !utdfFile.empty() || !compareFile.empty()))
+            throw std::invalid_argument("--route-costs needs --project and works with a single run or --seeds");
         if (utdfMode && utdfFile.empty()) throw std::invalid_argument("--utdf-mode needs --export-utdf");
         if (utdfUnsignalised && utdfFile.empty()) throw std::invalid_argument("--utdf-unsignalised needs --export-utdf");
         if (!utdfFile.empty() && (projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges ||

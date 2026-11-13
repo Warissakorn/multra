@@ -208,7 +208,8 @@ Each row first asserts that its forcing worked.
 |---|---|---|
 | A0 | This contract | — |
 | A1 | The pure loop in `src/project/dynamic_assignment.*` behind a cost-provider callback. **Implemented (§10)** | DA1–DA3 |
-| A2 | Measurement from a Micro run, the file codec, `--route-costs` | DA4–DA6, DA9 |
+| A2 | Measurement from a Micro run, the file codec, `--route-costs`; unplaced decisions only (§11). **Implemented (§12)** | DA4–DA6, DA9 |
+| A2b | Placed and positioned decisions (route families), before or after A3 as the owner picks | — |
 | A3 | The loop over real runs, `--dynamic-assignment`, fixture (b) | DA7–DA8 |
 | A4 | Later, the owner's choice: the editor, and weights written back into the project (a schema bump) | — |
 
@@ -245,3 +246,63 @@ is not, the slice adds the smallest event field and measures the hot path before
   - DA1 reproduces the §7 table to 1e-9 and stops at n = 10 with δ = 0. Stopped at 9, it is
     unconverged at 1/39.
   - No value was changed after the first run.
+
+## 11. Amendments before A2 code (2026-11-13)
+
+Written after reading the compile path and before any A2 code or figure. Every decision below is
+recorded openly.
+
+1. **A2 supports unplaced (M2.4) decisions only.**
+   - **Why.** Compile splits an unplaced decision at the source into inputs
+     `<input>/route-<routeId>`, and the authored route of each runtime route is known
+     (`RunSnapshot::routeOrigins`).
+   - **What is refused.** A decision with a `linkId` (placed, positioned or not) is refused as
+     `DYNAMIC_ASSIGNMENT_UNSUPPORTED` at `routingDecisions[i]` until a slice **A2b**. Such a
+     decision is met on the network walk, and its entries are recoverable only through route
+     families. Its `RoutingEvent` (positioned) gives the passage time, but not the entry.
+2. **The moment and clock of an unplaced decision.**
+   - The moment is departure, so the cost is the arrival's `travelTime` (time − entered time).
+   - The cell is chosen by `scheduledTime`, which `DepartedEvent` and the vehicle carry.
+3. **Membership.** A vehicle belongs to decision D when its core input's id equals the id of an
+   authored input naming D, or begins with that id followed by `/`. Its entry is the one whose
+   `routeId` is the authored origin of its departure route. Lane changes stay inside one authored
+   route (D95), so the origin does not change on the way.
+4. **Free-flow fill (§3) for an unplaced decision:**
+   - the entry's authored route length (`authoredRouteLength`) ÷ the mean desired speed of D's
+     departed vehicles in the run;
+   - if D had none, the mean over all departed vehicles;
+   - a run with no departed vehicle at all is refused (`DYNAMIC_ASSIGNMENT_INVALID` at
+     `routingDecisions`).
+5. **Cells.** A decision's cells are its intervals in order, then `default`. A cell's shares are
+   its entries' flows normalised. An all-zero interval takes the default shares. An all-zero
+   default is `DYNAMIC_ASSIGNMENT_INVALID` at `routingDecisions[i]`.
+6. **Writing weights.**
+   - The default cell sets each entry's `relativeFlow`; interval k sets `intervalFlows[k]`.
+   - A share of 0 gives the entry no vehicle, so it is free-flow-filled.
+   - The route-costs file lists cells by `interval` index or `"default"`. Cells it omits keep the
+     project's flows.
+7. **DA4 reworded.** No single vehicle is hand-timed. The four-leg fixture's random arrivals give
+   no exact single vehicle. DA4 instead asserts that each cell's cost equals the mean `travelTime`
+   of the cell's arrived vehicles, recomputed in the test from the raw event stream, with the cell
+   taken by `scheduledTime`; both intervals and both entries are populated as forcing.
+
+## 12. As implemented (A2, 2026-11-13)
+
+- **Code:**
+  - `src/project/dynamic_assignment_run.*`:
+    - `planDynamicAssignment` (the §2 and §11 refusals);
+    - `decisionWeights` and `applyDecisionWeights`;
+    - `measureDecisionCosts`, which steps one compiled run at a seed and reads `DepartedEvent`,
+      `ArrivedEvent` and the final state.
+  - `src/project/route_costs.*`: `routeCostsFor`, `routeCostsJson`, `parseRouteCosts` and
+    `applyRouteCosts`.
+  - The file's interval cells carry `start` and `end`, the interval bounds §5 names as the
+    staleness key.
+  - `tools/dynamic_assignment_cli.*` and `--route-costs` in `multra-cli`, for a single run or
+    `--seeds`. Any other mode, and `--compare`, refuses the flag.
+- **Rows:** `tests/dynamic_assignment_run_tests.cpp` (group `dynassignrun`) covers DA4–DA6 and
+  DA9 on the four-leg fixture's West approach, with two intervals.
+- **One test fix, no value changed.** DA6's first form set the run duration (650 s) below the
+  input's end (900 s), which the project refuses (`INVALID_INTERVAL`). The input now ends at
+  650 s too.
+- `src/core` is unchanged.
