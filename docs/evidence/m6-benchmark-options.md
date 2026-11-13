@@ -305,6 +305,8 @@ base conditions the adjustments of Equations 20-16 and 20-17 are 0 (`P_HV` = 0, 
 |---|---|---|---|---|---|
 | `c_p` (veh/h) | 846.1 | 654.3 | 504.6 | 388.1 | 297.7 |
 
+**Kind U contract (D542, 2026-11-13):** [M6_U_RUN](../reference/M6_U_RUN.md) fixes the drawing (a T), the minor demand (1,800 veh/h) and `τ` (with the car's length) before the run.
+
 **First run, S2-b and S2-a (D539, 2026-11-12):** [m6-s2ab-first-run](m6-s2ab-first-run.md); S2-b passes at `x` = 0.5 only, S2-a at none.
 
 **First run, S2-c (D538, 2026-11-12):** [m6-s2c-first-run](m6-s2c-first-run.md); passes at `x` = 0.5, 0.7 and 0.85.
