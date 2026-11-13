@@ -1,4 +1,4 @@
-# M6_U_RUN — M6 kind U: minor-movement capacity, U-c and U-a (D542)
+# M6_U_RUN — M6 kind U: minor-movement capacity, U-c and U-a (D542), and the Stop follow-up split (D543)
 
 Contract for kind U ([m6-benchmark-options](../evidence/m6-benchmark-options.md) §5–§6). The
 engine's capacity for a Stop-controlled rank-2 minor movement is compared, at five major flows,
@@ -47,7 +47,7 @@ on `tools/t_junction_network.hpp`, left-hand.
 
 ## 3. The command
 
-`multra-m6-u-run <data-dir> <compile_commands.json> <new-output-dir>`
+`multra-m6-u-run run <data-dir> <compile_commands.json> <new-output-dir>` (no mode until D543)
 
 - **Refusals.** The tool refuses an existing output directory and a wrong argument count, with
   exit status 1 and 2.
@@ -98,5 +98,70 @@ on `tools/t_junction_network.hpp`, left-hand.
 | U4 | A level with mean share 0.89 is unavailable and one at 0.9 is available; a mean exactly at +15 % of the reference passes | `m6u` |
 | U5 | `junction(600)`, cut to 300 s with a 60 s warm-up, seed 42: the counted major rate is below 900 veh/h, so the far lane is not counted (both lanes give about 1,200); there are minor crossings; `share` lies in [0, 1] | `m6u` |
 | U6 | `multra-m6-u-run` with no arguments prints its usage line and exits 2; with an existing output directory it exits 1 | `cli-m6-u-run-help`, `cli-m6-u-run-refused` |
+
+## 6. The follow-up split (D543): where the 13.7 s goes
+
+**Why.** The first run ([m6-u-first-run](../evidence/m6-u-first-run.md)) measured a follow-up
+headway of 13.7 s, against HCM's 3.3 s. This section splits each follow-up into the engine's
+own events. It has **no band, decides nothing and changes no parameter**. Written before code;
+rows SU1–SU5 fail first.
+
+**Command.**
+- `multra-m6-u-run split <data-dir> <compile_commands.json> <new-output-dir>` runs the five §2
+  levels, seeds 42–81.
+- §3's run becomes mode `run`, so the tool's usage is
+  `multra-m6-u-run run|split <data-dir> <compile_commands.json> <new-output-dir>`.
+
+**What is recorded.** The observer is `tools/m6_u_split.hpp`. It sees the initial state and
+every step, on the one area.
+- **Minor crossings.** The front passes `waitAt`, interpolated as the priority-line counter does
+  (PRIORITY_LINES §1).
+- **Major entries.** The front passes `entryAt`, interpolated in the same way.
+- **First standing.** The first state in which a minor vehicle, short of the line, is slower than
+  the queue definition's `beginSpeed`.
+- **Service start `s0`.** The first state in which the vehicle has a `StopService` at this line.
+- **Served `s1`.** The first state whose tick exceeds `since + ticks`, that is, once `restsAtStop`
+  is false.
+- **Trace.** While the vehicle is the minor vehicle nearest the line and short of it: time,
+  front distance and speed.
+- **Blocked, per state.** The gap rule of M3_CONTRACT §4 is applied to every vehicle on a route
+  whose major side meets the area, with the area's `gapTime` and `headway`. Let `d = entryAt − front`:
+  - `d ≥ 0`: the vehicle blocks when `d ≤ headway`, or when its speed is above 0 and
+    `d / speed < gapTime`;
+  - `d < 0`: it blocks while its rear is short of `exitAt` (occupying).
+
+  The state is blocked when any major vehicle blocks. This is the rule's own test recomputed
+  from the state; the engine's internal flag is not read.
+
+**A pair.** Leader `l` and follower `f` are consecutive minor crossings, both in the window
+[900, 4,500] s, and:
+- there is no major entry in `(t_l, t_f)`;
+- `f` first stood at or before `t_l`;
+- `f`'s `s0` lies at or after `t_l`.
+
+This is the counter's follow-up, except that queueing uses standing alone (no `maxGap`): the
+queue at the line is dense. Both counts are reported.
+
+**Phases of a pair.** Their sum is the headway `t_f − t_l` exactly.
+
+| Phase | Definition | Sub-measures |
+|---|---|---|
+| `moveUp` | `s0 − t_l` | **`settle`:** `s0` minus the first trace time at or after `t_l` at which `f`'s front is within 0.5 m of its front at `s0`. **`moveDistance`:** `f`'s travel from `t_l` to `s0`. **`peakSpeed`:** its maximum speed in that interval |
+| `dwell` | `s1 − s0` | |
+| `release` | `t_f − s1` | **`blocked`:** dt × the states in `[s1, t_f)` that are blocked. **`free`:** `release − blocked`. **`standDistance`:** `waitAt` minus `f`'s front at `s0` |
+
+**Report.** `summary.json` gives, per level:
+- the number of pairs, and the counter's `followUps` and `followUpMean` for the same runs;
+- each phase and sub-measure as a mean over seeds (each seed's mean over its pairs), with a 95 % CI.
+
+`split.csv` (one row per pair) is not vendored. `metadata.json` is written last.
+
+| Row | Statement | Group |
+|---|---|---|
+| SU1 | Hand times give `moveUp`, `dwell` and `release` that sum to the headway; hand blocked flags give `blocked` and `free` that sum to `release` | `m6u` |
+| SU2 | The block test on hand values: `d` = headway blocks; `d` = 10 m at 2 m/s blocks with `gapTime` 5.804 s (5 s) and does not at 1 m/s (10 s); `d / speed` exactly `gapTime` does not block; a standing vehicle beyond `headway` does not; occupying blocks until the rear passes `exitAt` | `m6u` |
+| SU3 | `settle`, `moveDistance` and `peakSpeed` on a hand trace give hand values | `m6u` |
+| SU4 | `junction(600)` cut to 300 s with a 60 s warm-up, seed 42, has pairs. Every pair's phases sum to its headway within 1e−9. Every `dwell` equals `(ticks + 1)·dt` = 0.2 s (the forcing: the service is what `restsAtStop` says) | `m6u` |
+| SU5 | The usage line lists `run\|split` | `cli-m6-u-run-help` |
 
 Return to [the reference index](README.md).
