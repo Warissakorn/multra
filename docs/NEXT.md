@@ -12,8 +12,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   Yperman); repositories, page rules, caveats and the chapter map by milestone are in
   [BOOKS](reference/BOOKS.md). Attach with `add_repo`, never vendor; cite the book, read the image
   before using a number. Checks of 2026-10-23: [book-copies-check](evidence/book-copies-check.md).
-- **Before an engine slice:** `src/core/` files are at the 500-line limit; split along the
-  responsibility a change touches first (D319). The owner deferred splitting `types.hpp` on its
+- **Before an engine slice:** keep `src/core/` files at 500 lines or fewer (2026-11-13: largest `types.hpp` 469,
+  `lanes.cpp` 422, `validate.cpp` 418); split along the responsibility a change touches first (D319). The owner deferred splitting `types.hpp` on its
   own: estimated 466 → 420 objects rebuilt after a runtime-state edit, 338 with `eventJson`,
   `checkpointJson` and `summaryJson` moved out of `project/json.hpp`. Do it with the first engine
   slice that edits `Vehicle` or `SimState`, and measure the rebuild before and after.
