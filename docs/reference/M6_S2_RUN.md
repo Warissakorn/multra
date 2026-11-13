@@ -115,3 +115,28 @@ that starts 250 m upstream, and past the source, and that delay would go uncount
 | S2AB4 | `available` is false when any seed has unfinished > 0 or pending > 0, and the verdict is then unavailable | `m6s2` |
 | S2AB5 | Mode `c` or `ab` is required; an unknown mode is refused with usage | `cli-m6-s2-run-mode` |
 
+## 7. The arrival diagnostic at the line (D540)
+
+S2-b and S2-a miss below HCM's `d2` ([m6-s2ab-first-run](../evidence/m6-s2ab-first-run.md)). The
+hypothesis to test: Poisson arrivals at a source 2 km upstream are smoothed by following before
+they reach the line. `d2` assumes random arrivals there (`I` = 1). This section **decides nothing
+and has no band**; it changes no model or setup.
+
+- **Command:** `multra-m6-s2-run arrivals <data-dir> <compile_commands.json> <new-output-dir>`. It runs the §6 no-signal layout at every §6 `x`, seeds 42–81, in its own tick loop.
+- **Observer.** At route distances **100 m** (just after the source) and **2,000 m** (the stop-line position), it stamps each vehicle once, at the end-of-tick time of the first tick in which its front is at or past the point. This is DISCHARGE's convention; the quantisation is up to one 0.1 s step.
+- **Per seed, over the window [900, 4500) s, at each point:**
+  - **IDC**, the index of dispersion of counts: the sample variance (n − 1) over the mean of the counts in the 40 consecutive 90 s intervals;
+  - **CV**, the sample standard deviation over the mean of the headways between consecutive stamps in the window.
+
+  For Poisson arrivals both are 1. Below 1 is smoother than Poisson; above 1 is bunched.
+- **Reduction.** The mean over seeds with the 95 % half-width, per point and `x`.
+- **Output:** `arrivals.csv` (one row per `x`, seed and point, with `count`, `idc`, `cv`), `summary.json`, and `metadata.json` written last.
+- **Reading.** If the line's IDC is well below 1 while the 100 m point's is near 1, the S2-b/S2-a gap is a property of the setup's distance and not of the queue model. Changing the setup is then a separate owner decision with its own contract. Otherwise the gap belongs to the queue or discharge model.
+
+| Row | What must hold | Test |
+|---|---|---|
+| S2D1 | An observer fed hand-built ticks stamps each vehicle once per point, at the first tick at or past it, and never before | `m6s2` |
+| S2D2 | IDC and CV of hand-made stamps give hand values; intervals start at 900 s and are 90 s long | `m6s2` |
+| S2D3 | Synthetic exponential headways at 0.2 veh/s from a fixed splitmix64 draw give IDC and CV within 0.1 of 1, and evenly spaced stamps give 0 | `m6s2` |
+| S2D4 | The usage line lists `c\|ab\|arrivals`; an unknown mode is refused with it | `cli-m6-s2-run-help`, `cli-m6-s2-run-mode` |
+
