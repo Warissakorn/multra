@@ -89,9 +89,12 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     at every level; the engine's follow-up headway is 13.7 s (HCM 3.3 s), so the Stop service, not the gap
     test, limits the movement. Every kind now has its first run. **D543** ([evidence](evidence/m6-u-split.md)):
     of the 13.7 s, the move-up to the line takes 10.7–12.2 s (the last 0.5 m alone 3.75 s, the creep), the
-    service 0.1 s, the release 1.6 s, almost never blocked. **Next: the owner's one held calibration decision
-    (D540)** — the engine's approach to a standing target (S1 creep and jam spacing, U move-up), start-up
-    response and amber use, which move S1, S2 and U together.
+    service 0.1 s, the release 1.6 s, almost never blocked. **D544** (owner): no calibration on M6; the
+    misses stand as known deviations until independent data (U-e inD, R7; Thai data, Q4 (d)); D540's hold is closed.
+    **D545 sweep phase 1** ([evidence](evidence/m6-sweep-phase1.md)): B and C move S1 as estimated, raise S2
+    capacity (misses grow) and cut U's `t_f` only 0.7–0.8 s; nothing adopted. **Next: sweep phase 2** — D (stop
+    at the standstill gap behind a standing target) and E (Stop target is the line), each a runtime switch off by
+    default with its own contract; split the `src/core/` files they touch first.
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract
     before it is used.
     D531: S1 keeps the mean headway; the median and skewness beside it need a `--discharge`
