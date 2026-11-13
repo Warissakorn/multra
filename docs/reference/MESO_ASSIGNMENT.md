@@ -205,3 +205,18 @@ mean is 45.5 / 10 = **4.55 s**, and the censored range is **3 PCU** (7 → 10).
   - the file carries `"level": "meso"`;
   - `--meso --route-costs` ran;
   - the same file without `--meso` was refused as `ROUTE_COSTS_STALE: level`.
+
+## 10. Placed decisions (D551, contract before code, 2026-11-13)
+
+- **Placed decisions without a position are supported.** A routeless `MesoPath.source` is the
+  definition route id of Micro's expansion, and DYNAMIC_ASSIGNMENT §15's `routeFamilies` maps it
+  to the entry.
+- **Positioned decisions are `DYNAMIC_ASSIGNMENT_UNSUPPORTED` for Meso** at
+  `routingDecisions[i]`.
+  - The walk Meso loads gives a positioned decision's destinations a neutral weight of 1
+    (`src/project/demand_paths.cpp`), because Micro draws at the line.
+  - So Meso's split never follows those weights, and its loop could not move them.
+  - Supporting them would change Meso's loading. That is not this slice's to decide.
+- **MA9.** The Meso fixture with its decision placed on the origin Link and a routeless input.
+  Both entries are costed (forcing). At the same weights, both entries' costs equal the unplaced
+  fixture's to 1e-9, because the paths are the same.

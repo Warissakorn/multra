@@ -402,3 +402,51 @@ Nothing else changes: not the geometry, the demand, the seed, the gap or the ite
 
   Every part is now asserted by a row. Closing the gate is the owner's call (rule 8). Placed and
   positioned decisions (A2b) stay open.
+
+## 15. A2b: placed and positioned decisions (D551, contract before code, 2026-11-13)
+
+This lifts §11.1's refusal of placed decisions. It was written after reading the compile path and
+before any A2b code.
+
+**What the compile gives.**
+- `expandRouteless` already tags each routeless definition route with family names (`familyName`,
+  `src/model/network/routeless.cpp`):
+  - unplaced positionless entries: `<decision>><final object of the entry's chain>`;
+  - positioned entries: `<decision>>route-<k>`.
+- `RunSnapshot` gains `routeFamilies`: definition route id → those names. An optional out-parameter
+  of `expandRouteless` fills it, so no run changes.
+
+**Placed decisions without a position.**
+- **Membership:** the departure route (through `routeOrigins`, then `routeFamilies`) carries a
+  family of the decision.
+- **The entry** is the one whose family name matches.
+- **Moment and clock:** as §11 (departure, `scheduledTime`).
+- **Refused:** two entries sharing a final object share a family, and the walk cannot tell them
+  apart. This is `DYNAMIC_ASSIGNMENT_UNSUPPORTED` at `routingDecisions[i].routes[k]`, on the
+  later entry.
+
+**Positioned decisions (Micro).**
+- **The moment** is the tick of the decision's `RoutingEvent`.
+- **The entry** comes from the event's `toRouteId`, through its origin and its families, to
+  `<decision>>route-k`.
+- **The cell** is chosen by the passage time.
+- **The cost** is arrival − passage. A vehicle still running is censored at the run's end.
+- A vehicle that never reaches the line has no cost for that decision.
+
+**Free-flow fill for a placed entry.**
+- Take the shortest runtime route carrying the entry's family. Its length, less the gate distance
+  for a positioned decision, is divided by the mean desired speed (§11.4).
+- If no runtime route carries the family, the entry is `DYNAMIC_ASSIGNMENT_INVALID` at
+  `routingDecisions[i].routes[k]`.
+
+**The route-costs file** applies to placed decisions as to unplaced ones. §5's staleness rules hold,
+and the placed-is-stale rule of A2 is dropped.
+
+**Rows:**
+
+| Row | Asserts |
+|---|---|
+| DA10 | A decision placed on the four-leg West upstream Link with entries through and left, and a routeless input. Both entries are populated (forcing). Each entry's cost equals the mean arrival `travelTime`, grouped by the arrival route's last section's Link (from `runtimeSections`, an independent mapping), to 1e-9 |
+| DA11 | The same decision at `position` 50 m. Each entry's cost equals the mean of arrival − that vehicle's `RoutingEvent` time, grouped by the event's chosen route's last Link, with the cell by passage time, to 1e-9 |
+| DA12 | Refusals at their paths: two entries with one final object; a positioned decision on Meso (MESO_ASSIGNMENT §10) |
+| DA13 | The loop over the placed decision repeats byte for byte; `maxIterations` 2 is flagged |
