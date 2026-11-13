@@ -1,6 +1,7 @@
 #include "test.hpp"
 #include "../tools/m6_s2_summary.hpp"
 #include "../tools/m6_s2_arrivals.hpp"
+#include "../tools/m6_s2_green.hpp"
 #include "../src/project/run.hpp"
 #include "../src/project/evaluation.hpp"
 #include <cmath>
@@ -161,4 +162,31 @@ TEST(m6s2, s2d3_poisson_stamps_give_one_and_even_stamps_give_zero) {
     CHECK(near(*m6s2::headwayCv(poisson, 0, 198000), 1, .1));
     CHECK(near(*m6s2::dispersion(even, 0, 198000, 90), 0, 1e-12));
     CHECK(near(*m6s2::headwayCv(even, 0, 198000), 0, 1e-12));
+}
+// D541 (M6_S2_RUN §8): effective green and recomputed references, rows S2E1-S2E3.
+TEST(m6s2, s2e1_cycle_counts_include_amber_and_ranks_five_to_twelve) {
+    std::vector<double> stamps{899.9};                                 // before Go: not counted
+    for (int r = 0; r < 14; ++r) stamps.push_back(901 + 2.0 * r);      // 901 ... 927
+    stamps.push_back(940.5); stamps.push_back(942.9);                  // amber
+    stamps.push_back(943.0);                                          // red, still in the cycle
+    stamps.push_back(990);                                            // next cycle
+    const auto c = m6s2::cycleCount(stamps, 900);
+    CHECK(c.n == 17 && c.amber == 2 && c.hS && near(*c.hS, 2, 1e-12));
+    const auto sparse = m6s2::cycleCount({901, 903, 905}, 900);
+    CHECK(sparse.n == 3 && !sparse.hS);
+}
+TEST(m6s2, s2e2_effective_green_and_hcm_at_given_values) {
+    const auto g = m6s2::green(22, 1.5, 1.85);
+    CHECK(near(g.effectiveGreen, 40.7, 1e-9) && near(g.lostTime, 2.3, 1e-9) && near(g.capacity, 880, 1e-9));
+    for (const double x : {.5, .85, 1.0, 1.05})
+        CHECK(near(m6s2::hcmDelayAt(m6s2::hcmLevel(x).flow, 90, 40, 1900.0 * 40 / 90), m6s2::hcmDelay(x), 1e-9));
+}
+TEST(m6s2, s2e3_fctl_slot_rules_and_stability) {
+    const auto d = m6s2::declaredSlots();
+    CHECK(d.green == 21 && d.red == 26 && near(d.slot, 3600 / 1900.0, 1e-12));
+    const auto e = m6s2::engineSlots(42.3, 1.85);
+    CHECK(e.green == 23 && e.red == 26 && near(e.slot, 1.85, 1e-12));
+    CHECK(m6s2::fctlSeconds(d, 422.2).has_value());
+    CHECK(!m6s2::fctlSeconds(d, 886.7).has_value());  // 47 * mu >= 21
+    CHECK(near(*m6s2::fctlSeconds({16, 16, 3600 / 1900.0}, 475), 10.98, .005));  // S2-c's reference
 }

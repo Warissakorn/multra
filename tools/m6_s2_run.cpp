@@ -2,9 +2,12 @@
 // mode `ab` is S2-b and S2-a (D539, §6, x = 0.5 ... 1.05 against HCM 7 d1 + d2). For each x the signal
 // and no-signal projects run seeds 42-81; the figure is the paired section travel-time difference.
 // Mode `arrivals` (D540, §7) runs only the §6 no-signal projects and measures the arrival process.
+// Mode `green` (D541, §8) counts capacity per cycle on the saturated S1 project and recomputes references.
 // Writes a fresh directory; metadata.json with complete=true is written LAST.
 #include "m6_s2_summary.hpp"
 #include "m6_s2_arrivals.hpp"
+#include "m6_s2_green.hpp"
+#include "m6_s1_network.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/runner/batch.hpp"
 #include "../src/project/evaluation.hpp"
@@ -20,7 +23,7 @@
 
 using namespace multra;
 namespace {
-constexpr const char* kUsage = "usage: multra-m6-s2-run c|ab|arrivals <data-dir> <compile_commands.json> <new-output-dir>\n";
+constexpr const char* kUsage = "usage: multra-m6-s2-run c|ab|arrivals|green <data-dir> <compile_commands.json> <new-output-dir>\n";
 std::string bytes(const std::filesystem::path& path) {
     std::ifstream stream(path, std::ios::binary);
     if (!stream) throw std::runtime_error("Cannot read " + path.string());
@@ -41,7 +44,7 @@ Json estimate(const Estimate& e) {
 int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--help") { std::cout << kUsage; return 0; }
     const std::string mode = argc == 5 ? argv[1] : "";
-    if (mode != "c" && mode != "ab" && mode != "arrivals") { std::cerr << kUsage; return 2; }
+    if (mode != "c" && mode != "ab" && mode != "arrivals" && mode != "green") { std::cerr << kUsage; return 2; }
     try {
         const bool arrivals = mode == "arrivals", hcm = mode != "c";
         const std::filesystem::path data = argv[2], directory = argv[4];
@@ -54,8 +57,81 @@ int main(int argc, char** argv) {
         if (command.is_null()) throw std::invalid_argument("Missing m6_s2_run.cpp compiler command");
         Json sources = Json::array();
         const auto sourceDirectory = std::filesystem::path(command.at("file").get<std::string>()).parent_path();
-        for (const auto* name : {"m6_s2_run.cpp", "m6_s2_summary.hpp", "m6_s2_network.hpp", "m6_s1_summary.hpp", "m6_s2_arrivals.hpp"})
+        for (const auto* name : {"m6_s2_run.cpp", "m6_s2_summary.hpp", "m6_s2_network.hpp", "m6_s1_summary.hpp", "m6_s2_arrivals.hpp", "m6_s2_green.hpp", "m6_s1_network.hpp"})
             sources.push_back({{"file", name}, {"sha256", inputSha256(bytes(sourceDirectory / name))}});
+        if (mode == "green") {
+            // §8 A: the saturated S1 project, every crossing per cycle at the line (route 300 m).
+            auto document = m6s1::approach();
+            putDemandCatalog(document, resolveDemandCatalog(*document.definition, data, true, &inputs));
+            const auto snapshot = compileDocument(document, data, &inputs);
+            inputs.validate();
+            if (!std::filesystem::create_directory(directory)) throw std::runtime_error("Cannot create output directory");
+            const auto text = documentJson(document).dump(2) + "\n";
+            write(directory / "m6-s1-approach.traffic.json", text);
+            const auto& scenario = snapshot.scenario;
+            if (scenario.signalHeads.size() != 1) throw std::invalid_argument("Expected the S1 project's one head");
+            std::string csv = "seed,cycle,N,A,hS\n";
+            std::vector<double> ns, as, hs, ges, ls, cs;
+            Json perSeed = Json::array();
+            for (std::uint32_t seed = 42; seed <= 81; ++seed) {
+                m6s2::ArrivalObserver observer({scenario.signalHeads[0].position});
+                auto state = createSimulation(scenario, seed);
+                observer.observe(state);
+                for (const auto ticks = totalTicks(scenario); state.tick < ticks;) {
+                    state = stepSimulation(std::move(state));
+                    observer.observe(state);
+                }
+                double n = 0, a = 0, h = 0; std::size_t hn = 0;
+                for (int k = 0; k < 40; ++k) {
+                    const auto c = m6s2::cycleCount(observer.stamps(0), 900 + 90.0 * k);
+                    n += static_cast<double>(c.n); a += static_cast<double>(c.amber);
+                    if (c.hS) { h += *c.hS; ++hn; }
+                    csv += std::to_string(seed) + "," + std::to_string(k) + "," + std::to_string(c.n) + "," +
+                        std::to_string(c.amber) + "," + (c.hS ? Json(*c.hS).dump() : std::string()) + "\n";
+                }
+                if (hn == 0) throw std::runtime_error("No cycle with 12 crossings");
+                const auto g = m6s2::green(n / 40, a / 40, h / static_cast<double>(hn));
+                ns.push_back(g.n); as.push_back(g.amber); hs.push_back(g.hS);
+                ges.push_back(g.effectiveGreen); ls.push_back(g.lostTime); cs.push_back(g.capacity);
+                perSeed.push_back({{"seed", seed}, {"N", g.n}, {"A", g.amber}, {"hS", g.hS},
+                    {"effectiveGreen", g.effectiveGreen}, {"lostTime", g.lostTime}, {"capacity", g.capacity}});
+                std::cerr << "seed " << seed << " N " << g.n << '\n';
+            }
+            const auto mean = [](const std::vector<double>& v) { return *m6s1::figure(v).mean; };
+            const auto engine = m6s2::green(mean(ns), mean(as), mean(hs));
+            const std::vector<double> engineDelta{18.51, 21.04, 24.61, 32.09, 42.42, 69.55};  // D539
+            const std::vector<double> xs{.5, .7, .85, .95, 1, 1.05};
+            Json levels = Json::array();
+            const auto opt = [](const std::optional<double>& v) { return v ? Json(*v) : Json(nullptr); };
+            for (std::size_t k = 0; k < xs.size(); ++k) {
+                const double v = m6s2::hcmLevel(xs[k]).flow;
+                levels.push_back({{"x", xs[k]}, {"flow", v}, {"engineDeltaD539", engineDelta[k]},
+                    {"hcmDeclared", m6s2::hcmDelay(xs[k])},
+                    {"hcmEngine", m6s2::hcmDelayAt(v, 90, engine.effectiveGreen, engine.capacity)},
+                    {"xEngine", v / engine.capacity},
+                    {"fctlDeclared", opt(m6s2::fctlSeconds(m6s2::declaredSlots(), v))},
+                    {"fctlEngine", opt(m6s2::fctlSeconds(m6s2::engineSlots(engine.effectiveGreen, engine.hS), v))}});
+            }
+            const auto es = m6s2::engineSlots(engine.effectiveGreen, engine.hS);
+            write(directory / "green.csv", csv);
+            write(directory / "summary.json", Json{{"label", "M6 S2 effective-green diagnostic (D541); no band, decides nothing"},
+                {"N", m6s1::figureJson(m6s1::figure(ns))}, {"amber", m6s1::figureJson(m6s1::figure(as))},
+                {"hS", m6s1::figureJson(m6s1::figure(hs))}, {"effectiveGreen", m6s1::figureJson(m6s1::figure(ges))},
+                {"lostTime", m6s1::figureJson(m6s1::figure(ls))}, {"capacity", m6s1::figureJson(m6s1::figure(cs))},
+                {"hcm", {{"green", 40}, {"lostTime", 3}, {"capacity", 1900.0 * 40 / 90}}},
+                {"declaredSlots", {{"green", 21}, {"red", 26}}}, {"engineSlots", {{"green", es.green}, {"red", es.red}, {"slot", es.slot}}},
+                {"levels", levels}, {"perSeed", perSeed}}.dump(2) + "\n");
+            Json outputs = Json::array();
+            for (const auto* name : {"green.csv", "summary.json"}) {
+                const auto captured = bytes(directory / name);
+                outputs.push_back({{"file", name}, {"bytes", captured.size()}, {"sha256", inputSha256(captured)}});
+            }
+            write(directory / "metadata.json", Json{{"complete", true}, {"label", "M6 S2 effective-green diagnostic (D541)"},
+                {"buildCommit", MULTRA_BUILD_COMMIT}, {"compiler", MULTRA_COMPILER}, {"compilerCommand", command},
+                {"toolSources", sources}, {"documents", Json::array({{{"file", "m6-s1-approach.traffic.json"}, {"sha256", inputSha256(text)}}})},
+                {"outputs", outputs}, {"inputManifest", inputs.json()}, {"firstSeed", 42}, {"lastSeed", 81}}.dump(2) + "\n");
+            return 0;
+        }
         const auto xs = hcm ? std::vector<double>{.5, .7, .85, .95, 1, 1.05} : std::vector<double>{.5, .7, .85};
         const auto layout = hcm ? m6s2::hcmLayout() : m6s2::Layout{};
         const auto levelOf = [&](double x) { return hcm ? m6s2::hcmLevel(x) : m6s2::level(x); };
