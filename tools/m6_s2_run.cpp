@@ -1,8 +1,11 @@
 // M6 kind S2 (docs/reference/M6_S2_RUN.md): mode `c` is S2-c (D538, x = 0.5, 0.7, 0.85 against FCTL);
 // mode `ab` is S2-b and S2-a (D539, §6, x = 0.5 ... 1.05 against HCM 7 d1 + d2). For each x the signal
 // and no-signal projects run seeds 42-81; the figure is the paired section travel-time difference.
+// Mode `arrivals` (D540, §7) runs only the §6 no-signal projects and measures the arrival process.
 // Writes a fresh directory; metadata.json with complete=true is written LAST.
 #include "m6_s2_summary.hpp"
+#include "m6_s2_arrivals.hpp"
+#include "../src/core/simulation.hpp"
 #include "../src/runner/batch.hpp"
 #include "../src/project/evaluation.hpp"
 #include "../src/project/input_manifest.hpp"
@@ -17,7 +20,7 @@
 
 using namespace multra;
 namespace {
-constexpr const char* kUsage = "usage: multra-m6-s2-run c|ab <data-dir> <compile_commands.json> <new-output-dir>\n";
+constexpr const char* kUsage = "usage: multra-m6-s2-run c|ab|arrivals <data-dir> <compile_commands.json> <new-output-dir>\n";
 std::string bytes(const std::filesystem::path& path) {
     std::ifstream stream(path, std::ios::binary);
     if (!stream) throw std::runtime_error("Cannot read " + path.string());
@@ -37,9 +40,10 @@ Json estimate(const Estimate& e) {
 }
 int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--help") { std::cout << kUsage; return 0; }
-    if (argc != 5 || (std::string(argv[1]) != "c" && std::string(argv[1]) != "ab")) { std::cerr << kUsage; return 2; }
+    const std::string mode = argc == 5 ? argv[1] : "";
+    if (mode != "c" && mode != "ab" && mode != "arrivals") { std::cerr << kUsage; return 2; }
     try {
-        const bool hcm = std::string(argv[1]) == "ab";
+        const bool arrivals = mode == "arrivals", hcm = mode != "c";
         const std::filesystem::path data = argv[2], directory = argv[4];
         if (std::filesystem::exists(directory)) throw std::invalid_argument("Output already exists: " + directory.string());
         InputManifest inputs;
@@ -50,7 +54,7 @@ int main(int argc, char** argv) {
         if (command.is_null()) throw std::invalid_argument("Missing m6_s2_run.cpp compiler command");
         Json sources = Json::array();
         const auto sourceDirectory = std::filesystem::path(command.at("file").get<std::string>()).parent_path();
-        for (const auto* name : {"m6_s2_run.cpp", "m6_s2_summary.hpp", "m6_s2_network.hpp", "m6_s1_summary.hpp"})
+        for (const auto* name : {"m6_s2_run.cpp", "m6_s2_summary.hpp", "m6_s2_network.hpp", "m6_s1_summary.hpp", "m6_s2_arrivals.hpp"})
             sources.push_back({{"file", name}, {"sha256", inputSha256(bytes(sourceDirectory / name))}});
         const auto xs = hcm ? std::vector<double>{.5, .7, .85, .95, 1, 1.05} : std::vector<double>{.5, .7, .85};
         const auto layout = hcm ? m6s2::hcmLayout() : m6s2::Layout{};
@@ -58,7 +62,7 @@ int main(int argc, char** argv) {
         std::vector<Arm> arms;  // per x: signal, then none
         Json documents = Json::array();
         for (const double x : xs)
-            for (const bool signal : {true, false}) {
+            for (const bool signal : arrivals ? std::vector<bool>{false} : std::vector<bool>{true, false}) {
                 auto document = m6s2::approach(levelOf(x).flow, signal, layout);
                 putDemandCatalog(document, resolveDemandCatalog(*document.definition, data, true, &inputs));
                 auto snapshot = compileDocument(document, data, &inputs);
@@ -72,6 +76,54 @@ int main(int argc, char** argv) {
         inputs.validate();
         if (!std::filesystem::create_directory(directory)) throw std::runtime_error("Cannot create output directory");
         for (const auto& arm : arms) write(directory / (arm.name + ".traffic.json"), documentJson(arm.document).dump(2) + "\n");
+        if (arrivals) {
+            // §7: one tick loop per seed, stamps at 100 m and at the 2,000 m line position.
+            const std::vector<double> points{100, layout.length - 1};
+            std::string csv = "x,seed,point,count,idc,cv\n";
+            Json rows = Json::array();
+            for (std::size_t k = 0; k < xs.size(); ++k) {
+                std::vector<std::vector<double>> idc(points.size()), cv(points.size());
+                for (std::uint32_t seed = 42; seed <= 81; ++seed) {
+                    m6s2::ArrivalObserver observer(points);
+                    const auto& scenario = arms[k].snapshot.scenario;
+                    auto state = createSimulation(scenario, seed);
+                    observer.observe(state);
+                    for (const auto ticks = totalTicks(scenario); state.tick < ticks;) {
+                        state = stepSimulation(std::move(state));
+                        observer.observe(state);
+                    }
+                    for (std::size_t p = 0; p < points.size(); ++p) {
+                        const auto& stamps = observer.stamps(p);
+                        const auto d = m6s2::dispersion(stamps), c = m6s2::headwayCv(stamps);
+                        std::size_t count = 0;
+                        for (const double t : stamps) count += t >= m6s2::kWarmup && t < m6s2::kWindowEnd;
+                        const auto cell = [](const std::optional<double>& v) { return v ? Json(*v).dump() : std::string(); };
+                        csv += Json(xs[k]).dump() + "," + std::to_string(seed) + "," + Json(points[p]).dump() + "," +
+                            std::to_string(count) + "," + cell(d) + "," + cell(c) + "\n";
+                        if (d) idc[p].push_back(*d);
+                        if (c) cv[p].push_back(*c);
+                    }
+                }
+                std::cerr << arms[k].name << " done\n";
+                for (std::size_t p = 0; p < points.size(); ++p)
+                    rows.push_back({{"x", xs[k]}, {"flow", levelOf(xs[k]).flow}, {"point", points[p]},
+                        {"idc", m6s1::figureJson(m6s1::figure(idc[p]))}, {"cv", m6s1::figureJson(m6s1::figure(cv[p]))}});
+            }
+            write(directory / "arrivals.csv", csv);
+            write(directory / "summary.json", Json{{"label", "M6 S2 arrival diagnostic (D540); no band, decides nothing"},
+                {"poisson", 1}, {"hcmI", 1}, {"windowStart", m6s2::kWarmup}, {"windowEnd", m6s2::kWindowEnd},
+                {"intervalSeconds", m6s2::kIntervalSeconds}, {"rows", rows}}.dump(2) + "\n");
+            Json outputs = Json::array();
+            for (const auto* name : {"arrivals.csv", "summary.json"}) {
+                const auto captured = bytes(directory / name);
+                outputs.push_back({{"file", name}, {"bytes", captured.size()}, {"sha256", inputSha256(captured)}});
+            }
+            write(directory / "metadata.json", Json{{"complete", true}, {"label", "M6 S2 arrival diagnostic (D540)"},
+                {"buildCommit", MULTRA_BUILD_COMMIT}, {"compiler", MULTRA_COMPILER}, {"compilerCommand", command},
+                {"toolSources", sources}, {"documents", documents}, {"outputs", outputs},
+                {"inputManifest", inputs.json()}, {"firstSeed", 42}, {"lastSeed", 81}}.dump(2) + "\n");
+            return 0;
+        }
         std::vector<std::uint32_t> seeds;
         for (std::uint32_t seed = 42; seed <= 81; ++seed) seeds.push_back(seed);
         std::string csv = "x,seed,ttSignal,ttNone,delta,overloadedSignal,unfinishedSignal,pendingSignal\n";

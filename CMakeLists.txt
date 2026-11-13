@@ -401,7 +401,7 @@ if(BUILD_TESTING)
     add_dependencies(check multra-m6-s1-run multra-m6-s2-run)
     add_test(NAME cli-m6-s2-run-help COMMAND multra-m6-s2-run --help)
     add_test(NAME cli-m6-s2-run-mode COMMAND multra-m6-s2-run x a b c)
-    set_tests_properties(cli-m6-s2-run-help cli-m6-s2-run-mode PROPERTIES PASS_REGULAR_EXPRESSION "usage: multra-m6-s2-run c\\|ab <data-dir>")
+    set_tests_properties(cli-m6-s2-run-help cli-m6-s2-run-mode PROPERTIES PASS_REGULAR_EXPRESSION "usage: multra-m6-s2-run c\\|ab\\|arrivals <data-dir>")
     add_test(NAME cli-m6-s2-run-refused COMMAND multra-m6-s2-run ab ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/data)
     set_tests_properties(cli-m6-s2-run-refused PROPERTIES PASS_REGULAR_EXPRESSION "Output already exists")
     # S2.3 (MACRO_NETWORK §9, D275): one period's static assignment, and its refusals.

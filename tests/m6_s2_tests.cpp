@@ -1,5 +1,6 @@
 #include "test.hpp"
 #include "../tools/m6_s2_summary.hpp"
+#include "../tools/m6_s2_arrivals.hpp"
 #include "../src/project/run.hpp"
 #include "../src/project/evaluation.hpp"
 #include <cmath>
@@ -116,4 +117,48 @@ TEST(m6s2, s2ab4_unfinished_or_pending_makes_a_level_unavailable) {
     CHECK(!m6s2::available(V{0.0, std::nullopt}, V{0.0, 0.0}));
     const bool ok = m6s2::available(V{1.0}, V{0.0});
     CHECK(m6s2::verdict(ok ? std::optional<double>(30) : std::nullopt, 33.9) == m6s1::Verdict::unavailable);
+}
+// D540 (M6_S2_RUN §7): the arrival diagnostic, rows S2D1-S2D3.
+namespace {
+SimState ticks(double time, std::vector<std::pair<std::uint64_t, double>> fronts) {
+    SimState state; state.time = time;
+    for (const auto& [id, distance] : fronts) { Vehicle v; v.id = id; v.distance = distance; state.vehicles.push_back(v); }
+    return state;
+}
+}
+TEST(m6s2, s2d1_observer_stamps_once_at_the_first_tick_at_or_past) {
+    m6s2::ArrivalObserver observer({100, 2000});
+    observer.observe(ticks(1, {{1, 99.9}}));
+    observer.observe(ticks(2, {{1, 100}, {2, 50}}));   // at the point: stamped
+    observer.observe(ticks(3, {{1, 150}, {2, 120}}));  // vehicle 1 again: ignored
+    observer.observe(ticks(9, {{1, 2001}, {2, 130}}));
+    CHECK(observer.stamps(0) == (std::vector<double>{2, 3}));
+    CHECK(observer.stamps(1) == (std::vector<double>{9}));
+}
+TEST(m6s2, s2d2_dispersion_and_cv_give_hand_values) {
+    // Window [0, 360) in four 90 s intervals with counts 1, 3, 1, 3: mean 2, variance 4/3, IDC 2/3.
+    const std::vector<double> t{10, 100, 110, 120, 200, 280, 290, 300, 400};
+    CHECK(near(*m6s2::dispersion(t, 0, 360, 90), 2.0 / 3, 1e-12));
+    // Headways inside [0, 360): 90, 10, 10, 80, 80, 10, 10; mean 290/7.
+    const std::vector<double> h{90, 10, 10, 80, 80, 10, 10};
+    double mean = 290.0 / 7, var = 0;
+    for (const double x : h) var += (x - mean) * (x - mean);
+    CHECK(near(*m6s2::headwayCv(t, 0, 360), std::sqrt(var / 6) / mean, 1e-12));
+    CHECK(!m6s2::dispersion({}, 0, 360, 90) && !m6s2::headwayCv({1, 2}, 0, 360));
+}
+TEST(m6s2, s2d3_poisson_stamps_give_one_and_even_stamps_give_zero) {
+    std::uint64_t state = 12345;
+    const auto uniform = [&] {
+        std::uint64_t z = (state += 0x9E3779B97F4A7C15ULL);
+        z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
+        z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL;
+        return (static_cast<double>((z ^ (z >> 31)) >> 11) + .5) * 0x1.0p-53;
+    };
+    std::vector<double> poisson, even;
+    for (double t = 0; t < 200000;) { t += -std::log(uniform()) / .2; poisson.push_back(t); }
+    for (double t = 0; t < 200000; t += 5) even.push_back(t);
+    CHECK(near(*m6s2::dispersion(poisson, 0, 198000, 90), 1, .1));
+    CHECK(near(*m6s2::headwayCv(poisson, 0, 198000), 1, .1));
+    CHECK(near(*m6s2::dispersion(even, 0, 198000, 90), 0, 1e-12));
+    CHECK(near(*m6s2::headwayCv(even, 0, 198000), 0, 1e-12));
 }
