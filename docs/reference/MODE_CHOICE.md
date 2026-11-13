@@ -77,7 +77,8 @@ T^k_ij = P_k · T_ij                            (persons, P-A, the rate set's un
 - **The diagonal.** It takes part like any cell, using the cost source's diagonal. The skim gives
   none (∞), so intrazonal trips need a matrix diagonal or an alternative with one (§4).
 - **Structure.** This stage runs G/D/MS/A. The distribution cost stays the one chosen in M10.3;
-  no logsum is fed back, so Eq. (6.11)'s β ≤ λ is not tested. The book prefers G/MS/D/A for
+  no logsum is fed back, so Eq. (6.11)'s β ≤ λ is not tested. D548 adds the logsum as an option per
+  purpose ([MODE_CHOICE_LOGSUM](MODE_CHOICE_LOGSUM.md)). The book prefers G/MS/D/A for
   non-work purposes (§6.5.2, p. 214), and that stays a later slice.
 
 ## 4. Costs (choice 2)
