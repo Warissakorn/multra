@@ -52,5 +52,6 @@ std::vector<OdMatrix> generatedOdMatrices(const ModeChoiceRun&);
 ModeChoiceRun runModeChoice(const ProjectDocument&, const std::filesystem::path& dataDirectory, const std::string& rateSetId,
                             const std::string& deterrenceSetId, const std::string& skimMode, const std::string& costMatrixId,
                             const std::string& modeChoiceSetId, const std::vector<std::string>& periodIds,
-                            InputManifest* = nullptr, const std::function<void(ModeChoiceStage)>& stage = {});
+                            InputManifest* = nullptr, const std::function<void(ModeChoiceStage)>& stage = {},
+                            const std::vector<double>* linkTimes = nullptr); // D547: congested seconds per Macro link
 }

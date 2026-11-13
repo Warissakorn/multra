@@ -54,7 +54,7 @@ contract rests on (paraphrased, not quoted):
 | `method` | `constantWeight` or `msa` | `INVALID_PROCEDURE` at `procedures[i].feedback.method` |
 | `weight` | required with `constantWeight`, in [0, 1); absent with `msa` | `INVALID_PROCEDURE` at its path |
 | `maxIterations` | an integer in [2, 1000] | `INVALID_PROCEDURE` |
-| `tolerance` | TMF in persons per hour, finite and ≥ 0 | `INVALID_PROCEDURE` |
+| `tolerance` | TMF in persons over the assigned period (per hour for a one-hour period), finite and ≥ 0 | `INVALID_PROCEDURE` |
 
 - **`weight` is the book's `w`** (p. 410, checked on the page image), the share of the previous
   matrix: T^n = w·T^(n−1) + (1 − w)·e^n.
@@ -84,8 +84,9 @@ mode-choice matrices. Then, for n = 2, 3, …, `maxIterations`:
    `weight`, or (n − 1)/n under MSA. Vehicles are T^n divided by each alternative's occupancy, as E2 does.
 4. **Assign** T^n's vehicle matrices with the assignment step's settings, to its own relative gap.
 5. **Measure:**
-   - TMF_n = Σ|T^(n−1) − e^n| over the cells of every period and alternative, in persons per hour
-     (§11.3.4);
+   - TMF_n = Σ|T^(n−1) − e^n| over the cells of every period and alternative, in persons over each
+     period. That is persons per hour, as §11.3.4 prefers, for a one-hour period. Amended before
+     code: mode choice's period matrices are counts in the period;
    - RSE_n, Eq. (11.29);
    - the assignment's iterations and relative gap.
 6. **Stop** when TMF_n ≤ `tolerance` (*converged*) or n = `maxIterations` (*not converged*, which
@@ -157,12 +158,25 @@ The book prints no equilibrium numbers, only Figure 11.3's convergence curves.
 | FB4 | The congested skim equals `zoneSkim` over the assignment's link times; a cost-matrix override still wins |
 | FB5 | Averaging: CW and MSA by hand on a two-iteration case; vehicles equal persons / occupancy |
 | FB6 | Example 11.3 at λ = 0.05 converges under CW 0.25 and under MSA to the hand-solved fixed point within the tolerance |
-| FB7 | Example 11.3 at λ = 0.34: CW and MSA converge; naive feedback (w = 0) does not reach the tolerance within 100 iterations, as the book's Figure 11.3 shows (the forcing that averaging matters) |
+| FB7 | Example 11.3 at λ = 0.34: CW and MSA converge to the hand value. At λ = 0.6, CW converges and naive feedback (w = 0) does not within 100 iterations (the forcing that averaging matters) |
 | FB8 | The limit: `maxIterations` reached is *not converged*, with no refusal; Cancel inside an assignment keeps the earlier iterations |
 | FB9 | CLI and JSON: the `feedback` block; absent without feedback, so shipped projects and every existing output are byte-identical |
 | FB10 | Editor: the Feedback group is one Undo step and saves 75; the page shows the iterations and goes stale after an edit |
 
 Each row first asserts that its forcing worked.
+
+**Rows amended after the first test run** (2026-11-13, before F1 was committed):
+- **MSA's stop.** It stopped at a TMF of 2.6 persons after 100 iterations, against a tolerance of
+  0.1. This is MSA's known slow rate (p. 409). The fixture's MSA procedures now stop at 2 persons
+  (0.1 % of the demand) within 200 iterations. FB6's 1 veh/h acceptance is unchanged.
+- **Naive feedback at λ = 0.34 converged here.** The book's Figure 11.3 shows it oscillating.
+  Linearised at the fixed point, naive feedback multiplies a car-flow error by about
+  λ·P(1 − P)·2,000·0.004 = 2λ: 0.68 at λ = 0.34, so it converges, and 1.2 at λ = 0.6, so it cannot.
+  - This network's Wardrop cost rises 0.004 min per car (§5). The book does not say why its
+    threshold differs.
+  - FB7's forcing therefore moved to λ = 0.6, a value derived from that factor, not tuned to a
+    figure. CW 0.25 has a factor of 0.25 − 0.75·1.2 = −0.65 there, so it converges.
+- **No definition, hand value or acceptance tolerance changed.**
 
 ## 6. Slices
 
@@ -200,3 +214,41 @@ The options as they were put:
    - **(a) `maxIterations` and `tolerance` are both required in the file, and the dialog proposes
      30 and 1 % of the total trips (recommended, chosen).**
    - (b) Fixed defaults in code, overridable.
+
+## 8. As implemented (F1, 2026-11-13)
+
+- **Files:**
+  - `src/project/procedure_codec.*`: `ProcedureFeedback` and `FeedbackMethod`, parse, write and
+    issues. `document.cpp` selects schema 75 and refuses `feedback` below it; `kLatestSchema` is 75.
+  - `src/macro/assign.*`: `skimAt`, the skim at given link times, which `freeFlowSkim` now calls
+    with free-flow times.
+  - `zoneSkim`, `runTripDistribution` and `runModeChoice` take an optional `linkTimes`. It is null
+    by default, so every existing call is unchanged.
+  - `src/project/procedure_feedback.cpp`: `checkFeedbackSteps` and `iterateFeedback`, plus the
+    assignment helper `assignProcedureStep`, factored out of `runProcedure`.
+- **One re-run per iteration.** Mode choice runs its own distribution, so each iteration re-runs
+  the mode-choice unit once, and its distribution becomes the distribution step's result.
+- **Cancel.**
+  - Between iterations, Cancel calls the step observer with the mode-choice step's index.
+  - Inside an assignment, Cancel keeps the previous iteration's results and marks the run
+    cancelled.
+- **Fixture:** `tests/data/procedure-feedback/`, with the project, local VDF `linear`, and the rate,
+  deterrence and mode-choice sets. Its procedures:
+  - `plain-005`;
+  - `cw-005`, `msa-005`;
+  - `cw-034`, `msa-034`, `naive-034`;
+  - `cw-060`, `naive-060`.
+- **Rows:**
+  - `tests/procedure_feedback_tests.cpp` (group `procfeedback`) covers FB1–FB8;
+  - `cli-procedure-feedback` covers FB9;
+  - the existing suites pass unchanged.
+- **Measured (seed-free; not a validation):**
+
+  | Procedure | Iterations | V_C (veh/h) | Hand value |
+  |---|---|---|---|
+  | `cw-005` | 7 | 999.799 | 999.793 |
+  | `msa-005` | 127 | 1,000.69 | 999.793 |
+  | `cw-034` | 10 | 999.074 | 999.078 |
+  | `msa-034` | 49 | 999.64 | 999.078 |
+  | `naive-060` | 100, not converged | — | — |
+

@@ -20,7 +20,7 @@ that path as a canonical project.
 | Root field | Reader requirement / writer presence | Codec owner |
 |---|---|---|
 | `format` | Required for projects, exactly `TrafficSim`; emitted always | `document_envelope.cpp` |
-| `schemaVersion` | Required integer 1–74 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
+| `schemaVersion` | Required integer 1–75 for projects; writer chooses from features | `document_envelope.cpp`, `document_schema.hpp` |
 | `nextId` | Required unsigned JSON integer; >0 and below uint64 maximum | `document_envelope.cpp` |
 | `revision` | Required unsigned JSON integer; below uint64 maximum | `document_envelope.cpp` |
 | `network` | Required non-null object; empty draft network is valid | `parse.cpp`, network validators |
@@ -120,6 +120,7 @@ row is not an exhaustive list of its nested keys or semantic constraints.
 | 72 | `deterrenceSets[i].purposes[k].constraint` value `"destination"` (TRIP_DISTRIBUTION §16, D482); selected when any owned purpose uses it; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `deterrence_codec.cpp`, `document.cpp` |
 | 73 | Root `procedures` (PROCEDURE_SEQUENCE §2, D484): named step lists; selected when present; older versions refuse it (`EDIT_UNSUPPORTED_FIELD`) | `procedure_codec.cpp` |
 | 74 | `definition.randomStreams` (INPUT_STREAMS §3, D510): `"perInput"` written, `"shared"` read and never written (absent is `shared`); selected when `perInput`, which a new project is; other values `INVALID_RANDOM_STREAMS`; older versions refuse it at its path (`EDIT_UNSUPPORTED_FIELD`) | `random_streams_codec.cpp`, `document.cpp` |
+| 75 | A procedure's `feedback` (PROCEDURE_FEEDBACK §2, D547): `method`, `weight` (constant weight only), `maxIterations`, `tolerance`; selected when any procedure has it; older versions refuse it at `procedures[i].feedback` (`EDIT_UNSUPPORTED_FIELD`) | `procedure_codec.cpp`, `document.cpp` |
 | 65 | Node `number`: optional positive integer, the UTDF intersection id (UTDF_EXPORT §5, D442); only selected when a Node has one; older versions refuse it (`EDIT_NODE_INVALID`); validation refuses repeats (`NODE_NUMBER_DUPLICATE`) | `node_codec.cpp`, `nodes.cpp` |
 | 64 | Node `analysis.modelSource`: captured Micro-demand snapshot/window/HV provenance; only selected when present; older versions refuse at that field | `node_analysis_source_codec.cpp`, `node_codec.cpp` |
 
@@ -261,8 +262,7 @@ full authoring validity, run readiness or scientific validation.
 
 ## Connector and attachment-reference extension (D358)
 
-D358 added Connector/reference coverage; D359 below extends the current composed coverage
-with SignalHead rows. Complete remains false.
+D358 added Connector/reference coverage; D359 below extends the current composed coverage with SignalHead rows. Complete remains false.
 They add versioned Connector rows, their geometry points and from/to LaneReferences.
 The reference decoder is also shared by native signal-head reads; their row schema is
 added by D359 below. The envelope-only API, CLI arguments and desktop observed

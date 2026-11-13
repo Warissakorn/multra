@@ -19,11 +19,12 @@ void add(DistributionMatrix& into, const DistributionMatrix& m, double scale = 1
 ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::path& data, const std::string& rateSetId,
                             const std::string& deterrenceSetId, const std::string& skimMode, const std::string& costMatrixId,
                             const std::string& setId, const std::vector<std::string>& periodIds,
-                            InputManifest* manifest, const std::function<void(ModeChoiceStage)>& stage) {
+                            InputManifest* manifest, const std::function<void(ModeChoiceStage)>& stage,
+                            const std::vector<double>* linkTimes) {
     const auto enter = [&](ModeChoiceStage s) { if (stage) stage(s); };
     ModeChoiceRun run;
     enter(ModeChoiceStage::distribution);
-    run.distribution = runTripDistribution(d, data, rateSetId, deterrenceSetId, skimMode, costMatrixId, manifest);
+    run.distribution = runTripDistribution(d, data, rateSetId, deterrenceSetId, skimMode, costMatrixId, manifest, {}, {}, linkTimes);
     const auto& zoneIds = run.distribution.generation.zoneIds;
 
     enter(ModeChoiceStage::set);
@@ -61,7 +62,7 @@ ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::pat
             if (!mode) continue;
             if (std::find(known.begin(), known.end(), *mode) == known.end())
                 unknown.push_back({"UNKNOWN_MODE", run.setPath + ".purposes[" + std::to_string(purposeAt[p]) + "].alternatives[" + std::to_string(k) + "].modeId"});
-            else if (!skims.count(*mode)) skims[*mode] = zoneSkim(d, network.graph, zoneIds, *mode);
+            else if (!skims.count(*mode)) skims[*mode] = zoneSkim(d, network.graph, zoneIds, *mode, linkTimes);
         }
     }
     if (!unknown.empty()) throw ValidationError(std::move(unknown));

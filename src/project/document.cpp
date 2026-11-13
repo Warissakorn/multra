@@ -102,7 +102,7 @@ int documentSchemaVersion(const ProjectDocument& d) {
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return !p.nests.empty();});});
     const bool toDestinations=std::any_of(d.deterrenceSets.begin(),d.deterrenceSets.end(),[](const auto& s){
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint==std::optional<std::string>("destination");});});
-    return ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    return std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -309,6 +309,8 @@ ProjectDocument parseDocument(const Json& j) {
     d.modeChoiceSets = parseOwnedModeChoiceSets(j); // M10.4 E2
     if (version < 73 && j.contains("procedures")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures"}});
     d.procedures = parseProcedures(j); // D484
+    for (std::size_t i = 0; version < 75 && i < d.procedures.size(); ++i) // PROCEDURE_FEEDBACK §2 (D547)
+        if (d.procedures[i].feedback) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures[" + std::to_string(i) + "].feedback"}});
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j);
     d.zones.studyArea=parseStudyArea(j);

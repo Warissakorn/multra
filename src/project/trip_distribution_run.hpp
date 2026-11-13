@@ -44,5 +44,6 @@ TripDistributionRun runTripDistribution(const ProjectDocument&, const std::files
                                         const std::string& deterrenceSetId, const std::string& mode, const std::string& costMatrixId = {},
                                         InputManifest* = nullptr,
                                         const std::function<void(TripDistributionStage)>& stage = {},
-                                        const DistributionSettings& settings = {});
+                                        const DistributionSettings& settings = {},
+                                        const std::vector<double>* linkTimes = nullptr); // D547: congested seconds per Macro link
 }

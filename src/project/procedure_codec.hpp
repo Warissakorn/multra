@@ -19,12 +19,24 @@ struct ProcedureStep {
     std::optional<std::string> period, macroRun;       // assignment: exactly one
     bool operator==(const ProcedureStep&) const = default;
 };
+// PROCEDURE_FEEDBACK §2 (D547), schema 75: congested costs back into the demand steps, averaged by a constant
+// weight (the book's w, on the previous matrix) or MSA, stopped by total misplaced flow or the iteration limit.
+enum class FeedbackMethod { constantWeight, msa };
+struct ProcedureFeedback {
+    FeedbackMethod method{FeedbackMethod::constantWeight};
+    std::optional<double> weight;             // constantWeight only, in [0, 1)
+    int maxIterations{};                      // [2, 1000]
+    double tolerance{};                       // TMF, persons per hour, >= 0
+    bool operator==(const ProcedureFeedback&) const = default;
+};
 struct Procedure {
     std::string id, name;
     std::vector<ProcedureStep> steps;
+    std::optional<ProcedureFeedback> feedback;
     bool operator==(const Procedure&) const = default;
 };
 const char* procedureStepKindName(ProcedureStepKind);
+const char* feedbackMethodName(FeedbackMethod);
 // Every shape fault at once: INVALID_PROCEDURE at the path (unknown kind or key, a missing or blank parameter,
 // both or neither of period and macroRun, empty steps or periods), INVALID_ID / DUPLICATE_ID for procedure ids.
 // A present list is a non-empty array (INVALID_PROCEDURE at `procedures`); absent or empty is not written.

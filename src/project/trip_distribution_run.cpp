@@ -15,7 +15,8 @@ bool TripDistributionRun::converged() const {
 TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::filesystem::path& data, const std::string& rateSetId,
                                         const std::string& deterrenceSetId, const std::string& mode, const std::string& costMatrixId,
                                         InputManifest* manifest,
-                                        const std::function<void(TripDistributionStage)>& stage, const DistributionSettings& settings) {
+                                        const std::function<void(TripDistributionStage)>& stage, const DistributionSettings& settings,
+                                        const std::vector<double>* linkTimes) {
     const auto enter = [&](TripDistributionStage s) { if (stage) stage(s); };
     TripDistributionRun run;
     run.mode = mode; run.costMatrix = costMatrixId;
@@ -47,7 +48,7 @@ TripDistributionRun runTripDistribution(const ProjectDocument& d, const std::fil
     enter(TripDistributionStage::costs);
     auto network = macroNetwork(d, data, manifest);
     if (!network.issues.empty()) throw ValidationError(std::move(network.issues));
-    run.costs = zoneSkim(d, network.graph, run.generation.zoneIds, mode);
+    run.costs = zoneSkim(d, network.graph, run.generation.zoneIds, mode, linkTimes);
     // D2 (§5, D474): a project matrix's cells replace the skim's; it is the only source of a diagonal.
     if (!costMatrixId.empty()) overlayCostMatrix(d, run.generation.zoneIds, costMatrixId, run.costs);
 

@@ -25,10 +25,22 @@ struct ProcedureStepResult {
     std::optional<ModeChoiceRun> modeChoice;
     std::optional<MacroRun> macro;
 };
+// PROCEDURE_FEEDBACK §3-§4 (D547): one feedback iteration; iteration 1 (the plain pass) has no weight, TMF or RSE.
+struct FeedbackIteration {
+    int n{};
+    std::optional<double> weight, tmf, rse;     // weight: the share kept from T^(n-1)
+    int assignmentIterations{}; double relativeGap{};
+};
+struct FeedbackRun {
+    ProcedureFeedback settings;
+    bool converged{};
+    std::vector<FeedbackIteration> iterations;
+};
 struct ProcedureRun {
     Procedure procedure;
     std::uint64_t revision{};
     std::vector<ProcedureStepResult> steps;     // one per step, in order
+    std::optional<FeedbackRun> feedback;        // D547: present when the procedure has feedback and its first pass completed
     bool cancelled{};
     bool completed() const;                     // no step refused or left not run
 };
@@ -40,6 +52,14 @@ struct ProcedureObserver {
 // PROCEDURE_STEP_INPUT_MISSING at `procedures[i].steps[k]` when no earlier active step of the needed kind exists,
 // otherwise the unit's own codes and paths. `manifest`, when given, seeds each step's own manifest (the project
 // file already recorded), so a step's inputManifest equals that unit's CLI run.
+// D547: FEEDBACK_STEPS_INVALID at `procedures[i].feedback` (thrown, before any step) unless the active steps hold
+// exactly one distribution, one mode choice after it and one assignment after that, the assignment last.
 ProcedureRun runProcedure(const ProjectDocument&, const std::filesystem::path& dataDirectory, const std::string& id,
                           const InputManifest* manifest = nullptr, const ProcedureObserver* = nullptr);
+// Internal to the run (procedure_feedback.cpp): the assignment of `step` on a copy of `d` whose generated matrices are
+// `modeChoice`'s (PROCEDURE_SEQUENCE §3.4), and the feedback iterations after a completed first pass.
+MacroRun assignProcedureStep(const ProjectDocument&, const std::filesystem::path&, const ProcedureStep&, const ModeChoiceRun*,
+                             InputManifest*, const ProcedureObserver*);
+void checkFeedbackSteps(const Procedure&, const std::string& at);
+void iterateFeedback(ProcedureRun&, const ProjectDocument&, const std::filesystem::path&, const InputManifest*, const ProcedureObserver*);
 }

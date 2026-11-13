@@ -1,0 +1,15 @@
+{
+  "id": "example-11-3",
+  "name": "Example 11.3: one destination",
+  "source": {
+    "citation": "Fixture; with one reachable pair the deterrence has no effect"
+  },
+  "function": "exponential",
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "beta": 0.1
+    }
+  ]
+}

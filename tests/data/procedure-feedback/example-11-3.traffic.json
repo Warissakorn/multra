@@ -1,0 +1,708 @@
+{
+  "background": {
+    "metresPerPixel": 1.0,
+    "opacity": 0.5,
+    "pngBase64": "",
+    "rotation": 0.0,
+    "x": 0.0,
+    "y": 0.0
+  },
+  "definition": {
+    "behaviours": [
+      {
+        "additiveSafetyDistance": 2.0,
+        "amberDeceleration": 3.0,
+        "followingTime": 1.5,
+        "id": "wiedemann-inspired-prototype",
+        "maxDecelerationCooperativeBraking": 3.0,
+        "model": "prototype",
+        "multiplicativeSafetyDistance": 3.0,
+        "speedThreshold": 0.2,
+        "standstillDistance": 2.0
+      }
+    ],
+    "compositions": [
+      {
+        "id": "car-only",
+        "types": [
+          {
+            "share": 1.0,
+            "vehicleTypeId": "car"
+          }
+        ]
+      },
+      {
+        "id": "urban-mixed",
+        "types": [
+          {
+            "share": 0.95,
+            "vehicleTypeId": "car"
+          },
+          {
+            "share": 0.05,
+            "vehicleTypeId": "heavy-vehicle"
+          }
+        ]
+      }
+    ],
+    "duration": 3600.0,
+    "inputs": [],
+    "linkTypes": [
+      {
+        "id": "feeder",
+        "name": "Feeder",
+        "freeSpeed": 100.0,
+        "capacityPerLane": 1000000.0,
+        "vdfId": "linear",
+        "source": "Fixture: Ortuzar Example 11.3 (shared parts made negligible)"
+      },
+      {
+        "id": "bypass",
+        "name": "Bypass",
+        "freeSpeed": 10.0,
+        "capacityPerLane": 3000.0,
+        "vdfId": "linear",
+        "source": "Fixture: Ortuzar Example 10.4, t = 15 + 0.005 V"
+      },
+      {
+        "id": "town",
+        "name": "Town centre",
+        "freeSpeed": 15.0,
+        "capacityPerLane": 500.0,
+        "vdfId": "linear",
+        "source": "Fixture: Ortuzar Example 10.4, t = 10 + 0.02 V"
+      }
+    ],
+    "routes": [],
+    "signalPrograms": [],
+    "timeStep": 0.5,
+    "vehicleTypes": [
+      {
+        "axles": {
+          "frontOverhang": 0.9,
+          "rearOverhang": 0.9,
+          "wheelbase": 2.7
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 2.0,
+        "desiredSpeed": {
+          "max": 16.67,
+          "min": 11.11
+        },
+        "id": "car",
+        "length": 4.5,
+        "maxAcceleration": 2.5,
+        "maxDeceleration": 8.0,
+        "pcu": {
+          "source": "Test values",
+          "value": 1.0
+        },
+        "width": 1.8
+      },
+      {
+        "axles": {
+          "frontOverhang": 2.0,
+          "rearOverhang": 4.0,
+          "wheelbase": 6.0
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 1.5,
+        "desiredSpeed": {
+          "max": 13.89,
+          "min": 11.11
+        },
+        "id": "heavy-vehicle",
+        "length": 12.0,
+        "maxAcceleration": 1.0,
+        "maxDeceleration": 6.0,
+        "pcu": {
+          "source": "Test values",
+          "value": 2.0
+        },
+        "width": 2.5
+      }
+    ],
+    "macroSettings": {
+      "targetGap": 1e-09,
+      "maxIterations": 2000
+    }
+  },
+  "format": "TrafficSim",
+  "network": {
+    "connectors": [
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-entry",
+          "linkId": "entry",
+          "station": 1.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 2,
+            "y": 0
+          }
+        ],
+        "id": "to-bypass",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "",
+        "to": {
+          "laneId": "lane-bypass",
+          "linkId": "bypass",
+          "station": 0.0
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-entry",
+          "linkId": "entry",
+          "station": 1.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 2,
+            "y": 10
+          }
+        ],
+        "id": "to-town",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "",
+        "to": {
+          "laneId": "lane-town",
+          "linkId": "town",
+          "station": 0.0
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-bypass",
+          "linkId": "bypass",
+          "station": 9000.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 9002,
+            "y": 0
+          },
+          {
+            "x": 9003,
+            "y": 5
+          }
+        ],
+        "id": "from-bypass",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "",
+        "to": {
+          "laneId": "lane-exit",
+          "linkId": "exit",
+          "station": 0.0
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-town",
+          "linkId": "town",
+          "station": 9000.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 9002,
+            "y": 10
+          },
+          {
+            "x": 9003,
+            "y": 5
+          }
+        ],
+        "id": "from-town",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "",
+        "to": {
+          "laneId": "lane-exit",
+          "linkId": "exit",
+          "station": 0.0
+        },
+        "toLaneCount": 1
+      }
+    ],
+    "drivingSide": "left",
+    "id": "network",
+    "links": [
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 5
+          }
+        ],
+        "id": "entry",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-entry",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "linkType": "feeder",
+        "name": ""
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 2,
+            "y": 0
+          },
+          {
+            "x": 9002,
+            "y": 0
+          }
+        ],
+        "id": "bypass",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-bypass",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "linkType": "bypass",
+        "name": ""
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 2,
+            "y": 10
+          },
+          {
+            "x": 9002,
+            "y": 10
+          }
+        ],
+        "id": "town",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-town",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "linkType": "town",
+        "name": ""
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 9003,
+            "y": 5
+          },
+          {
+            "x": 9004,
+            "y": 5
+          }
+        ],
+        "id": "exit",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-exit",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "linkType": "feeder",
+        "name": ""
+      }
+    ],
+    "signalHeads": []
+  },
+  "nextId": 100,
+  "revision": 0,
+  "schemaVersion": 75,
+  "zoneConnectors": [
+    {
+      "direction": "origin",
+      "id": "a-out",
+      "linkId": "entry",
+      "share": 1.0,
+      "zoneId": "A"
+    },
+    {
+      "direction": "destination",
+      "id": "b-in",
+      "linkId": "exit",
+      "share": 1.0,
+      "zoneId": "B"
+    }
+  ],
+  "zones": [
+    {
+      "attributes": {
+        "workers": 2000,
+        "jobs": 0
+      },
+      "id": "A",
+      "name": "",
+      "polygon": [
+        [
+          -20.0,
+          0.0
+        ],
+        [
+          -10.0,
+          5.0
+        ],
+        [
+          -20.0,
+          10.0
+        ]
+      ]
+    },
+    {
+      "attributes": {
+        "workers": 0,
+        "jobs": 2000
+      },
+      "id": "B",
+      "name": "",
+      "polygon": [
+        [
+          9010.0,
+          0.0
+        ],
+        [
+          9020.0,
+          5.0
+        ],
+        [
+          9010.0,
+          10.0
+        ]
+      ]
+    }
+  ],
+  "studyPeriods": [
+    {
+      "id": "period-am",
+      "name": "AM peak",
+      "start": 25200,
+      "end": 28800
+    }
+  ],
+  "costMatrices": [
+    {
+      "id": "rail-times",
+      "name": "Rail, 12 min + 2 x 3 min wait",
+      "unit": "min",
+      "zoneIds": [
+        "A",
+        "B"
+      ],
+      "rows": [
+        [
+          null,
+          18
+        ],
+        [
+          null,
+          null
+        ]
+      ]
+    }
+  ],
+  "periodFactors": [
+    {
+      "purposeId": "all",
+      "periodId": "period-am",
+      "productionToAttraction": 1.0,
+      "attractionToProduction": 0
+    }
+  ],
+  "procedures": [
+    {
+      "id": "plain-005",
+      "name": "No feedback, lambda 0.05",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "example-11-3"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "example-11-3"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "lambda-005",
+          "periods": [
+            "period-am"
+          ]
+        },
+        {
+          "kind": "assignment",
+          "period": "period-am"
+        }
+      ]
+    },
+    {
+      "id": "cw-005",
+      "name": "CW 0.25, lambda 0.05",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "example-11-3"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "example-11-3"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "lambda-005",
+          "periods": [
+            "period-am"
+          ]
+        },
+        {
+          "kind": "assignment",
+          "period": "period-am"
+        }
+      ],
+      "feedback": {
+        "method": "constantWeight",
+        "weight": 0.25,
+        "maxIterations": 100,
+        "tolerance": 0.1
+      }
+    },
+    {
+      "id": "msa-005",
+      "name": "MSA, lambda 0.05",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "example-11-3"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "example-11-3"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "lambda-005",
+          "periods": [
+            "period-am"
+          ]
+        },
+        {
+          "kind": "assignment",
+          "period": "period-am"
+        }
+      ],
+      "feedback": {
+        "method": "msa",
+        "maxIterations": 200,
+        "tolerance": 2
+      }
+    },
+    {
+      "id": "cw-034",
+      "name": "CW 0.25, lambda 0.34",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "example-11-3"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "example-11-3"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "lambda-034",
+          "periods": [
+            "period-am"
+          ]
+        },
+        {
+          "kind": "assignment",
+          "period": "period-am"
+        }
+      ],
+      "feedback": {
+        "method": "constantWeight",
+        "weight": 0.25,
+        "maxIterations": 100,
+        "tolerance": 0.1
+      }
+    },
+    {
+      "id": "msa-034",
+      "name": "MSA, lambda 0.34",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "example-11-3"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "example-11-3"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "lambda-034",
+          "periods": [
+            "period-am"
+          ]
+        },
+        {
+          "kind": "assignment",
+          "period": "period-am"
+        }
+      ],
+      "feedback": {
+        "method": "msa",
+        "maxIterations": 200,
+        "tolerance": 2
+      }
+    },
+    {
+      "id": "naive-034",
+      "name": "Naive (w = 0), lambda 0.34",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "example-11-3"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "example-11-3"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "lambda-034",
+          "periods": [
+            "period-am"
+          ]
+        },
+        {
+          "kind": "assignment",
+          "period": "period-am"
+        }
+      ],
+      "feedback": {
+        "method": "constantWeight",
+        "weight": 0.0,
+        "maxIterations": 100,
+        "tolerance": 0.1
+      }
+    },
+    {
+      "id": "cw-060",
+      "name": "CW 0.25, lambda 0.6",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "example-11-3"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "example-11-3"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "lambda-060",
+          "periods": [
+            "period-am"
+          ]
+        },
+        {
+          "kind": "assignment",
+          "period": "period-am"
+        }
+      ],
+      "feedback": {
+        "method": "constantWeight",
+        "weight": 0.25,
+        "maxIterations": 100,
+        "tolerance": 0.1
+      }
+    },
+    {
+      "id": "naive-060",
+      "name": "Naive (w = 0), lambda 0.6",
+      "steps": [
+        {
+          "kind": "tripGeneration",
+          "rateSet": "example-11-3"
+        },
+        {
+          "kind": "tripDistribution",
+          "deterrenceSet": "example-11-3"
+        },
+        {
+          "kind": "modeChoice",
+          "modeChoiceSet": "lambda-060",
+          "periods": [
+            "period-am"
+          ]
+        },
+        {
+          "kind": "assignment",
+          "period": "period-am"
+        }
+      ],
+      "feedback": {
+        "method": "constantWeight",
+        "weight": 0.0,
+        "maxIterations": 100,
+        "tolerance": 0.1
+      }
+    }
+  ]
+}

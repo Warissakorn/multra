@@ -5,7 +5,8 @@
 #include <limits>
 
 namespace multra {
-DistributionMatrix zoneSkim(const ProjectDocument& d, const MacroGraph& g, const std::vector<std::string>& zoneIds, const std::string& mode) {
+DistributionMatrix zoneSkim(const ProjectDocument& d, const MacroGraph& g, const std::vector<std::string>& zoneIds, const std::string& mode,
+                            const std::vector<double>* times) {
     std::vector<const ZoneConnector*> connectors;
     for (const auto& c : d.zones.zoneConnectors) connectors.push_back(&c);
     std::sort(connectors.begin(), connectors.end(), [](const auto* a, const auto* b) { return a->id < b->id; });
@@ -21,7 +22,7 @@ DistributionMatrix zoneSkim(const ProjectDocument& d, const MacroGraph& g, const
             (origin ? from : to)[z].push_back({list.size(), c->share});
             list.push_back(node == nodes.end() ? g.nodes.size() : node->second);
         }
-    const auto skim = freeFlowSkim(g, origins, destinations, mode);
+    const auto skim = times ? skimAt(g, origins, destinations, mode, *times) : freeFlowSkim(g, origins, destinations, mode);
     DistributionMatrix costs(from.size(), std::vector<double>(from.size(), std::numeric_limits<double>::infinity()));
     const auto total = [](const auto& list) { double s = 0; for (const auto& [k, share] : list) s += share; return s; };
     for (std::size_t i = 0; i < from.size(); ++i)

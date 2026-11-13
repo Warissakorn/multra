@@ -22,6 +22,17 @@ Json procedureJson(const ProcedureRun& r) {
         j["steps"].push_back({{"index", s.index}, {"kind", procedureStepKindName(s.kind)}, {"status", procedureStepStatusName(s.status)},
                               {"issues", issues}, {"result", result}});
     }
+    if (r.feedback) { // PROCEDURE_FEEDBACK §4 (D547): absent without feedback, so older outputs keep their bytes
+        const auto& f = *r.feedback;
+        const auto number = [](const std::optional<double>& v) { return v ? Json(*v) : Json(nullptr); };
+        Json iterations = Json::array();
+        for (const auto& it : f.iterations)
+            iterations.push_back({{"n", it.n}, {"weight", number(it.weight)}, {"tmf", number(it.tmf)}, {"rse", number(it.rse)},
+                                  {"assignmentIterations", it.assignmentIterations}, {"relativeGap", it.relativeGap}});
+        j["feedback"] = {{"method", feedbackMethodName(f.settings.method)}, {"weight", number(f.settings.weight)},
+                         {"maxIterations", f.settings.maxIterations}, {"tolerance", f.settings.tolerance},
+                         {"converged", f.converged}, {"iterations", iterations}};
+    }
     return j;
 }
 }
