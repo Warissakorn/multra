@@ -440,7 +440,7 @@ tolerance; same inputs give the same bytes; non-convergence is flagged.
 | M11.3a–b demand | Routes, static decisions and OD routes as Meso paths (D295; ME12–ME16); routeless inputs and placed decisions through Micro's expansion (D296; ME17–ME19) | — |
 | M11.3 node and link models | Tampère et al. 2011 node model (D297; ME20–ME23); Yperman 2007 link model, `loadMeso`, spill-back (D298); signals as averaged green (D299; ME7, ME26, ME27) | Conflicts inside a Node deferred (`MESO_PRIORITY_IGNORED`) |
 | M11.4 run and outputs | `runMeso`, outputs by slice in PCU, `--meso`, Run Meso, the Meso links tab (D300; ME10, ME11); a turn's free-flow lag (D301; ME28) | — |
-| M11.5 assignment | — | Waits on M9 |
+| M11.5 assignment | [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md) (D550) | Contract written; S1 next |
 | M11.6 benchmark | Option sheet (D302, [meso-benchmark-options](evidence/meso-benchmark-options.md)); B23 answered: Boyles et al. 2025, Daganzo secondary (D315) | Waiting on the copy |
 
 ### M12 — Multi-resolution subarea workflow

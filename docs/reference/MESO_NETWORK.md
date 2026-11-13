@@ -191,7 +191,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
     allows skipping it. A row's transfers are split by its `S_ij` composition.
   - **The demand covers the whole run.** Choosing a study period (which matrices enter, and the
     window) belongs to `--meso PERIOD` in M11.4.
-- **M11.5** later replaces the fixed paths with M9's loop.
+- **M11.5** later replaces the fixed paths with M9's loop: contract [MESO_ASSIGNMENT](MESO_ASSIGNMENT.md) (D550).
 
 **Street segment OD (D341):** schema-57 direct Street segment targets opt all matrices into compiled-graph minimum
 free-flow-time paths, sharing demand equally over ties. Authored/routeless inputs keep their

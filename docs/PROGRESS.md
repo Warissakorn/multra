@@ -5,6 +5,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-13 — M11.5 Meso assignment contract (D550)
+
+- **D550** (owner: "ทำงานถัดไปตามแนะนำ" after asking what M11.5 is, then every recommended option): [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md), rows MA1–MA8, before code. Free-flow times read from the compiled fixture graph (t_s 55.356464, t_l 109.904888 s); deterministic-queueing equilibrium x* = 0.590914; an analytic MSA reference stops at n = 11 for gap 0.01.
+
 ## 2026-11-13 — M9 dynamic assignment contract (D549)
 
 - **D549** (owner: "ทำงานถัดไป", chose the M9 contract, then every recommended option): [DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9, before code. MSA (Ortúzar Eq. 10.23) over routing-decision cells, cost from the decision to arrival, δ (Eq. 10.22) stopping, a separate `MultraRouteCosts` file and `--route-costs`.

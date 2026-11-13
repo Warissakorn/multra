@@ -216,6 +216,11 @@ slice, the next one is M9 (D549, A1–A3 done; the gate is the owner's; A2b for 
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
 
+## M11.5 Meso assignment — contract written (D550); S1 next
+
+- [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md), rows MA1–MA8: M9's loop with a Meso provider (FIFO cumulative-curve
+  costs), the two-route bottleneck fixture (x* = 0.590914), `--dynamic-assignment --meso`. Next: S1.
+
 ## M9 dynamic assignment — A1–A3 done (D549); stop for the owner
 
 - [DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9. Owner chose every recommended option:
