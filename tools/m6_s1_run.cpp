@@ -1,6 +1,7 @@
 // M6 kind S1's first comparable run (D535, docs/reference/M6_S1_RUN.md §2): seeds 42-81 on the
 // one-lane approach, discharge per cycle, reduced by m6_s1_summary.hpp. Writes a fresh directory;
 // metadata.json with complete=true is written LAST, so its absence marks an incomplete run.
+#include "m6_candidates.hpp"
 #include "m6_s1_diagnostic.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/project/evaluation.hpp"
@@ -15,7 +16,7 @@
 using namespace multra;
 namespace {
 constexpr const char* kUsage =
-    "usage: multra-m6-s1-run <project> <data-dir> <compile_commands.json> <new-output-dir>\n";
+    "usage: multra-m6-s1-run <project> <data-dir> <compile_commands.json> <new-output-dir> [--candidate base|B|C]\n";
 std::string bytes(const std::filesystem::path& path) {
     std::ifstream stream(path, std::ios::binary);
     if (!stream) throw std::runtime_error("Cannot read " + path.string());
@@ -58,14 +59,16 @@ Json run(const Scenario& scenario, const QueueDefinition& queue, const Discharge
 }
 int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--help") { std::cout << kUsage; return 0; }
-    if (argc != 5) { std::cerr << kUsage; return 2; }
     try {
+        const auto candidate = m6sweep::take(argc, argv);  // D545
+        if (argc != 5) { std::cerr << kUsage; return 2; }
         const std::filesystem::path data = argv[2], directory = argv[4];
         if (std::filesystem::exists(directory)) throw std::invalid_argument("Output already exists: " + directory.string());
         InputManifest inputs;
         auto document = parseDocument(readInputJson(argv[1], "project", &inputs));
         putDemandCatalog(document, resolveDemandCatalog(*document.definition, data, true, &inputs));
-        const auto snapshot = compileDocument(document, data, &inputs);
+        auto snapshot = compileDocument(document, data, &inputs);
+        if (candidate) m6sweep::apply(snapshot.scenario, *candidate);
         const auto evaluation = evaluationSpec(document, snapshot, data, &inputs);
         const auto commands = readInputJson(argv[3], "build/compile_commands.json", &inputs);
         Json command;
@@ -74,7 +77,7 @@ int main(int argc, char** argv) {
         if (command.is_null()) throw std::invalid_argument("Missing m6_s1_run.cpp compiler command");
         Json sources = Json::array();
         const auto sourceDirectory = std::filesystem::path(command.at("file").get<std::string>()).parent_path();
-        for (const auto* name : {"m6_s1_run.cpp", "m6_s1_summary.hpp", "m6_s1_network.hpp", "m6_s1_diagnostic.hpp"})
+        for (const auto* name : {"m6_s1_run.cpp", "m6_s1_summary.hpp", "m6_s1_network.hpp", "m6_s1_diagnostic.hpp", "m6_candidates.hpp"})
             sources.push_back({{"file", name}, {"sha256", inputSha256(bytes(sourceDirectory / name))}});
         inputs.validate();
         const auto& scenario = snapshot.scenario;
@@ -128,6 +131,7 @@ int main(int argc, char** argv) {
         auto summary = m6s1::summaryJson(cycles, seeds);
         summary["diagnostic"] = m6s1::diagnosticJson(m6s1::diagnostic(
             diagnostics, seeds, m6s1::seedHeadways(m6s1::saturation(cycles, seeds))));
+        if (candidate) summary["candidate"] = candidate->name;
         write(directory / "summary.json", summary.dump(2) + "\n");
         Json outputs = Json::array();
         for (const auto* name : {"runs.jsonl", "cycles.csv", "diagnostic.csv", "summary.json"}) {
@@ -141,6 +145,7 @@ int main(int argc, char** argv) {
             {"firstSeed", 42}, {"lastSeed", 81},
             {"discharge", {{"warmup", s.warmup}, {"steadyFirst", s.steadyFirst}, {"steadyLast", s.steadyLast},
                            {"startupLast", s.startupLast}, {"vehicleTypeIds", s.vehicleTypeIds}}}};
+        if (candidate) metadata["candidate"] = candidate->name;
         write(directory / "metadata.json", metadata.dump(2) + "\n");
     } catch (const std::exception& e) { std::cerr << "error: " << e.what() << '\n'; return 1; }
 }

@@ -6,6 +6,7 @@
 #include "m6_u_network.hpp"
 #include "m6_u_summary.hpp"
 #include "m6_u_split.hpp"
+#include "m6_candidates.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/project/evaluation.hpp"
 #include "../src/project/input_manifest.hpp"
@@ -19,7 +20,7 @@
 
 using namespace multra;
 namespace {
-constexpr const char* kUsage = "usage: multra-m6-u-run run|split <data-dir> <compile_commands.json> <new-output-dir>\n";
+constexpr const char* kUsage = "usage: multra-m6-u-run run|split <data-dir> <compile_commands.json> <new-output-dir> [--candidate base|B|C]\n";
 std::string bytes(const std::filesystem::path& path) {
     std::ifstream stream(path, std::ios::binary);
     if (!stream) throw std::runtime_error("Cannot read " + path.string());
@@ -44,9 +45,11 @@ struct Level { double vc{}; std::string name; ProjectDocument document; RunSnaps
 }
 int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--help") { std::cout << kUsage; return 0; }
-    const std::string mode = argc == 5 ? argv[1] : "";
-    if (mode != "run" && mode != "split") { std::cerr << kUsage; return 2; }
     try {
+        const auto candidate = m6sweep::take(argc, argv);  // D545
+        const std::string mode = argc == 5 ? argv[1] : "";
+        if (mode != "run" && mode != "split") { std::cerr << kUsage; return 2; }
+        if (candidate && mode != "run") throw std::invalid_argument("--candidate needs mode run");
         const bool split = mode == "split";
         const std::filesystem::path data = argv[2], directory = argv[4];
         if (std::filesystem::exists(directory)) throw std::invalid_argument("Output already exists: " + directory.string());
@@ -58,7 +61,7 @@ int main(int argc, char** argv) {
         if (command.is_null()) throw std::invalid_argument("Missing m6_u_run.cpp compiler command");
         Json sources = Json::array();
         const auto sourceDirectory = std::filesystem::path(command.at("file").get<std::string>()).parent_path();
-        for (const auto* name : {"m6_u_run.cpp", "m6_u_network.hpp", "m6_u_summary.hpp", "m6_u_split.hpp", "m6_s1_summary.hpp"})
+        for (const auto* name : {"m6_u_run.cpp", "m6_u_network.hpp", "m6_u_summary.hpp", "m6_u_split.hpp", "m6_s1_summary.hpp", "m6_candidates.hpp"})
             sources.push_back({{"file", name}, {"sha256", inputSha256(bytes(sourceDirectory / name))}});
         std::vector<Level> levels;
         Json documents = Json::array();
@@ -66,6 +69,7 @@ int main(int argc, char** argv) {
             auto j = m6u::junction(vc);
             putDemandCatalog(j.document, resolveDemandCatalog(*j.document.definition, data, true, &inputs));
             auto snapshot = compileDocument(j.document, data, &inputs);
+            if (candidate) m6sweep::apply(snapshot.scenario, *candidate);
             auto evaluation = evaluationSpec(j.document, snapshot, data, &inputs);
             char name[32];
             std::snprintf(name, sizeof name, "vc%04.0f", vc);
@@ -184,20 +188,24 @@ int main(int argc, char** argv) {
                 {"followUp", m6s1::figureJson(m6s1::figure([&] { std::vector<double> v; for (const auto& r : rows[k]) if (r.followUpMean) v.push_back(*r.followUpMean); return v; }()))}});
         }
         write(directory / "runs.csv", csv);
-        write(directory / "summary.json", Json{{"label", "M6 kind U first comparable run (D542); band ±15 %"},
+        Json summary{{"label", "M6 kind U first comparable run (D542); band ±15 %"},
             {"areaLength", levels[0].areaLength}, {"tau", m6u::tau(levels[0].areaLength)}, {"gapTime", m6u::gapTime(levels[0].areaLength)},
             {"headway", m6u::kHeadway}, {"minorDemand", m6u::kMinorDemand},
             {"pooled", {{"points", pointsJson(m6u::pool(all))}, {"fit", fitJson(pooledFit)}, {"followUpMean", opt(tf)}}},
-            {"hcm", {{"tc", m6u::kTc}, {"tf", m6u::kTf}}}, {"levels", out}}.dump(2) + "\n");
+            {"hcm", {{"tc", m6u::kTc}, {"tf", m6u::kTf}}}, {"levels", out}};
+        if (candidate) summary["candidate"] = candidate->name;
+        write(directory / "summary.json", summary.dump(2) + "\n");
         Json outputs = Json::array();
         for (const auto* name : {"runs.csv", "summary.json"}) {
             const auto captured = bytes(directory / name);
             outputs.push_back({{"file", name}, {"bytes", captured.size()}, {"sha256", inputSha256(captured)}});
         }
-        write(directory / "metadata.json", Json{{"complete", true}, {"label", "M6 kind U first comparable run (D542)"},
+        Json metadata{{"complete", true}, {"label", "M6 kind U first comparable run (D542)"},
             {"buildCommit", MULTRA_BUILD_COMMIT}, {"compiler", MULTRA_COMPILER}, {"compilerCommand", command},
             {"toolSources", sources}, {"documents", documents}, {"outputs", outputs}, {"inputManifest", inputs.json()},
-            {"firstSeed", 42}, {"lastSeed", 81}}.dump(2) + "\n");
+            {"firstSeed", 42}, {"lastSeed", 81}};
+        if (candidate) metadata["candidate"] = candidate->name;
+        write(directory / "metadata.json", metadata.dump(2) + "\n");
         return 0;
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';

@@ -7,6 +7,7 @@
 #include "m6_s2_summary.hpp"
 #include "m6_s2_arrivals.hpp"
 #include "m6_s2_green.hpp"
+#include "m6_candidates.hpp"
 #include "m6_s1_network.hpp"
 #include "../src/core/simulation.hpp"
 #include "../src/runner/batch.hpp"
@@ -23,7 +24,7 @@
 
 using namespace multra;
 namespace {
-constexpr const char* kUsage = "usage: multra-m6-s2-run c|ab|arrivals|green <data-dir> <compile_commands.json> <new-output-dir>\n";
+constexpr const char* kUsage = "usage: multra-m6-s2-run c|ab|arrivals|green <data-dir> <compile_commands.json> <new-output-dir> [--candidate base|B|C]\n";
 std::string bytes(const std::filesystem::path& path) {
     std::ifstream stream(path, std::ios::binary);
     if (!stream) throw std::runtime_error("Cannot read " + path.string());
@@ -43,9 +44,12 @@ Json estimate(const Estimate& e) {
 }
 int main(int argc, char** argv) {
     if (argc == 2 && std::string(argv[1]) == "--help") { std::cout << kUsage; return 0; }
+    std::optional<m6sweep::Candidate> candidate;  // D545
+    try { candidate = m6sweep::take(argc, argv); } catch (const std::exception& e) { std::cerr << "error: " << e.what() << '\n'; return 1; }
     const std::string mode = argc == 5 ? argv[1] : "";
     if (mode != "c" && mode != "ab" && mode != "arrivals" && mode != "green") { std::cerr << kUsage; return 2; }
     try {
+        if (candidate && mode != "ab") throw std::invalid_argument("--candidate needs mode ab");
         const bool arrivals = mode == "arrivals", hcm = mode != "c";
         const std::filesystem::path data = argv[2], directory = argv[4];
         if (std::filesystem::exists(directory)) throw std::invalid_argument("Output already exists: " + directory.string());
@@ -57,7 +61,7 @@ int main(int argc, char** argv) {
         if (command.is_null()) throw std::invalid_argument("Missing m6_s2_run.cpp compiler command");
         Json sources = Json::array();
         const auto sourceDirectory = std::filesystem::path(command.at("file").get<std::string>()).parent_path();
-        for (const auto* name : {"m6_s2_run.cpp", "m6_s2_summary.hpp", "m6_s2_network.hpp", "m6_s1_summary.hpp", "m6_s2_arrivals.hpp", "m6_s2_green.hpp", "m6_s1_network.hpp"})
+        for (const auto* name : {"m6_s2_run.cpp", "m6_s2_summary.hpp", "m6_s2_network.hpp", "m6_s1_summary.hpp", "m6_s2_arrivals.hpp", "m6_s2_green.hpp", "m6_s1_network.hpp", "m6_candidates.hpp"})
             sources.push_back({{"file", name}, {"sha256", inputSha256(bytes(sourceDirectory / name))}});
         if (mode == "green") {
             // §8 A: the saturated S1 project, every crossing per cycle at the line (route 300 m).
@@ -142,6 +146,7 @@ int main(int argc, char** argv) {
                 auto document = m6s2::approach(levelOf(x).flow, signal, layout);
                 putDemandCatalog(document, resolveDemandCatalog(*document.definition, data, true, &inputs));
                 auto snapshot = compileDocument(document, data, &inputs);
+                if (candidate) m6sweep::apply(snapshot.scenario, *candidate);
                 auto evaluation = evaluationSpec(document, snapshot, data, &inputs);
                 char label[32];
                 std::snprintf(label, sizeof label, "x%.2f-%s", x, signal ? "signal" : "none");
@@ -238,22 +243,24 @@ int main(int argc, char** argv) {
                 {"inSlotBoundSeconds", l.slot}});
         }
         write(directory / "runs.csv", csv);
-        const Json summary{{"label", hcm ? "M6 S2-b and S2-a (D539); a comparison, not a calibration"
+        Json summary{{"label", hcm ? "M6 S2-b and S2-a (D539); a comparison, not a calibration"
                                          : "M6 S2-c (D538); a comparison, not a calibration"}, {"band", m6s2::kBand},
             {"reference", hcm ? "HCM 7 d1 + d2" : "FCTL h * E D"}, {"cycle", layout.cycle}, {"green", layout.green},
             {"amber", layout.amber}, {"approachLength", layout.length}, {"cooldown", layout.cooldown},
             {"declaredSaturation", m6s2::kSaturation},
             {"measuredSaturationS1", 1944.0}, {"seeds", seeds}, {"levels", levels}};
+        if (candidate) summary["candidate"] = candidate->name;
         write(directory / "summary.json", summary.dump(2) + "\n");
         Json outputs = Json::array();
         for (const auto* name : {"runs.csv", "summary.json"}) {
             const auto captured = bytes(directory / name);
             outputs.push_back({{"file", name}, {"bytes", captured.size()}, {"sha256", inputSha256(captured)}});
         }
-        const Json metadata{{"complete", true}, {"label", hcm ? "M6 S2-b and S2-a first comparable run (D539)" : "M6 S2-c first comparable run (D538)"},
+        Json metadata{{"complete", true}, {"label", hcm ? "M6 S2-b and S2-a first comparable run (D539)" : "M6 S2-c first comparable run (D538)"},
             {"buildCommit", MULTRA_BUILD_COMMIT}, {"compiler", MULTRA_COMPILER}, {"compilerCommand", command},
             {"toolSources", sources}, {"documents", documents}, {"outputs", outputs},
             {"inputManifest", inputs.json()}, {"firstSeed", 42}, {"lastSeed", 81}};
+        if (candidate) metadata["candidate"] = candidate->name;
         write(directory / "metadata.json", metadata.dump(2) + "\n");
     } catch (const std::exception& e) { std::cerr << "error: " << e.what() << '\n'; return 1; }
 }
