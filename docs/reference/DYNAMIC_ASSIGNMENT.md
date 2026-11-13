@@ -207,7 +207,7 @@ Each row first asserts that its forcing worked.
 | Slice | Content | Rows |
 |---|---|---|
 | A0 | This contract | — |
-| A1 | The pure loop in `src/project/dynamic_assignment.*` behind a cost-provider callback | DA1–DA3 |
+| A1 | The pure loop in `src/project/dynamic_assignment.*` behind a cost-provider callback. **Implemented (§10)** | DA1–DA3 |
 | A2 | Measurement from a Micro run, the file codec, `--route-costs` | DA4–DA6, DA9 |
 | A3 | The loop over real runs, `--dynamic-assignment`, fixture (b) | DA7–DA8 |
 | A4 | Later, the owner's choice: the editor, and weights written back into the project (a schema bump) | — |
@@ -232,3 +232,16 @@ is not, the slice adds the smallest event field and measures the hot path before
    - **(a) Two layers (chosen):** the pure loop on the book's analytic costs, plus a real Micro
      two-route network.
    - (b) Micro only.
+
+## 10. As implemented (A1, 2026-11-13)
+
+- **Code:** `src/project/dynamic_assignment.*`:
+  - `allOrNothing`, `msaStep` and `msaDelta`;
+  - `iterateMsa(w¹, provider, settings)`, which refuses `maxIterations` outside [2, 200] and a
+    negative or non-finite `gap`.
+- **Provider contract.** A cell or choice count that differs from the weights is a logic error.
+  The provider receives exactly the weights that each iteration reports (DA3).
+- **Rows:** `tests/dynamic_assignment_tests.cpp` (group `dynassign`) covers DA1–DA3.
+  - DA1 reproduces the §7 table to 1e-9 and stops at n = 10 with δ = 0. Stopped at 9, it is
+    unconverged at 1/39.
+  - No value was changed after the first run.

@@ -212,16 +212,21 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
 Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done (below); when the owner asks for an engine
-slice, the next one is M9 (contract D549 written; slices A1–A3 next), then M11.5 and the M11 gate, M12. Each starts with its contract. M13 is
+slice, the next one is M9 (contract D549, A1 done; A2–A3 next), then M11.5 and the M11 gate, M12. Each starts with its contract. M13 is
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
 
-## M9 dynamic assignment — contract written (D549); A1 next
+## M9 dynamic assignment — contract (D549) and A1 done; A2 next
 
 - [DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9. Owner chose every recommended option:
   MSA with all-or-nothing auxiliary shares per decision × interval cell, cost from the decision to arrival,
   δ (Eq. 10.22) ≤ 0.05 within 20 runs on one seed, a separate `MultraRouteCosts` file read back by `--route-costs`.
-- **Next:** A1, the pure loop with Ortúzar Example 10.6 (DA1–DA3); then A2 measurement, codec and
+- **A1 done:** `src/project/dynamic_assignment.*`, the pure loop; Example 10.6 reproduced (DA1–DA3, group `dynassign`).
+- **A2 notes (read 2026-11-13):** a positioned decision emits `RoutingEvent` (time, decision, to-route); an
+  unplaced M2.4 decision is split at compile into inputs `<input>/route-<routeId>` and a placed one into
+  `<input>/path-k` (`withRoutingDecisions`, `expandRouteless`), so no event names it. `DepartedEvent` carries
+  `scheduledTime`. Mapping a vehicle to its entry needs the compiled route's families or link sequence.
+- **Next:** A2 measurement, codec and
   `--route-costs` (DA4–DA6, DA9); then A3 `--dynamic-assignment` and the two-route Micro fixture (DA7–DA8).
   A4 (editor, weights into the project) only on the owner's pick.
 
