@@ -23,7 +23,7 @@ passes ([MULTI_LEVEL_MODELLING](../plans/MULTI_LEVEL_MODELLING.md) §5).
   - link and node outputs by time slice;
   - the CLI and a first editor surface (choice 6).
 - **Out:**
-  - **M11.5:** dynamic assignment, which reuses M9's loop. M9 is not started;
+  - **M11.5:** dynamic assignment, which reuses M9's loop. M9 has its contract ([DYNAMIC_ASSIGNMENT](DYNAMIC_ASSIGNMENT.md), D549), no code yet;
   - **hybrid Meso–Micro:** WORKFLOW answer 14 keeps only a sending/receiving boundary interface (§13);
   - **Street segments and cross-section templates:** S3;
   - **parking lots in Meso:** a later slice; Micro keeps lot dynamics until then;
