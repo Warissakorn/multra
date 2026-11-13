@@ -81,7 +81,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     `x` = 0.5; −16 % to −53 % below HCM `d1 + d2` from 0.7 to 1.05, the gap in `d2`. **D540** (owner asked for a
     recommendation): arrival process measured ([evidence](evidence/m6-s2-arrivals.md)): at the line arrivals are
     bunched (IDC ≈ 1.2, CV ≈ 1.5), not smoothed, so the S2-b/S2-a gap is on the queue/discharge side.
-    **Ask** the owner: measure effective green and lost time, and/or FCTL at the S2-b settings. **Held for the owner:** any S1 calibration, decided once after every kind's first
+    **D541** (owner: as recommended): effective green, lost time and FCTL near S2-b (M6_S2_RUN §8, rows
+    S2E1–S2E4); contract written, code and run next. Then U-c and U-a. **Held for the owner:** any S1 calibration, decided once after every kind's first
     run. Then U-c and U-a. Then the S2
     runs (S2-c first, `multra-fctl-reference`) and the U runs (U-c, U-a).
     D530: the S1 diagnostic (`t_x`, `L_hj`, `v_S`; Murat & Cetin 2019) needs a measurement contract

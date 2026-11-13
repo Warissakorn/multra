@@ -140,3 +140,54 @@ and has no band**; it changes no model or setup.
 | S2D3 | Synthetic exponential headways at 0.2 veh/s from a fixed splitmix64 draw give IDC and CV within 0.1 of 1, and evenly spaced stamps give 0 | `m6s2` |
 | S2D4 | The usage line lists `c\|ab\|arrivals`; an unknown mode is refused with it | `cli-m6-s2-run-help`, `cli-m6-s2-run-mode` |
 
+## 8. The engine's effective green, and `d2` against an exact queue (D541)
+
+The arrivals at the line are bunched ([m6-s2-arrivals](../evidence/m6-s2-arrivals.md)), so S2-b and S2-a's low delay sits on the queue and discharge side. Two diagnostics follow. **No band; they decide nothing and change no model.**
+
+**A. Mode `green`:** `multra-m6-s2-run green <data-dir> <compile_commands.json> <new-output-dir>`.
+
+- **What runs.** It builds the S1 project in memory (`m6s1::approach()`, [M6_S1_RUN](M6_S1_RUN.md) §1). That project has the same 90/40/3 s signal and a standing queue every cycle. Seeds 42–81 run in their own tick loop, with an `ArrivalObserver` (§7) at the line's route distance, 300 m.
+- **Why its own count.** DISCHARGE cycles end with the green, so amber crossings are counted here.
+- **Per cycle `k`.** The window holds 40 cycles, with Go = 900 + 90`k` s.
+  - `N_k` is the number of stamps in [go, go + 90). It is the cycle's capacity, since the queue never empties.
+  - `A_k` is the number of stamps in [go + 40, go + 43), the amber crossings.
+  - `hS_k` is the mean of the headways between the stamps of ranks 4 and 5, up to ranks 11 and 12, in crossing order, as S1's steady ranks. A cycle with fewer than 12 stamps has no `hS_k`.
+- **Per seed**, using the means over its cycles:
+  - `N`, `A` and `h_S`;
+  - `g_e = N · h_S`, the effective green;
+  - `L = 43 − g_e`, the lost time out of green plus amber;
+  - `c_e = N · 3600 / 90`, the capacity.
+
+  These are then averaged over seeds with the 95 % half-width, beside HCM's `g` = 40 s, `l1 + l2` = 3 s (§6) and `c` = 844.4 veh/h.
+
+**B. References recomputed, shown beside D539's engine Δ** (18.51, 21.04, 24.61, 32.09, 42.42 and 69.55 s; `v` as §6) for each `x`:
+
+- **HCM at the engine's own green and capacity.** `hcmDelayAt(v, C = 90, g_e, c_e)`:
+  - `X = v / c_e`;
+  - `d1 = 0.5C(1 − g_e/C)² / [1 − min(1, X)g_e/C]`;
+  - `d2 = 900T[(X − 1) + √((X − 1)² + 8kIX/(c_e T))]`, with `T` = 1 h, `k` = 0.5, `I` = 1.
+
+  `hcmDelayAt(v, 90, 40, 844.4)` equals `hcmDelay(x)`.
+- **FCTL, declared.**
+  - Slot `h` = 3600 / 1900, with green 21 slots and red 26 slots. These are the whole slots nearest to 90 s with green near 40 s: 39.79 s and 89.05 s.
+  - `μ = v · h / 3600`.
+  - Seconds are `h · E D` (§4).
+- **FCTL at the engine's own values.**
+  - `h = h_S`;
+  - green = `round(g_e / h_S)` slots and red = `round((90 − g_e) / h_S)` slots;
+  - `μ = v · h_S / 3600`.
+- **Stability.** A level with (green + red) · μ ≥ green is unstable, and its FCTL value is **unavailable**.
+- **Stated:** FCTL is a stationary queue, while HCM's `d2` covers a 1 h period. Both exclude the deceleration and acceleration that Δ holds.
+
+**Output:**
+- `green.csv`, with columns `seed, cycle, N, A, hS`;
+- `summary.json`, holding A per seed and B per `x`;
+- `metadata.json`, written last.
+
+| Row | What must hold | Test |
+|---|---|---|
+| S2E1 | Hand stamps give hand `N_k`, `A_k` and `hS_k`; a cycle with fewer than 12 stamps has no `hS_k` | `m6s2` |
+| S2E2 | `g_e`, `L` and `c_e` give hand values; `hcmDelayAt(v, 90, 40, 844.4)` equals `hcmDelay(x)` within 1e−9 | `m6s2` |
+| S2E3 | The declared FCTL slots are 21 and 26; the engine rule rounds as defined for `g_e` = 42.3 s and `h_S` = 1.85 s (23 and 26 slots); an unstable level is unavailable | `m6s2` |
+| S2E4 | The usage line lists `c\|ab\|arrivals\|green` | `cli-m6-s2-run-help`, `cli-m6-s2-run-mode` |
+
