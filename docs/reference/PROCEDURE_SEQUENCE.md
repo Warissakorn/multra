@@ -112,8 +112,8 @@ A run is no History step. Step statuses are `done`, `skipped`, `refused` and `no
 
 ## 5. Seams
 
-- Feedback (next): an assignment's congested times as the next distribution's costs, iterated to a
-  stopping rule.
+- Feedback: an assignment's congested times as the next distribution's costs, iterated to a
+  stopping rule. Its contract is [PROCEDURE_FEEDBACK](PROCEDURE_FEEDBACK.md) (D547).
 - Writing a procedure's matrices stays E2's *Write OD matrices* on the Mode choice page.
 
 ## 6. Owner choices (answered 2026-11-06, D483)
