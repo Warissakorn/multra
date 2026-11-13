@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-13 — The arrival process at the line (D540)
+
+- **D540** (the owner asked for a recommendation): measure before changing anything; hold any S1 calibration until every kind has its first run.
+- **Steps:** contract (M6_S2_RUN §7, rows S2D1–S2D4), then `tools/m6_s2_arrivals.hpp` and mode `arrivals` of `multra-m6-s2-run`.
+- **The run:** 240 no-signal runs on build `f71cf5f`.
+  - At the line the arrivals are **bunched**: count IDC 1.18–1.25, headway CV 1.41–1.53.
+  - At 100 m they are slightly smoother than Poisson.
+  - The smoothing hypothesis for S2-b/S2-a's low delay is not supported: [m6-s2-arrivals](evidence/m6-s2-arrivals.md).
+- **Verified on Linux:** `check` 335/335 (`m6s2` 12/12).
+
 ## 2026-11-12 — M6 S2-b and S2-a against HCM 7 `d1 + d2` (D539)
 
 - **D539** (owner: lengthen the road and the cool-down): contract first (M6_S2_RUN §6, rows S2AB1–S2AB5). Then:
