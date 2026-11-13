@@ -17,6 +17,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [PRIORITY_LINES.md](PRIORITY_LINES.md) | Counter at a conflict area's waiting line: minor crossings, major entries, follow-up headways (D528) |
 | [FCTL_REFERENCE.md](FCTL_REFERENCE.md) | Fixed-cycle traffic-light queue reference for M6 S2-c: van Leeuwaarden's procedure, `multra-fctl-reference` (D529) |
 | [M6_S1_RUN.md](M6_S1_RUN.md) | M6's first comparable run, kind S1: the one-lane project, `multra-m6-s1-run`, reductions and bands (D535) |
+| [M6_SWEEP.md](M6_SWEEP.md) | M6's pre-registered sensitivity sweep, phase 1: `--candidate B\|C` on the S1, S2 and U tools (D545); decides nothing |
 | [M6_U_RUN.md](M6_U_RUN.md) | M6 U: minor-movement capacity, `multra-m6-u-run`: U-c at the engine's own `t_c`/`t_f` and U-a against HCM 7 Eq. 20-18 (D542); the Stop follow-up split (D543) |
 | [M6_S2_RUN.md](M6_S2_RUN.md) | M6 S2: the delay runs, `multra-m6-s2-run`: S2-c against FCTL (D538), S2-b and S2-a against HCM 7 `d1 + d2` (D539) |
 | [DISCHARGE.md](DISCHARGE.md) | Lane/cycle discharge and startup diagnostics, quantization and unavailable results |
