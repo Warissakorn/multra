@@ -48,4 +48,53 @@ Three tools take an optional last argument, `--candidate base|B|C`:
 | SW3 | `junction(200)` cut to 600 s, seed 42: with `B` the follow-up split's mean `standDistance` is smaller than with `base` (the forcing: the lever reaches the run) | `m6sweep` |
 | SW4 | The S1 and U tools refuse an unknown candidate, and the S2 tool refuses a candidate with mode `c` | `cli-m6-sweep-refused` |
 
+## 4. Phase 2: the engine levers D and E (D546)
+
+Written before code, after phase 1's figures ([evidence](../evidence/m6-sweep-phase1.md)) and
+before any phase-2 figure. Rows SW5–SW10 fail first.
+
+**The switches.** Each lever is a runtime-only flag on `DriverBehaviour`, like D258's `stopFloor`:
+- never in a file and never validated;
+- false by default, so every shipped output stays byte-identical;
+- set only by `m6sweep::apply`;
+- prototype law only (w74 is refused, §2).
+
+| Name | Flag | Definition |
+|---|---|---|
+| `D` | `standingTarget` | In `followingAcceleration`, behind a leader slower than 0.1 m/s, the desired gap is `standstillDistance` alone, without the `√v` term. This covers a queued vehicle, a red head and the Stop hold's virtual leader. `desiredGap()` and `stopLineReach` are unchanged. |
+| `E` | `stopArrival` | In `refreshStops` only (not `atStopLine`, which parking also uses), a Stop is made below 0.5 m/s, not 0.1 m/s, within the unchanged `stopLineReach`. |
+| `DE` | both | both |
+
+**E amends D544's wording.** D544 described E as "the target is the line, at the line within
+0.5 m". Without D, the `√v` term keeps a car about 1–2.5 m short of the line at 0.1–0.5 m/s, so
+it would never reach 0.5 m. The two parts are therefore split: E is the arrival test, D is the gap
+target, and DE combines them.
+
+**Runs** (seeds 42–81, as §2):
+
+| Candidate | S1 | S2-ab | U |
+|---|---|---|---|
+| `D` | run | run | run |
+| `E` | not run: no Stop, identical to `base` | not run | run |
+| `DE` | not run | not run | run |
+
+**Estimates, pre-registered** from D544 and not revised:
+
+| Candidate | Estimate |
+|---|---|
+| `D` | jam spacing about 6.5 m; S1 about 2,070 veh/h; S2-b/a misses grow; U `t_f` about 10 s |
+| `E` | U `t_f` about 9 s |
+| `DE` | none |
+
+Phase 1 found D544's U arithmetic too optimistic for both B and C.
+
+| Row | Statement | Group |
+|---|---|---|
+| SW5 | `D`, `E` and `DE` set only their flags, and change no number on any behaviour. Every flag is false on a compiled `junction(200)` and after `base` | `m6sweep` |
+| SW6 | The prototype law with `D`: behind a leader at 0.05 m/s, the acceleration equals base's with `additiveSafetyDistance` and `multiplicativeSafetyDistance` both 0. Behind a leader at 0.2 m/s, it equals base's | `m6sweep` |
+| SW7 | From 10 m/s, 50 m behind a standing obstacle, with `followingAcceleration` and `integrate` at 0.1 s: with `D` the speed reaches 0 within 30 s and the gap never falls below `standstillDistance` − 1e-6. Base is still moving (speed above 0) at that tick | `m6sweep` |
+| SW8 | `stopMade`, the arrival test `refreshStops` uses: a vehicle at 0.3 m/s, 1 m before a Stop line, has made the Stop with `E` and not without it. At 0.05 m/s it has made it either way | `m6sweep` |
+| SW9 | `junction(200)` cut to 600 s, seed 42: `D` gives a smaller mean `standDistance` than base; `E` gives more follow-up pairs than base (the forcing) | `m6sweep` |
+| SW10 | The S2 tool refuses `--candidate E` with mode `c` (SW4's test, now with `E`) | `cli-m6-sweep-refused-mode` |
+
 Return to [the reference index](README.md).
