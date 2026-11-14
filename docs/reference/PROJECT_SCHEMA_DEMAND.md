@@ -404,3 +404,30 @@ and unique ids.
 | MR1 | On the unchanged readers: the base parses from 51 (with runs from 56); both floors even null; `INVALID_MACRO_RUN` for null, `[]`, a number row, an unknown key before a missing id, a null name and a blank period; `INVALID_MACRO_SETTING` for a missing or null row, an unknown key, `targetGap` 1, `maxIterations` 2.5 and −4,294,967,295 |
 | MR2 | Both keys `false` below their floors; one shared closed settings row (exclusive gap bounds, iteration bounds) and closed run rows with every key required |
 | MR3 | Every case labelled refused is refused by `parseDocument`; the 1,557 labels, writer output with a second run at the limits, D566–D568's labels and all 18 projects (2 with Macro runs or settings) agree with the emitted schema (`jsonschema`, one-off) |
+
+## Owned trip-rate set extension (D570)
+
+The composed CLI coverage adds `-trip-rates`; complete remains false. The root `tripRateSets`
+(M10.2 G2, `trip_rate_codec.cpp`) is refused below 66 when present, even null
+(`EDIT_UNSUPPORTED_FIELD` at `tripRateSets`); the schema gives it `false`. Rows are those of
+[TRIP_GENERATION §6.1](TRIP_GENERATION.md#61-a-trip-rate-set), every one closed:
+
+- `tripRateSets` is a nonempty array of sets requiring text `id`, `name` and `unit`, a `source`
+  object and a nonempty `purposes` array. `source` holds optional text `citation` and `table`.
+- A purpose requires text `id` and the sides `productions` and `attractions`. A side is chosen by its
+  `method`: `regression` requires a number `constant` and a `terms` array (empty allowed) of
+  `{attribute, coefficient}`; any other value takes the cross-classification row, whose `method` must
+  be `crossClassification`, with a nonempty `categories` array of `{attribute, rate}`, `rate` ≥ 0.
+  A key of the other method is refused.
+- Every refusal is `INVALID_TRIP_RATE_SET` at the row or key's path; an id is `INVALID_ID` or
+  `DUPLICATE_ID`.
+
+The reader asks `networkCodec::knownKey` against the same tables. Left to the codec: blank ids,
+attributes and purpose ids, unique ids per list and unique attributes per side, and a catalog file's
+required citation.
+
+| Row | Check |
+|---|---|
+| TR1 | On the unchanged reader: the base parses from 66; the 66 floor even null; `INVALID_TRIP_RATE_SET` for null, `[]`, a number row, an unknown key at the set, source, purpose, category and term, a side with the other method's key, a negative rate and an unknown method; `DUPLICATE_ID` at `tripRateSets[1].id` |
+| TR2 | `tripRateSets` `false` below 66; from it the nonempty array, the closed rows with their required keys, one row for both sides, the `method` branch and `rate` ≥ 0 |
+| TR3 | Every case labelled refused is refused by `parseDocument`; the 1,559 labels, writer output (the two Ortúzar example sets), earlier labels and all 18 projects agree with the emitted schema (`jsonschema`, one-off) |

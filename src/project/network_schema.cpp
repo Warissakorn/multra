@@ -95,6 +95,17 @@ class NetworkSchema {
         case Kind::macroSettings:rule=reference(Object::macroSettings,version);break;
         case Kind::targetGap:rule={{"type","number"},{"exclusiveMinimum",0},{"exclusiveMaximum",1}};break;
         case Kind::iterationCap:rule={{"type","integer"},{"minimum",1},{"maximum",100000},{"x-multra-nativeType","integer-token"}};break;
+        case Kind::tripRateSets:rule={{"type","array"},{"minItems",1},{"items",reference(Object::tripRateSet,version)}};break;
+        case Kind::tripRateSource:rule=reference(Object::tripRateSource,version);break;
+        case Kind::tripRatePurposes:rule={{"type","array"},{"minItems",1},{"items",reference(Object::tripRatePurpose,version)}};break;
+        case Kind::tripRateSide: // D570: `method` selects the row; any other method falls to the cross-classification row and its enum
+            rule={{"if",{{"required",Json::array({"method"})},{"properties",{{"method",{{"const",kRegression}}}}}}},
+                {"then",reference(Object::tripRateRegressionSide,version)},{"else",reference(Object::tripRateCrossSide,version)}};break;
+        case Kind::tripRateCategories:rule={{"type","array"},{"minItems",1},{"items",reference(Object::tripRateCategory,version)}};break;
+        case Kind::tripRateTerms:rule={{"type","array"},{"items",reference(Object::tripRateTerm,version)}};break;
+        case Kind::crossMethod:rule={{"type","string"},{"const",kCrossClassification}};break;
+        case Kind::regressionMethod:rule={{"type","string"},{"const",kRegression}};break;
+        case Kind::rate:rule={{"type","number"},{"minimum",0}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -262,6 +273,13 @@ public:
                 case Object::mapReference:return "mapReference";
                 case Object::macroRun:return "macroRun";
                 case Object::macroSettings:return "macroSettings";
+                case Object::tripRateSet:return "tripRateSet";
+                case Object::tripRateSource:return "tripRateSource";
+                case Object::tripRatePurpose:return "tripRatePurpose";
+                case Object::tripRateCrossSide:return "tripRateCrossSide";
+                case Object::tripRateRegressionSide:return "tripRateRegressionSide";
+                case Object::tripRateCategory:return "tripRateCategory";
+                case Object::tripRateTerm:return "tripRateTerm";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -273,8 +291,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, and Macro settings and runs. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs-trip-rates";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, Macro settings and runs, and owned trip-rate sets. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

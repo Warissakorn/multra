@@ -213,10 +213,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   their codecs and the zone codec share `networkCodec::exactFields`.
 - **Done (D568, MP1–MP3):** the root `map`, with the codec's ranges; the root key table is `rootFeatures`.
 - **Done (D569, MR1–MR3):** `definition.macroSettings` and the root `macroRuns`.
+- **Done (D570, TR1–TR3):** the root `tripRateSets`; its codec checks keys with `knownKey`.
 - **Proposed next (this session's, not the owner's):** the remaining Macro root arrays in floor
-  order (`tripRateSets` 66, `deterrenceSets` and `costMatrices` 67, `periodFactors` 69,
-  `modeChoiceSets` 70, `procedures` 73), each with its own version-gated keys
-  ([PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) root table); start with `tripRateSets`. Same
+  order (`deterrenceSets` and `costMatrices` 67, `periodFactors` 69, `modeChoiceSets` 70,
+  `procedures` 73), each with its own version-gated keys
+  ([PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) root table); start with `deterrenceSets`. Same
   method: inventory, pin on the unchanged code, map as read, one key source, `jsonschema` dump with
   writer output.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/

@@ -1,5 +1,6 @@
 #include "trip_rate_codec.hpp"
 #include "input_manifest.hpp"
+#include "network_fields.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -10,9 +11,11 @@ namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
 bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
-bool onlyKeys(const Json& j, std::initializer_list<const char*> allowed) {
+// D570: a row's keys are the field table's, the same list the composed schema closes the row with.
+// A catalog file is read at the latest version; a project row at the floor `tripRateSets` is first written.
+bool onlyKeys(const Json& j, networkCodec::Object row) {
     for (const auto& [key, value] : j.items())
-        if (std::none_of(allowed.begin(), allowed.end(), [&](const char* a) { return key == a; })) return false;
+        if (!networkCodec::knownKey(key, row, networkCodec::tripRateVersion)) return false;
     return true;
 }
 bool isString(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
@@ -31,13 +34,13 @@ TripRateSide parseSide(const Json& j, const std::string& path, Issues& issues) {
         return name;
     };
     if (method == "crossClassification") {
-        if (!onlyKeys(j, {"method", "categories"}) || !j.contains("categories") || !j.at("categories").is_array() ||
+        if (!onlyKeys(j, networkCodec::Object::tripRateCrossSide) || !j.contains("categories") || !j.at("categories").is_array() ||
             j.at("categories").empty()) { bad(issues, path); return side; }
         const auto& items = j.at("categories");
         for (std::size_t k = 0; k < items.size(); ++k) {
             const auto at = path + ".categories[" + std::to_string(k) + "]";
             const auto& item = items[k];
-            if (!item.is_object() || !onlyKeys(item, {"attribute", "rate"})) { bad(issues, at); continue; }
+            if (!item.is_object() || !onlyKeys(item, networkCodec::Object::tripRateCategory)) { bad(issues, at); continue; }
             TripRateCategory c{attribute(item, at), 0};
             if (!isNumber(item, "rate") || item.at("rate").get<double>() < 0) bad(issues, at + ".rate");
             else c.rate = item.at("rate").get<double>();
@@ -45,14 +48,14 @@ TripRateSide parseSide(const Json& j, const std::string& path, Issues& issues) {
         }
     } else if (method == "regression") {
         side.method = TripSide::Method::regression;
-        if (!onlyKeys(j, {"method", "constant", "terms"}) || !isNumber(j, "constant") || !j.contains("terms") ||
+        if (!onlyKeys(j, networkCodec::Object::tripRateRegressionSide) || !isNumber(j, "constant") || !j.contains("terms") ||
             !j.at("terms").is_array()) { bad(issues, path); return side; }
         side.constant = j.at("constant").get<double>();
         const auto& items = j.at("terms");
         for (std::size_t k = 0; k < items.size(); ++k) {
             const auto at = path + ".terms[" + std::to_string(k) + "]";
             const auto& item = items[k];
-            if (!item.is_object() || !onlyKeys(item, {"attribute", "coefficient"})) { bad(issues, at); continue; }
+            if (!item.is_object() || !onlyKeys(item, networkCodec::Object::tripRateTerm)) { bad(issues, at); continue; }
             TripRateTerm t{attribute(item, at), 0};
             if (!isNumber(item, "coefficient")) bad(issues, at + ".coefficient");
             else t.coefficient = item.at("coefficient").get<double>();
@@ -75,14 +78,14 @@ Json sideJson(const TripRateSide& s) {
 TripRateSet parseTripRateSet(const Json& j, const std::string& path, bool requireCitation) {
     Issues issues;
     TripRateSet set;
-    if (!j.is_object() || !onlyKeys(j, {"id", "name", "source", "unit", "purposes"})) throw ValidationError({{"INVALID_TRIP_RATE_SET", path}});
+    if (!j.is_object() || !onlyKeys(j, networkCodec::Object::tripRateSet)) throw ValidationError({{"INVALID_TRIP_RATE_SET", path}});
     if (!isString(j, "id") || blank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
     else set.id = j.at("id").get<std::string>();
     for (const auto* key : {"name", "unit"})
         if (!isString(j, key)) bad(issues, path + "." + key);
     if (isString(j, "name")) set.name = j.at("name").get<std::string>();
     if (isString(j, "unit")) set.unit = j.at("unit").get<std::string>();
-    if (!j.contains("source") || !j.at("source").is_object() || !onlyKeys(j.at("source"), {"citation", "table"})) bad(issues, path + ".source");
+    if (!j.contains("source") || !j.at("source").is_object() || !onlyKeys(j.at("source"), networkCodec::Object::tripRateSource)) bad(issues, path + ".source");
     else {
         const auto& s = j.at("source");
         if (s.contains("citation") && !s.at("citation").is_string()) bad(issues, path + ".source.citation");
@@ -98,7 +101,7 @@ TripRateSet parseTripRateSet(const Json& j, const std::string& path, bool requir
         for (std::size_t k = 0; k < items.size(); ++k) {
             const auto at = path + ".purposes[" + std::to_string(k) + "]";
             const auto& item = items[k];
-            if (!item.is_object() || !onlyKeys(item, {"id", "productions", "attractions"}) || !item.contains("productions") ||
+            if (!item.is_object() || !onlyKeys(item, networkCodec::Object::tripRatePurpose) || !item.contains("productions") ||
                 !item.contains("attractions")) { bad(issues, at); continue; }
             TripRatePurpose p;
             if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
