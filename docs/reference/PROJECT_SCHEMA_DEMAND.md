@@ -154,7 +154,9 @@ diagnostics, and the from-21 key check uses the same field table. The speed rang
 `kerbLanes` and `pcu` keep their own readers and codes; for those the table drives only the
 schema. Two reader limits are recorded, not changed: `desiredSpeed.min`/`max` are read with the
 JSON library's `.at()`, so a missing or non-numeric bound reports that library's message
-(NEXT, Ask); and the below-21 open row drops unknown keys on save. The installed catalog
+and the open `desiredSpeed` object and curve points accept an unknown key at every version and
+drop it on save (checked by a round-trip at the latest schema), as the below-21 type row does
+(both: [OWNER_SITTING](../plans/OWNER_SITTING.md) item 49). The installed catalog
 (`resolveDemandCatalog`) uses the same `parseVehicleType`. Ranges, unknown behaviours and duplicate ids
 remain the catalog validators.
 

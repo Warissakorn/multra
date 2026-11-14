@@ -11,7 +11,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Inventory finding:** the type row is closed from 21 by a second hand-kept key list in `parseBehaviourLibrary` (open, additive, below 21). That list is now the field table.
 - **D560:** the schema maps the row (open < 21, closed from 21), closed `axles` and `pcu`, open `desiredSpeed` and curve points, `curve`/`kerbLanes`/`pcu` `false` below 40/42/49 (shared constants with the guards), `kerbLanes` an `integer-token`. `parseVehicleType`'s scalars and axles read through `value()` with unchanged sentences; kerbLanes, pcu and the curve keep their own codes. Pins (VT1, VT3) passed on the unchanged reader first.
 - **One-off `jsonschema`:** 5,700 labels, 9 projects, 7 installed type files and a round-trip carrying every gated key agree.
-- **Ask (NEXT):** `desiredSpeed.min`/`max` report the JSON library's message; recommended to read them through `value()`.
+- **Owner (OWNER_SITTING 49):** (a) `desiredSpeed.min`/`max` report the JSON library's message; (b) an unknown key inside `desiredSpeed` or a curve point is dropped on save (round-trip at the latest schema). `min: true` is refused, so the schema is not over-strict there.
 - **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1652/1652, group `project` 80/80); `check_no_pch.py` on the changed units 7/7. Windows not run (no CI run on a branch push).
 
 ## 2026-11-14 — Owned modes in the composed project schema (D559)
