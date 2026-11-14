@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Owner item 49: vehicle-type reader limits fixed (D562)
+
+- **Owner:** "ทำต่อตามแนะนำ", read as accepting the session's recommendations on OWNER_SITTING 49, (a) and (b2), then continuing.
+- **(a):** `parseSpeedRange` reads `min`/`max` through `networkCodec::value()`: `Missing field: min`, `Expected number: max`, `Field is null: min` replace the JSON library's message. What loads is unchanged.
+- **(b2):** from 21 `parseBehaviourLibrary` also checks `desiredSpeed` (`vehicleTypes[i].desiredSpeed.<key>`) and each curve point (`….curve[k].<key>`) against the same table; the schema closes both from 21. Below 21, the installed catalog and bare definitions stay additive. All 18 projects in the repository still validate (`jsonschema`, one-off), 5,700 labels agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1652/1652); `check_no_pch.py` on the changed units 4/4. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — Behaviour schema inventory, before code (D561)
 
 - **Pick:** the owner replied "เห็นด้วย" to D560's report; read as agreement with the proposed order (behaviours next), not as an answer to OWNER_SITTING 49, which stays open.
@@ -103,9 +110,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **D546** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_SWEEP](reference/M6_SWEEP.md) §4, rows SW5–SW10), then runtime-only `DriverBehaviour` flags `standingTarget` (D) and `stopArrival` (E), off by default (`following.cpp`, `conflicts.cpp` `stopMade`), and candidates `D`, `E`, `DE`. Rows SW7 and SW9 were amended after the first test run, before any sweep figure; no definition changed. No `src/core` split was needed (largest file 469 lines).
 - **Result** ([evidence](evidence/m6-sweep-phase2.md)): D: S1 1,910.2 veh/h (jam spacing 6.50 m, `t_x` 1.35 s), S2 misses shrink, U `t_f` 6.91 s with U-c passing at `v_c` 200 and 400; E alone equals base; DE `t_f` 5.82 s. U-a misses everywhere. Nothing adopted.
-
-## 2026-11-13 — No calibration on M6; sensitivity sweep phase 1 (D544, D545)
-
-- **D544** (owner asked for calibration options and chose "ไม่ calibrate + sweep"): [options sheet](evidence/m6-calibration-options.md) with five options A–E and estimated effects; D540's hold is closed as no calibration on M6.
-- **D545:** contract first ([M6_SWEEP](reference/M6_SWEEP.md), rows SW1–SW4), then `tools/m6_candidates.hpp` and `--candidate base|B|C` on the S1, S2 (`ab`) and U (`run`) tools; no flag keeps outputs byte-identical (a `base` S1 rerun matched the first run).
-- **Result** ([evidence](evidence/m6-sweep-phase1.md)): B 2,029.8 veh/h, C 2,109.5 (S1-f would pass, S1-a would miss for both); S2 misses grow; U `t_f` 12.89 / 12.98 s (base 13.67). The D544 arithmetic overstated both levers on U. Nothing adopted.

@@ -33,6 +33,14 @@ TEST(project, vehicle_type_reader_keeps_its_open_legacy_rows_codes_and_order) {
     auto legacy=with(vtc::closedFrom-1,"extra",1);CHECK(legacy.at("definition").at("vehicleTypes")[0].contains("extra"));
     CHECK(!documentJson(parseDocument(legacy)).at("definition").at("vehicleTypes")[0].contains("extra"));
     refusedAt(with(vtc::closedFrom,"extra",1),"EDIT_UNSUPPORTED_FIELD","vehicleTypes[0].extra");
+    // D562: desiredSpeed and curve points close with the row from 21; older files stay additive.
+    auto speed=vtc::minimal(vtc::closedFrom-1);speed["definition"]["vehicleTypes"][0]["desiredSpeed"]["extra"]=1;
+    CHECK(!documentJson(parseDocument(speed)).at("definition").at("vehicleTypes")[0].at("desiredSpeed").contains("extra"));
+    speed["schemaVersion"]=vtc::closedFrom;refusedAt(speed,"EDIT_UNSUPPORTED_FIELD","vehicleTypes[0].desiredSpeed.extra");
+    auto point=vtc::minimal(vtc::curveFrom);point["definition"]["vehicleTypes"][0]["desiredSpeed"]["curve"]=
+        Json::array({Json{{"speed",11.11},{"share",0}},Json{{"speed",16.67},{"share",1},{"extra",1}}});
+    refusedAt(point,"EDIT_UNSUPPORTED_FIELD","vehicleTypes[0].desiredSpeed.curve[1].extra");
+    CHECK(parseVehicleType(point.at("definition").at("vehicleTypes")[0]).desiredSpeed.curve.size()==2); // the catalog reader stays open
     auto t=vtc::type();t["axles"]["extra"]=1;CHECK(t.at("axles").contains("extra"));
     typeRefused(t,"EDIT_UNSUPPORTED_FIELD","vehicleType.axles.extra");
     t=vtc::type();t.erase("id");t.erase("desiredSpeed");CHECK(!t.contains("id"));
@@ -42,7 +50,9 @@ TEST(project, vehicle_type_reader_keeps_its_open_legacy_rows_codes_and_order) {
     t=vtc::type();t["axles"]=nullptr;test::throws([&]{parseVehicleType(t);},"Field is null: axles");
     t=vtc::type();t["axles"].erase("rearOverhang");test::throws([&]{parseVehicleType(t);},"Missing field: rearOverhang");
     t=vtc::type();t["desiredSpeed"].erase("min");CHECK(!t.at("desiredSpeed").contains("min"));
-    test::throws([&]{parseVehicleType(t);}); // a JSON-library message: only that it throws
+    test::throws([&]{parseVehicleType(t);},"Missing field: min"); // D562: MULTRA's sentence
+    t=vtc::type();t["desiredSpeed"]["max"]=true;test::throws([&]{parseVehicleType(t);},"Expected number: max");
+    t=vtc::type();t["desiredSpeed"]["min"]=nullptr;test::throws([&]{parseVehicleType(t);},"Field is null: min");
     t=vtc::type();t["kerbLanes"]=2.0;CHECK(t.at("kerbLanes").is_number_float());
     typeRefused(t,"INVALID_KERB_LANES","vehicleType.kerbLanes");
     t=vtc::type();t["pcu"]={{"value",1}};typeRefused(t,"INVALID_PCU","vehicleType.pcu");
@@ -68,10 +78,10 @@ TEST(project, vehicle_type_schema_tracks_the_closed_row_floor_and_gated_keys) {
         CHECK(p.at("name").at("type")=="string");
         const auto& axles=resolve(schema,p.at("axles"));CHECK(axles.at("additionalProperties")==false);
         CHECK(axles.at("required")==Json::array({"wheelbase","frontOverhang","rearOverhang"}));
-        const auto& speed=resolve(schema,p.at("desiredSpeed"));CHECK(speed.at("additionalProperties")==true);
+        const auto& speed=resolve(schema,p.at("desiredSpeed"));CHECK(speed.at("additionalProperties")==(v<vtc::closedFrom));
         CHECK(speed.at("required")==Json::array({"min","max"}));
         CHECK((speed.at("properties").at("curve")==false)==(v<vtc::curveFrom));
-        if(v>=vtc::curveFrom)CHECK(resolve(schema,speed.at("properties").at("curve").at("items")).at("additionalProperties")==true);
+        if(v>=vtc::curveFrom)CHECK(resolve(schema,speed.at("properties").at("curve").at("items")).at("additionalProperties")==false);
         CHECK((p.at("kerbLanes")==false)==(v<vtc::kerbLanesFrom));
         if(v>=vtc::kerbLanesFrom) {
             CHECK(p.at("kerbLanes").at("type")=="integer");CHECK(!p.at("kerbLanes").contains("minimum"));

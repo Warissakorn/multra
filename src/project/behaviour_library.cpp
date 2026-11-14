@@ -252,7 +252,17 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
     if (j.contains("vehicleTypes")) {
         const auto& types = list(j, "vehicleTypes");
         for (std::size_t i = 0; i < types.size(); ++i)
-            networkCodec::knownFields(types[i], networkCodec::Object::vehicleType, at("vehicleTypes", i), networkCodec::behaviourVersion); // D560
+        {
+            using networkCodec::Object;
+            const auto path = at("vehicleTypes", i);
+            networkCodec::knownFields(types[i], Object::vehicleType, path, networkCodec::behaviourVersion); // D560
+            if (!types[i].is_object() || !types[i].contains("desiredSpeed")) continue;
+            const auto& speed = types[i].at("desiredSpeed"); // D562: closed from 21 with the row
+            networkCodec::knownFields(speed, Object::speedRange, path + ".desiredSpeed", networkCodec::behaviourVersion);
+            if (!speed.is_object() || !speed.contains("curve") || !speed.at("curve").is_array()) continue;
+            for (std::size_t k = 0; k < speed.at("curve").size(); ++k)
+                networkCodec::knownFields(speed.at("curve")[k], Object::speedPoint, path + ".desiredSpeed" + at(".curve", k), networkCodec::behaviourVersion);
+        }
     }
     if (j.contains("vehicleClasses")) {
         const auto& classes = list(j, "vehicleClasses");

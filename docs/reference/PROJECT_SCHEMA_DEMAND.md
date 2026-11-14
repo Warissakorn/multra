@@ -137,8 +137,11 @@ A present value must be an array (`parseDefinition`'s `Expected array` / `Field 
   `parseBehaviourLibrary` refuses it at `vehicleTypes[i].<key>` after the definition is read.
 - **`axles`** is closed at every version (`vehicleType.axles.<key>`) and requires numeric
   `wheelbase`, `frontOverhang` and `rearOverhang`.
-- **`desiredSpeed`** stays open and requires numeric `min` and `max`. Its `curve` (from 40) is an
-  array of open points with numeric `speed` and `share`; a bad curve or point is
+- **`desiredSpeed`** requires numeric `min` and `max` (`value()` sentences since D562). It and
+  its curve points close with the row from 21 (D562): an unknown key is `EDIT_UNSUPPORTED_FIELD` at
+  `vehicleTypes[i].desiredSpeed.<key>` or `vehicleTypes[i].desiredSpeed.curve[k].<key>`; below 21
+  they stay additive, and the installed catalog and bare definitions stay open. Its `curve` (from
+  40) is an array of points with numeric `speed` and `share`; a bad curve or point is
   `INVALID_SPEED_CURVE` at `vehicleType.desiredSpeed.curve`.
 - **`kerbLanes`** (from 42) is a JSON integer token: `2.0` is `INVALID_KERB_LANES` in the reader
   although JSON Schema's `integer` admits it, so the rule carries `x-multra-nativeType:
@@ -150,20 +153,19 @@ A present value must be an array (`parseDefinition`'s `Expected array` / `Field 
   `modeVersion`).
 
 `parseVehicleType` reads the scalars and axles through `networkCodec::value()` with unchanged
-diagnostics, and the from-21 key check uses the same field table. The speed range and curve,
-`kerbLanes` and `pcu` keep their own readers and codes; for those the table drives only the
-schema. Two reader limits are recorded, not changed: `desiredSpeed.min`/`max` are read with the
-JSON library's `.at()`, so a missing or non-numeric bound reports that library's message
-and the open `desiredSpeed` object and curve points accept an unknown key at every version and
-drop it on save (checked by a round-trip at the latest schema), as the below-21 type row does
-(both: [OWNER_SITTING](../plans/OWNER_SITTING.md) item 49). The installed catalog
+diagnostics, and the from-21 key checks use the same field table. The curve, `kerbLanes` and
+`pcu` keep their own readers and codes; for those the table drives only the schema. The two
+reader limits D560 found were answered by the owner ([OWNER_SITTING](../plans/OWNER_SITTING.md)
+item 49) and fixed by D562: the bounds now report `Missing field: min`, `Expected number: max`
+or `Field is null: min` instead of the JSON library's message, and `desiredSpeed` and curve
+points no longer drop unknown keys from 21. The installed catalog
 (`resolveDemandCatalog`) uses the same `parseVehicleType`. Ranges, unknown behaviours and duplicate ids
 remain the catalog validators.
 
 | Row | Check |
 |---|---|
-| VT1 | On the unchanged reader: an unknown key is kept out of the save below 21 and refused at `vehicleTypes[0].extra` from 21; `vehicleType.axles.extra` refused; `desiredSpeed` missing is reported before `id`; field sentences; a missing bound throws; float `kerbLanes`, partial `pcu` and a non-array curve keep their codes; `name: null` refused in a project and ignored bare; the three guards refuse null at their paths |
-| VT2 | At every version the row is open exactly below 21, the eight keys are required, `axles` and `pcu` are closed, `desiredSpeed` and curve points are open, and `curve`/`kerbLanes`/`pcu` are `false` below 40/42/49 |
+| VT1 | On the unchanged reader: an unknown key is kept out of the save below 21 and refused at `vehicleTypes[0].extra` from 21; `vehicleType.axles.extra` refused; `desiredSpeed` missing is reported before `id`; field sentences; a missing, null or non-numeric bound reports its field sentence (D562); unknown keys in `desiredSpeed` and a curve point are refused at their paths from 21 and kept out of the save below it (D562); float `kerbLanes`, partial `pcu` and a non-array curve keep their codes; `name: null` refused in a project and ignored bare; the three guards refuse null at their paths |
+| VT2 | At every version the row, `desiredSpeed` and curve points are open exactly below 21 (D562), the eight keys are required, `axles` and `pcu` are closed, and `curve`/`kerbLanes`/`pcu` are `false` below 40/42/49 |
 | VT3 | The base row parses at every version, and every case labelled refused is refused by `parseDocument`; the 5,700 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
 | VT4 | One-off `jsonschema`: the 9 shipped and test projects owning types, the 7 installed `data/vehicle-types/` files, and a writer round-trip carrying `curve`, `kerbLanes` and `pcu` all validate |
 

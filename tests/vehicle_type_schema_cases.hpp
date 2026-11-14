@@ -37,12 +37,12 @@ inline std::vector<Case> cases() {
         set(t+"/name",nullptr,false);set(t+"/name",7,false);set(t+"/name","",true);missing(t,"name",true);
         set(a,nullptr,false);set(a,7,false);missing(t,"axles",true);set(a+"/extra",1,false);
         for(const auto* key:{"wheelbase","frontOverhang","rearOverhang"}) {missing(a,key,false);set(a+"/"+key,nullptr,false);set(a+"/"+key,"x",false);}
-        set(s,7,false);set(s+"/extra",1,true);
+        set(s,7,false);set(s+"/extra",1,v<closedFrom);
         for(const auto* key:{"min","max"}) {missing(s,key,false);set(s+"/"+key,nullptr,false);set(s+"/"+key,"x",false);}
         const bool curve=v>=curveFrom,kerb=v>=kerbLanesFrom,pcu=v>=pcuFrom;
         const Json point={{"speed",10},{"share",1}};
         set(c,Json::array(),curve);set(c,Json::array({point}),curve);set(c,nullptr,false);set(c,7,false);
-        {auto p=point;p["extra"]=1;set(c,Json::array({p}),curve);}
+        {auto p=point;p["extra"]=1;set(c,Json::array({p}),false);} // closed from 21, curve from 40
         {auto p=point;p.erase("share");set(c,Json::array({p}),false);}
         {auto p=point;p["speed"]="x";set(c,Json::array({p}),false);}
         set(t+"/kerbLanes",2,kerb);set(t+"/kerbLanes",2.0,kerb);set(t+"/kerbLanes",0,kerb);

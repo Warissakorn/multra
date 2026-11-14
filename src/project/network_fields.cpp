@@ -184,8 +184,8 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::routingRoute || object==Object::routingTypeRule || object==Object::composition ||
        object==Object::compositionShare || object==Object::compositionInterval || object==Object::mode ||
        object==Object::axles || object==Object::pcu)return false;
-    if(object==Object::speedRange || object==Object::speedPoint)return true;
-    if(object==Object::vehicleType)return version<behaviourVersion;
+    // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
+    if(object==Object::vehicleType || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;

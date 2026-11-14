@@ -31,8 +31,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## Owner checks waiting from recent sessions
 
-All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B49 (vehicle-type
-reader limits, D560), B45 (UI review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
+All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI
+review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
 (random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
 ## Review of 2026-11-10 — queued proposals (D493)
@@ -201,9 +201,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
 - **Done:** owned `definition.compositions` with type-share and interval rows (D558, CS1–CS4), owned
   `definition.modes` (D559, MS1–MS4) and owned `definition.vehicleTypes` (D560, VT1–VT4).
-- **Ask (D560), [OWNER_SITTING](plans/OWNER_SITTING.md) item 49:** (a) `desiredSpeed.min`/`max` report
-  the JSON library's message; (b) unknown keys inside `desiredSpeed` and curve points are dropped
-  on save. Recommendations are there; change neither without the owner's answer.
+- **Item 49 answered (D562):** the speed bounds use `value()` sentences; `desiredSpeed` and curve
+  points close with the type row from 21.
 - **Behaviours (the owner agreed, "เห็นด้วย", 2026-11-14):** the inventory is done (D561,
   [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-inventory-d561-before-code)).
   Next is **slice B1**: pin the reader's model-tag and row diagnostics on the unchanged code, then

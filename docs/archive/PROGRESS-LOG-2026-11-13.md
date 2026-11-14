@@ -2,6 +2,12 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-13 — No calibration on M6; sensitivity sweep phase 1 (D544, D545)
+
+- **D544** (owner asked for calibration options and chose "ไม่ calibrate + sweep"): [options sheet](../evidence/m6-calibration-options.md) with five options A–E and estimated effects; D540's hold is closed as no calibration on M6.
+- **D545:** contract first ([M6_SWEEP](../reference/M6_SWEEP.md), rows SW1–SW4), then `tools/m6_candidates.hpp` and `--candidate base|B|C` on the S1, S2 (`ab`) and U (`run`) tools; no flag keeps outputs byte-identical (a `base` S1 rerun matched the first run).
+- **Result** ([evidence](../evidence/m6-sweep-phase1.md)): B 2,029.8 veh/h, C 2,109.5 (S1-f would pass, S1-a would miss for both); S2 misses grow; U `t_f` 12.89 / 12.98 s (base 13.67). The D544 arithmetic overstated both levers on U. Nothing adopted.
+
 ## 2026-11-13 — Where the Stop follow-up goes (D543)
 
 - **D543** (owner: "ทำงานถัดไป"): contract first ([M6_U_RUN](../reference/M6_U_RUN.md) §6, rows SU1–SU5), then `tools/m6_u_split.hpp` and mode `split` of `multra-m6-u-run` (the D542 run is mode `run`). Row SU4 was moved to `v_c` 200 and its dwell value corrected to one observed tick from the first test run, before any split figure; no definition changed.

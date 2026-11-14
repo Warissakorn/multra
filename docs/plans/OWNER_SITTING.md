@@ -170,7 +170,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     **(b2)** refuse it from 21, as the type row is, which can refuse an existing 21+ file that has
     such a key (none in the repository); **(b3)** leave it open, as routes and inputs are (D363).
     *Session's recommendation:* (b2), since the repository has no such file and the row it sits in
-    is already closed from 21. *Owner:*
+    is already closed from 21. *Owner:* **"ทำต่อตามแนะนำ", 2026-11-14: (a) and (b2) (D562).**
 
 ## C–I — on the Windows machine
 
