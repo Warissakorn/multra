@@ -379,3 +379,28 @@ the Norway and Svalbard exceptions.
 | MP1 | On the unchanged reader: the base parses from 29; the 29 gate even null; `EDIT_MAP_INVALID` for null, a number, `{}` and an unknown key in either object; a well-formed zone that is not the anchor's is refused; the limits (80 characters, opacity 1, rotation −180, anchor 10⁷) parse |
 | MP2 | `map` `false` below 29; from 29 both objects closed with every key required, and the opacity, latitude and anchor bounds |
 | MP3 | Every case labelled refused is refused by `parseDocument`; the 4,636 labels, writer output (a southern zone at the range limits), D566's and D567's labels and all 18 projects agree with the emitted schema (`jsonschema`, one-off) |
+
+## Macro settings and run extension (D569)
+
+The composed CLI coverage adds `-macro-runs`; complete remains false. `definition.macroSettings`
+(S2.3, `macro_settings.cpp`) from 51 and the root `macroRuns` (`macro_run_definition.cpp`) from 56
+are each refused below their floor when present, even null (`EDIT_UNSUPPORTED_FIELD` at
+`definition.macroSettings` or `macroRuns`); the schema gives each `false`.
+
+- A settings row is a closed object requiring a number `targetGap` with 0 < gap < 1 and an
+  integer `maxIterations` from 1 to 100,000 (a native integer token: `2.5` and `5.0` are refused).
+  Anything else is `INVALID_MACRO_SETTING` at the settings path or its key.
+- `macroRuns` is a nonempty array of closed rows requiring text `id`, `name` and `period` and a
+  settings row. A non-array, `[]` or a non-object row is `INVALID_MACRO_RUN` at `macroRuns` or
+  `macroRuns[i]`; an unknown key, checked first, and a missing or non-text field are
+  `INVALID_MACRO_RUN` at `macroRuns[i].<key>`; a missing `settings` is `INVALID_MACRO_SETTING`.
+
+The ranges are the codec's own (`macroSettingsIssues` runs inside the read). Both readers now ask
+`networkCodec::knownKey` against the same tables. Left to the model: a blank `period` or `id`,
+and unique ids.
+
+| Row | Check |
+|---|---|
+| MR1 | On the unchanged readers: the base parses from 51 (with runs from 56); both floors even null; `INVALID_MACRO_RUN` for null, `[]`, a number row, an unknown key before a missing id, a null name and a blank period; `INVALID_MACRO_SETTING` for a missing or null row, an unknown key, `targetGap` 1, `maxIterations` 2.5 and −4,294,967,295 |
+| MR2 | Both keys `false` below their floors; one shared closed settings row (exclusive gap bounds, iteration bounds) and closed run rows with every key required |
+| MR3 | Every case labelled refused is refused by `parseDocument`; the 1,557 labels, writer output with a second run at the limits, D566–D568's labels and all 18 projects (2 with Macro runs or settings) agree with the emitted schema (`jsonschema`, one-off) |

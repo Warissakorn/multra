@@ -194,7 +194,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
   remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
-## AI automation follow-up (D344–D350, D558–D568)
+## AI automation follow-up (D344–D350, D558–D569)
 
 - An authoritative formal schema covering every optional/versioned field remains separate from D350
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
@@ -212,11 +212,13 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Done (D567, SP1–SP3):** root `studyPeriods`, `definition.clockStart` and `studyArea`;
   their codecs and the zone codec share `networkCodec::exactFields`.
 - **Done (D568, MP1–MP3):** the root `map`, with the codec's ranges; the root key table is `rootFeatures`.
-- **Proposed next (this session's, not the owner's):** the Macro root arrays in floor order
-  (`macroRuns` 56, `tripRateSets` 66, `deterrenceSets` and `costMatrices` 67, `periodFactors` 69,
+- **Done (D569, MR1–MR3):** `definition.macroSettings` and the root `macroRuns`.
+- **Proposed next (this session's, not the owner's):** the remaining Macro root arrays in floor
+  order (`tripRateSets` 66, `deterrenceSets` and `costMatrices` 67, `periodFactors` 69,
   `modeChoiceSets` 70, `procedures` 73), each with its own version-gated keys
-  ([PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) root table); start with `macroRuns`. Same method:
-  inventory, pin on the unchanged code, map as read, one key source, `jsonschema` dump with writer output.
+  ([PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) root table); start with `tripRateSets`. Same
+  method: inventory, pin on the unchanged code, map as read, one key source, `jsonschema` dump with
+  writer output.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.

@@ -11,7 +11,7 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
     vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
-    rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference };
+    rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
@@ -20,7 +20,8 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
     zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy,
     studyPeriods,studyArea,nodeIds,flowSource,gateFlows,
-    map,mapReference,providerId,opacity,utmCrs,longitude,latitude,worldAnchor,rotation };
+    map,mapReference,providerId,opacity,utmCrs,longitude,latitude,worldAnchor,rotation,
+    macroRuns,macroSettings,targetGap,iterationCap };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -57,6 +58,8 @@ inline constexpr const char* kGeneratedByModeChoice="mode-choice";
 inline constexpr int studyAreaVersion=55;
 // D568: the root map (M1.21) is refused below 29.
 inline constexpr int mapVersion=29;
+// D569: definition.macroSettings (S2.3) from 51 and the root macroRuns from 56; neither row has versioned keys.
+inline constexpr int macroSettingsVersion=51,macroRunVersion=56;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}
@@ -71,6 +74,8 @@ std::vector<SignalProgram> readSignalPrograms(const Json& definition);
 void knownFields(const Json&,Object,const std::string& path,int version);
 // D566: a closed row holds exactly its active keys: required ones present, `unless`-excluded ones absent.
 bool exactFields(const Json&,Object,int version);
+// D569: whether a key is one of the row's active fields at this version.
+bool knownKey(std::string_view key,Object,int version);
 const Json& value(const Json&,Object,const char* name);
 bool readCondition(const Json&,Object,const char* name);
 // Link-only decoder: leaves linkType/streetSegmentId to their existing document read stages.

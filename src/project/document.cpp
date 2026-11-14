@@ -272,7 +272,7 @@ ProjectDocument parseDocument(const Json& j) {
     d.map=parseMapSettings(j,version);
     if (version < networkCodec::modeVersion) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
     if (version < networkCodec::linkTypeVersion) rejectLinkTypesBefore50(j); // S2.1, before the network is read
-    if (version < 51) rejectMacroSettingsBefore51(j); // S2.3
+    if (version < networkCodec::macroSettingsVersion) rejectMacroSettingsBefore51(j); // S2.3
     if (version < 52) rejectMesoFieldsBefore52(j); // M11.2
     if (version < 53) rejectCapacityBasisBefore53(j); // S3.2
     if (version < networkCodec::streetSegmentVersion) rejectStreetSegmentFieldsBefore53(j); // S3.3
@@ -280,7 +280,7 @@ ProjectDocument parseDocument(const Json& j) {
     rejectLinkSpeedFields(j, version); // J1 (D390)
     if (version < 54) rejectGeneratedControllersBefore54(j); // S4.5c
     if (version < networkCodec::studyAreaVersion) rejectStudyAreaBefore55(j); // S5.2a
-    if (version < 56 && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
+    if (version < networkCodec::macroRunVersion && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
     d.macroRuns = parseMacroRunDefinitions(j);
     if (version < 66 && j.contains("tripRateSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "tripRateSets"}});
     d.tripRateSets = parseOwnedTripRateSets(j);

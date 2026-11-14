@@ -91,6 +91,10 @@ class NetworkSchema {
         case Kind::latitude:rule={{"type","number"},{"minimum",-80},{"maximum",84}};break;
         case Kind::worldAnchor:rule={{"type","number"},{"minimum",-mapWorldAnchorLimit},{"maximum",mapWorldAnchorLimit}};break;
         case Kind::rotation:rule={{"type","number"},{"minimum",-180},{"maximum",180}};break;
+        case Kind::macroRuns:rule={{"type","array"},{"minItems",1},{"items",reference(Object::macroRun,version)}};break;
+        case Kind::macroSettings:rule=reference(Object::macroSettings,version);break;
+        case Kind::targetGap:rule={{"type","number"},{"exclusiveMinimum",0},{"exclusiveMaximum",1}};break;
+        case Kind::iterationCap:rule={{"type","integer"},{"minimum",1},{"maximum",100000},{"x-multra-nativeType","integer-token"}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -256,6 +260,8 @@ public:
                 case Object::gateFlow:return "gateFlow";
                 case Object::map:return "map";
                 case Object::mapReference:return "mapReference";
+                case Object::macroRun:return "macroRun";
+                case Object::macroSettings:return "macroSettings";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -267,8 +273,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area and map settings. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, and Macro settings and runs. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

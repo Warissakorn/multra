@@ -56,7 +56,8 @@ constexpr Field definitionFields[]={
     {"compositions",Kind::compositions},{"modes",Kind::modes,false,0,modeVersion},
     {"vehicleTypes",Kind::vehicleTypes},{"behaviours",Kind::behaviours},
     {"vehicleClasses",Kind::vehicleClasses,false,0,behaviourVersion},{"linkBehaviourTypes",Kind::linkBehaviourTypes,false,0,behaviourVersion},
-    {"clockStart",Kind::number,false,0,modeVersion}}; // D567: its range and INVALID_NUMBER stay with study_period_codec.cpp
+    {"clockStart",Kind::number,false,0,modeVersion},
+    {"macroSettings",Kind::macroSettings,false,0,macroSettingsVersion}}; // D567: its range and INVALID_NUMBER stay with study_period_codec.cpp
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -153,7 +154,10 @@ constexpr Field behaviourOverrideFields[]={{"classId",Kind::text,true},{"behavio
 constexpr Field rootFeatureFields[]={{"zones",Kind::zones,false,0,zoneLayerVersion},{"zoneConnectors",Kind::zoneConnectors,false,0,zoneLayerVersion},
     {"odMatrices",Kind::odMatrices,false,0,zoneLayerVersion},{"parkingLots",Kind::parkingLots,false,0,zoneLayerVersion},
     {"studyPeriods",Kind::studyPeriods,false,0,modeVersion},{"studyArea",Kind::studyArea,false,0,studyAreaVersion},
-    {"map",Kind::map,false,0,mapVersion}};
+    {"map",Kind::map,false,0,mapVersion},{"macroRuns",Kind::macroRuns,false,0,macroRunVersion}};
+// D569: macro_run_definition.cpp's run row and macro_settings.cpp's settings row (both closed).
+constexpr Field macroRunFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"period",Kind::text,true},{"settings",Kind::macroSettings,true}};
+constexpr Field macroSettingsFields[]={{"targetGap",Kind::targetGap,true},{"maxIterations",Kind::iterationCap,true}};
 // D568: map_codec.cpp's two closed objects; the CRS-anchor agreement stays with validateMapSettings.
 constexpr Field mapFields[]={{"providerId",Kind::providerId,true},{"opacity",Kind::opacity,true},{"reference",Kind::mapReference,true}};
 constexpr Field mapReferenceFields[]={{"projectedCrs",Kind::utmCrs,true},{"anchorLongitude",Kind::longitude,true},
@@ -263,6 +267,8 @@ std::span<const Field> fields(Object object) {
     case Object::gateFlow:return gateFlowFields;
     case Object::map:return mapFields;
     case Object::mapReference:return mapReferenceFields;
+    case Object::macroRun:return macroRunFields;
+    case Object::macroSettings:return macroSettingsFields;
     }
     return {};
 }
@@ -279,7 +285,7 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::linkBehaviourType || object==Object::behaviourOverride || object==Object::zone ||
        object==Object::zoneLinkConnector || object==Object::zoneStreetConnector || object==Object::odMatrix ||
        object==Object::parkingLot || object==Object::studyPeriod || object==Object::studyArea || object==Object::gateFlow ||
-       object==Object::map || object==Object::mapReference)return false;
+       object==Object::map || object==Object::mapReference || object==Object::macroRun || object==Object::macroSettings)return false;
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
     if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
@@ -306,6 +312,10 @@ bool exactFields(const Json& j,Object object,int version) {
         if(j.contains(f.name))++expected;else if(f.required)return false;
     }
     return j.size()==expected;
+}
+bool knownKey(std::string_view key,Object object,int version) {
+    const auto list=fields(object);
+    return std::any_of(list.begin(),list.end(),[&](const auto& f){return key==f.name && activeField(f,version);});
 }
 bool readCondition(const Json& j,Object object,const char* name) {
     for(const auto& field:fields(object))if(std::string_view(name)==field.name)
@@ -351,7 +361,8 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::zoneDirection:case Kind::travelDirection:case Kind::segmentId:case Kind::unsignedCount:case Kind::generatedBy:
     case Kind::studyPeriods:case Kind::studyArea:case Kind::nodeIds:case Kind::flowSource:case Kind::gateFlows:
     case Kind::map:case Kind::mapReference:case Kind::providerId:case Kind::opacity:case Kind::utmCrs:case Kind::longitude:
-    case Kind::latitude:case Kind::worldAnchor:case Kind::rotation:break;
+    case Kind::latitude:case Kind::worldAnchor:case Kind::rotation:
+    case Kind::macroRuns:case Kind::macroSettings:case Kind::targetGap:case Kind::iterationCap:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;
