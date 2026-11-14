@@ -194,7 +194,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
   remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
-## AI automation follow-up (D344–D350, D558–D566)
+## AI automation follow-up (D344–D350, D558–D567)
 
 - An authoritative formal schema covering every optional/versioned field remains separate from D350
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
@@ -209,11 +209,14 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Done (D565, BC1–BC3):** `vehicleClasses` and `linkBehaviourTypes`.
 - **Done (D566, ZL1–ZL3):** the root zone layer (`zones`, `zoneConnectors`, `odMatrices`,
   `parkingLots`); either-or keys use the field attribute `unless`.
-- **Proposed next (this session's, not the owner's):** the root `studyPeriods` (S1.1,
-  `study_period_codec.cpp`: refused below 49 even null, a nonempty array of closed `{id, name,
-  start, end}` rows) with `definition.clockStart` (49), then `studyArea` (55,
-  `rejectStudyAreaBefore55`). Same method: inventory, pin on the unchanged code, map as read, one
-  key source, `jsonschema` dump with writer output.
+- **Done (D567, SP1–SP3):** root `studyPeriods`, `definition.clockStart` and `studyArea`;
+  their codecs and the zone codec share `networkCodec::exactFields`.
+- **Proposed next (this session's, not the owner's):** the root `map` (29, `map_codec.cpp`), then
+  the Macro root arrays in floor order (`macroRuns` 56, `tripRateSets` 66, `deterrenceSets` and
+  `costMatrices` 67, `periodFactors` 69, `modeChoiceSets` 70, `procedures` 73), each with its own
+  version-gated keys ([PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) root table). Same method:
+  inventory, pin on the unchanged code, map as read, one key source, `jsonschema` dump with
+  writer output.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.

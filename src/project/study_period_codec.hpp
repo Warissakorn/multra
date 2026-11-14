@@ -8,7 +8,7 @@ namespace multra {
 bool usesStudyPeriods(const ProjectDocument&);
 void rejectStudyPeriodsBefore49(const Json& file);
 // Exact keys {id, name, start, end}; a malformed value or an empty array is EDIT_ZONE_INVALID.
-std::vector<StudyPeriod> parseStudyPeriods(const Json& file);
+std::vector<StudyPeriod> parseStudyPeriods(const Json& file, int version);
 void addStudyPeriodsJson(const ZoneLayer&, Json& file);
 // INVALID_NUMBER at definition.clockStart unless a number.
 double parseClockStart(const Json& definition);

@@ -328,3 +328,31 @@ and the root `studyPeriods` and `studyArea`, which have their own codecs.
 | ZL1 | On the unchanged reader: both bases parse (Link connectors from 31, street connectors from 57); the 31 gate even null; `EDIT_ZONE_INVALID` for null, `[]` and an unknown key; the two ambiguity codes before an unknown key; `modeId`/`periodId` below 49, `generatedBy` below 70, `OD_GENERATED_INVALID`; `roadId`/`roadDirection` below 57 and the rename on each side of 59; an empty street id; a signed `capacity` token |
 | ZL2 | The four keys `false` below 31 and nonempty arrays from it; the connector branch from 57 with the version's id key; closed rows; the matrix's required list and conditions from 49; `generatedBy` `false` below 70; the lot's unsigned-token marker |
 | ZL3 | Every case labelled refused is refused by `parseDocument`; the 9,668 labels, writer output (a period and mode matrix, a generated matrix, the street fixture at 57, 58 and 59) and all 18 projects, 8 with zones, agree with the emitted schema (`jsonschema`, one-off) |
+
+## Study-period and study-area extension (D567)
+
+The composed CLI coverage adds `-studies`; complete remains false. Three more keys join the
+zone-layer table: the root `studyPeriods` and `definition.clockStart` (S1.1, from 49) and the root
+`studyArea` (S5.2a, from 55). Each is refused below its floor when present, even null
+(`EDIT_UNSUPPORTED_FIELD` at `studyPeriods`, `definition.clockStart` or `studyArea`); the schema
+gives each `false`.
+
+- `studyPeriods` from 49 is a nonempty array of closed rows requiring text `id` and `name` and
+  number `start` and `end`; anything else is `EDIT_ZONE_INVALID` (`study_period_codec.cpp`).
+- `definition.clockStart` from 49 is an optional number; null or another type is `INVALID_NUMBER`
+  at `definition.clockStart`. Its range (0 to two days) is the model's check.
+- `studyArea` from 55 is a closed object requiring a nonempty `nodes` array of text and a
+  `flowSource` of `typed`, `macro` or `meso`, with an optional nonempty `gateFlows` array. A gate
+  flow is a closed row requiring text `periodId`, `from` and `to` and a number `vehiclesPerHour`,
+  and either text `compositionId` or text `modeId` (`unless`, as in D566). Anything else is
+  `EDIT_STUDY_AREA_INVALID` (`study_area_codec.cpp`).
+
+Both codecs now check keys with `networkCodec::exactFields` (D566's `exactKeys`, moved beside the
+tables) and take the file version. Known Nodes and periods, nonnegative flows and the clock range
+stay with `studyAreaIssues` and `validateDocument`.
+
+| Row | Check |
+|---|---|
+| SP1 | On the unchanged reader: both bases parse (periods and clockStart from 49, the SA2 corridor from 55); the three floors even null, at their paths; `INVALID_NUMBER` for a null, text or negative clockStart; `EDIT_ZONE_INVALID` for null, `[]`, a number or an unknown key; `EDIT_STUDY_AREA_INVALID` for a null area, an unknown key and `modeId` beside `compositionId`; a mode gate flow parses |
+| SP2 | The three keys `false` below their floors; from them a number clockStart, nonempty closed period rows, a closed area with `nodes`/`flowSource` required and a three-value enum, and closed gate flows with the `modeId` condition |
+| SP3 | Every case labelled refused is refused by `parseDocument`; the 2,888 labels, writer output (periods with clockStart at 49; the corridor at 55, 58 and 59; a mode gate flow), D566's 9,668 labels and all 18 projects agree with the emitted schema (`jsonschema`, one-off) |

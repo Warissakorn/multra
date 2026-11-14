@@ -76,6 +76,11 @@ class NetworkSchema {
         case Kind::unsignedCount:
             rule={{"type","integer"},{"minimum",0},{"maximum",0xffffffffULL},{"x-multra-nativeType","unsigned-integer-token"}};break;
         case Kind::generatedBy:rule={{"type","string"},{"const",kGeneratedByModeChoice}};break;
+        case Kind::studyPeriods:rule={{"type","array"},{"minItems",1},{"items",reference(Object::studyPeriod,version)}};break;
+        case Kind::studyArea:rule=reference(Object::studyArea,version);break;
+        case Kind::nodeIds:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
+        case Kind::flowSource:rule={{"type","string"},{"enum",Json::array({"typed","macro","meso"})}};break;
+        case Kind::gateFlows:rule={{"type","array"},{"minItems",1},{"items",reference(Object::gateFlow,version)}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -236,6 +241,9 @@ public:
                 case Object::zoneStreetConnector:return "zoneStreetConnector";
                 case Object::odMatrix:return "odMatrix";
                 case Object::parkingLot:return "parkingLot";
+                case Object::studyPeriod:return "studyPeriod";
+                case Object::studyArea:return "studyArea";
+                case Object::gateFlow:return "gateFlow";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -247,8 +255,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart and study area. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

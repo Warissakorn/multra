@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Study periods, clockStart and the study area in the schema (D567)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D566's NEXT proposed these root keys.
+- **D567:** root `studyPeriods` and `definition.clockStart` are `false` below 49, root `studyArea` below 55; from them closed period rows, a number clockStart, a closed area (`nodes` nonempty, `flowSource` typed/macro/meso, optional `gateFlows`) and closed gate flows taking `compositionId` or `modeId` through `unless`. D566's `exactKeys` moved to `networkCodec::exactFields`; the period, area and zone codecs all use it and take the file version. Codes unchanged; pins (SP1) passed on the unchanged readers first.
+- **One-off `jsonschema`:** 2,888 labels, writer output (periods with clockStart; the SA2 corridor at 55, 58 and 59; a mode gate flow), D566's 9,668 labels and all 18 projects agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1665/1665, group `project` 93/93); `check_no_pch.py` on the changed units 7/7. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — The root zone layer in the schema (D566)
 
 - **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D565's NEXT proposed the zone layer.
@@ -107,8 +114,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **D551** (owner: "ทำต่อตามแนะนำ"): contract first (DYNAMIC_ASSIGNMENT §15, MESO_ASSIGNMENT §10), then `routeFamilies` exported from `expandRouteless` into `RunSnapshot`, `decisionFamilyName`, placed (departure) and positioned (`RoutingEvent`) costs in `measureDecisionCosts`, families in the Meso measurement. Group `dynassignplaced` passes DA10–DA13; `mesoassign` passes MA9.
 - **Recorded:** the first DA10/DA11 recomputation mapped by departure route and dropped stub left-turners (test fix, values unchanged); MA9's first fixture contradicted §15 (both routes end on one Link) and was amended before re-running (§10.1).
-
-## 2026-11-13 — M11.5 Meso assignment contract (D550)
-
-- **D550** (owner: "ทำงานถัดไปตามแนะนำ" after asking what M11.5 is, then every recommended option): [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md), rows MA1–MA8, before code. Free-flow times read from the compiled fixture graph (t_s 55.356464, t_l 109.904888 s); deterministic-queueing equilibrium x* = 0.590914; an analytic MSA reference stops at n = 11 for gap 0.01.
-- **S1:** `src/project/meso_assignment.*` (cohort integral, `measureMesoDecisionCosts`), `DaLevel` through `runDynamicAssignment`, the file's `level` and `--dynamic-assignment --meso` / `--route-costs --meso`. Group `mesoassign` passes MA1–MA8 first time; converged at n = 6 with short share 0.5833 (x* 0.5909), costs 107.49 / 109.905 s. Two CLI runs `cmp`-identical.

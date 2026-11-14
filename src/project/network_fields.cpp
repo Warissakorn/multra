@@ -55,7 +55,8 @@ constexpr Field definitionFields[]={
     {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions},
     {"compositions",Kind::compositions},{"modes",Kind::modes,false,0,modeVersion},
     {"vehicleTypes",Kind::vehicleTypes},{"behaviours",Kind::behaviours},
-    {"vehicleClasses",Kind::vehicleClasses,false,0,behaviourVersion},{"linkBehaviourTypes",Kind::linkBehaviourTypes,false,0,behaviourVersion}};
+    {"vehicleClasses",Kind::vehicleClasses,false,0,behaviourVersion},{"linkBehaviourTypes",Kind::linkBehaviourTypes,false,0,behaviourVersion},
+    {"clockStart",Kind::number,false,0,modeVersion}}; // D567: its range and INVALID_NUMBER stay with study_period_codec.cpp
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -150,7 +151,14 @@ constexpr Field linkBehaviourTypeFields[]={{"id",Kind::text,true},{"name",Kind::
 constexpr Field behaviourOverrideFields[]={{"classId",Kind::text,true},{"behaviourId",Kind::text,true}};
 // D566 (PROJECT_SCHEMA_DEMAND, zone layer): the root zone layer and its closed rows (zone_codec.cpp's key lists).
 constexpr Field zoneLayerFields[]={{"zones",Kind::zones,false,0,zoneLayerVersion},{"zoneConnectors",Kind::zoneConnectors,false,0,zoneLayerVersion},
-    {"odMatrices",Kind::odMatrices,false,0,zoneLayerVersion},{"parkingLots",Kind::parkingLots,false,0,zoneLayerVersion}};
+    {"odMatrices",Kind::odMatrices,false,0,zoneLayerVersion},{"parkingLots",Kind::parkingLots,false,0,zoneLayerVersion},
+    {"studyPeriods",Kind::studyPeriods,false,0,modeVersion},{"studyArea",Kind::studyArea,false,0,studyAreaVersion}};
+// D567: S1.1 periods and the S5.2a study area with its typed gate flows (study_period_codec.cpp, study_area_codec.cpp).
+constexpr Field studyPeriodFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"start",Kind::number,true},{"end",Kind::number,true}};
+constexpr Field studyAreaFields[]={{"nodes",Kind::nodeIds,true},{"flowSource",Kind::flowSource,true},{"gateFlows",Kind::gateFlows}};
+constexpr Field gateFlowFields[]={{.name="periodId",.kind=Kind::text,.required=true},{.name="from",.kind=Kind::text,.required=true},
+    {.name="to",.kind=Kind::text,.required=true},{.name="vehiclesPerHour",.kind=Kind::number,.required=true},
+    {.name="compositionId",.kind=Kind::text,.required=true,.unless="modeId"},{.name="modeId",.kind=Kind::text,.rejectBefore=modeVersion}};
 constexpr Field zoneFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"polygon",Kind::pairs,true},{"attributes",Kind::numberMap,true}};
 constexpr Field zoneLinkConnectorFields[]={{"id",Kind::text,true},{"zoneId",Kind::text,true},{"linkId",Kind::text,true},
     {"direction",Kind::zoneDirection,true},{"share",Kind::number,true}};
@@ -244,6 +252,9 @@ std::span<const Field> fields(Object object) {
     case Object::zoneStreetConnector:return zoneStreetConnectorFields;
     case Object::odMatrix:return odMatrixFields;
     case Object::parkingLot:return parkingLotFields;
+    case Object::studyPeriod:return studyPeriodFields;
+    case Object::studyArea:return studyAreaFields;
+    case Object::gateFlow:return gateFlowFields;
     }
     return {};
 }
@@ -259,7 +270,7 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::axles || object==Object::pcu || object==Object::vehicleClass ||
        object==Object::linkBehaviourType || object==Object::behaviourOverride || object==Object::zone ||
        object==Object::zoneLinkConnector || object==Object::zoneStreetConnector || object==Object::odMatrix ||
-       object==Object::parkingLot)return false;
+       object==Object::parkingLot || object==Object::studyPeriod || object==Object::studyArea || object==Object::gateFlow)return false;
     if(object==Object::zoneLayer)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
     if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
@@ -277,6 +288,15 @@ void knownFields(const Json& j,Object object,const std::string& path,int version
         }))
             throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",path+"."+key}});
     }
+}
+bool exactFields(const Json& j,Object object,int version) {
+    if(!j.is_object())return false;
+    std::size_t expected=0;
+    for(const auto& f:fields(object)) {
+        if(!activeField(f,version) || (f.unless && j.contains(f.unless)))continue;
+        if(j.contains(f.name))++expected;else if(f.required)return false;
+    }
+    return j.size()==expected;
 }
 bool readCondition(const Json& j,Object object,const char* name) {
     for(const auto& field:fields(object))if(std::string_view(name)==field.name)
@@ -319,7 +339,8 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:case Kind::sectionLine:
     // D566: zone_codec.cpp keeps its own EDIT_ZONE_INVALID refusal for these.
     case Kind::zones:case Kind::zoneConnectors:case Kind::odMatrices:case Kind::parkingLots:case Kind::pairs:case Kind::numberMap:
-    case Kind::zoneDirection:case Kind::travelDirection:case Kind::segmentId:case Kind::unsignedCount:case Kind::generatedBy:break;
+    case Kind::zoneDirection:case Kind::travelDirection:case Kind::segmentId:case Kind::unsignedCount:case Kind::generatedBy:
+    case Kind::studyPeriods:case Kind::studyArea:case Kind::nodeIds:case Kind::flowSource:case Kind::gateFlows:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

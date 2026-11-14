@@ -19,15 +19,7 @@ constexpr const char* kMatrices = "odMatrices";
 constexpr const char* kLots = "parkingLots";
 [[noreturn]] void invalid() { throw std::invalid_argument("EDIT_ZONE_INVALID"); }
 // D566: the key lists are the schema's (network_fields.cpp); every row is closed and the only refusal is the bare code.
-void exactKeys(const Json& j, networkCodec::Object object, int schema) {
-    if (!j.is_object()) invalid();
-    std::size_t expected = 0;
-    for (const auto& f : networkCodec::fields(object)) {
-        if (!networkCodec::activeField(f, schema) || (f.unless && j.contains(f.unless))) continue;
-        if (j.contains(f.name)) ++expected; else if (f.required) invalid();
-    }
-    if (j.size() != expected) invalid();
-}
+void exactKeys(const Json& j, networkCodec::Object object, int schema) { if (!networkCodec::exactFields(j, object, schema)) invalid(); }
 std::string text(const Json& j, const char* key) { if (!j.at(key).is_string()) invalid(); return j.at(key).get<std::string>(); }
 double number(const Json& j) { if (!j.is_number()) invalid(); return j.get<double>(); }
 const Json& array(const Json& j) { if (!j.is_array()) invalid(); return j; }

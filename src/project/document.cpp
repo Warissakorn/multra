@@ -279,7 +279,7 @@ ProjectDocument parseDocument(const Json& j) {
     rejectOtherStreetSegmentKeys(j, version); // D389
     rejectLinkSpeedFields(j, version); // J1 (D390)
     if (version < 54) rejectGeneratedControllersBefore54(j); // S4.5c
-    if (version < 55) rejectStudyAreaBefore55(j); // S5.2a
+    if (version < networkCodec::studyAreaVersion) rejectStudyAreaBefore55(j); // S5.2a
     if (version < 56 && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
     d.macroRuns = parseMacroRunDefinitions(j);
     if (version < 66 && j.contains("tripRateSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "tripRateSets"}});
@@ -322,8 +322,8 @@ ProjectDocument parseDocument(const Json& j) {
     for (std::size_t i = 0; version < 75 && i < d.procedures.size(); ++i) // PROCEDURE_FEEDBACK §2 (D547)
         if (d.procedures[i].feedback) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures[" + std::to_string(i) + "].feedback"}});
     d.zones=parseZoneLayer(j,version);
-    d.zones.studyPeriods=parseStudyPeriods(j);
-    d.zones.studyArea=parseStudyArea(j);
+    d.zones.studyPeriods=parseStudyPeriods(j,version);
+    d.zones.studyArea=parseStudyArea(j,version);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
     if (version < networkCodec::w74ModelVersion) rejectW74Before25(j);

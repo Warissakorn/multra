@@ -13,7 +13,7 @@ cmake --build build/headless --target check
 
 | Source | Executable | Purpose |
 |---|---|---|
-| `project_schema.cpp` | `multra-project-schema` | Print a partial formal project envelope/background and Network/Link/Lane/Connector/reference/SignalHead and signal controller/group/program/phase and right-of-way/measurement/Route/VehicleInput/RoutingDecision/owned-composition/mode/vehicle-type/behaviour/vehicle-class and root zone-layer schema with exact integer bounds; `--help` explains its limits |
+| `project_schema.cpp` | `multra-project-schema` | Print a partial formal project envelope/background and Network/Link/Lane/Connector/reference/SignalHead and signal controller/group/program/phase and right-of-way/measurement/Route/VehicleInput/RoutingDecision/owned-composition/mode/vehicle-type/behaviour/vehicle-class and root zone-layer/study schema with exact integer bounds; `--help` explains its limits |
 | `run_simulation.cpp` | `multra-cli` | Run a seeded M0 scenario without a window |
 | `fctl_reference.cpp` | `multra-fctl-reference` | Print M6 S2-c's analytic reference delay, the fixed-cycle traffic-light queue with Poisson arrivals (D529, [FCTL_REFERENCE](../docs/reference/FCTL_REFERENCE.md)) |
 | `check_no_pch.py` | (script, run by hand) | Compile every translation unit that uses a precompiled header again without it, syntax only: `python3 tools/check_no_pch.py build/desktop [--jobs N]`. Windows CI builds with `CMAKE_DISABLE_PRECOMPILE_HEADERS=ON`, so a file leaning on the PCH for `<nlohmann/json.hpp>` fails only there (run 754). 647 units in 8 m 52 s on 8 jobs; not in `check` |

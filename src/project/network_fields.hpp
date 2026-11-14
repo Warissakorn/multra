@@ -11,14 +11,15 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
     vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
-    zoneLayer,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot };
+    zoneLayer,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
     routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix,
     compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu,
     behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
-    zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy };
+    zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy,
+    studyPeriods,studyArea,nodeIds,flowSource,gateFlows };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -51,6 +52,8 @@ std::span<const BehaviourNumber> behaviourOptionalNumbers();
 // D566: the root zone layer is refused below 31, even null; street-segment connectors from 57; generatedBy from 70.
 inline constexpr int zoneLayerVersion=31,streetZoneConnectorVersion=57,generatedMatrixVersion=70;
 inline constexpr const char* kGeneratedByModeChoice="mode-choice";
+// D567: root studyPeriods and definition.clockStart use modeVersion (49, S1.1); the root studyArea is refused below 55.
+inline constexpr int studyAreaVersion=55;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}
@@ -63,6 +66,8 @@ inline constexpr std::pair<const char*,SignalColor> signalColors[]={
 std::vector<SignalProgram> readSignalPrograms(const Json& definition);
 // Same legacy/additive known-key policy and diagnostics as parseNetwork.
 void knownFields(const Json&,Object,const std::string& path,int version);
+// D566: a closed row holds exactly its active keys: required ones present, `unless`-excluded ones absent.
+bool exactFields(const Json&,Object,int version);
 const Json& value(const Json&,Object,const char* name);
 bool readCondition(const Json&,Object,const char* name);
 // Link-only decoder: leaves linkType/streetSegmentId to their existing document read stages.
