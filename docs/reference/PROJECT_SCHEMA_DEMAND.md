@@ -93,5 +93,5 @@ Acceptance (`tests/composition_schema_tests.cpp`, group `project`):
 |---|---|
 | CS1 | The reader's unknown-key paths, null/array/number/missing diagnostics and the `EDIT_CATALOG_READ` container refusal are unchanged |
 | CS2 | At every schema version the four rows are closed, `id`/`types`, `vehicleTypeId`/`share` and `startTime`/`endTime`/`types` are required, `name` is not nullable and `compositions` is not required |
-| CS3 | The base document parses at every version, and every case the schema refuses is refused by `parseDocument` |
+| CS3 | The base document parses at every version, and every case labelled refused is refused by `parseDocument`; the 4,408 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
 | CS4 | The shipped projects with owned compositions validate against the emitted schema (checked once with Python `jsonschema` when this was built; not in `check`) |

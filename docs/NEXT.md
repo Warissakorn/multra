@@ -200,7 +200,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
   floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
 - **Done (D558):** owned `definition.compositions` with type-share and interval rows (CS1–CS4).
-- **Next, same method:** owned `modes` (`mode_codec.cpp`, schema 49) — read the reader first, pin
+- **Proposed order (this session's, not the owner's; NEXT named no successor):** owned `modes` (`mode_codec.cpp`, schema 49) — read the reader first, pin
   its diagnostics with tests on the unchanged code, then move it onto `networkCodec` metadata and
   add the schema rows; no new read gates. Then the vehicle-type and behaviour catalogs, each its
   own slice (behaviours carry per-model parameter sets and many version floors: inventory first).
