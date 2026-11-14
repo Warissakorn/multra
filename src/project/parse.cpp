@@ -111,10 +111,13 @@ static void readPerception(const Json& b, const std::string& path, PerceptionPar
     }
 }
 // One optional number each (curve D212, kerb D215, commitment D219, mandatory D221, Stop dwell D231, spread D236, red running D238); ranges are the validator's.
+// D564: the keys, their order and members are the schema's table (networkCodec::behaviourOptionalNumbers).
 static void readOptionals(const Json& b, const std::string& path, DriverBehaviour& d) {
-    for (const auto& [key, value] : {std::pair{"curveLateralAcceleration", &d.curveLateralAcceleration}, std::pair{"kerbLaneBias", &d.kerbLaneBias}, std::pair{"commitmentDeceleration", &d.commitmentDeceleration}, std::pair{"mandatoryDecelerationOwn", &d.mandatoryDecelerationOwn}, std::pair{"mandatoryDecelerationTrailingVehicle", &d.mandatoryDecelerationTrailingVehicle}, std::pair{"stopDwellTime", &d.stopDwellTime}, std::pair{"driverFactorSpread", &d.driverFactorSpread}, std::pair{"redRunningShare", &d.redRunningShare}, std::pair{"redRunningTime", &d.redRunningTime}})
-        if (b.contains(key) && !b.at(key).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key}});
-        else if (b.contains(key)) *value = b.at(key).get<double>();
+    for (const auto& key : networkCodec::behaviourOptionalNumbers()) {
+        if (!key.parameter || !b.contains(key.name)) continue;
+        if (!b.at(key.name).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key.name}});
+        d.*key.member = b.at(key.name).get<double>();
+    }
 }
 // M3.7 (LATERAL.md §9, D187): the same for the lateral keys; completeness and ranges are the validator's.
 static void readLateral(const Json& b, const std::string& path, LateralParameters& p) {

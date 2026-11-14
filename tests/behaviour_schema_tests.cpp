@@ -33,14 +33,15 @@ TEST(project, behaviour_schema_tags_the_model_and_splits_the_rows) {
         const auto& items=definitionFor(schema,v).at("properties").at("behaviours").at("items");
         const bool branched=items.contains("if");CHECK(branched==(v>=bc::w74From));
         const auto& prototype=resolve(schema,branched?items.at("else"):items);const auto& p=prototype.at("properties");
-        CHECK(prototype.at("additionalProperties")==true);
+        CHECK(prototype.at("additionalProperties")==(v<bc::libraryFrom)); // D564: closed from 21
+        for(const auto& [key,floor]:bc::floors())CHECK((p.at(key)==false)==(v<floor));
         Json required=Json::array({"id"});if(v>=bc::libraryFrom)required.push_back("model");
         for(const auto* k:bc::prototypeRequired)required.push_back(k);
         CHECK(prototype.at("required")==required);
         CHECK((p.at("model")==false)==(v<bc::libraryFrom));CHECK((p.at("name")==false)==(v<bc::libraryFrom));
         if(v>=bc::libraryFrom)CHECK(p.at("model").at("enum").size()==(v<bc::w74From?1u:2u));
         for(const auto& k:w74ParameterKeys())CHECK(p.at(k.name)==false);
-        CHECK(p.at("observedVehiclesAhead").at("type")=="integer");
+        if(v>=32)CHECK(p.at("observedVehiclesAhead").at("type")=="integer");
         if(!branched)continue;
         CHECK(items.at("if").at("properties").at("model").at("const")=="w74");
         const auto& w=resolve(schema,items.at("then"));
@@ -50,7 +51,8 @@ TEST(project, behaviour_schema_tags_the_model_and_splits_the_rows) {
         }
         for(const auto* k:bc::prototypeRequired)CHECK(w.at("properties").at(k)==false);
         CHECK(w.at("properties").at("discretionaryLaneChangeHoldTime")==false);
-        CHECK(w.at("properties").at("model").at("const")=="w74");
+        CHECK(w.at("properties").at("model").at("const")=="w74");CHECK(w.at("additionalProperties")==false);
+        for(const auto& [key,floor]:bc::floors())CHECK((w.at("properties").at(key)==false)==(v<floor));
     }
 }
 TEST(project, behaviour_schema_lists_every_core_and_library_key) {
@@ -78,4 +80,18 @@ TEST(project, behaviour_structural_refusals_are_also_refused_by_the_codec) {
         try {(void)parseDocument(c.document);}catch(const std::exception&) {accepted=false;}
         if(accepted)throw std::runtime_error("Codec accepted behaviour structural refusal: "+c.name);
     }
+}
+TEST(project, behaviour_floors_refuse_presence_even_null_below_each_version) {
+    for(const auto& [key,floor]:bc::floors()) {
+        auto j=bc::minimal(floor-1);j["definition"]["behaviours"][0][key]=nullptr;
+        CHECK(j.at("definition").at("behaviours")[0].contains(key));
+        try {(void)parseDocument(j);throw std::runtime_error("Accepted "+key+" below "+std::to_string(floor));}
+        catch(const ValidationError& e) {CHECK(e.issues[0].code=="EDIT_UNSUPPORTED_FIELD");CHECK(e.issues[0].path=="behaviours[0]."+key);}
+    }
+    // From 21 an unknown key is refused at its path; below 21 it is read and not written back.
+    auto j=bc::minimal(bc::libraryFrom);j["definition"]["behaviours"][0]["extra"]=1;
+    try {(void)parseDocument(j);throw std::runtime_error("Accepted extra");}
+    catch(const ValidationError& e) {CHECK(e.issues[0].path=="behaviours[0].extra");}
+    j=bc::minimal(bc::libraryFrom-1);j["definition"]["behaviours"][0]["extra"]=1;
+    CHECK(!documentJson(parseDocument(j)).at("definition").at("behaviours")[0].contains("extra"));
 }

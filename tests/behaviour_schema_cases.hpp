@@ -27,6 +27,7 @@ inline multra::Json minimal(int version,bool isW74=false) {
     j["definition"]["behaviours"]=isW74?multra::Json::array({w74(),prototype(version)}):multra::Json::array({prototype(version)});
     return j;
 }
+inline std::vector<std::pair<std::string,int>> floors();
 inline std::vector<Case> cases() {
     using namespace multra;
     std::vector<Case> result;
@@ -41,7 +42,7 @@ inline std::vector<Case> cases() {
         };
         result.push_back({"minimal",base,true});
         set("/definition/behaviours",nullptr,false);set("/definition/behaviours",7,false);set("/definition/behaviours",Json::array(),true);
-        set(b,nullptr,false);set(b,7,false);set(b+"/extra",1,true); // open until B2
+        set(b,nullptr,false);set(b,7,false);set(b+"/extra",1,!lib); // D564: closed from 21
         missing("id",false);set(b+"/id",nullptr,false);set(b+"/id",true,false);
         const auto own=isW74?w74():prototype(v);
         for(const auto& [key,value]:own.items()) {
@@ -59,7 +60,24 @@ inline std::vector<Case> cases() {
             if(!isW74)set(b+"/model","w74",false); // a prototype row tagged w74 lacks the W74 keys (and is refused below 25)
         }
         set(b+"/maxDecelerationCooperativeBraking","x",false);
+        for(const auto& [key,floor]:floors()) { // D564: refused below each floor, even null
+            set(b+"/"+key,2,v>=floor);set(b+"/"+key,nullptr,false);set(b+"/"+key,"x",false);
+        }
+        set(b+"/observedVehiclesAhead",2.5,false);
     }
+    return result;
+}
+}
+namespace behaviourCases {
+// D564 (B2): the ten presence floors, one row per key (perception and lateral: every key of the list).
+inline std::vector<std::pair<std::string,int>> floors() {
+    std::vector<std::pair<std::string,int>> result{{"amberDeceleration",28},{"curveLateralAcceleration",34},
+        {"kerbLaneBias",35},{"commitmentDeceleration",36},{"mandatoryDecelerationOwn",37},
+        {"mandatoryDecelerationTrailingVehicle",37},{"stopDwellTime",41},{"driverFactorSpread",43},
+        {"redRunningShare",44},{"redRunningTime",44}};
+    for(const auto* key:{"lookAheadDistance","observedVehiclesAhead","lookBackDistance","rearTimeToCollision","reactionTime"})
+        result.push_back({key,32});
+    for(const auto* key:{"lateralMinDistanceStanding","lateralMinDistanceAt50","maxLateralSpeed"})result.push_back({key,33});
     return result;
 }
 }

@@ -4,6 +4,7 @@
 #include <limits>
 #include <utility>
 #include <string_view>
+#include <optional>
 
 namespace multra::networkCodec {
 enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
@@ -33,6 +34,13 @@ inline constexpr int modeVersion=49;
 inline constexpr int speedCurveVersion=40,kerbLanesVersion=42;
 // D563: an owned W74 behaviour is refused below it (rejectW74Before25).
 inline constexpr int w74ModelVersion=25;
+// D564 (B2): a behaviour key is refused below its floor, even null (the reject* guards in behaviour_library.cpp).
+inline constexpr int amberVersion=28,perceptionVersion=32,lateralVersion=33,curveLateralVersion=34,kerbBiasVersion=35,
+    commitmentVersion=36,mandatoryVersion=37,stopDwellVersion=41,driverFactorSpreadVersion=43,redRunningVersion=44;
+// The optional numbers both behaviour models read, in read order. `parameter` keys report
+// INVALID_BEHAVIOUR_PARAMETER (readOptionals); the others the field sentences.
+struct BehaviourNumber {const char* name;std::optional<double> DriverBehaviour::* member;int floor;bool parameter;};
+std::span<const BehaviourNumber> behaviourOptionalNumbers();
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

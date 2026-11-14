@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Behaviour schema slice B2: floors and closure (D564)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); NEXT's B2.
+- **D564:** both behaviour rows close from 21; the 18 floored keys are `false` below their floors (28, 32–37, 41, 43, 44), with the floors as `network_fields.hpp` constants that `document.cpp`'s `reject*` calls use. `readOptionals` now iterates `behaviourOptionalNumbers` (name, member, floor, code) in the old order, removing D563's duplicate list. Floors pinned on the unchanged reader first (BH4). B3 had nothing left.
+- **One-off `jsonschema`:** 14,076 labels, a W74 round-trip and all 18 projects agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1656/1656, group `project` 84/84); `check_no_pch.py` on the changed units 5/5. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — Behaviour schema slice B1: the model tag and per-model rows (D563)
 
 - **Pick:** continued "ตามแนะนำ" into B1, the slice D561 carved.
@@ -105,10 +112,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D548** (owner: "ทำงานถัดไป", chose logsum feedback, then every recommended option): contract first ([MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md), Ortúzar §6.5.2), hand values before code (Example 6.3's C_B = 49.2298; a one-origin, two-destination table).
 - **L1:** `distributionCost: "logsum"` per mode-choice purpose at schema 76 (one shared negative coefficient); `logsum`/`compositeCost` in `src/macro/mode_choice`; `runModeChoice` checks Eq. 6.11 (β > λ refused) and re-runs the distribution on the composite; skim-pass balancing refusals are held until the set is known. LS1–LS8 pass against the hand values; the first test run's zone order was fixed in the test only.
 - **L2:** a per-purpose check box in the *Nests* dialog; `nested-logit-ui` covers LS9.
-
-## 2026-11-13 — Procedure feedback: congested costs back into demand (D547)
-
-- **D547** (owner: "ทำงานถัดไป", chose M10 congested-cost feedback, then answered the contract's four choices with every recommended option): contract first ([PROCEDURE_FEEDBACK](reference/PROCEDURE_FEEDBACK.md), Ortúzar §11.3; the CW formula checked on the p. 432 image), hand fixed point of Example 11.3 before code.
-- **F1:** `feedback` on a procedure at schema 75; `skimAt` and an optional `linkTimes` through `zoneSkim`, distribution and mode choice; `procedure_feedback.cpp` (re-run mode choice on congested times, average the OD-mode matrices by CW or MSA, assign, TMF/RSE); JSON `feedback` block and CLI lines. Fixture `tests/data/procedure-feedback/`. MSA's fixture stop (2 persons in 200 iterations) and FB7's naive case (λ 0.6, where naive's factor 2λ > 1) were amended after the first test run, before commit; no definition or hand value changed.
-- **F2:** the dialog's *Feedback* group and the page's iterations table and CSV section; `procedure-ui` covers FB10.
-- **Result:** CW reaches 999.80 / 999.07 veh/h against the hand 999.79 / 999.08 in 7 and 10 iterations; MSA takes 127 and 49. Not a validation.

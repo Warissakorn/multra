@@ -169,11 +169,11 @@ remain the catalog validators.
 | VT3 | The base row parses at every version, and every case labelled refused is refused by `parseDocument`; the 5,700 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
 | VT4 | One-off `jsonschema`: the 9 shipped and test projects owning types, the 7 installed `data/vehicle-types/` files, and a writer round-trip carrying `curve`, `kerbLanes` and `pcu` all validate |
 
-## Behaviour extension (D561 inventory, D563 slice B1)
+## Behaviour extension (D561 inventory, D563 B1, D564 B2)
 
 Read 2026-11-14 from `parseBehaviour` (`parse.cpp`), `parseBehaviourLibrary` and the `reject*`
-guards (`behaviour_library.cpp`), and the key lists in `src/core/`. B1 is mapped (D563, below); B2
-and B3 are not.
+guards (`behaviour_library.cpp`), and the key lists in `src/core/`. B1 (D563) and B2 (D564) are mapped,
+below; B3 needed nothing (B1 already typed perception and lateral).
 
 - **Model tag.** Below 21 `model` and `name` are refused at `behaviours[i].<key>` even when null
   (`rejectBehaviourLibraryBefore21`), so every row is the prototype. From 21 `model` is required:
@@ -234,11 +234,26 @@ The rows are built once from `w74ParameterKeys`, `perceptionParameterKeys` and
 `lateralParameterKeys` plus a project-side list (`network_fields.cpp`), and
 `parseBehaviourLibrary`'s from-21 closure now asks that table (`behaviourKey`); its old `common[]`
 held exactly the table's non-core keys (checked before removal). The reader is otherwise
-unchanged; its `readOptionals` pair list still names the shared optional keys a second time
-(member pointers), a B2 follow-up.
+unchanged in B1; `readOptionals`' second key list was folded into the table by B2 (D564).
 
 | Row | Check |
 |---|---|
 | BH1 | Per version: branch from 25 only, prototype `required` (`model` from 21), `model`/`name` `false` below 21, the enum size, W74 keys `false` on the prototype, prototype keys `false` on the W74 row, the 18 W74 keys required there |
 | BH2 | Every core key has a property in both latest rows and is a `behaviourKey`; both rows list the same names; `cc0` is not a key |
 | BH3 | The prototype base parses at every version and the W74 base from 25; every case labelled refused is refused by `parseDocument`; the 7,036 version- and model-dependent labels agree with the emitted schema under `jsonschema` (one-off), as do a W74 writer round-trip and all 18 projects in the repository |
+
+**B2 as built (D564).** Both rows are closed from 21 (`additionalProperties` false; open and
+additive below), and each floored key is `false` below its floor in both rows: `amberDeceleration`
+28, the perception keys 32, the lateral keys 33, `curveLateralAcceleration` 34, `kerbLaneBias` 35,
+`commitmentDeceleration` 36, both mandatory keys 37, `stopDwellTime` 41, `driverFactorSpread` 43,
+both red-running keys 44. The floors are named constants in `network_fields.hpp`
+(`amberVersion` … `redRunningVersion`) that `document.cpp`'s `reject*` calls now use. The shared
+optional numbers are one table (`behaviourOptionalNumbers`: name, `DriverBehaviour` member, floor,
+whether a bad value is `INVALID_BEHAVIOUR_PARAMETER`); `readOptionals` reads its nine keys from it
+in the old order, so the duplicate D563 noted is gone.
+
+| Row | Check |
+|---|---|
+| BH4 | On the unchanged reader: each of the 18 floored keys, null, is refused at `behaviours[0].<key>` one version below its floor; an unknown key is refused from 21 and kept out of the save below |
+| BH5 | Both rows closed exactly from 21; every floored key `false` exactly below its floor in both rows |
+| BH6 | 14,076 version- and model-dependent labels, a W74 writer round-trip and all 18 projects in the repository agree with the emitted schema (`jsonschema`, one-off) |

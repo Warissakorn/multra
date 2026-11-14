@@ -142,9 +142,15 @@ constexpr const char* prototypeRequired[]={"standstillDistance","additiveSafetyD
     "multiplicativeSafetyDistance","followingTime","speedThreshold"};
 constexpr const char* prototypeOptional[]={"discretionaryLaneChangeThreshold","acceptedDecelerationTrailingVehicle",
     "discretionaryLaneChangeHoldTime"};
-constexpr const char* sharedOptional[]={"maxDecelerationCooperativeBraking","amberDeceleration",
-    "curveLateralAcceleration","kerbLaneBias","commitmentDeceleration","mandatoryDecelerationOwn",
-    "mandatoryDecelerationTrailingVehicle","stopDwellTime","driverFactorSpread","redRunningShare","redRunningTime"};
+using B=DriverBehaviour;
+const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B::maxDecelerationCooperativeBraking,0,false},
+    {"amberDeceleration",&B::amberDeceleration,amberVersion,false},
+    {"curveLateralAcceleration",&B::curveLateralAcceleration,curveLateralVersion,true},
+    {"kerbLaneBias",&B::kerbLaneBias,kerbBiasVersion,true},{"commitmentDeceleration",&B::commitmentDeceleration,commitmentVersion,true},
+    {"mandatoryDecelerationOwn",&B::mandatoryDecelerationOwn,mandatoryVersion,true},
+    {"mandatoryDecelerationTrailingVehicle",&B::mandatoryDecelerationTrailingVehicle,mandatoryVersion,true},
+    {"stopDwellTime",&B::stopDwellTime,stopDwellVersion,true},{"driverFactorSpread",&B::driverFactorSpread,driverFactorSpreadVersion,true},
+    {"redRunningShare",&B::redRunningShare,redRunningVersion,true},{"redRunningTime",&B::redRunningTime,redRunningVersion,true}};
 std::vector<Field> behaviourRow(bool w74) {
     const int notThis=w74?1:0,notOther=w74?0:1;
     std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},
@@ -152,9 +158,9 @@ std::vector<Field> behaviourRow(bool w74) {
     for(const auto* key:prototypeRequired)row.push_back({key,Kind::number,!w74,0,0,false,notThis});
     for(const auto* key:prototypeOptional)row.push_back({key,Kind::number,false,0,0,false,notThis});
     for(const auto& key:w74ParameterKeys())row.push_back({key.name,Kind::number,w74,0,0,false,notOther});
-    for(const auto* key:sharedOptional)row.push_back({key,Kind::number});
-    for(const auto& key:perceptionParameterKeys())row.push_back({key.name,key.integer?Kind::integerToken:Kind::number});
-    for(const auto& key:lateralParameterKeys())row.push_back({key.name,Kind::number});
+    for(const auto& key:sharedOptional)row.push_back({key.name,Kind::number,false,0,key.floor});
+    for(const auto& key:perceptionParameterKeys())row.push_back({key.name,key.integer?Kind::integerToken:Kind::number,false,0,perceptionVersion});
+    for(const auto& key:lateralParameterKeys())row.push_back({key.name,Kind::number,false,0,lateralVersion});
     return row;
 }
 }
@@ -205,6 +211,7 @@ std::span<const Field> fields(Object object) {
     }
     return {};
 }
+std::span<const BehaviourNumber> behaviourOptionalNumbers() {return sharedOptional;}
 bool behaviourKey(std::string_view key) {
     const auto row=fields(Object::behaviour); // lists both models' keys, the other's as rejected
     return std::any_of(row.begin(),row.end(),[&](const auto& f){return key==f.name;});
@@ -215,8 +222,7 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::compositionShare || object==Object::compositionInterval || object==Object::mode ||
        object==Object::axles || object==Object::pcu)return false;
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
-    if(object==Object::behaviour || object==Object::w74Behaviour)return true; // D563 (B1): closed in B2
-    if(object==Object::vehicleType || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
+    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;

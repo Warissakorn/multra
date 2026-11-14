@@ -204,14 +204,14 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Item 49 answered (D562):** the speed bounds use `value()` sentences; `desiredSpeed` and curve
   points close with the type row from 21.
 - **Behaviours (the owner agreed, "เห็นด้วย", 2026-11-14):** the inventory is done (D561,
-  [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-extension-d561-inventory-d563-slice-b1)).
-  **B1 done (D563, BH1–BH3).** Next is **slice B2**: map the ten presence floors (`false` below
-  28, 32–37, 41, 43, 44, with the floors as project-side constants shared with the `reject*`
-  guards in `behaviour_library.cpp`) and close both rows from 21 (`allowsAdditionalFields`).
-  Also fold `readOptionals`' pair list in `parse.cpp` onto the table's shared-optional list if it
-  can keep its member pointers (rule 3). Then B3 only if anything is left untyped. Prove with the
-  same parity cases plus a `jsonschema` dump; the installed `data/driver-behaviour/` file has no
-  `model`, so it is not a valid owned row from 21.
+  [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-extension-d561-inventory-d563-b1-d564-b2)).
+  **B1 and B2 done (D563, D564, BH1–BH6); B3 needed nothing.** Owned behaviours are fully mapped.
+- **Proposed next (this session's, not the owner's):** the remaining definition catalogs beside
+  behaviours, `vehicleClasses` and `linkBehaviourTypes` (both refused below 21, read in
+  `parseBehaviourLibrary` with `requireKnownFields`, small closed rows), then the zone layer
+  (`zone_codec.cpp`, root `zones`/`zoneConnectors`/`odMatrices`/`parkingLots`, whose
+  `odMatrices[i].modeId` D559 left codec-owned). Same method: inventory, pin on unchanged code,
+  map as read, one source for keys, `jsonschema` dump.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.
