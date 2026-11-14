@@ -155,7 +155,7 @@ value and b the finer (Micro's is its mean):
 |---|---|---|
 | R0 | This contract (docs only) | — |
 | R1 | `runMeso`'s area run, `subarea_consistency.*`, JSON/CSV, `--consistency-report` | SC1–SC7 |
-| R2 | The Results page (amendment first) | — |
+| R2 | The Results page (§13, D554) | SC8–SC10 |
 
 ## 11. Acceptance rows (planned)
 
@@ -198,3 +198,31 @@ Each row first asserts that its forcing worked (AGENTS).
 - **Rows:** all passed on their first run.
   - SC1–SC6 are in group `consistency` (`tests/subarea_consistency_tests.cpp`).
   - SC7 is `cli-consistency` (`tests/consistency_cli.cmake`, with its fixture and registration).
+
+## 13. R2: the Results page (amendment, D554, before code)
+
+The owner answered both R2 questions with the recommended option: a new Results level, and a page that runs,
+shows and exports the report without editing the document.
+
+- **Level and page:** `editorResultsLevelCrossLevel` (en "Cross-level", th "ข้ามระดับ"), after Node in the level
+  picker, holding one page `editorResultsTabConsistency`. The report uses all three levels and belongs to none.
+  The page is without data (hidden unless current, D497) while the document has no study area or its source is
+  `"meso"`.
+- **Controls:** `editorConsistencySeeds` (the batch's list syntax, `parseSeedList`; default `42-46`),
+  `editorConsistencyRun`, `editorConsistencyCancel`, `editorConsistencyNote` and `editorConsistencyTable`, whose
+  19 columns are the CSV's (§6). Micro reads mean ± 95 % half-width; the CSV keeps n, mean, sd and half-width.
+- **Run:** `consistencyReport` on a worker over a copy of the document and the side files
+  (`EditorWindow::studyAreaSources`). `consistencyReport` gains an optional cancel check, polled before Meso and
+  between seeds; a cancelled report has `cancelled` set and no periods, and the page shows nothing from it.
+  Refusals (`CONSISTENCY_NO_STUDY_AREA`, `MESO_AREA_SOURCE_SELF`, the area's codes) go to the note. A run is no
+  History step.
+- **Stale:** when the History revision changes after a run, the note says the result is stale; the table stays
+  until the next run. The CSV of a stale result carries the `project` stale token (S5.5b).
+- **Export:** Results Export and Copy write `consistencyCsv` (marker and marking lines), as for D552's page.
+- **No colours, no pass/fail** (owner 2); en and th text for every label; the note carries the not-validated line.
+
+| Row | Case | Asserts |
+|---|---|---|
+| SC8 | The page | It sits under Cross-level; Run on R1's corridor with seeds `42-43` fills the table equal to `consistencyReport` cell for cell; the CSV starts with the marker; the run adds no History step |
+| SC9 | Refusal and stale | Without a study area Run is off and a forced run puts `CONSISTENCY_NO_STUDY_AREA` in the note; an edit after a run marks it stale |
+| SC10 | Cancel | Cancel before the first seed ends cancelled with an empty table and nothing to export |

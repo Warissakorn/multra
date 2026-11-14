@@ -222,7 +222,8 @@ user roles) is open.
   study area's run-time copy; `--consistency-report OUT --project P [--seeds] [--csv]` writes Macro, Meso and Micro
   veh/h per gate and kept Link with Δ, % and GEH (no pass/fail). On the corridor fixture Micro reads 240 against
   Macro 600 and Meso 593: the movement gives way in Micro, while Meso ignores priority inside a Node (§12).
-- **Next on the owner's pick:** R2, a Results page for the report (amendment first); **O1:** confirm TAG M3.1's GEH
+- **R2 amendment written (D554, §13, SC8–SC10):** a *Cross-level* Results level with a *Consistency* page; code next.
+  Owner check C18 follows it. **O1:** confirm TAG M3.1's GEH
   paragraph and edition (owner's copy, or the publisher's host allowed for the session).
 
 ## M11.5 Meso assignment — S1 done (D550); stop for the owner
