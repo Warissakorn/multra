@@ -169,10 +169,11 @@ remain the catalog validators.
 | VT3 | The base row parses at every version, and every case labelled refused is refused by `parseDocument`; the 5,700 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
 | VT4 | One-off `jsonschema`: the 9 shipped and test projects owning types, the 7 installed `data/vehicle-types/` files, and a writer round-trip carrying `curve`, `kerbLanes` and `pcu` all validate |
 
-## Behaviour inventory (D561, before code)
+## Behaviour extension (D561 inventory, D563 slice B1)
 
 Read 2026-11-14 from `parseBehaviour` (`parse.cpp`), `parseBehaviourLibrary` and the `reject*`
-guards (`behaviour_library.cpp`), and the key lists in `src/core/`. Nothing below is mapped yet.
+guards (`behaviour_library.cpp`), and the key lists in `src/core/`. B1 is mapped (D563, below); B2
+and B3 are not.
 
 - **Model tag.** Below 21 `model` and `name` are refused at `behaviours[i].<key>` even when null
   (`rejectBehaviourLibraryBefore21`), so every row is the prototype. From 21 `model` is required:
@@ -220,3 +221,24 @@ guards (`behaviour_library.cpp`), and the key lists in `src/core/`. Nothing belo
 - **B2:** the ten floors (`false` below each) and both branches closed from 21.
 - **B3:** perception's integer token and the lateral numbers' types, if B2 left them unchecked. Each slice pins the
 reader first; the reader stays schema-only unless a pin shows identical diagnostics and values.
+
+**B1 as built (D563).** Coverage adds `-behaviours`; complete remains false. `definition.behaviours`
+is optional, never required. Below 25 every row is the prototype row; from 25 the item is
+`if model == "w74"` then the W74 row, else the prototype row. `model` and `name` are `false`
+below 21; from 21 `model` is required (prototype only at 21–24, both values from 25; the W74 row
+takes `const "w74"`). The prototype row requires `id` and its five numbers, and gives every W74
+key `false`; the W74 row requires `id` and the 18 W74 keys and gives the eight prototype-only keys
+`false`. Shared optional numbers, perception (`observedVehiclesAhead` an `integer-token`) and
+lateral keys are numbers in both. Both rows stay open, and the ten floors are not mapped (B2).
+The rows are built once from `w74ParameterKeys`, `perceptionParameterKeys` and
+`lateralParameterKeys` plus a project-side list (`network_fields.cpp`), and
+`parseBehaviourLibrary`'s from-21 closure now asks that table (`behaviourKey`); its old `common[]`
+held exactly the table's non-core keys (checked before removal). The reader is otherwise
+unchanged; its `readOptionals` pair list still names the shared optional keys a second time
+(member pointers), a B2 follow-up.
+
+| Row | Check |
+|---|---|
+| BH1 | Per version: branch from 25 only, prototype `required` (`model` from 21), `model`/`name` `false` below 21, the enum size, W74 keys `false` on the prototype, prototype keys `false` on the W74 row, the 18 W74 keys required there |
+| BH2 | Every core key has a property in both latest rows and is a `behaviourKey`; both rows list the same names; `cc0` is not a key |
+| BH3 | The prototype base parses at every version and the W74 base from 25; every case labelled refused is refused by `parseDocument`; the 7,036 version- and model-dependent labels agree with the emitted schema under `jsonschema` (one-off), as do a W74 writer round-trip and all 18 projects in the repository |

@@ -326,7 +326,7 @@ ProjectDocument parseDocument(const Json& j) {
     d.zones.studyArea=parseStudyArea(j);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
-    if (version < 25) rejectW74Before25(j);
+    if (version < networkCodec::w74ModelVersion) rejectW74Before25(j);
     if (version < networkCodec::countedVolumeVersion) rejectCountedVolumesBefore26(j);
     if (version < 27) rejectCooldownBefore27(j);
     if (version < 28) rejectAmberBefore28(j);

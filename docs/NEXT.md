@@ -204,13 +204,14 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Item 49 answered (D562):** the speed bounds use `value()` sentences; `desiredSpeed` and curve
   points close with the type row from 21.
 - **Behaviours (the owner agreed, "เห็นด้วย", 2026-11-14):** the inventory is done (D561,
-  [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-inventory-d561-before-code)).
-  Next is **slice B1**: pin the reader's model-tag and row diagnostics on the unchanged code, then
-  the generator's missing per-model branch (requiredness from a version already works through
-  `rejectBefore`), then the per-model branch with keys generated from `w74ParameterKeys`, `perceptionParameterKeys` and
-  `lateralParameterKeys`, `parseBehaviourLibrary`'s `common[]` moved to the table, and a
-  completeness test; the row stays open until B2. B2 and B3 follow as carved there. Prove each with
-  codec-parity cases and a one-off `jsonschema` run (case labels, the nine projects, the installed file).
+  [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-extension-d561-inventory-d563-slice-b1)).
+  **B1 done (D563, BH1–BH3).** Next is **slice B2**: map the ten presence floors (`false` below
+  28, 32–37, 41, 43, 44, with the floors as project-side constants shared with the `reject*`
+  guards in `behaviour_library.cpp`) and close both rows from 21 (`allowsAdditionalFields`).
+  Also fold `readOptionals`' pair list in `parse.cpp` onto the table's shared-optional list if it
+  can keep its member pointers (rule 3). Then B3 only if anything is left untyped. Prove with the
+  same parity cases plus a `jsonschema` dump; the installed `data/driver-behaviour/` file has no
+  `model`, so it is not a valid owned row from 21.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.

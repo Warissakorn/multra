@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Behaviour schema slice B1: the model tag and per-model rows (D563)
+
+- **Pick:** continued "ตามแนะนำ" into B1, the slice D561 carved.
+- **D563:** the composed schema's `definition.behaviours`: prototype row below 25, `if model == "w74"` W74 row else prototype from 25; `model`/`name` `false` below 21, `model` required from 21 (prototype-only enum at 21–24). Rows are built from core's `w74ParameterKeys`, `perceptionParameterKeys`, `lateralParameterKeys` plus one project-side list; `parseBehaviourLibrary`'s hand-kept `common[]` (equal to the table's non-core keys, checked) is replaced by `behaviourKey`. Rows open; floors are B2.
+- **One-off `jsonschema`:** 7,036 labels, a W74 writer round-trip and all 18 projects agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1655/1655, group `project` 83/83); `check_no_pch.py` on the changed units 6/6. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — Owner item 49: vehicle-type reader limits fixed (D562)
 
 - **Owner:** "ทำต่อตามแนะนำ", read as accepting the session's recommendations on OWNER_SITTING 49, (a) and (b2), then continuing.
@@ -105,8 +112,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **F1:** `feedback` on a procedure at schema 75; `skimAt` and an optional `linkTimes` through `zoneSkim`, distribution and mode choice; `procedure_feedback.cpp` (re-run mode choice on congested times, average the OD-mode matrices by CW or MSA, assign, TMF/RSE); JSON `feedback` block and CLI lines. Fixture `tests/data/procedure-feedback/`. MSA's fixture stop (2 persons in 200 iterations) and FB7's naive case (λ 0.6, where naive's factor 2λ > 1) were amended after the first test run, before commit; no definition or hand value changed.
 - **F2:** the dialog's *Feedback* group and the page's iterations table and CSV section; `procedure-ui` covers FB10.
 - **Result:** CW reaches 999.80 / 999.07 veh/h against the hand 999.79 / 999.08 in 7 and 10 iterations; MSA takes 127 and 49. Not a validation.
-
-## 2026-11-13 — Sensitivity sweep phase 2: engine levers D and E (D546)
-
-- **D546** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_SWEEP](reference/M6_SWEEP.md) §4, rows SW5–SW10), then runtime-only `DriverBehaviour` flags `standingTarget` (D) and `stopArrival` (E), off by default (`following.cpp`, `conflicts.cpp` `stopMade`), and candidates `D`, `E`, `DE`. Rows SW7 and SW9 were amended after the first test run, before any sweep figure; no definition changed. No `src/core` split was needed (largest file 469 lines).
-- **Result** ([evidence](evidence/m6-sweep-phase2.md)): D: S1 1,910.2 veh/h (jam spacing 6.50 m, `t_x` 1.35 s), S2 misses shrink, U `t_f` 6.91 s with U-c passing at `v_c` 200 and 400; E alone equals base; DE `t_f` 5.82 s. U-a misses everywhere. Nothing adopted.

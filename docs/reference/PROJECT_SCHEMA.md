@@ -3,7 +3,7 @@
 This is the codec ownership and version map for an editor-project schema (D355), with
 generated partial envelope/background (D356), Network/Link/Lane (D357),
 Connector/attachment-reference (D358), SignalHead (D359), signal control (D360),
-right-of-way (D361), measurement (D362), base demand (D363), routing-decision (D364) and owned-composition (D558) owned-mode (D559) and owned-vehicle-type contracts (D560;
+right-of-way (D361), measurement (D362), base demand (D363), routing-decision (D364) and owned-composition (D558) owned-mode (D559) and owned-vehicle-type (D560) and behaviour contracts (D563;
 the demand ones are in [PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md)). It describes
 implemented readers/writers, rather than inferring a contract from one document. It is
 **not a complete JSON Schema**, a new validator, or a change to file
@@ -419,7 +419,7 @@ reference resolution and runtime readiness remain the existing model/evaluation 
 ## Demand extensions (D363, D364, D558)
 
 Routes, VehicleInputs and intervals (D363), RoutingDecisions (D364) and owned compositions with
-their type-share and interval rows (D558) owned modes (D559) and owned vehicle types (D560) are in [PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md).
+their type-share and interval rows (D558) owned modes (D559) owned vehicle types (D560) and behaviours (D561, D563) are in [PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md).
 
 J7/D418 edits the existing schema-58 `Node.analysis` fields only. Snapshot provenance and
 analytical Results are session state, not new project fields or a schema step.

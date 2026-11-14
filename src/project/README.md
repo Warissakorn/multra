@@ -186,7 +186,8 @@ metadata and keeps its bare `EDIT_CATALOG_READ` (D559); `modeVersion` (49) is it
 key check in `parseBehaviourLibrary` uses the same table, and the curve/kerbLanes/pcu guards share
 `speedCurveVersion`, `kerbLanesVersion` and `modeVersion` with the schema. `parseSpeedRange`
 (`speed_curve.cpp`) reads the bounds through the same metadata, and from 21 `desiredSpeed` and its
-curve points are checked against it too (D562).
+curve points are checked against it too (D562). The behaviour rows (D563) are generated from
+core's W74, perception and lateral key lists; `behaviourKey` is `parseBehaviourLibrary`'s closure.
 
 ## Tests
 

@@ -225,22 +225,10 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
         for (std::size_t i = 0; i < behaviours.size(); ++i) {
             const auto& b = behaviours[i]; const auto path = at("behaviours", i);
             // Every model's keys are known here; parseBehaviour already refused the other model's.
+            // D563: the schema's behaviour table, which generates W74/perception/lateral from core.
             for (const auto& [key, unused] : b.items()) {
                 (void)unused;
-                static constexpr const char* common[] = {"id", "name", "model", "standstillDistance",
-                    "additiveSafetyDistance", "multiplicativeSafetyDistance", "followingTime", "speedThreshold",
-                    "maxDecelerationCooperativeBraking", "discretionaryLaneChangeThreshold",
-                    "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration",
-                    "curveLateralAcceleration", "kerbLaneBias", "commitmentDeceleration", "mandatoryDecelerationOwn",
-                    "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime"}; // M3.6, M3.4 (D215), B-2 (D219), B-3 (D221), B-8 (D231), B-4 (D236), B-9 (D238), both models
-                const auto& w74 = w74ParameterKeys();
-                const auto& perception = perceptionParameterKeys(); // M3.5, both models
-                const auto& lateral = lateralParameterKeys(); // M3.7, both models
-                if (std::none_of(std::begin(common), std::end(common), [&](const char* k) { return key == k; }) &&
-                    std::none_of(w74.begin(), w74.end(), [&](const auto& k) { return key == k.name; }) &&
-                    std::none_of(perception.begin(), perception.end(), [&](const auto& k) { return key == k.name; }) &&
-                    std::none_of(lateral.begin(), lateral.end(), [&](const auto& k) { return key == k.name; }))
-                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + "." + key}});
+                if (!networkCodec::behaviourKey(key)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + "." + key}});
             }
             // The model is explicit from schema 21: a missing or unknown model is never read as the prototype.
             if (!b.contains("model") || !b.at("model").is_string() ||

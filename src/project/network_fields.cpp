@@ -1,5 +1,8 @@
 #include "network_fields.hpp"
 #include "../core/validate.hpp"
+#include "../core/w74.hpp"
+#include "../core/perception.hpp"
+#include "../core/lateral.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cmath>
@@ -51,7 +54,7 @@ constexpr Field definitionFields[]={
     {"duration",Kind::number,true},{"timeStep",Kind::number,true},
     {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions},
     {"compositions",Kind::compositions},{"modes",Kind::modes,false,0,modeVersion},
-    {"vehicleTypes",Kind::vehicleTypes}};
+    {"vehicleTypes",Kind::vehicleTypes},{"behaviours",Kind::behaviours}};
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -133,6 +136,27 @@ constexpr Field speedRangeFields[]={{"min",Kind::number,true},{"max",Kind::numbe
 constexpr Field speedPointFields[]={{"speed",Kind::number,true},{"share",Kind::number,true}};
 constexpr Field axleFields[]={{"wheelbase",Kind::number,true},{"frontOverhang",Kind::number,true},{"rearOverhang",Kind::number,true}};
 constexpr Field pcuFields[]={{"value",Kind::number,true},{"source",Kind::text,true}};
+// D563 (PROJECT_SCHEMA_DEMAND, behaviour inventory): the two model rows. The parameter keys come
+// from core's lists; a key of the other model is `false` at every version (rejectFrom 1).
+constexpr const char* prototypeRequired[]={"standstillDistance","additiveSafetyDistance",
+    "multiplicativeSafetyDistance","followingTime","speedThreshold"};
+constexpr const char* prototypeOptional[]={"discretionaryLaneChangeThreshold","acceptedDecelerationTrailingVehicle",
+    "discretionaryLaneChangeHoldTime"};
+constexpr const char* sharedOptional[]={"maxDecelerationCooperativeBraking","amberDeceleration",
+    "curveLateralAcceleration","kerbLaneBias","commitmentDeceleration","mandatoryDecelerationOwn",
+    "mandatoryDecelerationTrailingVehicle","stopDwellTime","driverFactorSpread","redRunningShare","redRunningTime"};
+std::vector<Field> behaviourRow(bool w74) {
+    const int notThis=w74?1:0,notOther=w74?0:1;
+    std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},
+        {"model",w74?Kind::w74Model:Kind::behaviourModel,true,0,behaviourVersion}};
+    for(const auto* key:prototypeRequired)row.push_back({key,Kind::number,!w74,0,0,false,notThis});
+    for(const auto* key:prototypeOptional)row.push_back({key,Kind::number,false,0,0,false,notThis});
+    for(const auto& key:w74ParameterKeys())row.push_back({key.name,Kind::number,w74,0,0,false,notOther});
+    for(const auto* key:sharedOptional)row.push_back({key,Kind::number});
+    for(const auto& key:perceptionParameterKeys())row.push_back({key.name,key.integer?Kind::integerToken:Kind::number});
+    for(const auto& key:lateralParameterKeys())row.push_back({key.name,Kind::number});
+    return row;
+}
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -176,8 +200,14 @@ std::span<const Field> fields(Object object) {
     case Object::speedPoint:return speedPointFields;
     case Object::axles:return axleFields;
     case Object::pcu:return pcuFields;
+    case Object::behaviour:{static const auto row=behaviourRow(false);return row;}
+    case Object::w74Behaviour:{static const auto row=behaviourRow(true);return row;}
     }
     return {};
+}
+bool behaviourKey(std::string_view key) {
+    const auto row=fields(Object::behaviour); // lists both models' keys, the other's as rejected
+    return std::any_of(row.begin(),row.end(),[&](const auto& f){return key==f.name;});
 }
 bool allowsAdditionalFields(Object object,int version) {
     if(object==Object::signalController || object==Object::signalGroup || object==Object::routingDecision ||
@@ -185,6 +215,7 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::compositionShare || object==Object::compositionInterval || object==Object::mode ||
        object==Object::axles || object==Object::pcu)return false;
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
+    if(object==Object::behaviour || object==Object::w74Behaviour)return true; // D563 (B1): closed in B2
     if(object==Object::vehicleType || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
@@ -216,7 +247,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     if(found==list.end())throw std::logic_error("Unknown network codec field");
     const char* expected=nullptr;
     switch(found->kind) {
-    case Kind::text:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
+    case Kind::text:case Kind::behaviourModel:case Kind::w74Model:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
     case Kind::boolean:if(!v.is_boolean())expected="Expected true or false: ";break;
     case Kind::number:if(!v.is_number())expected="Expected number: ";break;
     case Kind::level:
@@ -233,11 +264,11 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
     case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:case Kind::modes:
-    case Kind::vehicleTypes:case Kind::speedCurve:
+    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::behaviours:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:
-    case Kind::speedRange:case Kind::axles:case Kind::kerbLanes:case Kind::pcu:
+    case Kind::speedRange:case Kind::axles:case Kind::kerbLanes:case Kind::pcu:case Kind::integerToken:
     case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:case Kind::sectionLine:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);

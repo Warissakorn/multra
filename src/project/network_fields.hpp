@@ -3,17 +3,19 @@
 #include <span>
 #include <limits>
 #include <utility>
+#include <string_view>
 
 namespace multra::networkCodec {
 enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
-    vehicleType,speedRange,speedPoint,axles,pcu };
+    vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
     routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix,
-    compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu };
+    compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu,
+    behaviours,behaviourModel,w74Model,integerToken };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -29,10 +31,14 @@ inline constexpr int levelLimit=1000,countedVolumeVersion=26,routingPositionVers
 inline constexpr int modeVersion=49;
 // D560: a vehicle type's desiredSpeed.curve (B-6) and kerbLanes (B-7) are refused below these; pcu uses modeVersion.
 inline constexpr int speedCurveVersion=40,kerbLanesVersion=42;
+// D563: an owned W74 behaviour is refused below it (rejectW74Before25).
+inline constexpr int w74ModelVersion=25;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}
 std::span<const Field> fields(Object);
+// D563: every key either behaviour model may carry (the from-21 closure in parseBehaviourLibrary).
+bool behaviourKey(std::string_view key);
 bool allowsAdditionalFields(Object,int version);
 inline constexpr std::pair<const char*,SignalColor> signalColors[]={
     {"red",SignalColor::red},{"amber",SignalColor::amber},{"green",SignalColor::green}};
