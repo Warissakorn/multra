@@ -141,3 +141,26 @@ TEST(consistency, sc6_arithmetic) { // SC6
     CHECK(!none.percent && !none.geh && *none.delta == 0);
     CHECK(!compareVolumes(std::nullopt, 3.0).delta);
 }
+TEST(consistency, sc11_gate_counts_inside_zones) { // SC11 (§15, D555)
+    auto c = area();
+    const auto cut = studyAreaCut(c.d.network, {c.a});
+    const auto west = road(c.d, c.aw).links[0];
+    CHECK(std::find(cut.entryGates.begin(), cut.entryGates.end(), west) != cut.entryGates.end()); // forcing: zone west's Link is a gate
+    const std::vector<std::uint32_t> seeds{42};
+    const auto report = consistencyReport(c.d, data(), {}, seeds, "");
+    const auto& gate = rowOf(report.periods[0], entryGateName(west));
+    const auto& link = rowOf(report.periods[0], west);
+    test::near(*gate.macro, 600, 1e-6);
+    test::near(*gate.macro, *link.macro, 1e-9);
+    test::near(*gate.comparisons[0].geh, 0, 1e-9);
+    test::near(*rowOf(report.periods[0], exitGateName(road(c.d, c.m3).links[1])).macro, 600, 1e-6); // no inside zone: unchanged
+    // A second origin connector for west on another entry-gate Link, shares 3 : 1: 600 splits 450 and 150 (by hand).
+    std::string north;
+    for (const auto& g : cut.entryGates) if (g != west) { north = g; break; }
+    CHECK(!north.empty());
+    for (auto& zc : c.d.zones.zoneConnectors) if (zc.id == "zw") zc.share = 3;
+    putZoneConnector(c.d, {"zw2", "west", north, ZoneDirection::origin, 1});
+    const auto split = consistencyReport(c.d, data(), {}, seeds, "");
+    test::near(*rowOf(split.periods[0], entryGateName(west)).macro, 450, 1e-6);
+    test::near(*rowOf(split.periods[0], entryGateName(north)).macro, 150, 1e-6);
+}

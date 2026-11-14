@@ -140,7 +140,24 @@ ConsistencyReport consistencyReport(const ProjectDocument& d, const std::filesys
     std::map<std::pair<std::string, std::string>, double> fed;
     const bool macro = r.flowSource == "macro";
     const auto flows = macro ? macroGateFlows(d, data, nullptr, &sources) : d.zones.studyArea.gateFlows;
-    for (const auto& f : flows) { fed[{f.periodId, f.from}] += f.vehiclesPerHour; fed[{f.periodId, f.to}] += f.vehiclesPerHour; }
+    // §15 (D555): an inside zone's flow also counts on the gate of each of its connectors' Links, by the connector's
+    // share among the zone's connectors of that direction on kept Links, as withOdDemand loads it.
+    const std::set<std::string> keptLinks(cut.links.begin(), cut.links.end()), entries(cut.entryGates.begin(), cut.entryGates.end());
+    const auto onGates = [&](const std::string& period, const std::string& zone, ZoneDirection direction, double vph) {
+        double total = 0;
+        for (const auto& c : d.zones.zoneConnectors)
+            if (c.zoneId == zone && c.direction == direction && keptLinks.contains(c.linkId)) total += c.share;
+        if (!(total > 0)) return;
+        const auto& gates = direction == ZoneDirection::origin ? entries : exits;
+        for (const auto& c : d.zones.zoneConnectors)
+            if (c.zoneId == zone && c.direction == direction && gates.contains(c.linkId))
+                fed[{period, direction == ZoneDirection::origin ? entryGateName(c.linkId) : exitGateName(c.linkId)}] += vph * c.share / total;
+    };
+    for (const auto& f : flows) {
+        fed[{f.periodId, f.from}] += f.vehiclesPerHour; fed[{f.periodId, f.to}] += f.vehiclesPerHour;
+        onGates(f.periodId, f.from, ZoneDirection::origin, f.vehiclesPerHour);
+        onGates(f.periodId, f.to, ZoneDirection::destination, f.vehiclesPerHour);
+    }
     for (std::size_t w = 0; w < periods.size(); ++w) {
         const auto& p = *periods[w];
         const auto [t0, t1] = windows[w];
@@ -219,6 +236,7 @@ Json consistencyJson(const ConsistencyReport& r) {
     j["advisories"] = Json::array();
     for (const auto& a : r.advisories) j["advisories"].push_back({{"code", a.code}, {"path", a.path}});
     j["notes"] = Json::array({"Volumes are veh/h entering each kept Link, and entering or leaving at each gate; not validated.",
+                              "A gate counts the trips loaded onto its Link, inside zones included (by connector share).",
                               "Every level starts empty at the run's start; no warm-up is removed.",
                               "GEH (TAG unit M3.1) is reported only; no criterion is applied."});
     return j;
