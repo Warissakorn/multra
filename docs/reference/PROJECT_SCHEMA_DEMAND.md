@@ -166,3 +166,47 @@ remain the catalog validators.
 | VT2 | At every version the row is open exactly below 21, the eight keys are required, `axles` and `pcu` are closed, `desiredSpeed` and curve points are open, and `curve`/`kerbLanes`/`pcu` are `false` below 40/42/49 |
 | VT3 | The base row parses at every version, and every case labelled refused is refused by `parseDocument`; the 5,700 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
 | VT4 | One-off `jsonschema`: the 9 shipped and test projects owning types, the 7 installed `data/vehicle-types/` files, and a writer round-trip carrying `curve`, `kerbLanes` and `pcu` all validate |
+
+## Behaviour inventory (D561, before code)
+
+Read 2026-11-14 from `parseBehaviour` (`parse.cpp`), `parseBehaviourLibrary` and the `reject*`
+guards (`behaviour_library.cpp`), and the key lists in `src/core/`. Nothing below is mapped yet.
+
+- **Model tag.** Below 21 `model` and `name` are refused at `behaviours[i].<key>` even when null
+  (`rejectBehaviourLibraryBefore21`), so every row is the prototype. From 21 `model` is required:
+  missing, non-text or unknown is `UNSUPPORTED_BEHAVIOUR_MODEL` at `behaviours[i].model`
+  (`parseBehaviourLibrary`). `"w74"` below 25 is the same code (`rejectW74Before25`). Values:
+  `kPrototypeBehaviourModel`, `kW74BehaviourModel`.
+- **Prototype row.** Requires text `id` and numeric `standstillDistance`, `additiveSafetyDistance`,
+  `multiplicativeSafetyDistance`, `followingTime`, `speedThreshold` (field sentences). Optional
+  numbers, contains-based: `maxDecelerationCooperativeBraking`, `discretionaryLaneChangeThreshold`,
+  `acceptedDecelerationTrailingVehicle`, `discretionaryLaneChangeHoldTime`, `amberDeceleration`.
+  Any W74 key is `EDIT_UNSUPPORTED_FIELD` at `<path>.<key>` at every version.
+- **W74 row.** Requires text `id` and every `w74ParameterKeys()` entry (18) as a number
+  (`INVALID_BEHAVIOUR_PARAMETER` at the key). The eight prototype-only keys (the five required
+  above plus the three lane-change ones) are `EDIT_UNSUPPORTED_FIELD`. Optional
+  `maxDecelerationCooperativeBraking` and `amberDeceleration`.
+- **Both models.** `perceptionParameterKeys()` (5; `observedVehiclesAhead` and the integer flag
+  make it a JSON integer token), `lateralParameterKeys()` (3) and the `readOptionals` numbers
+  (`curveLateralAcceleration`, `kerbLaneBias`, `commitmentDeceleration`, `mandatoryDecelerationOwn`,
+  `mandatoryDecelerationTrailingVehicle`, `stopDwellTime`, `driverFactorSpread`, `redRunningShare`,
+  `redRunningTime`); a non-number (or a non-integer perception integer) is
+  `INVALID_BEHAVIOUR_PARAMETER`; null is refused. Ranges and lateral completeness are validators.
+- **Closure.** Below 21 the row is open and additive. From 21 `parseBehaviourLibrary` refuses an
+  unknown key against a hand-kept `common[]` list plus the three core lists, after the definition
+  is read and after the model branch has refused the other model's keys.
+- **Floors (presence, even null, `EDIT_UNSUPPORTED_FIELD` at `behaviours[i].<key>`):**
+  `amberDeceleration` 28, perception 32, lateral 33, `curveLateralAcceleration` 34, `kerbLaneBias`
+  35, `commitmentDeceleration` 36, both mandatory keys 37, `stopDwellTime` 41, `driverFactorSpread`
+  43, both red-running keys 44. Owned W74 (25) is the read guard above plus a save floor.
+- **Census.** One installed file (`data/driver-behaviour/`), prototype; nine shipped/test projects
+  own behaviours, all prototype; no file in the repository carries a W74 row.
+- **Out of scope:** `vehicleClasses` and `linkBehaviourTypes` (refused below 21; separate rows).
+
+**Slices.** B1: the common row and the model tag as a per-model branch (`if model` then the W74
+row, else the prototype), keys generated from the core lists rather than copied into
+`network_fields.cpp` (they stay `core/`'s; floors stay project-side), the `common[]` list replaced
+by the same table, a completeness test that every core and common key has a property in the
+latest row; the row open until B2 maps the rest. B2: the W74 row and the closed from-21 row with
+all floors. B3: perception's integer token and lateral, if not already in B2. Each slice pins the
+reader first; the reader stays schema-only unless a pin shows identical diagnostics and values.

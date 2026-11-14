@@ -204,12 +204,13 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Ask (D560), [OWNER_SITTING](plans/OWNER_SITTING.md) item 49:** (a) `desiredSpeed.min`/`max` report
   the JSON library's message; (b) unknown keys inside `desiredSpeed` and curve points are dropped
   on save. Recommendations are there; change neither without the owner's answer.
-- **Proposed next (this session's order, not the owner's):** behaviours. Inventory first: the
-  reader (`parseBehaviour` in `parse.cpp`, `parseBehaviourLibrary`'s key lists from
-  `w74ParameterKeys`, `perceptionParameterKeys`, `lateralParameterKeys`), the explicit `model` from
-  21, the per-model parameter sets, and the many floors (21, 25, 28, 32–37, 41, 43, 44). Pin on the
-  unchanged code, map rows as they are, no new read gates, and prove with codec-parity cases plus a
-  one-off `jsonschema` run (case labels, projects, installed `data/driver-behaviour/` files).
+- **Behaviours (the owner agreed, "เห็นด้วย", 2026-11-14):** the inventory is done (D561,
+  [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-inventory-d561-before-code)).
+  Next is **slice B1**: pin the reader's model-tag and row diagnostics on the unchanged code, then
+  the per-model branch with keys generated from `w74ParameterKeys`, `perceptionParameterKeys` and
+  `lateralParameterKeys`, `parseBehaviourLibrary`'s `common[]` moved to the table, and a
+  completeness test; the row stays open until B2. B2 and B3 follow as carved there. Prove each with
+  codec-parity cases and a one-off `jsonschema` run (case labels, the nine projects, the installed file).
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.
