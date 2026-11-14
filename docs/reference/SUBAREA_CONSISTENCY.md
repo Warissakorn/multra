@@ -242,7 +242,7 @@ shows and exports the report without editing the document.
   - `results-tabs-ui`: 4 → 5 levels.
 - **Layout.** Offscreen captures at 1440×900, en and th, viewed for layout only. The seeds field
   stretched across the bar, so it is now capped at 160 px. The 19 columns scroll horizontally.
-- **Open finding O2,** seen in the capture.
+- **Finding O2** (answered in §15, D555), seen in the capture.
   - An entry gate's Macro value is the fed flow from gate-started trips only (§4). Its Meso and
     Micro values count every vehicle entering the gate's Link.
   - Where an inside zone's connector stands on that Link, as on the corridor's west leg, the row
@@ -250,3 +250,28 @@ shows and exports the report without editing the document.
   - Changing §4's gate rule (for example, counting the zone's trips on its gate, or leaving such
     gates out) is the owner's choice. It is not changed here.
 - **Rows:** SC8–SC10 pass in `consistency-ui`.
+
+## 15. O2 answered: a gate counts the demand loaded onto its Link (amendment, D555, before code)
+
+The owner asked for a recommendation ("O2 ช่วยแนะนำ") and took option (b).
+
+- **The rule.** §4's gate values for Macro now read as follows.
+  - An entry gate is the gate flows starting at the gate, plus each inside origin zone's flows
+    times the share of its connector on the gate's Link. The share is that connector's `share` ÷
+    the sum over the zone's origin connectors on kept Links, as `withOdDemand` loads them.
+  - An exit gate is the same with destinations and destination connectors.
+  - A typed source follows the same rule. Meso, Micro and the Link rows are unchanged.
+- **Why this option.**
+  - Meso and Micro already count every vehicle entering, or leaving by, the gate's Link, and the
+    rule makes Macro the same quantity.
+  - Counting each gate's own trips at every level would need Micro to know a vehicle's origin
+    zone. Its events name only the route `od:<link>><link>`, which a gate and a zone on that Link
+    share, so it would need an engine change.
+  - Leaving such gates out would drop exactly the rows where demand enters.
+- **Row SC3, amended:** a gate equals its matrix row or column sum plus its zones' shares.
+- **Row SC11** (`consistency`):
+  - On R1's corridor, the entry gate of the west leg reads Macro 600, equal to its Link row, with
+    Macro–Meso GEH 0.
+  - With the west zone given a second origin connector on a kept entry-gate Link, at shares 3 : 1,
+    the 600 splits into 450 and 150 on the two gates (worked by hand).
+  - The exit gate with no inside zone keeps 600.
