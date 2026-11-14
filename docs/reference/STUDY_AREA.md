@@ -258,7 +258,7 @@ nothing is refused silently.
 - **Gates on a Street segment-only arm:** a kept leg must be a Link (§4). An area Node with a Link-less arm
   gives `MICRO_AREA_NODE_COARSE`, or `SEAM_STREET_SEGMENT_NOT_GENERATED` for that arm.
 - **M12's consistency report:** S5 records, per gate, the flow it was fed. Comparing that with
-  Micro's measured throughput is M12's, not S5's.
+  Micro's measured throughput is M12's, not S5's: [SUBAREA_CONSISTENCY](SUBAREA_CONSISTENCY.md) (D553).
 
 ## 14. Slices
 

@@ -212,9 +212,19 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
 Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done (below); when the owner asks for an engine
-slice, the next one is M9 (D549, A1–A3 done; the gate is the owner's; A2b for placed decisions), then M11.5 and the M11 gate, M12. Each starts with its contract. M13 is
+slice, M9 and M11.5 are done to their owner gates; M12's contract is written (D553) and R1 is next; the M11 gate waits on the book. Each starts with its contract. M13 is
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
+
+## M12 subarea workflow — contract written (D553); R1 next
+
+- [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), rows SC1–SC7. Owner chose every recommended option: Meso
+  runs opt-in on the study area's run-time copy (`MESO_AREA_SOURCE_SELF` for a `"meso"` source); per study period,
+  every gate and kept Link gets Macro, Meso and Micro (seeds 42–46, `Estimate`) veh/h with Δ, % and GEH, no pass/fail.
+- **R1:** `runMeso`'s `area` argument, `src/project/subarea_consistency.*`, JSON/CSV, `--consistency-report`; rows
+  SC1–SC7. `tools/run_simulation.cpp` is at 499 lines: put the flag's handling in `tools/consistency_cli.*`.
+- **R2:** a Results page, amendment first. **O1:** confirm TAG M3.1's GEH paragraph and edition (owner's copy, or
+  the publisher's host allowed).
 
 ## M11.5 Meso assignment — S1 done (D550); stop for the owner
 
@@ -226,8 +236,8 @@ user roles) is open.
   decision cannot choose between routes to one destination (shared family).
 - **A4 done (D552):** the *Dynamic assignment* Results page at the Micro level (DYNAMIC_ASSIGNMENT §17–§18, DA14–DA17):
   Run/Cancel on a worker, δ and cell tables, *Apply weights* as one Undo step, *Save route costs…*. **Owner:** C17.
-- **Next on the owner's pick:** whether Meso should follow positioned weights (a loading change), or the M11 gate's
-  benchmark (Boyles et al. 2025, D315); M12 compares the levels after.
+- **Deferred (D551):** Meso following positioned weights (a loading change) waits for a study that needs it; the M11
+  gate's benchmark waits on the owner's copy of Boyles et al. 2025 (D315).
 
 ## M9 dynamic assignment — A1–A3 done (D549); stop for the owner
 
