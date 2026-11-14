@@ -62,6 +62,17 @@ screen settings apply here unchanged. Item names (C1, E32, I.5) are the same as 
     `shared` and `perInput`, a new project `perInput`, and a shipped project `shared`? Compare a
     `perInput` project with a `shared` one: is the refusal line on the Compare page clear? *Owner:*
 
+17. **Dynamic assignment page** (listed 2026-11-13, D552, DYNAMIC_ASSIGNMENT §17). Open a project with a
+    routing decision. In *Results → Micro → Dynamic assignment*, Run at Micro, then at Meso (the seed is greyed).
+    Check four things: the δ and cell tables fit; Cancel stops; *Apply weights* is one Undo step and greys after any
+    edit; *Save route costs…* writes a file. Is the page where you expect it, and is the wording clear in
+    Thai? *Owner:*
+
+18. **Consistency page** (listed 2026-11-14, D554, SUBAREA_CONSISTENCY §13). Open a project with a study area cut from
+    Macro. In *Results → Cross-level → Consistency*, Run with seeds 42-46. Check four things: the table fits; Cancel
+    stops; an edit marks the result stale; Export writes the CSV. Is the level's name clear in Thai, and is a table
+    with no pass/fail colours what you want to read? *Owner:*
+
 ## D — Right-of-way on the drawing
 
 2. **D109/D110 conflict controls, Bézier coverage** (listed 2026-10-05). Curved Connector after an

@@ -11,6 +11,8 @@
 #include "../src/project/side_files.hpp"
 #include "../src/project/macro_output.hpp"
 #include "four_step_cli.hpp"
+#include "dynamic_assignment_cli.hpp"
+#include "consistency_cli.hpp"
 #include "../src/project/meso_output.hpp"
 #include "../src/project/node_analysis_run.hpp"
 #include "../src/project/node_analysis_report.hpp"
@@ -24,15 +26,16 @@
 
 namespace {
 using namespace multra;
+std::filesystem::path routeCostsFile, dynamicOut; // --route-costs, --dynamic-assignment (DYNAMIC_ASSIGNMENT §5-§6, D549)
 // A project run steps the engine itself so the movement evaluation sees every state.
 int runProject(const std::filesystem::path& file, const std::filesystem::path& csvFile,
-               const std::filesystem::path& data, std::uint32_t seed, bool laneChanges, bool segmentTimes, bool stopLines,
+               const std::filesystem::path& data, std::uint32_t seed, bool laneChanges, bool segmentTimes, bool stopLines, bool priorityLines,
                double phaseBin, bool waitCauses, const DischargeOptions& discharge) { // phaseBin 0: no --arrival-phases
     std::ifstream stream(file);
     if (!stream) throw std::runtime_error("Cannot read project: " + file.string());
     InputManifest inputs;
     auto* manifest=discharge.enabled?&inputs:nullptr;
-    const auto document = parseDocument(manifest?readInputJson(file,"project",manifest):Json::parse(stream));
+    const auto document = withRouteCostsFile(parseDocument(manifest?readInputJson(file,"project",manifest):Json::parse(stream)), routeCostsFile);
     const auto sources = readStudyAreaSources(file); // S5.5b (D332): the side files beside the project, as the editor reads them
     const auto snapshot = compileDocument(document, data, manifest, &sources);
     const auto marking = exportMarking(document, snapshot.studyArea);
@@ -48,6 +51,8 @@ int runProject(const std::filesystem::path& file, const std::filesystem::path& c
     if (segmentTimes) segments.emplace(spec);
     std::optional<StopLineAccumulator> lines;
     if (stopLines) lines.emplace(spec);
+    std::optional<PriorityLineAccumulator> priority; // D528
+    if (priorityLines) priority.emplace(spec);
     std::optional<ArrivalPhaseAccumulator> phases;
     if (phaseBin > 0) phases.emplace(spec, phaseBin);
     std::optional<DeadEndWaitAccumulator> waits;
@@ -62,6 +67,7 @@ int runProject(const std::filesystem::path& file, const std::filesystem::path& c
         if (changes) changes->observe(state);
         if (segments) segments->observe(state);
         if (lines) lines->observe(state);
+        if (priority) priority->observe(state);
         if (phases) phases->observe(state);
         if (waits) waits->observe(state);
     };
@@ -86,6 +92,7 @@ int runProject(const std::filesystem::path& file, const std::filesystem::path& c
     if (changes) result["laneChangeDiagnostics"] = laneChangeJson(changes->report());
     if (segments) result["segmentTimes"] = segmentTimeJson(segments->report());
     if (lines) result["stopLines"] = stopLineJson(lines->report());
+    if (priority) result["priorityLines"] = priorityLineJson(priority->report());
     if (phases) result["arrivalPhases"] = arrivalPhaseJson(phases->report());
     if (waits) result["waitCauses"] = waitCauseJson(waits->report());
     std::cout << result.dump(2) << '\n';
@@ -97,7 +104,7 @@ struct Prepared { RunSnapshot snapshot; EvaluationSpec spec; ExportMarking marki
 Prepared prepare(const std::filesystem::path& file, const std::filesystem::path& data, const std::filesystem::path& csvFile) {
     std::ifstream stream(file);
     if (!stream) throw std::runtime_error("Cannot read project: " + file.string());
-    const auto document = parseDocument(Json::parse(stream));
+    const auto document = withRouteCostsFile(parseDocument(Json::parse(stream)), routeCostsFile);
     const auto sources = readStudyAreaSources(file); // S5.5b (D332)
     auto snapshot = compileDocument(document, data, nullptr, &sources);
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
@@ -185,7 +192,7 @@ int runMacroPeriod(const std::filesystem::path& file, const std::filesystem::pat
 int runMesoProject(const std::filesystem::path& file, const std::filesystem::path& csvFile, const std::filesystem::path& data) {
     if (!std::filesystem::exists(file)) throw std::runtime_error("Cannot read project: " + file.string());
     InputManifest inputs;
-    const auto document = parseDocument(readInputJson(file, "project", &inputs));
+    const auto document = withRouteCostsFile(parseDocument(readInputJson(file, "project", &inputs)), routeCostsFile, true);
     if (!csvFile.empty() && std::filesystem::exists(csvFile))
         throw std::invalid_argument("CSV output already exists: " + csvFile.string());
     const auto run = runMeso(document, data, &inputs);
@@ -228,14 +235,15 @@ int runUtdfExport(const std::filesystem::path& file, const std::filesystem::path
 }
 int main(int argc, char** argv) {
     try {
+        if (const auto code = consistencyCommand(argc, argv)) return *code; // M12 (D553)
         std::uint32_t seed = 42;
         std::filesystem::path data, scenarioFile, eventsFile, projectFile, csvFile, compareFile;
         std::optional<std::string> procedureId, macroPeriod, macroRunId, tripRateSet, utdfMode, tripDistribution, deterrenceSet, skimMode, costMatrix, modeChoice;
         std::vector<std::string> periods; // --period, repeatable (M10.4)
         std::filesystem::path utdfFile;
         bool meso = false, nodeAnalysis = false, utdfUnsignalised = false;
-        bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false;
-        bool arrivalPhases = false, waitCauses = false;
+        std::optional<int> iterations; std::optional<double> gap; // --dynamic-assignment (D549)
+        bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false, priorityLines = false, arrivalPhases = false, waitCauses = false;
         DischargeOptions discharge;
         double binWidth = 10;
         unsigned threads = 0; // --threads: 0 is one per hardware thread (D152)
@@ -247,7 +255,7 @@ int main(int argc, char** argv) {
                              "Usage: multra-cli [seed] [--seed N] [--data-dir DIR]\n"
                              "       [--scenario FILE] [--events FILE]\n"
                              "       [--project FILE.traffic.json [--seeds LIST [--compare FILE] | --macro PERIOD | --macro-run ID | --meso] [--csv FILE] [--lane-changes] [--segment-times]\n"
-                             "        [--stop-lines] [--arrival-phases [--phase-bin S]] [--wait-causes] [--discharge]]\n"
+                             "        [--stop-lines] [--priority-lines] [--arrival-phases [--phase-bin S]] [--wait-causes] [--discharge]]\n"
                              "Outputs completed-trip diagnostics, not HCM control delay or LOS.\n"
                              "--project adds simulated movement delay and approach queues (M2.5).\n"
                              "--seeds LIST (with --project, e.g. 42-51 or 1,5,9) runs each seed and reports n, mean,\n"
@@ -260,6 +268,7 @@ int main(int argc, char** argv) {
                              "--lane-changes adds where lane changes happen and dead-end waits (M3.2.8c).\n"
                              "--segment-times adds each movement's mean time to every segment (M3.2.8c).\n"
                              "--stop-lines adds each signal head's stop-line discharge (M3.2.8c).\n"
+                             "--priority-lines adds each conflict area's waiting-line counts and follow-up headways (D528).\n"
                              "--arrival-phases adds the cycle phase of segment entries and first stops (M3.2.8c),\n"
                              "  in --phase-bin S second bins (default 10).\n"
                              "--discharge adds unvalidated lane/cycle headways and startup estimates (ranks 3-5, 1-2).\n"
@@ -271,6 +280,8 @@ int main(int argc, char** argv) {
                              "  Frank-Wolfe and reports every link's flow, V/C and time (S2.3). PERIOD is a study period\n"
                              "  id, or matrix:ID for a matrix with its own times.\n"
                              "--macro-run ID (with --project, alone) runs a saved Macro definition's period and settings.\n"
+                             "--dynamic-assignment OUT [--meso] [--iterations N] [--gap G] (with --project) runs the M9/M11.5 MSA loop.\n"
+                             "--route-costs FILE (with --project, a single run or --seeds) uses a dynamic assignment's weights;\n--consistency-report OUT --project P [--seeds LIST] [--csv FILE] compares Macro, Meso and Micro on the study area.\n"
                              "--procedure ID (with --project, alone) runs a saved procedure's steps in order (JSON only).\n"
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
                              "  transmission model and reports each link's flows, density, travel time and queue by slice (M11.4).\n"
@@ -292,6 +303,7 @@ int main(int argc, char** argv) {
             if (arg == "--lane-changes") { laneChanges = true; continue; }
             if (arg == "--segment-times") { segmentTimes = true; continue; }
             if (arg == "--stop-lines") { stopLines = true; continue; }
+            if (arg == "--priority-lines") { priorityLines = true; continue; }
             if (arg == "--arrival-phases") { arrivalPhases = true; continue; }
             if (arg == "--wait-causes") { waitCauses = true; continue; }
             if (arg == "--utdf-unsignalised") { utdfUnsignalised = true; continue; }
@@ -303,7 +315,8 @@ int main(int argc, char** argv) {
             if (arg == "--seed" || arg == "--data-dir" || arg == "--scenario" || arg == "--events" ||
                 arg == "--project" || arg == "--csv" || arg == "--phase-bin" || arg == "--seeds" || arg == "--compare" ||
                 arg == "--threads" || arg == "--macro" || arg == "--trip-generation" || arg == "--trip-distribution" ||
-                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--mode-choice" || arg == "--period" || arg == "--macro-run" || arg == "--procedure" || arg == "--export-utdf" || arg == "--utdf-mode") {
+                arg == "--deterrence" || arg == "--skim-mode" || arg == "--cost-matrix" || arg == "--mode-choice" || arg == "--period" || arg == "--macro-run" || arg == "--procedure" || arg == "--export-utdf" || arg == "--utdf-mode" || arg == "--route-costs" ||
+                arg == "--dynamic-assignment" || arg == "--iterations" || arg == "--gap") {
                 if (++i == argc) throw std::invalid_argument("Missing value for " + arg);
                 if (arg == "--seed") {
                     if (seedSet) throw std::invalid_argument("Specify seed only once");
@@ -341,6 +354,13 @@ int main(int argc, char** argv) {
                     if (slot) throw std::invalid_argument("Specify " + arg + " only once");
                     slot = argv[i];
                 }
+                else if (arg == "--dynamic-assignment") dynamicOut = argv[i];
+                else if (arg == "--iterations") iterations = std::stoi(argv[i]);
+                else if (arg == "--gap") gap = std::stod(argv[i]);
+                else if (arg == "--route-costs") {
+                    if (!routeCostsFile.empty()) throw std::invalid_argument("Specify --route-costs only once");
+                    routeCostsFile = argv[i];
+                }
                 else if (arg == "--procedure") {
                     if (procedureId) throw std::invalid_argument("Specify --procedure only once");
                     procedureId = argv[i];
@@ -374,6 +394,7 @@ int main(int argc, char** argv) {
         if (laneChanges && projectFile.empty()) throw std::invalid_argument("--lane-changes needs --project");
         if (segmentTimes && projectFile.empty()) throw std::invalid_argument("--segment-times needs --project");
         if (stopLines && projectFile.empty()) throw std::invalid_argument("--stop-lines needs --project");
+        if (priorityLines && projectFile.empty()) throw std::invalid_argument("--priority-lines needs --project");
         if (arrivalPhases && projectFile.empty()) throw std::invalid_argument("--arrival-phases needs --project");
         discharge.validateUsage(!projectFile.empty());
         if (waitCauses && projectFile.empty()) throw std::invalid_argument("--wait-causes needs --project");
@@ -381,20 +402,20 @@ int main(int argc, char** argv) {
         if (!compareFile.empty() && (projectFile.empty() || !seeds))
             throw std::invalid_argument("--compare needs --project and --seeds");
         if (threads && !seeds) throw std::invalid_argument("--threads needs --seeds");
-        if (macroPeriod && (projectFile.empty() || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases ||
+        if (macroPeriod && (projectFile.empty() || seeds || seedSet || laneChanges || segmentTimes || stopLines || priorityLines || arrivalPhases ||
                             waitCauses || discharge.enabled))
             throw std::invalid_argument("--macro needs --project and takes only --csv and --data-dir");
-        if (macroRunId && (projectFile.empty() || meso || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases ||
+        if (macroRunId && (projectFile.empty() || meso || seeds || seedSet || laneChanges || segmentTimes || stopLines || priorityLines || arrivalPhases ||
                            waitCauses || discharge.enabled || !compareFile.empty() || threads))
             throw std::invalid_argument("--macro-run needs --project and takes only --csv and --data-dir");
-        if (meso && (projectFile.empty() || macroPeriod || macroRunId || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases ||
+        if (meso && (projectFile.empty() || macroPeriod || macroRunId || seeds || seedSet || laneChanges || segmentTimes || stopLines || priorityLines || arrivalPhases ||
                      waitCauses || discharge.enabled))
             throw std::invalid_argument("--meso needs --project and takes only --csv and --data-dir");
         if (nodeAnalysis && (projectFile.empty() || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges || segmentTimes ||
-                             stopLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() || threads))
+                             stopLines || priorityLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() || threads))
             throw std::invalid_argument("--node-analysis needs --project and takes only --csv and --data-dir");
         if (tripRateSet && (projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges ||
-                            segmentTimes || stopLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() || threads ||
+                            segmentTimes || stopLines || priorityLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() || threads ||
                             !utdfFile.empty()))
             throw std::invalid_argument("--trip-generation needs --project and takes only --csv and --data-dir");
         if (!periods.empty() && !modeChoice) throw std::invalid_argument("--period needs --mode-choice");
@@ -402,29 +423,37 @@ int main(int argc, char** argv) {
         if ((deterrenceSet || skimMode || costMatrix) && !tripDistribution)
             throw std::invalid_argument("--deterrence, --skim-mode and --cost-matrix need --trip-distribution");
         if (tripDistribution && (!deterrenceSet || tripRateSet || projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId ||
-                                 seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases || waitCauses ||
+                                 seeds || seedSet || laneChanges || segmentTimes || stopLines || priorityLines || arrivalPhases || waitCauses ||
                                  discharge.enabled || !compareFile.empty() || threads || !utdfFile.empty()))
             throw std::invalid_argument("--trip-distribution needs --project and --deterrence and takes only --skim-mode, --cost-matrix, --mode-choice, --period, --csv and --data-dir");
         if (procedureId && (projectFile.empty() || !csvFile.empty() || macroPeriod || macroRunId || tripRateSet || tripDistribution || meso ||
-                            nodeAnalysis || seeds || seedSet || laneChanges || segmentTimes || stopLines || arrivalPhases || waitCauses ||
+                            nodeAnalysis || seeds || seedSet || laneChanges || segmentTimes || stopLines || priorityLines || arrivalPhases || waitCauses ||
                             discharge.enabled || !compareFile.empty() || threads || !utdfFile.empty()))
             throw std::invalid_argument("--procedure needs --project and takes only --data-dir");
+        if (!routeCostsFile.empty() && (projectFile.empty() || procedureId || modeChoice || tripDistribution || tripRateSet || macroPeriod ||
+                                        macroRunId || nodeAnalysis || !utdfFile.empty() || !compareFile.empty()))
+            throw std::invalid_argument("--route-costs needs --project and works with a single run or --seeds");
+        if ((iterations || gap) && dynamicOut.empty()) throw std::invalid_argument("--iterations and --gap need --dynamic-assignment");
+        if (!dynamicOut.empty() && (projectFile.empty() || procedureId || modeChoice || tripDistribution || tripRateSet || macroPeriod || macroRunId ||
+                                    nodeAnalysis || !utdfFile.empty() || !compareFile.empty() || seeds || !routeCostsFile.empty() || !csvFile.empty()))
+            throw std::invalid_argument("--dynamic-assignment needs --project and takes only --meso, --iterations, --gap, --seed and --data-dir");
         if (utdfMode && utdfFile.empty()) throw std::invalid_argument("--utdf-mode needs --export-utdf");
         if (utdfUnsignalised && utdfFile.empty()) throw std::invalid_argument("--utdf-unsignalised needs --export-utdf");
         if (!utdfFile.empty() && (projectFile.empty() || nodeAnalysis || meso || macroPeriod || macroRunId || seeds || seedSet || laneChanges ||
-                                  segmentTimes || stopLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() ||
+                                  segmentTimes || stopLines || priorityLines || arrivalPhases || waitCauses || discharge.enabled || !compareFile.empty() ||
                                   threads || !csvFile.empty()))
             throw std::invalid_argument("--export-utdf needs --project and takes only --utdf-mode, --utdf-unsignalised and --data-dir");
         if (seeds) {
             if (projectFile.empty()) throw std::invalid_argument("--seeds needs --project");
             if (seedSet) throw std::invalid_argument("--seeds cannot be combined with a single seed");
-            if (laneChanges || segmentTimes || stopLines || arrivalPhases || waitCauses || discharge.enabled)
+            if (laneChanges || segmentTimes || stopLines || priorityLines || arrivalPhases || waitCauses || discharge.enabled)
                 throw std::invalid_argument("--seeds cannot be combined with the single-run diagnostic flags");
         }
         if (!projectFile.empty()) {
             if (!scenarioFile.empty() || !eventsFile.empty())
                 throw std::invalid_argument("--project cannot be combined with --scenario or --events");
             if (procedureId) return runProcedureProject(projectFile, data, *procedureId);
+            if (!dynamicOut.empty()) return runDynamicAssignmentProject(projectFile, dynamicOut, data, seed, iterations.value_or(20), gap.value_or(0.05), meso);
             if (modeChoice) return runModeChoiceProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""),
                                                         costMatrix.value_or(""), *modeChoice, periods);
             if (tripDistribution) return runTripDistributionProject(projectFile, csvFile, data, *tripDistribution, *deterrenceSet, skimMode.value_or(""), costMatrix.value_or(""));
@@ -436,7 +465,7 @@ int main(int argc, char** argv) {
             if (!utdfFile.empty()) return runUtdfExport(projectFile, utdfFile, UtdfOptions{utdfMode == std::optional<std::string>("mirrored") ? UtdfMode::mirrored : UtdfMode::geometric, utdfUnsignalised, {}});
             if (!compareFile.empty()) return runComparison(projectFile, compareFile, csvFile, data, *seeds, threads);
             if (seeds) return runBatch(projectFile, csvFile, data, *seeds, threads);
-            return runProject(projectFile, csvFile, data, seed, laneChanges, segmentTimes, stopLines, arrivalPhases ? binWidth : 0, waitCauses, discharge);
+            return runProject(projectFile, csvFile, data, seed, laneChanges, segmentTimes, stopLines, priorityLines, arrivalPhases ? binWidth : 0, waitCauses, discharge);
         }
         if (scenarioFile.empty()) scenarioFile = data / "scenarios" / "crossing.json";
         const auto loaded = loadScenario(scenarioFile, data);

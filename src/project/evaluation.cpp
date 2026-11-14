@@ -297,6 +297,33 @@ Json segmentTimeJson(const SegmentTimeReport& r) {
     }
     return j;
 }
+namespace {
+// D534 (PRIORITY_LINES §5): saturated gaps, the per-n means and the fit (null below two n).
+Json sieglochJson(const PriorityLineRow& z) {
+    Json points = Json::array();
+    for (const auto& p : z.sieglochPoints) points.push_back({{"n", p.vehicles}, {"gaps", p.gaps}, {"meanGap", p.meanGap}});
+    Json j{{"gaps", z.sieglochGaps}, {"points", points}};
+    j["t0"] = z.siegloch ? Json(z.siegloch->t0) : Json(nullptr);
+    j["tf"] = z.siegloch ? Json(z.siegloch->tf) : Json(nullptr);
+    j["tc"] = z.siegloch ? Json(z.siegloch->tc) : Json(nullptr);
+    return j;
+}
+}
+Json priorityLineJson(const PriorityLineReport& r) {
+    Json j;
+    j["validated"] = false;
+    j["measure"] = "per conflict area: minor vehicles past the waiting line and major vehicles into the area in the window, and follow-up "
+                   "headways between queued minor vehicles in one major gap (PRIORITY_LINES, D528); not an HCM capacity; one run";
+    j["rows"] = Json::array();
+    const auto value = [](const std::optional<double>& v) { return v ? Json(*v) : Json(nullptr); };
+    for (const auto& z : r.rows)
+        j["rows"].push_back({{"zone", z.zoneId}, {"control", z.control == ZoneControl::stop ? "stop" : "yield"}, {"window", z.window},
+                             {"minorCrossed", z.minorCrossed}, {"minorPerHour", z.minorPerHour},
+                             {"majorEntered", z.majorEntered}, {"majorPerHour", z.majorPerHour},
+                             {"followUps", z.followUps}, {"followUpMean", value(z.followUpMean)}, {"followUpSd", value(z.followUpSd)},
+                             {"excluded", z.excluded}, {"siegloch", sieglochJson(z)}});
+    return j;
+}
 Json stopLineJson(const StopLineReport& r) {
     Json j;
     j["validated"] = false;

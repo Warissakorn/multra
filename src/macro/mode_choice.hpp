@@ -29,6 +29,11 @@ struct ModeSplit {
     std::vector<DistributionMatrix> persons; // one per alternative, in the given order
     std::vector<ModeSplitIssue> issues;      // non-empty: nothing else is filled
 };
+// D548 (MODE_CHOICE_LOGSUM §3): the composite cost of one purpose's alternatives sharing lambda = -theta,
+// K_ij = -ln(sum over branches exp W) / lambda (Ortuzar and Willumsen 2011, Eq. 6.10; W as nestedLogitShares,
+// the MNL without nests); +infinity where no alternative is available.
+double logsum(const std::vector<double>& utilities, const std::vector<int>& nestOf, const std::vector<double>& phi);
+DistributionMatrix compositeCost(const std::vector<ModeAlternativeInput>&, const ModeNests&, double lambda);
 ModeSplit splitModes(const DistributionMatrix& trips, const std::vector<ModeAlternativeInput>&, const ModeNests& = {});
 // fPA T + fAP T^T: the P-A trips travelling production to attraction and back in one period.
 DistributionMatrix directionalOd(const DistributionMatrix& trips, double fPA, double fAP);

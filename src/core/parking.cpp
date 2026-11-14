@@ -76,8 +76,9 @@ void initializeLots(SimState& state) {
             for (double sum = lot.initialTypes[0].share; pick + 1 < lot.initialTypes.size() && u >= sum;)
                 sum += lot.initialTypes[++pick].share;
             const auto type = static_cast<std::uint32_t>(slotOf(scenario.vehicleTypes, lot.initialTypes[pick].vehicleTypeId));
-            auto vehicle = detail::samplePending(state, rng, PendingVehicle::kNoInput, 0, type, 0);
-            if (perInput) { vehicle.streamKey = state.index->keyOfLot[k]; vehicle.ordinal = state.lots[k].generated++; }
+            auto vehicle = perInput ? detail::samplePending(state, rng, PendingVehicle::kNoInput, 0, type, 0,
+                                                            state.index->keyOfLot[k], state.lots[k].generated++)
+                                    : detail::samplePending(state, rng, PendingVehicle::kNoInput, 0, type, 0);
             park(state, k, vehicle, 0);
         }
     }

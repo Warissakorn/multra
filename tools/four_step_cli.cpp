@@ -87,6 +87,10 @@ int runProcedureProject(const std::filesystem::path& file, const std::filesystem
     std::cout << result.dump(2) << '\n';
     for (const auto& s : run.steps)
         for (const auto& i : s.issues) std::cerr << "MULTRA: step " << s.index << " refused: " << i.code << " at " << i.path << '\n';
+    if (run.feedback) // PROCEDURE_FEEDBACK §4 (D547): one line per iteration
+        for (const auto& it : run.feedback->iterations)
+            std::cerr << "MULTRA: feedback iteration " << it.n << (it.tmf ? " TMF " + std::to_string(*it.tmf) : std::string())
+                      << " assignment gap " << it.relativeGap << '\n';
     return std::cout && run.completed() ? 0 : 1;
 }
 }

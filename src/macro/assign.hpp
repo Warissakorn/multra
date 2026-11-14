@@ -16,6 +16,10 @@ MacroTree shortestTree(const MacroGraph&, std::size_t origin, const std::string&
 // (graph.nodes.size()).
 std::vector<std::vector<double>> freeFlowSkim(const MacroGraph&, const std::vector<std::size_t>& origins,
                                               const std::vector<std::size_t>& destinations, const std::string& mode);
+// The same skim at given link times, seconds per link (PROCEDURE_FEEDBACK §3, D547: an assignment's congested times).
+std::vector<std::vector<double>> skimAt(const MacroGraph&, const std::vector<std::size_t>& origins,
+                                        const std::vector<std::size_t>& destinations, const std::string& mode,
+                                        const std::vector<double>& times);
 // One class loaded on its shortest paths: veh/h per link, and sum of demand x shortest time.
 // S5.3 (STUDY_AREA §6, D329): with `paths`, also each cell's path as link indices in travel order
 // (empty when it has none), indexed as `cls.cells`.

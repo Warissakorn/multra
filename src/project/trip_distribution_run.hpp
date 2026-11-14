@@ -6,6 +6,7 @@
 #include "trip_generation_run.hpp"
 #include "../macro/trip_distribution.hpp"
 #include <functional>
+#include <map>
 
 namespace multra {
 // The run's named stages; the last one reported before a refusal is the refusing stage.
@@ -19,6 +20,7 @@ struct TripDistributionPurpose {
     DistributionConstraint constraint{DistributionConstraint::doubly}; // D3 (§15): from the deterrence set
     std::vector<double> attractionsModelled; // column sums of the trips (filled for every purpose)
     std::vector<double> productionsModelled; // D4 (§16): row sums of the trips (filled for every purpose)
+    std::string costSource;             // D548 (MODE_CHOICE_LOGSUM §5): "logsum" when a composite replaced the skim
 };
 struct TripDistributionRun {
     TripGenerationRun generation;       // zone ids, productions, attractions, the rate set and its unit
@@ -44,5 +46,8 @@ TripDistributionRun runTripDistribution(const ProjectDocument&, const std::files
                                         const std::string& deterrenceSetId, const std::string& mode, const std::string& costMatrixId = {},
                                         InputManifest* = nullptr,
                                         const std::function<void(TripDistributionStage)>& stage = {},
-                                        const DistributionSettings& settings = {});
+                                        const DistributionSettings& settings = {},
+                                        const std::vector<double>* linkTimes = nullptr, // D547: congested seconds per Macro link
+                                        const std::map<std::string, DistributionMatrix>* purposeCosts = nullptr, // D548: per-purpose composites
+                                        std::vector<ValidationIssue>* deferred = nullptr); // D548: balancing refusals kept, not thrown
 }

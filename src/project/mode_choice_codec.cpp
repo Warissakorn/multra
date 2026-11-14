@@ -93,7 +93,7 @@ ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool re
         for (std::size_t p = 0; p < items.size(); ++p) {
             const auto at = path + ".purposes[" + std::to_string(p) + "]";
             const auto& item = items[p];
-            if (!item.is_object() || !onlyKeys(item, {"id", "alternatives", "nests"})) { bad(issues, at); continue; }
+            if (!item.is_object() || !onlyKeys(item, {"id", "alternatives", "nests", "distributionCost"})) { bad(issues, at); continue; }
             ModeChoicePurpose purpose;
             if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
             else if (purpose.id = item.at("id").get<std::string>(); !ids.insert(purpose.id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
@@ -113,6 +113,14 @@ ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool re
                 return a.is_object() && a.contains("constant") && a.at("constant").is_number() && a.at("constant").get<double>() == 0; });
             if (!reference) bad(issues, at);
             if (item.contains("nests")) purpose.nests = nests(item.at("nests"), at + ".nests", purpose, issues);
+            if (item.contains("distributionCost")) { // D548 (MODE_CHOICE_LOGSUM §2): one shared, negative coefficient
+                const auto& value = item.at("distributionCost");
+                const auto& as = purpose.alternatives;
+                const bool shared = std::all_of(as.begin(), as.end(), [&](const auto& a) { return a.timeCoefficient == as.front().timeCoefficient; });
+                if (!value.is_string() || value.get<std::string>() != "logsum" || !shared || !(as.front().timeCoefficient < 0))
+                    bad(issues, at + ".distributionCost");
+                else purpose.distributionCost = "logsum";
+            }
             set.purposes.push_back(std::move(purpose));
         }
     }
@@ -141,6 +149,7 @@ Json modeChoiceSetJson(const ModeChoiceSet& s) {
             for (const auto& n : p.nests) list.push_back({{"id", n.id}, {"phi", n.phi}, {"alternatives", n.alternatives}});
             purpose["nests"] = list;   // N1: written only when nested, so MNL sets keep their bytes
         }
+        if (p.distributionCost) purpose["distributionCost"] = *p.distributionCost; // D548: only when set
         purposes.push_back(std::move(purpose));
     }
     return {{"id", s.id}, {"name", s.name}, {"source", source}, {"costUnit", s.costUnit}, {"purposes", purposes}};

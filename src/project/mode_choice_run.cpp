@@ -19,26 +19,40 @@ void add(DistributionMatrix& into, const DistributionMatrix& m, double scale = 1
 ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::path& data, const std::string& rateSetId,
                             const std::string& deterrenceSetId, const std::string& skimMode, const std::string& costMatrixId,
                             const std::string& setId, const std::vector<std::string>& periodIds,
-                            InputManifest* manifest, const std::function<void(ModeChoiceStage)>& stage) {
+                            InputManifest* manifest, const std::function<void(ModeChoiceStage)>& stage,
+                            const std::vector<double>* linkTimes) {
     const auto enter = [&](ModeChoiceStage s) { if (stage) stage(s); };
     ModeChoiceRun run;
     enter(ModeChoiceStage::distribution);
-    run.distribution = runTripDistribution(d, data, rateSetId, deterrenceSetId, skimMode, costMatrixId, manifest);
+    // D548: balancing refusals are held until the set is known, because a logsum purpose balances again on its
+    // composite; without one they are thrown here, in their usual order.
+    std::vector<ValidationIssue> skimRefusals;
+    run.distribution = runTripDistribution(d, data, rateSetId, deterrenceSetId, skimMode, costMatrixId, manifest, {}, {}, linkTimes, nullptr, &skimRefusals);
     const auto& zoneIds = run.distribution.generation.zoneIds;
 
-    enter(ModeChoiceStage::set);
+    if (skimRefusals.empty()) enter(ModeChoiceStage::set); // else entered once the set is known to balance again
     // E2 (D479): the project's own sets come first; one sharing the chosen id with a catalog set is refused
     // at the project's row, never a silent override (as D474's deterrence sets).
-    std::vector<ResolvedModeChoiceSet> sets;
-    for (std::size_t k = 0; k < d.modeChoiceSets.size(); ++k) sets.push_back({d.modeChoiceSets[k], "modeChoiceSets[" + std::to_string(k) + "]"});
-    const auto owned = sets.size();
-    for (auto& s : resolveModeChoiceSets(data, manifest)) sets.push_back(std::move(s));
-    const auto found = std::find_if(sets.begin(), sets.end(), [&](const auto& s) { return s.set.id == setId; });
-    if (found == sets.end()) throw ValidationError({{"MODE_CHOICE_SET_UNKNOWN", "modeChoiceSets"}});
-    if (static_cast<std::size_t>(found - sets.begin()) < owned &&
-        std::any_of(sets.begin() + static_cast<std::ptrdiff_t>(owned), sets.end(), [&](const auto& s) { return s.set.id == setId; }))
-        throw ValidationError({{"DUPLICATE_ID", found->path + ".id"}});
-    run.set = found->set; run.setPath = found->path;
+    try {
+        std::vector<ResolvedModeChoiceSet> sets;
+        for (std::size_t k = 0; k < d.modeChoiceSets.size(); ++k) sets.push_back({d.modeChoiceSets[k], "modeChoiceSets[" + std::to_string(k) + "]"});
+        const auto owned = sets.size();
+        for (auto& s : resolveModeChoiceSets(data, manifest)) sets.push_back(std::move(s));
+        const auto found = std::find_if(sets.begin(), sets.end(), [&](const auto& s) { return s.set.id == setId; });
+        if (found == sets.end()) throw ValidationError({{"MODE_CHOICE_SET_UNKNOWN", "modeChoiceSets"}});
+        if (static_cast<std::size_t>(found - sets.begin()) < owned &&
+            std::any_of(sets.begin() + static_cast<std::ptrdiff_t>(owned), sets.end(), [&](const auto& s) { return s.set.id == setId; }))
+            throw ValidationError({{"DUPLICATE_ID", found->path + ".id"}});
+        run.set = found->set; run.setPath = found->path;
+    } catch (const ValidationError&) { // a refusal of the distribution comes first, as before D548
+        if (!skimRefusals.empty()) throw ValidationError(std::move(skimRefusals));
+        throw;
+    }
+    if (!skimRefusals.empty()) {
+        if (std::none_of(run.set.purposes.begin(), run.set.purposes.end(), [](const auto& p) { return p.distributionCost.has_value(); }))
+            throw ValidationError(std::move(skimRefusals));
+        enter(ModeChoiceStage::set);
+    }
     std::vector<std::size_t> purposeAt;
     for (const auto& p : run.distribution.purposes) {
         const auto& ps = run.set.purposes;
@@ -61,7 +75,7 @@ ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::pat
             if (!mode) continue;
             if (std::find(known.begin(), known.end(), *mode) == known.end())
                 unknown.push_back({"UNKNOWN_MODE", run.setPath + ".purposes[" + std::to_string(purposeAt[p]) + "].alternatives[" + std::to_string(k) + "].modeId"});
-            else if (!skims.count(*mode)) skims[*mode] = zoneSkim(d, network.graph, zoneIds, *mode);
+            else if (!skims.count(*mode)) skims[*mode] = zoneSkim(d, network.graph, zoneIds, *mode, linkTimes);
         }
     }
     if (!unknown.empty()) throw ValidationError(std::move(unknown));
@@ -73,6 +87,8 @@ ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::pat
     };
     const auto n = zoneIds.size();
     std::vector<ValidationIssue> issues;
+    std::vector<std::vector<ModeAlternativeInput>> inputsOf;
+    std::vector<ModeNests> nestsOf;
     for (std::size_t p = 0; p < purposeAt.size(); ++p) {
         ModeChoicePurposeResult purpose{run.distribution.purposes[p].id, {}};
         std::vector<ModeAlternativeInput> inputs;
@@ -94,13 +110,34 @@ ModeChoiceRun runModeChoice(const ProjectDocument& d, const std::filesystem::pat
                         if (setPurpose.alternatives[k].id == member) nests.nestOf[k] = static_cast<int>(n);
             }
         }
-        auto split = splitModes(run.distribution.purposes[p].result.trips, inputs, nests);
+        inputsOf.push_back(std::move(inputs)); nestsOf.push_back(std::move(nests));
+        run.purposes.push_back(std::move(purpose));
+    }
+    // D548 (MODE_CHOICE_LOGSUM §4): a logsum purpose's distribution runs again on its composite cost (Eq. 6.10),
+    // after Eq. 6.11 (beta <= lambda) is checked; the other purposes keep the skim.
+    std::map<std::string, DistributionMatrix> composites;
+    for (std::size_t p = 0; p < purposeAt.size(); ++p) {
+        const auto& setPurpose = run.set.purposes[purposeAt[p]];
+        if (!setPurpose.distributionCost) continue;
+        const double lambda = -setPurpose.alternatives.front().timeCoefficient;
+        if (run.distribution.purposes[p].beta > lambda)
+            issues.push_back({"MODE_CHOICE_STRUCTURE_INVALID", run.setPath + ".purposes[" + std::to_string(purposeAt[p]) + "]"});
+        else composites[setPurpose.id] = compositeCost(inputsOf[p], nestsOf[p], lambda);
+    }
+    if (!issues.empty()) throw ValidationError(std::move(issues));
+    if (!composites.empty()) { // the files were recorded by the first distribution; keep its manifest
+        auto inputs = std::move(run.distribution.generation.inputManifest);
+        run.distribution = runTripDistribution(d, data, rateSetId, deterrenceSetId, skimMode, costMatrixId, nullptr, {}, {}, linkTimes, &composites);
+        run.distribution.generation.inputManifest = std::move(inputs);
+    }
+    for (std::size_t p = 0; p < purposeAt.size(); ++p) {
+        auto& purpose = run.purposes[p];
+        auto split = splitModes(run.distribution.purposes[p].result.trips, inputsOf[p], nestsOf[p]);
         std::set<std::size_t> origins;
         for (const auto& i : split.issues)
             if (origins.insert(i.origin).second) issues.push_back({"MODE_CHOICE_NO_ALTERNATIVE", "zones[" + zoneIndex(i.origin) + "]." + purpose.id});
         if (split.issues.empty())
             for (std::size_t k = 0; k < purpose.alternatives.size(); ++k) purpose.alternatives[k].persons = std::move(split.persons[k]);
-        run.purposes.push_back(std::move(purpose));
     }
     if (!issues.empty()) throw ValidationError(std::move(issues));
 

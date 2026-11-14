@@ -4,9 +4,26 @@
 #include "presentation.hpp"
 #include "automation_server.hpp"
 #include "editor_window.hpp"
+#include "nodes_panel.hpp"
+#include "conflicts_panel.hpp"
+#include "study_periods_panel.hpp"
+#include "modes_panel.hpp"
+#include "od_panel.hpp"
+#include "speed_decisions_panel.hpp"
+#include "speed_areas_panel.hpp"
+#include "counters_panel.hpp"
+#include "sections_panel.hpp"
+#include "link_types_panel.hpp"
+#include "zones_panel.hpp"
+#include "cross_sections_panel.hpp"
+#include "street_segments_panel.hpp"
+#include "editor_automation_state.hpp"
+#include "editor_recovery_state.hpp"
+#include "editor_run_state.hpp"
+#include "editor_batch_state.hpp"
 #include "message_label.hpp"
-#include "editor_macro.hpp"
-#include "editor_meso.hpp"
+#include "macro_panel.hpp"
+#include "meso_panel.hpp"
 #include "behaviour_lab_window.hpp"
 #include "../editor/path.hpp"
 #include "editor_style.hpp"
@@ -43,6 +60,7 @@
 
 namespace multra {
 EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& language,QWidget* parent,bool deferRecovery) : QMainWindow(parent), data_(data), deferRecovery_(deferRecovery) {
+    batchSession_=std::make_unique<BatchSession>();runSession_=std::make_unique<RunSession>();recoverySession_=std::make_unique<RecoverySession>();automationHost_=std::make_unique<AutomationHost>();
     // Numbers are data a user reads back into the project file, so every widget shows Latin
     // digits whatever the system locale. setLocale as well as setDefault: the QMainWindow base has
     // already resolved the system locale, and every child and dialog inherits the window's.
@@ -119,11 +137,11 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         else if (index==4) properties_->setCurrentIndex(2);
         else if (index==1 || index==2) properties_->setCurrentIndex(0);
         else if (index==9) showConflicts(); // the tool edits what that tab lists
-        else if (index==10) showCounters();
-        else if (index==11) showSections();
-        else if (index==12) showZones(); // M8.6a
+        else if (index==10) objects_->setCurrentWidget(counters_);
+        else if (index==11) objects_->setCurrentWidget(sections_);
+        else if (index==12) objects_->setCurrentWidget(zones_); // M8.6a
         else if (index==13) showNodes(); // S0.1
-        else if (index==14) showStreetSegments(); // S3.3b
+        else if (index==14) objects_->setCurrentWidget(streetSegments_); // S3.3b
     });
     connect(grid_,&QDoubleSpinBox::valueChanged,this,[this](double n){canvas_->grid=n;canvas_->redraw();});
     canvas_->selectionChanged=[this]{
@@ -187,7 +205,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         execute("editorMoveHead",[&](auto& d){moveSignalHead(d,id,station);});
     };
     canvas_->measured=[this](Point a,Point b,bool calibration){measure(a,b,calibration);};
-    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); buildCounters(); buildSections(); buildSpeedDecisions(); buildSpeedAreas(); buildZones(); buildNodes(); buildOd(); buildPeriods(); buildModes(); buildLinkTypes(); buildStreetSegments(); buildCrossSections(); buildRecovery(); buildPalette();
+    buildDemandTables(); buildRouting(); buildRunControls(); buildBehaviourLab(); buildResults(); buildConflicts(); counters_=new CountersPanel(objects_,objectTabContext());addObjectPage(counters_,"editorCounterTable"); canvas_->counterDraftCommitted=[this](std::vector<MeasurementLine> lines){counters_->add(std::move(lines));}; sections_=new SectionsPanel(objects_,objectTabContext());addObjectPage(sections_,"editorSectionTable"); canvas_->sectionCommitted=[this](SectionLine start,SectionLine end){sections_->commitTool(start,end);}; speedDecisions_=new SpeedDecisionsPanel(objects_,objectTabContext());addObjectPage(speedDecisions_,"editorSpeedDecisionTable"); speedAreas_=new SpeedAreasPanel(objects_,objectTabContext());addObjectPage(speedAreas_,"editorReducedSpeedAreaTable"); zones_=new ZonesPanel(objects_,objectTabContext(),{[this](const std::string& id){editLot(id);},[this]{return selectedStreetSegment();}});addObjectPage(zones_,"editorZoneTable"); canvas_->zoneCommitted=[this](std::vector<Point> polygon){return zones_->commitTool(std::move(polygon));}; buildNodes(); od_=new OdPanel(objects_,objectTabContext(),{[this]{return compositionChoices();},[this]{return periodChoices();},[this]{return modeChoices();}});addObjectPage(od_,"editorOdTable"); periods_=new StudyPeriodsPanel(objects_,objectTabContext());addObjectPage(periods_,"editorPeriodTable"); modes_=new ModesPanel(objects_,objectTabContext(),[this]{return compositionChoices();});addObjectPage(modes_,"editorModeTable"); linkTypes_=new LinkTypesPanel(objects_,objectTabContext());addObjectPage(linkTypes_,"editorLinkTypeTable"); streetSegments_=new StreetSegmentsPanel(objects_,objectTabContext(),{[this]{return crossSectionRows();},[this]{return defaultCrossSection();},[this]{return defaultTemplateLabel();},[this]{return priorityDefaults();},[this]{findCrossingsDialog();},[this]{seamChecksDialog();},[this]{canvas_->redraw();},[this](std::string id,bool detached){canvas_->setHighlightedStreetSegment(std::move(id),detached);}});addObjectPage(streetSegments_,"editorStreetSegmentTable"); canvas_->streetSegmentPreview=[this](const std::vector<Point>& centreline){return streetSegments_->preview(centreline);}; canvas_->streetSegmentCommitted=[this](std::vector<Point> centreline){const int level=visibleLevel_&&visibleLevel_->currentData().isValid()?visibleLevel_->currentData().toInt():0;return streetSegments_->commitTool(std::move(centreline),level);}; crossSections_=new CrossSectionsPanel(objects_,objectTabContext(),[this]{return crossSectionRows();});addObjectPage(crossSections_,"editorCrossSectionTable"); buildRecovery(); buildPalette();
     buildMapActions();resize(1440,900);buildWorkspace();
     history_.reset(newProjectDocument()); translate(); refresh();canvas_->centerOn(0,0);
 }
@@ -233,7 +251,7 @@ void EditorWindow::translate() {
         if(english)for(int column=0;column<table->columnCount();++column)
             if(auto* item=table->horizontalHeaderItem(column))item->setText(item->text().toUpper());
     }
-    translateDemand(); translateResults(); translateConflicts(); translateCounters(); translateSections(); translateSpeedDecisions(); translateSpeedAreas(); translateZones(); translateNodes(); translateOd(); translatePeriods(); translateModes(); translateLinkTypes(); translateStreetSegments(); translateCrossSections(); translatePalette(); refreshToolHint();
+    translateDemand(); translateResults(); translateConflicts(); counters_->translate(); sections_->translate(); speedDecisions_->translate(); speedAreas_->translate(); zones_->translate(); nodes_->translate(); od_->translate(); periods_->translate(); modes_->translate(); linkTypes_->translate(); streetSegments_->translate(); crossSections_->translate(); translatePalette(); refreshToolHint();
     if (lab_) lab_->retranslate();
     canvas_->setDemandLabels(text("editorInputRateUnit"),text("editorInputCanvasPeriods"));
     canvas_->setAccessibleName(text("editorTitle")); grid_->setAccessibleName(text("editorGrid"));
@@ -285,9 +303,9 @@ void EditorWindow::refresh(bool modelChanged) {
     const auto generation=QVariant::fromValue<qulonglong>(history_.generation());
     if(property("editorViewGeneration")!=generation) {
         const bool replacing=property("editorViewGeneration").isValid();setProperty("editorViewGeneration",generation);
-        tableRevision_=diagnosticRevision_=automaticRevision_=conflictRevision_=counterRevision_=sectionRevision_=UINT64_MAX;
-        speedDecisionRevision_=speedAreaRevision_=zoneRevision_=nodeRevision_=streetSegmentRevision_=crossSectionRevision_=UINT64_MAX;
-        odRevision_=periodRevision_=modeRevision_=linkTypeRevision_=UINT64_MAX;zoneConnectorsOf_.clear();
+        tableRevision_=diagnosticRevision_=UINT64_MAX;conflicts_->invalidate();counters_->invalidate();sections_->invalidate();
+        speedDecisions_->invalidate();speedAreas_->invalidate();zones_->invalidate();crossSections_->invalidate();streetSegments_->invalidate();nodes_->invalidate();
+        periods_->invalidate();modes_->invalidate();od_->invalidate();linkTypes_->invalidate();
         diagnostics_.clear();rejected_.clear();readiness_.clear();readinessChecked_=false;
         if(replacing)error_->clear();
         for(auto* table:findChildren<QTableWidget*>()) {
@@ -329,6 +347,6 @@ void EditorWindow::refresh(bool modelChanged) {
     bgX_->setValue(b.x);bgY_->setValue(b.y);bgScale_->setValue(b.metresPerPixel);bgAngle_->setValue(b.rotation);bgOpacity_->setValue(b.opacity);
     actions_.at("editorDeleteSelected")->setEnabled(!canvas_->selection().empty());
     actions_.at("editorRotate")->setEnabled(canvas_->rotationPivot().has_value());
-    refreshTables(modelChanged);if(modelChanged)refreshDemand();refreshConflicts();refreshCounters();refreshSections();refreshSpeedDecisions();refreshSpeedAreas();refreshZones();refreshNodes();refreshOd();refreshPeriods();refreshModes();refreshLinkTypes();refreshLinkTypeField();refreshStreetSegments();refreshCrossSections();refreshDiagnostics();refreshRun();
+    refreshTables(modelChanged);if(modelChanged)refreshDemand();conflicts_->refresh();counters_->refresh();sections_->refresh();speedDecisions_->refresh();speedAreas_->refresh();zones_->refresh();nodes_->refresh();od_->refresh();periods_->refresh();modes_->refresh();linkTypes_->refresh();refreshLinkTypeField();streetSegments_->refresh();crossSections_->refresh();refreshDiagnostics();refreshRun();
 }
 }

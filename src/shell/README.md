@@ -21,21 +21,44 @@ replaced atomically (`QSaveFile`).
 
 | Area | Sources |
 |---|---|
-| Window, workspace, tables, inspector | `editor_window.cpp`, `editor_workspace.cpp`, `editor_tables.cpp`, `editor_inspector.cpp`, `editor_palette.cpp` (command palette), `editor_commands.cpp`, `editor_history.cpp`, `editor_input.cpp`, `editor_modes.cpp` |
-| Files and recovery | `editor_files.cpp`, `editor_recovery.cpp`, `editor_side_files.cpp`, `editor_storage.cpp` |
-| Drawing | `editor_creation.cpp`, `editor_connectors.cpp`, `editor_rotation.cpp`, `editor_cross_sections.cpp`, `editor_link_types.cpp`, `editor_appearance.cpp`, `editor_diagnostics.cpp` |
-| Control | `editor_priority.cpp`, `editor_control.cpp`, `editor_signal.cpp` |
-| Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp`, `editor_speed_areas.cpp`, `editor_speed_decisions.cpp`, `editor_behaviour.cpp`, `editor_zones.cpp` (Zones tab), `editor_od.cpp` (OD matrices tab) |
-| Street segments and Nodes | `editor_street_segments.cpp`, `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp`, `editor_nodes.cpp` |
-| Evaluation objects | `editor_counters.cpp`, `editor_sections.cpp` |
-| Runs and Results | `editor_run.cpp` (Run/Pause/Step/Reset, seed, speed), `editor_batch.cpp` (N seeds on one worker thread), `editor_compare.cpp` (the open project against a chosen file), `editor_macro.cpp`, `editor_meso.cpp`, `editor_results.cpp`, `editor_results_nodes.cpp` |
-| Map, lab, automation | `editor_map.cpp`, `editor_lab.cpp`, `editor_automation.cpp`, `editor_automation_lifecycle.cpp` |
+| Window, workspace, tables, inspector | `editor_window.cpp`, `editor_workspace.cpp`, `editor_tables.cpp`, `editor_inspector.cpp`, `editor_palette.cpp` (command palette), `editor_commands.cpp`, `editor_history.cpp`, `editor_input.cpp`, `editor_modes.cpp` (the window's mode choices; the tab is `modes_panel.*`) |
+| Files and recovery | `editor_files.cpp`, `editor_recovery.cpp` (state: `RecoverySession` in `editor_recovery_state.hpp`, D518), `editor_side_files.cpp`, `editor_storage.cpp` |
+| Drawing | `editor_creation.cpp`, `editor_connectors.cpp`, `editor_rotation.cpp`, `cross_sections_panel.*` (D521), `editor_link_types.cpp`, `editor_appearance.cpp`, `editor_diagnostics.cpp` |
+| Control | `editor_conflicts.cpp` (the Conflict areas tab's hooks and canvas gestures; the tab is `conflicts_panel.*`), `editor_control.cpp`, `editor_signal.cpp` |
+| Demand | `editor_demand.cpp`, `editor_demand_preview.cpp`, `editor_routing.cpp`, `editor_decision.cpp`, `editor_catalog.cpp`, `editor_periods.cpp` (the window's period choices; the tab is `study_periods_panel.*`),  `editor_behaviour.cpp`, `zones_panel.*` (Zones tab, D521), `editor_od.cpp` (compositions and the lot dialog; the OD tab is `od_panel.*`) |
+| Street segments and Nodes | `editor_street_segments.cpp` (template rows and the Default template; the tab is `street_segments_panel.*`), `editor_crossings.cpp`, `editor_coarse.cpp`, `editor_seams.cpp`, `editor_fill.cpp`, `editor_proposals.cpp` (Node proposals, and the Nodes panel's hooks) |
+| Evaluation objects | `counters_panel.*`, `sections_panel.*` (D521) |
+| Runs and Results | `editor_run.cpp` (Run/Pause/Step/Reset, seed, speed; its state is `RunSession` in `editor_run_state.hpp`, D517), `editor_batch.cpp` (N seeds on one worker thread; its state is `BatchSession` in `editor_batch_state.hpp`, D514), `editor_compare.cpp` (the open project against a chosen file), `macro_panel.cpp`, `meso_panel.cpp`, `editor_results.cpp`, `editor_results_nodes.cpp` |
+| Map, lab, automation | `editor_map.cpp`, `editor_lab.cpp`, `editor_automation.cpp`, `editor_automation_lifecycle.cpp` (state: `AutomationHost` in `editor_automation_state.hpp`, D519) |
 
 The other headers:
 
 | File | Holds | Contract |
 |---|---|---|
 | `editor_window.*` | `EditorWindow` (sources above) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_batch_state.hpp` | `BatchSession`: the batch and comparison worker's state and widgets, held by `EditorWindow` (D514) | [BATCH](../../docs/reference/BATCH.md) |
+| `editor_run_state.hpp` | `RunSession`: the single run's state (identity, timer, snapshot, `SimState`, accumulators, clamp rows), held by `EditorWindow` (D517) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_recovery_state.hpp` | `RecoverySession`: the recovery folder and file, its lock, the autosave timer and last autosaved revision, held by `EditorWindow` (D518) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `editor_automation_state.hpp` | `AutomationHost`: the automation server, endpoint, document session id and quit-handshake flags, held by `EditorWindow` (D519) | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
+| `object_tab.hpp` | `ObjectTab`: one object tab's table and the History revision its rows were built at; thirteen `EditorWindow` tabs hold one each (D520) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `object_selection.hpp` | `ObjectSelection`: the selection hub the object panels listen to; today, a cleared canvas selection (D522) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `object_tab_context.hpp` | `ObjectTabContext`: what an object tab's panel needs from the window (document, revision, text, actions, History steps, refresh, show), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `object_tab_panel.hpp` | `ObjectTabPanel`: the base of an object tab's panel (context, table and revision, its actions by key), D521 | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `object_columns.hpp` | `ObjectColumn<T>`/`ObjectTableSpec<T>`: an object type's column metadata, and the untyped model `ObjectTable` reads (D525) | [OBJECT_TABLE](../../docs/plans/OBJECT_TABLE.md) |
+| `object_table.*` | `ObjectTable`: the metadata-driven object table (headers, rows, kept selection, formats); piloted on Study periods (D525) | [OBJECT_TABLE](../../docs/plans/OBJECT_TABLE.md) |
+| `street_segments_panel.*` | `StreetSegmentsPanel`: the Street segments object tab, its template combo and dialog, and the Street segment tool's preview and commit (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
+| `nodes_panel.*` | `NodesPanel`: the Nodes object tab, its rename dialog, actions and the Node tool's commit; window parts reached through `NodesHooks` (D523) | [NODES](../../docs/reference/NODES.md) |
+| `conflicts_panel.*` | `ConflictsPanel`: the Conflict areas object tab, its dialogs, priority actions and the automatic areas; window parts reached through `ConflictsHooks` (D523) | [M3_PLAN](../../docs/plans/M3_PLAN.md) |
+| `cross_sections_panel.*` | `CrossSectionsPanel`: the Cross-sections object tab and its dialog (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
+| `zones_panel.*` | `ZonesPanel`: the Zones object tab, its connectors, dialogs and the Zone tool's commit (D521) | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
+| `link_types_panel.*` | `LinkTypesPanel`: the Link types object tab and its dialog; `linkTypeRowsOf` for the Link's type field (D521) | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md) |
+| `counters_panel.*` | `CountersPanel`: the Queue counters object tab, its dialog and the counter tool's commit (D521) | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |
+| `sections_panel.*` | `SectionsPanel`: the Travel-time sections object tab, its dialog and the section tool's commit (D521) | [TRAVEL_TIME_SECTIONS](../../docs/reference/TRAVEL_TIME_SECTIONS.md) |
+| `speed_decisions_panel.*` | `SpeedDecisionsPanel`: the Speed decisions object tab and its dialog (D521) | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |
+| `speed_areas_panel.*` | `SpeedAreasPanel`: the Reduced-speed areas object tab and its dialog (D521) | [SPEED_DECISIONS](../../docs/reference/SPEED_DECISIONS.md) |
+| `od_panel.*` | `OdPanel`: the OD matrices object tab and its dialog (D521) | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
+| `modes_panel.*` | `ModesPanel`: the Modes object tab and its dialog; `modeChoicesOf` for the OD dialog (D521) | [STUDY_PERIODS](../../docs/reference/STUDY_PERIODS.md) |
+| `study_periods_panel.*` | `StudyPeriodsPanel`: the Study periods object tab and its dialog; `studyPeriodChoices` for the OD and gate-flow dialogs (D521) | [STUDY_PERIODS](../../docs/reference/STUDY_PERIODS.md) |
 | `editor_style.*` | Toolbar icons from the editor's glyphs (`../editor/editor_glyph.*`); the editor QSS, palette roles only | [UI_REDESIGN_AUDIT](../../docs/audits/UI_REDESIGN_AUDIT.md) |
 | `example_menu.*` | File → *Open example*: `loadExampleProjects` reads `data/examples.json`, `fillExampleMenu` lists it in the current language (D498) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `recent_files.*` | File → *Open recent*: the person's last eight projects in `recent-files.json` beside their other local data; `rememberRecentFile` on open and save, `fillRecentMenu` lists them (D504) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
@@ -62,6 +85,8 @@ The other headers:
 | `mode_choice_panel.*` | Self-owned *Mode choice* Results page: rate set, deterrence set, cost matrix, skim mode and set choices, Run on a worker with stages, *Mode choice sets…*, *Period factors…*, *Write OD matrices*, the period/alternative/pair table, stale marking, marked CSV (D479) | [MODE_CHOICE §7](../../docs/reference/MODE_CHOICE.md) |
 | `period_factors_dialog.*` | *Period factors…*: the project's per purpose and period P→A / A→P shares as an editable table, refused in place when not shares (D479) | [MODE_CHOICE §5](../../docs/reference/MODE_CHOICE.md) |
 | `procedure_panel.*` | Self-owned *Procedure* Results page: a procedure choice, Run on a worker with Cancel, *Procedures…*, one row per step (status and summary), stale marking, marked CSV (D485) | [PROCEDURE_SEQUENCE §4](../../docs/reference/PROCEDURE_SEQUENCE.md) |
+| `dynamic_assignment_panel.*` | Self-owned *Dynamic assignment* Results page at the Micro level: level, iteration cap, gap and seed; Run on a worker with Cancel; δ and cell tables; *Apply weights* as one History step while current; *Save route costs…*; marked CSV (D552) | [DYNAMIC_ASSIGNMENT §17](../../docs/reference/DYNAMIC_ASSIGNMENT.md) |
+| `consistency_panel.*` | M12 R2 (D554): the *Consistency* Results page at the Cross-level level: seeds, Run/Cancel on a worker, the consistency report's table, CSV through Export | [SUBAREA_CONSISTENCY §13](../../docs/reference/SUBAREA_CONSISTENCY.md) |
 | `procedures_dialog.*` | *Procedures…*: the procedures list and the selected one's steps (active, kind, input, options, cost matrix), refused in place (D485) | [PROCEDURE_SEQUENCE §9](../../docs/reference/PROCEDURE_SEQUENCE.md) |
 | `trip_generation_panel.*` | Self-owned *Trip generation* Results page: rate-set choice, Run on a worker with stages, table, stale marking, marked CSV | [TRIP_GENERATION §8](../../docs/reference/TRIP_GENERATION.md) |
 | `trip_rate_dialog.*` | *Trip-rate sets…*, *Deterrence sets…*, *Cost matrices…* (D474) and *Mode choice sets…* (D479): the project's own lists, as wrappers of `owned_list_dialog` | [TRIP_GENERATION §6.3](../../docs/reference/TRIP_GENERATION.md) |
@@ -71,8 +96,8 @@ The other headers:
 | `junction_catalog_dialog.*` | Staged structural template/role editor and project catalog capture | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `junction_recipe_dialog.*`, `junction_site_dialogs.cpp` | Node recipe, independent directions, per-leg overrides/pockets and NEMA timing drafts | [JUNCTION_TEMPLATE_EDITOR](../../docs/reference/JUNCTION_TEMPLATE_EDITOR.md) |
 | `editor_batch_cells.*` | The cells the batch and comparison tables share | [BATCH](../../docs/reference/BATCH.md) |
-| `editor_macro.*` | The Macro run: one worker over a copy of the document, stages and gap posted back | [MACRO_NETWORK §19, §20](../../docs/reference/MACRO_NETWORK.md) |
-| `editor_meso.*` | The Meso run, as the Macro one | [MESO_NETWORK §7, §20](../../docs/reference/MESO_NETWORK.md) |
+| `macro_panel.*` | `MacroPanel`: the Macro run and its functions (build, start, discard, refresh): one worker over a copy of the document, stages and gap posted back; window parts through `MacroHooks` (D524) | [MACRO_NETWORK §19, §20](../../docs/reference/MACRO_NETWORK.md) |
+| `meso_panel.*` | `MesoPanel`: the Meso run and its functions, as the Macro one; window parts through `MesoHooks` (D524) | [MESO_NETWORK §7, §20](../../docs/reference/MESO_NETWORK.md) |
 | `macro_run_dialog.*` | Named Macro run definitions, committed as one Undo step | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md#named-macro-runs) |
 | `run_identity.hpp` | Metadata of the GUI single run, apart from engine state | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
 | `signal_timing_view.*` | A controller's timing bars across one cycle, from the run's colour rule | [SIMULATION](../../docs/reference/SIMULATION.md) |

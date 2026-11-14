@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
         auto* analyse = item<QAction>(w, "editorAnalyseNodes");
         require(analyse->isEnabled(), "Analyse is not offered on the Node analysis example");
         analyse->trigger(); QApplication::processEvents();
-        require(item<QTableWidget>(w, "editorAnalysisGroupResults")->rowCount() == 8, "The HCM table does not list the eight lane groups");
+        require(item<QTableWidget>(w, "editorAnalysisGroupResults")->rowCount() == 10, "The HCM table does not list the ten lane groups");
         require(item<QTableWidget>(w, "editorAnalysisApproachResults")->rowCount() == 4, "The HCM table does not list the four approaches");
         require(item<QComboBox>(w, "editorResultsLevel")->currentIndex() == 3, "Analyse did not show the Node (HCM) level");
     } catch (const std::exception& e) { std::cerr << "example-menu-ui: " << e.what() << '\n'; return 1; }

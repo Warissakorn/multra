@@ -9,10 +9,11 @@
 // Regenerate with multra-node-example, never by hand.
 //
 // Layout, left-hand traffic, metres: an east-west major and a north-south minor road, two lanes each
-// way, crossing at (0, 0) with 300 m arms. Template `signal-4-p3-shared`: on every approach one lane
-// for the far turn and one shared by through and the kerb turn, every turn protected (in scope for
-// Chapter 19's core method). No pocket: when this was built a placed routing decision lost the far
-// turn a pocket serves (fixed since, D501); moving to the pocket template is the owner's choice.
+// way, crossing at (0, 0) with 300 m arms. Template `signal-4-p3-major-far-pockets` (D505, D513): on
+// the major a far-turn pocket, a through lane and one shared by through and the kerb turn; on the
+// minor one lane for the far turn and one shared by through and the kerb turn; every turn protected
+// (in scope for Chapter 19's core method). The routing decisions reach the pocket through its taper
+// (D501); `nodeexample` checks that no decision leaves a destination unserved.
 //
 // Every number here (volumes, timings, dimensions) is an illustration chosen so that every lane
 // group runs below capacity; none is a count, and no output is a claim about a real junction (rule 4).
@@ -75,13 +76,15 @@ inline NodeExample nodeExample(const std::filesystem::path& data) {
     for (const auto& t : resolveJunctionTemplates(def, data)) catalogs.junctionTemplates.push_back(t.type);
     // NEMA phases: 2/6 major through, 1/5 major far turns, 4/8 minor through, 3/7 minor far turns.
     NodeJunction recipe;
-    recipe.templateId = "signal-4-p3-shared";
+    recipe.templateId = "signal-4-p3-major-far-pockets";
     recipe.signal = JunctionSignal{};
     for (const auto& [number, green] : std::array<std::pair<int, double>, 8>{{{1, 11}, {2, 40}, {3, 9}, {4, 24}, {5, 11}, {6, 40}, {7, 9}, {8, 24}}})
         recipe.signal->phases.push_back({number, green, 3, 1});
     recipe.signal->cycle = 100;
     for (const auto& s : d.network.streetSegments)
         if (s.centreline.front().y == 0 && s.centreline.back().y == 0) recipe.major.push_back(s.id);
+    // Each major leg's far-turn pocket: 45 m of storage behind a 15 m taper (illustrative, as above).
+    for (const auto& id : recipe.major) { recipe.legs[id].storage = {45.0}; recipe.legs[id].taper = {15.0}; }
     setNodeJunction(d, node, recipe);
 
     NodeExample t;

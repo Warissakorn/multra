@@ -367,7 +367,7 @@ rehearsal, and the M5 gate.
 
 **Done when:** the engine reproduces published benchmark results — capacity and delay for a signalized approach, gap-acceptance capacity for an unsignalized minor movement — within a stated tolerance, and the tolerance is published in the docs and shown in the app.
 
-**M6.0 — benchmark option sheet** (D143, R2): docs only, at least two published options per benchmark kind, no engine numbers and no tolerance, so the choice stays pre-registered. **Delivered 2026-10-10:** [m6-benchmark-options](evidence/m6-benchmark-options.md), kinds S1 (saturation flow and capacity), S2 (delay) and U (minor-movement capacity and gap acceptance). **Chosen 2026-11-11 (D505), sources only:** Q4 (d); S1-a with S1-d second; S2-b below saturation and S2-a across it, S2-c first; U-a after U-c, U-e booked for R7. The tolerance is set before any comparable run. Calibrated gap acceptance (moved from M3.2 by R7) is validated here.
+**M6.0 — benchmark option sheet** (D143, R2): docs only, at least two published options per benchmark kind, no engine numbers and no tolerance, so the choice stays pre-registered. **Delivered 2026-10-10:** [m6-benchmark-options](evidence/m6-benchmark-options.md), kinds S1 (saturation flow and capacity), S2 (delay) and U (minor-movement capacity and gap acceptance). **Chosen 2026-11-11 (D505), sources only:** Q4 (d); S1-a with S1-d second; S2-b below saturation and S2-a across it, S2-c first; U-a after U-c, U-e booked for R7. The tolerance is set before any comparable run: **set 2026-11-12 (D516, B47 (a)):** S1 ±5 %, S2 ±15 %, U ±15 % of the reference, on the mean over seeds 42–81 ([§6](evidence/m6-benchmark-options.md)). Calibrated gap acceptance (moved from M3.2 by R7) is validated here. **First comparable run, kind S1 (D535, 2026-11-12):** [m6-s1-first-run](evidence/m6-s1-first-run.md). S1-a passes (1,944 against 1,900 veh/h, ±5 %); S1-f misses (−6.7 % against 2,083); S1-d passes 3 of 8 banded ranks. S2-c passes at all three `x` (D538, [m6-s2c-first-run](evidence/m6-s2c-first-run.md)); S2-b passes 1 of 4 and S2-a 0 of 4 levels against HCM `d1 + d2` (D539, [m6-s2ab-first-run](evidence/m6-s2ab-first-run.md)); U misses at all five levels (D542, [m6-u-first-run](evidence/m6-u-first-run.md); follow-up split D543). **No calibration on M6** (D544, [options](evidence/m6-calibration-options.md)): the misses stand as known deviations of the uncalibrated engine; a pre-registered sweep measures the levers (D545). The gate stays open.
 
 **This is a hard gate.** Numbers from an unvalidated engine must never reach a regulator. Until M6 passes, every results screen carries a permanent "not yet validated" marker.
 
@@ -391,7 +391,7 @@ Offline install, native file dialogs, no server required.
 Design, decisions and slices: [`plans/MULTI_LEVEL_MODELLING.md`](plans/MULTI_LEVEL_MODELLING.md).
 One authoring network and one demand compile to three views; each engine imports nothing; every
 result of every level carries the not-yet-validated marker until that level's M6 benchmark
-passes (Micro's may close before M10 and M11, D505). M8 is code complete (gate open); M10 and M11 are in progress, M9 and M12 not started; each slice begins with its
+passes (Micro's may close before M10 and M11, D505). M8 is code complete (gate open); M10 and M11 are in progress, M9 open, M12 R1–R2 done; each slice begins with its
 contract and acceptance rows. **Equal weight (D378):** open level work follows the study chain, M10.2–M10.4,
 M9, M11.5 and the M11 gate, then M12 ([PROBLEM](PROBLEM.md) §3); hybrid meso–micro is not booked (B26).
 **Amended 2026-10-15 ([D175](decisions/RECORD-D001-D199.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
@@ -413,7 +413,7 @@ byte-identical; editor tools and the OD table ship in the milestone.
 
 ### M9 — Dynamic assignment (Micro)
 
-**Open, not started.** Iterative between-run path-cost loop over the existing routing decisions;
+**Open; A1–A3 implemented ([DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), D549), gate rows in place, closing is the owner's; placed decisions wait for A2b.** Iterative between-run path-cost loop (MSA) over the existing routing decisions;
 costs in a separate file with provenance; convergence reported. En-route rerouting is excluded.
 **Done when:** an analytic two-route fixture converges to its equilibrium split within the stated
 tolerance; same inputs give the same bytes; non-convergence is flagged.
@@ -427,8 +427,8 @@ tolerance; same inputs give the same bytes; non-convergence is flagged.
 | M10.1 network and assignment | [MACRO_NETWORK](reference/MACRO_NETWORK.md) (D271, D272) | Link types and graph (D273); multi-class Frank–Wolfe (D274); run settings, outputs, `--macro` (D275); Run Macro, links table, link-type editor (D277); MA15 on Sheffi's Table 5.4 (D294); named run definitions, schema 56 (D339) | MA15's capacities await the owner's check against the print |
 | M10.2 trip generation | [TRIP_GENERATION](reference/TRIP_GENERATION.md) (D468, D469) | G1 engine, run, outputs, `--trip-generation` (D470); G2 owned rate sets at schema 66, zone attributes, the page (D471) | The owner's Windows look |
 | M10.3 trip distribution | [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) (D472) | D1 engine, skim, outputs, `--trip-distribution` (D473); D2 owned deterrence sets and cost matrices, schema 67 (D474); singly constrained purposes (D475, D476); D4 destination-constrained, schema 72 (D482) | — |
-| Procedure sequence | [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md) (D483) | P1, schema 73, `--procedure` (D484); P2 dialog and Procedure page (D485) | — |
-| M10.4 mode choice | D477, [NESTED_LOGIT](reference/NESTED_LOGIT.md) (D480) | E1 (D478); E2 owned sets, the page, Write OD matrices (D479); N1 nested logit, schema 71 (D481) | The owner's Windows look |
+| Procedure sequence | [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md) (D483) | P1, schema 73, `--procedure` (D484); P2 dialog and Procedure page (D485); feedback F1–F2, schema 75 ([PROCEDURE_FEEDBACK](reference/PROCEDURE_FEEDBACK.md), D547) | The owner's Windows look of feedback |
+| M10.4 mode choice | D477, [NESTED_LOGIT](reference/NESTED_LOGIT.md) (D480) | E1 (D478); E2 owned sets, the page, Write OD matrices (D479); N1 nested logit, schema 71 (D481); logsum composite into distribution, schema 76 ([MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md), D548) | The owner's Windows look |
 
 ### M11 — Meso engine
 
@@ -440,14 +440,13 @@ tolerance; same inputs give the same bytes; non-convergence is flagged.
 | M11.3a–b demand | Routes, static decisions and OD routes as Meso paths (D295; ME12–ME16); routeless inputs and placed decisions through Micro's expansion (D296; ME17–ME19) | — |
 | M11.3 node and link models | Tampère et al. 2011 node model (D297; ME20–ME23); Yperman 2007 link model, `loadMeso`, spill-back (D298); signals as averaged green (D299; ME7, ME26, ME27) | Conflicts inside a Node deferred (`MESO_PRIORITY_IGNORED`) |
 | M11.4 run and outputs | `runMeso`, outputs by slice in PCU, `--meso`, Run Meso, the Meso links tab (D300; ME10, ME11); a turn's free-flow lag (D301; ME28) | — |
-| M11.5 assignment | — | Waits on M9 |
+| M11.5 assignment | [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md) (D550) | S1: M9's loop on Meso, `--dynamic-assignment --meso`; placed decisions with A2b |
 | M11.6 benchmark | Option sheet (D302, [meso-benchmark-options](evidence/meso-benchmark-options.md)); B23 answered: Boyles et al. 2025, Daganzo secondary (D315) | Waiting on the copy |
 
 ### M12 — Multi-resolution subarea workflow
 
-**Open, not started.** Subarea OD cut from an M10 assignment with gate zones and provenance,
-run in M11 and Micro, with a cross-level consistency report. **Done when:** one cut runs at both
-finer levels with recorded provenance and a reported volume comparison.
+**Open; R1 CLI report and R2 Cross-level page done ([SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), D553, D554); the owner's look waits.** S5's cut run in M11 and Micro with a cross-level
+consistency report. **Done when:** one cut runs at both finer levels with recorded provenance and a reported volume comparison.
 
 ### M13 — Analytical junction capacity (HCM 7, D370)
 

@@ -1,6 +1,6 @@
 # Random streams per input (contract)
 
-**Status on 2026-11-12: slices 1–3 are done (D506, D510).** A project carries the switch as
+**Status on 2026-11-12: slices 1–4 are done (D506, D510, D512).** A project carries the switch as
 `definition.randomStreams` (schema 74); a new project is `perInput`, a file saved before keeps
 `shared`; Run settings sets it; run, batch and comparison output state it and a comparison refuses
 two mappings (IS8). Slice 4 (choice 2) is next. Milestone status lives in [ROADMAP](../ROADMAP.md).
@@ -20,7 +20,8 @@ reaches it:
 | A lot's initial occupants | `initializeLots`, `src/core/parking.cpp` | type, the vehicle's three, dwell |
 | A lot's dwell and exit choice | `dwellEnd`, `releaseDepartures` | 1 each (exit only with a choice) |
 
-W74 traits and red runners do not draw: they hash `(seed, vehicle id, index)` (D129, D238).
+W74 traits and red runners do not draw: they hash `(seed, vehicle id, index)` (D129, D238); under
+`perInput` the vehicle id there is replaced by its origin's key and ordinal (D512, §4).
 
 So one edited input moves every later draw of the run. Three consequences:
 
@@ -82,10 +83,12 @@ still draws from the run stream under either mapping. A checkpoint under `perInp
 input's and lot's `stream` and `generated` and each vehicle's `ordinal`; a `shared` checkpoint keeps
 its bytes. Code: `random_streams.hpp`, `demand.cpp`, `parking.cpp`, `routing.cpp`.
 
-**Scope limit, stated rather than hidden.** W74 traits and red runners still hash the global
-vehicle id, which shifts when another input generates earlier. Re-keying them by
-`(input key, ordinal)` is the owner's choice 2; without it, `perInput` scenarios that use W74 or
-red running keep that one dependence.
+**Hashed traits (choice 2, D512).** W74 traits and the red-runner flag hash an identity in place
+of the global vehicle id: `traitIdentity(id, origin, ordinal)` in `random_streams.hpp` is the id
+when the vehicle has no origin key (every vehicle under `shared`, and one placed by hand) and
+`mix(mix(origin) ^ ordinal)` otherwise, so an added input no longer moves another input's traits or
+runners. The hash's indices (W74 §5, RED_RUNNING index 15) are unchanged. `samplePending` sets the
+key and ordinal before it hashes the traits; a parked vehicle keeps its lot's identity.
 
 **Renaming an input changes its stream.** The id is the key; a rename is a different stream by
 construction.
@@ -115,6 +118,8 @@ differ and are never compared as one batch: `aggregate` refuses runs under two m
 | IS6 | `perInput`: a routing decision's choice for a given vehicle is the same whether or not an unrelated road is congested. |
 | IS7 | `perInput`: same-build replay is exact and a seed batch is identical for every thread count (D152). |
 | IS8 | Summary JSON and CSV carry `randomStreams`; `--compare` refuses mixed values. |
+| IS10 | `perInput`: an added input on a disjoint road leaves another input's W74 traits, in scheduled order, unchanged; a vehicle without an origin key keeps its id as its identity. |
+| IS11 | `perInput`: the same for which of another input's vehicles run a red. |
 | IS9 | Cost: `perInput` is within 1 % of `shared` in `multra-engine-benchmark` instructions (one state per input instead of one per run; no per-tick allocation). |
 
 ## 7. The owner's choices
@@ -152,5 +157,8 @@ slice; 4 before the M6 benchmark runs.
    settings list (`editorRandomStreams`, one Undo step), the IS8 output field, and the refusals.
    Rows in `tests/input_streams_project_tests.cpp` (group `inputstreamsproject`) and the Run
    settings step in `study-period-ui`.
-4. **Next:** choice 2 (W74 traits and red runners re-keyed by origin and ordinal; the vehicle already
-   carries both); choice 3 (paired comparison) as its own slice.
+4. **Done (D512):** choice 2, W74 traits and red runners re-keyed by origin and ordinal (§4).
+   Rows IS10–IS11, each forced as the others.
+5. **Done (D526), choice 3:** the paired comparison under `perInput`, contract and rows CMP11–CMP14 in
+   [BATCH §7](BATCH.md#7-scenario-comparison-m58-d148-d149). Each batch estimate keeps its per-seed
+   values (in seed order) so a comparison can pair them.

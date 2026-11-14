@@ -23,5 +23,9 @@ inline std::uint64_t streamKey(char kind, const std::string& id) {
 std::uint32_t streamState(std::uint32_t seed, std::uint64_t key);
 // One uniform in (0, 1) with no state: hash(seed, origin, ordinal, decision). Order-independent.
 double hashedUniform(std::uint32_t seed, std::uint64_t origin, std::uint32_t ordinal, std::uint64_t decision);
+// §4 choice 2 (D512): who a vehicle is to W74's trait hash and the red-runner hash. Under perInput its
+// origin's key and ordinal, so an added input leaves every other input's traits alone; a vehicle with
+// no origin key (every vehicle under shared, and one placed by hand) keeps its id, unchanged to the bit.
+std::uint64_t traitIdentity(std::uint64_t vehicleId, std::uint64_t origin, std::uint32_t ordinal);
 }
 }

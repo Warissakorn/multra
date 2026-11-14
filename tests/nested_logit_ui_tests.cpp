@@ -3,6 +3,7 @@
 #include "ui_test_storage.hpp"
 #include "../src/project/json.hpp"
 #include <nlohmann/json.hpp>
+#include <QCheckBox>
 #include <QAction>
 #include <QApplication>
 #include <QDialog>
@@ -44,12 +45,16 @@ int main(int argc, char** argv) {
         QTemporaryDir dir; require(dir.isValid(), "Temporary directory unavailable");
         auto fixture = readJson(argv[2]);
         fixture["modeChoiceSets"] = Json::array({readJson(argv[3])}); fixture["schemaVersion"] = 70;
+        // LS9 (MODE_CHOICE_LOGSUM, D548): a second set whose alternatives share one coefficient, so a logsum is allowed.
+        auto equal = fixture["modeChoiceSets"][0]; equal["id"] = "hand-equal";
+        for (auto& a : equal["purposes"][0]["alternatives"]) a["timeCoefficient"] = -0.1;
+        fixture["modeChoiceSets"].push_back(equal);
         const auto project = dir.filePath("project.traffic.json");
         std::ofstream(project.toStdString()) << fixture.dump(1);
         EditorWindow w{data}; w.show(); QApplication::processEvents();
         w.openFile(project); QApplication::processEvents();
         const auto& d = [&]() -> const ProjectDocument& { return w.history().document(); };
-        require(d().modeChoiceSets.size() == 1 && d().modeChoiceSets[0].purposes[0].nests.empty() && !w.history().canUndo(),
+        require(d().modeChoiceSets.size() == 2 && d().modeChoiceSets[0].purposes[0].nests.empty() && !w.history().canUndo(),
                 "NL8: the owned set opens without nests");
         auto* panel = item<ModeChoicePanel>(w, "editorModeChoicePanel");
         const auto openSets = [&] { item<QPushButton>(*panel, "editorModeChoiceSetsOpen")->click(); };
@@ -99,6 +104,33 @@ int main(int argc, char** argv) {
         require(j["schemaVersion"] == 71 && j["modeChoiceSets"][0]["purposes"][0]["nests"][0]["phi"] == 0.5, "NL8: save writes schema 71");
         item<QAction>(w, "editorUndo")->trigger(); QApplication::processEvents();
         require(d().modeChoiceSets[0].purposes[0].nests.empty(), "NL8: Undo removes the nest");
+
+        // LS9: the logsum switch is refused in place for differing coefficients, accepted for one shared coefficient.
+        const auto beforeLogsum = w.history().revision();
+        modal(openSets, [&](QDialog& sets) {
+            auto* table = item<QTableWidget>(sets, "editorModeChoiceSetsTable");
+            table->selectRow(0);
+            modal([&] { item<QPushButton>(sets, "editorModeChoiceNests")->click(); }, [&](QDialog& dlg) {
+                auto* check = item<QCheckBox>(dlg, "editorModeChoiceLogsum-all");
+                require(!check->isChecked(), "LS9: off by default");
+                check->setChecked(true); confirm(dlg);
+                require(dlg.isVisible() && item<QLabel>(dlg, "editorModeChoiceNestsError")->text().contains("set.purposes[0].distributionCost"),
+                        "LS9: differing coefficients are refused in place");
+                check->setChecked(false); confirm(dlg);
+            });
+            table->selectRow(1);
+            modal([&] { item<QPushButton>(sets, "editorModeChoiceNests")->click(); }, [&](QDialog& dlg) {
+                item<QCheckBox>(dlg, "editorModeChoiceLogsum-all")->setChecked(true); confirm(dlg);
+            });
+            confirm(sets);
+        });
+        require(d().modeChoiceSets[1].purposes[0].distributionCost == std::optional<std::string>("logsum") &&
+                !d().modeChoiceSets[0].purposes[0].distributionCost && w.history().revision() != beforeLogsum &&
+                w.history().undoName() == "editorModeChoiceSetsChange", "LS9: the switch is one step");
+        w.saveFile(saved);
+        require(readJson(saved.toStdString())["schemaVersion"] == 76, "LS9: save writes schema 76");
+        item<QAction>(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(!d().modeChoiceSets[1].purposes[0].distributionCost, "LS9: Undo removes the switch");
         std::cout << "nested-logit-ui: passed\n";
         return 0;
     } catch (const std::exception& e) {

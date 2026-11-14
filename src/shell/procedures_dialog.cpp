@@ -4,15 +4,19 @@
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QTableWidget>
 #include <QVBoxLayout>
+#include <limits>
 
 namespace multra {
 namespace {
@@ -59,6 +63,20 @@ std::optional<std::vector<Procedure>> editProcedures(QWidget* parent, const Proj
         *b = new QPushButton(text(key), &dialog); (*b)->setObjectName(objectName); stepButtons->addWidget(*b);
     }
     stepButtons->addStretch();
+    // PROCEDURE_FEEDBACK §4 (D547): off by default; CW with the book's w = 0.25 and 30 iterations proposed, tolerance required.
+    auto* feedback = new QGroupBox(text("editorProcedureFeedback"), &dialog); feedback->setObjectName("editorProcedureFeedback");
+    feedback->setCheckable(true); feedback->setChecked(false); right->addWidget(feedback);
+    auto* feedbackForm = new QFormLayout(feedback);
+    auto* method = new QComboBox(feedback); method->setObjectName("editorFeedbackMethod");
+    method->addItem(text("editorFeedbackConstantWeight")); method->addItem(text("editorFeedbackMsa"));
+    auto* weight = new QDoubleSpinBox(feedback); weight->setObjectName("editorFeedbackWeight");
+    weight->setRange(0, 0.99); weight->setSingleStep(0.05); weight->setDecimals(2); weight->setValue(0.25);
+    auto* iterations = new QSpinBox(feedback); iterations->setObjectName("editorFeedbackMaxIterations"); iterations->setRange(2, 1000); iterations->setValue(30);
+    auto* tolerance = new QLineEdit(feedback); tolerance->setObjectName("editorFeedbackTolerance");
+    tolerance->setPlaceholderText(text("editorFeedbackTolerancePlaceholder"));
+    feedbackForm->addRow(text("editorFeedbackMethod"), method); feedbackForm->addRow(text("editorFeedbackWeight"), weight);
+    feedbackForm->addRow(text("editorFeedbackMaxIterations"), iterations); feedbackForm->addRow(text("editorFeedbackTolerance"), tolerance);
+    QObject::connect(method, &QComboBox::currentIndexChanged, weight, [weight](int k) { weight->setEnabled(k == 0); });
     auto* error = new QLabel(&dialog); error->setObjectName("editorProceduresError"); error->setWordWrap(true); layout->addWidget(error);
 
     const auto inputs = [&](ProcedureStepKind kind) {
@@ -117,14 +135,31 @@ std::optional<std::vector<Procedure>> editProcedures(QWidget* parent, const Proj
         p.id = id->text().trimmed().toStdString(); p.name = name->text().toStdString();
         p.steps.clear();
         for (int r = 0; r < table->rowCount(); ++r) p.steps.push_back(readRow(r));
+        p.feedback.reset();
+        if (feedback->isChecked()) {
+            ProcedureFeedback f;
+            f.method = method->currentIndex() == 1 ? FeedbackMethod::msa : FeedbackMethod::constantWeight;
+            if (f.method == FeedbackMethod::constantWeight) f.weight = weight->value();
+            f.maxIterations = iterations->value();
+            bool ok = false;
+            const double value = tolerance->text().trimmed().toDouble(&ok);
+            f.tolerance = ok ? value : std::numeric_limits<double>::quiet_NaN(); // blank: refused at its path below
+            p.feedback = f;
+        }
         list->item(current)->setText(qs(p.id));
     };
     const auto show = [&](int row) {
         current = row;
         table->setRowCount(0);
         const bool any = row >= 0 && row < static_cast<int>(items.size());
-        for (auto* w : std::initializer_list<QWidget*>{id, name, table, addStep, removeStep, up, down}) w->setEnabled(any);
+        for (auto* w : std::initializer_list<QWidget*>{id, name, table, addStep, removeStep, up, down, feedback}) w->setEnabled(any);
         id->setText(any ? qs(items[row].id) : QString()); name->setText(any ? qs(items[row].name) : QString());
+        const auto* f = any && items[row].feedback ? &*items[row].feedback : nullptr;
+        feedback->setChecked(f != nullptr);
+        method->setCurrentIndex(f && f->method == FeedbackMethod::msa ? 1 : 0); weight->setEnabled(method->currentIndex() == 0);
+        weight->setValue(f && f->weight ? *f->weight : 0.25);
+        iterations->setValue(f ? f->maxIterations : 30);
+        tolerance->setText(f ? QString::number(f->tolerance) : QString());
         if (any) for (const auto& s : items[row].steps) addRow(table->rowCount(), s);
     };
     for (const auto& p : items) list->addItem(qs(p.id));
@@ -166,12 +201,14 @@ std::optional<std::vector<Procedure>> editProcedures(QWidget* parent, const Proj
     QObject::connect(box, &QDialogButtonBox::accepted, &dialog, [&] {
         store();
         if (const auto issues = procedureIssues(items); !issues.empty()) {
-            error->setText(text(issues.front().code.c_str()) + " (" + qs(issues.front().path) + ")");
+            const auto& path = issues.front().path;
+            const bool tol = path.size() >= 19 && path.compare(path.size() - 19, 19, ".feedback.tolerance") == 0;
+            error->setText(text(tol ? "editorFeedbackToleranceRequired" : issues.front().code.c_str()) + " (" + qs(path) + ")");
             return;
         }
         dialog.accept();
     });
-    dialog.resize(820, 420); fitToScreen(dialog);
+    dialog.resize(820, 560); fitToScreen(dialog);
     if (dialog.exec() != QDialog::Accepted) return std::nullopt;
     return items;
 }

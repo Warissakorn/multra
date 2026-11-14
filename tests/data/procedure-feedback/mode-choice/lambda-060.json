@@ -1,0 +1,28 @@
+{
+  "id": "lambda-060",
+  "name": "Example 11.3: car or rail, lambda 0.6",
+  "source": {
+    "citation": "Fixture: Ortuzar and Willumsen (2011), Example 11.3, p. 405, and Example 10.4, p. 368 (PROCEDURE_FEEDBACK \u00a75); lambda as Figure 11.3"
+  },
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "alternatives": [
+        {
+          "id": "car",
+          "modeId": "car",
+          "constant": 0,
+          "timeCoefficient": -0.6,
+          "occupancy": 1
+        },
+        {
+          "id": "rail",
+          "costMatrix": "rail-times",
+          "constant": 0,
+          "timeCoefficient": -0.6
+        }
+      ]
+    }
+  ]
+}

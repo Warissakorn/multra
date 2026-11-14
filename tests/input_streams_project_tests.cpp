@@ -44,7 +44,7 @@ TEST(inputstreamsproject, a_new_project_is_per_input_and_saves_at_74) {
     const auto fresh = newProjectDocument();
     CHECK(fresh.definition->randomStreams == RandomStreams::perInput);
     const auto j = documentJson(fresh);
-    CHECK(j["schemaVersion"] == 74 && kLatestSchema == 74);
+    CHECK(j["schemaVersion"] == 74 && kLatestSchema >= 74);
     CHECK(j["definition"]["randomStreams"] == "perInput");
     CHECK(parseDocument(j) == fresh);
 }

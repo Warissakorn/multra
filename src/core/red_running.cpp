@@ -35,7 +35,7 @@ bool letThrough(const DriverBehaviour& b, const VehicleType& type, std::uint32_t
                                              [](const RedRelease& x, const RedRelease& y) { return x.vehicleId < y.vehicleId; });
     if (std::any_of(from, to, [&](const RedRelease& r) { return r.head == head; })) return true; // the decision holds
     const double gentle = b.amberDeceleration.value_or(type.comfortableDeceleration);
-    return vehicle.speed * vehicle.speed > 2 * gentle * std::max(0.0, gap) && redRunner(seed, vehicle.id, *b.redRunningShare) &&
+    return vehicle.speed * vehicle.speed > 2 * gentle * std::max(0.0, gap) && redRunner(seed, detail::traitIdentity(vehicle.id, vehicle.streamKey, vehicle.ordinal), *b.redRunningShare) &&
            redElapsed(program, time) < *b.redRunningTime;
 }
 bool carriesRedRunning(const Scenario& s) {

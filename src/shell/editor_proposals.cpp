@@ -1,14 +1,17 @@
 #include "table_layout.hpp"
 #include "editor_interaction.hpp"
-#include "editor_macro.hpp"
-#include "editor_meso.hpp"
+#include "macro_panel.hpp"
+#include "meso_panel.hpp"
 #include "editor_window.hpp"
+#include "nodes_panel.hpp"
+#include "node_analysis_panel.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/node_proposals.hpp"
 #include <QHeaderView>
 #include <QLabel>
 #include <QSignalBlocker>
 #include <QStatusBar>
+#include <QTabWidget>
 #include <QTableWidget>
 #include <QVBoxLayout>
 
@@ -16,6 +19,28 @@
 // table. Derived again when the revision or either result changes; a stale result proposes nothing.
 // Selecting a Node row selects that Node; a row without a Node points at Suggest nodes.
 namespace multra {
+// D523: the Nodes tab is a panel; these are the hooks its contract lists (docs/plans/OBJECT_PANELS_NODES_CONFLICTS.md).
+void EditorWindow::buildNodes() {
+    nodes_ = new NodesPanel(objects_, objectTabContext(), {
+        [this](const std::string& id) { editCoarse(id); }, [this] { return file_; },
+        [this] {
+            auto* panel = static_cast<NodeAnalysisPanel*>(resultPages_.at("editorResultsTabNodeAnalysis")); panel->analyse();
+            objects_->setCurrentWidget(resultsPage_); resultsTabs_->setCurrentWidget(panel); refresh();
+        },
+        [this] { return crossSectionRows(); }, [this] { return priorityDefaults(); },
+        {[this] { return compositionChoices(); }, [this] { return periodChoices(); }, [this] { return modeChoices(); }},
+        [this](const QString& message, int ms) { statusBar()->showMessage(message, ms); },
+        [this](const std::string& id) { canvas_->setHighlightedNode(id); },
+        [this](QVBoxLayout* layout) { buildNodeProposals(layout); }, [this] { refreshNodeProposals(); }, [this] { translateNodeProposals(); }});
+    addObjectPage(nodes_, "editorNodeTable");
+    canvas_->nodeCommitted = [this](std::vector<Point> polygon) {
+        const auto id = nodes_->commitTool(std::move(polygon));
+        if (id.empty()) return false;
+        showNodes(); nodes_->selectRow(id);
+        return true;
+    };
+}
+void EditorWindow::showNodes() { objects_->setCurrentWidget(objectPages_.at("editorNodeTable")); }
 void EditorWindow::buildNodeProposals(QVBoxLayout* layout) {
     nodeProposalNote_ = new ReflowLabel(layout->parentWidget()); setReflowPolicy(nodeProposalNote_, QSizePolicy::Ignored); nodeProposalNote_->setObjectName("editorNodeProposalNote");
     nodeProposalNote_->setWordWrap(true); layout->addWidget(nodeProposalNote_);
@@ -32,8 +57,7 @@ void EditorWindow::buildNodeProposals(QVBoxLayout* layout) {
         if (!cell || nodeProposalTable_->selectedItems().isEmpty()) return;
         const auto id = cell->data(Qt::UserRole).toString();
         if (id.isEmpty()) { statusBar()->showMessage(text("editorProposalHint").arg(cell->data(Qt::UserRole + 1).toString()), 8000); return; }
-        for (int r = 0; r < nodeTable_->rowCount(); ++r)
-            if (nodeTable_->item(r, 0)->data(Qt::UserRole).toString() == id) { nodeTable_->selectRow(r); return; }
+        nodes_->selectRow(id.toStdString());
     });
 }
 void EditorWindow::refreshNodeProposals() {

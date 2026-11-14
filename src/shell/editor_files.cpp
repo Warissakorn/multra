@@ -1,5 +1,13 @@
 #include "recent_files.hpp"
 #include "editor_window.hpp"
+#include "macro_panel.hpp"
+#include "meso_panel.hpp"
+#include "nodes_panel.hpp"
+#include "conflicts_panel.hpp"
+#include "cross_sections_panel.hpp"
+#include "street_segments_panel.hpp"
+#include "editor_automation_state.hpp"
+#include "editor_recovery_state.hpp"
 #include "message_label.hpp"
 #include "editor_storage.hpp"
 #include "../project/evaluation_period.hpp"
@@ -21,23 +29,23 @@
 namespace multra {
 void EditorWindow::newFile() {
     auto document=newProjectDocument(); // Construct before discarding any current work.
-    clearRecovery();clearRun();discardMacro();discardMeso();history_.reset(std::move(document));
-    automaticRevision_=conflictRevision_=UINT64_MAX;
-    streetSegmentRevision_=crossSectionRevision_=nodeRevision_=UINT64_MAX;
+    clearRecovery();clearRun();macro_->discard();meso_->discard();history_.reset(std::move(document));
+    conflicts_->invalidate();
+    crossSections_->invalidate();streetSegments_->invalidate();nodes_->invalidate();
     file_.clear();canvas_->select("");refresh();canvas_->fitNetwork();
 }
 void EditorWindow::openFile(const QString& file) {
     auto document=readEditorDocument(file); // Decode and validate before touching the live document.
-    clearRecovery(); clearRun(); discardMacro(); discardMeso(); history_.reset(std::move(document));
-    automaticRevision_=conflictRevision_=UINT64_MAX;
-    streetSegmentRevision_=crossSectionRevision_=nodeRevision_=UINT64_MAX;
+    clearRecovery(); clearRun(); macro_->discard(); meso_->discard(); history_.reset(std::move(document));
+    conflicts_->invalidate();
+    crossSections_->invalidate();streetSegments_->invalidate();nodes_->invalidate();
     file_=file;loadSideFiles();error_->clear();canvas_->select("");refresh();canvas_->fitNetwork(); // S5.5a: its side files
 }
 void EditorWindow::openFileOrReport(const QString& file) {
     try { openFile(file); rememberRecentFile(file); } catch (const std::exception& e) { showError(e); }
 }
 void EditorWindow::saveFile(const QString& file) {
-    if(file==recoveryFile_)throw std::runtime_error("EDIT_FILE_WRITE");
+    if(file==recoverySession_->file)throw std::runtime_error("EDIT_FILE_WRITE");
     validateDocument(history_.document());
     writeEditorDocument(file,documentJson(history_.document()));
     // S5.5a (D331): a new path has its own side files (none are copied; they would be stale by hash).
@@ -60,8 +68,8 @@ bool EditorWindow::confirmDiscard() {
     return answer==QMessageBox::Discard;
 }
 void EditorWindow::closeEvent(QCloseEvent* event) {
-    if(automationClosing_) {
-        if(!automationCloseReady_){event->ignore();return;}
+    if(automationHost_->closing) {
+        if(!automationHost_->closeReady){event->ignore();return;}
         clearRecovery();event->accept();return;
     }
     if(confirmDiscard()){clearRecovery();event->accept();}else event->ignore();

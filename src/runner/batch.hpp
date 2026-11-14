@@ -34,6 +34,9 @@ std::vector<SeedRun> runSeeds(const Scenario&, const EvaluationSpec&, const std:
 struct Estimate {
     std::size_t n{};
     std::optional<double> mean, sd, halfWidth95;
+    // D526: every seed's value in the batch's seed order (empty: none), so a comparison can pair
+    // them (BATCH §7). Not written to any output.
+    std::vector<std::optional<double>> perSeed{};
     bool operator==(const Estimate&) const = default;
 };
 struct BatchMovementRow {
@@ -85,6 +88,8 @@ struct BatchReport {
 // Throws on no runs, a duplicate seed, runs whose movement, approach or section rows differ, or
 // runs under different random-stream mappings (IS8).
 BatchReport aggregate(std::vector<SeedRun> runs);
+// One quantity over seeds in seed order (an empty value is a seed without one): the Estimate above.
+Estimate estimate(const std::vector<std::optional<double>>& values);
 // Two-sided 95 % Student t quantile. Tabulated for df 1-30, 40, 60 and 120; between rows the
 // lower df is used, which widens the interval rather than narrowing it.
 double tQuantile975(std::size_t degreesOfFreedom);

@@ -3,19 +3,25 @@
 
 namespace multra {
 // Scenario comparison (M5.8a, D148, BATCH §7): two batches over one seed list, alternative minus
-// base, row by row. Equal seeds are not common random numbers -- each run's stream diverges once
-// the projects differ -- so every interval is Welch's for independent samples. NOT HCM control
-// delay, NOT LOS, not validated (rule 4).
+// base, row by row. Under shared, equal seeds are not common random numbers -- each run's stream
+// diverges once the projects differ -- so the interval is Welch's for independent samples; under
+// perInput the rows pair by seed (D526). NOT HCM control delay, NOT LOS, not validated (rule 4).
 struct Difference {
     std::size_t nBase{}, nAlternative{};
     std::optional<double> base, alternative;              // the two means
     std::optional<double> difference;                     // alternative - base
     std::optional<double> halfWidth95, degreesOfFreedom;  // empty with n < 2 on a side
+    std::optional<std::size_t> pairs;                     // D526: set only by `paired`
     bool operator==(const Difference&) const = default;
 };
 // d = mean_a - mean_b, SE = sqrt(s_b^2/n_b + s_a^2/n_a), Welch-Satterthwaite nu, half-width
 // tQuantile975(floor(nu)) * SE. Both SDs zero: half-width 0 and no nu.
 Difference welch(const Estimate& base, const Estimate& alternative);
+// D526 (BATCH §7): under perInput a seed's two runs share every unedited input's draws, so rows
+// pair by seed. The m seeds with a value on both sides give d_i = a_i - b_i; d = mean(d_i), the
+// half-width tQuantile975(m - 1) * s_d / sqrt(m), df m - 1. The shown means stay each side's own.
+// m < 2: no interval (no d with m = 0). Both estimates must carry perSeed over the same seeds.
+Difference paired(const Estimate& base, const Estimate& alternative);
 
 struct ComparisonRow {
     std::string name; Difference value;
@@ -49,7 +55,8 @@ struct Comparison {
     RandomStreams randomStreams{}; // INPUT_STREAMS §5 (IS8): both batches' mapping
     bool operator==(const Comparison&) const = default;
 };
-// Rows matched by name in the base's order. Throws when the batches ran different seed lists or
-// different random-stream mappings (IS8): the same seed then means different draws.
+// Rows matched by name in the base's order; paired by seed under perInput (D526), Welch under
+// shared. Throws when the batches ran different seed lists or different random-stream mappings
+// (IS8): the same seed then means different draws.
 Comparison compareBatches(const BatchReport& base, const BatchReport& alternative);
 }

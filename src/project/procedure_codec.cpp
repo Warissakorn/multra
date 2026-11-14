@@ -2,6 +2,8 @@
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <set>
+#include <cmath>
+#include <cstdint>
 
 namespace multra {
 namespace {
@@ -63,7 +65,34 @@ ProcedureStep step(const Json& j, const std::string& at, Issues& issues) {
     }
     return s;
 }
+ProcedureFeedback feedback(const Json& j, const std::string& at, Issues& issues) {
+    ProcedureFeedback f;
+    if (!j.is_object()) { bad(issues, at); return f; }
+    if (!onlyKeys(j, {"method", "weight", "maxIterations", "tolerance"})) bad(issues, at);
+    const auto method = j.contains("method") && j.at("method").is_string() ? j.at("method").get<std::string>() : "";
+    if (method == "msa") f.method = FeedbackMethod::msa;
+    else if (method != "constantWeight") bad(issues, at + ".method");
+    if (j.contains("weight")) {
+        if (!j.at("weight").is_number()) bad(issues, at + ".weight");
+        else f.weight = j.at("weight").get<double>();
+    }
+    if (!j.contains("maxIterations") || !j.at("maxIterations").is_number_integer()) bad(issues, at + ".maxIterations");
+    else f.maxIterations = static_cast<int>(std::clamp<std::int64_t>(j.at("maxIterations").get<std::int64_t>(), -1, 1001));
+    if (!j.contains("tolerance") || !j.at("tolerance").is_number()) bad(issues, at + ".tolerance");
+    else f.tolerance = j.at("tolerance").get<double>();
+    return f;
 }
+std::vector<ValidationIssue> feedbackIssues(const ProcedureFeedback& f, const std::string& at) {
+    Issues issues;
+    if (f.method == FeedbackMethod::constantWeight && (!f.weight || !std::isfinite(*f.weight) || *f.weight < 0 || *f.weight >= 1))
+        bad(issues, at + ".weight");
+    if (f.method == FeedbackMethod::msa && f.weight) bad(issues, at + ".weight");
+    if (f.maxIterations < 2 || f.maxIterations > 1000) bad(issues, at + ".maxIterations");
+    if (!std::isfinite(f.tolerance) || f.tolerance < 0) bad(issues, at + ".tolerance");
+    return issues;
+}
+}
+const char* feedbackMethodName(FeedbackMethod m) { return m == FeedbackMethod::msa ? "msa" : "constantWeight"; }
 const char* procedureStepKindName(ProcedureStepKind k) {
     return std::find_if(kKinds.begin(), kKinds.end(), [&](const auto& x) { return x.first == k; })->second;
 }
@@ -77,13 +106,14 @@ std::vector<Procedure> parseProcedures(const Json& file) {
         const auto at = "procedures[" + std::to_string(i) + "]";
         const auto& j = list[i];
         Procedure p;
-        if (!j.is_object() || !onlyKeys(j, {"id", "name", "steps"})) { bad(issues, at); continue; }
+        if (!j.is_object() || !onlyKeys(j, {"id", "name", "steps", "feedback"})) { bad(issues, at); continue; }
         if (!j.contains("id") || !j.at("id").is_string()) issues.push_back({"INVALID_ID", at + ".id"});
         else p.id = j.at("id").get<std::string>();
         if (!j.contains("name") || !j.at("name").is_string()) bad(issues, at + ".name");
         else p.name = j.at("name").get<std::string>();
         if (!j.contains("steps") || !j.at("steps").is_array() || j.at("steps").empty()) bad(issues, at + ".steps");
         else for (std::size_t k = 0; k < j.at("steps").size(); ++k) p.steps.push_back(step(j.at("steps")[k], at + ".steps[" + std::to_string(k) + "]", issues));
+        if (j.contains("feedback")) p.feedback = feedback(j.at("feedback"), at + ".feedback", issues); // D547
         out.push_back(std::move(p));
     }
     if (issues.empty()) issues = procedureIssues(out);
@@ -116,7 +146,15 @@ void addProceduresJson(const std::vector<Procedure>& procedures, Json& file) {
             }
             steps.push_back(std::move(j));
         }
-        list.push_back({{"id", p.id}, {"name", p.name}, {"steps", steps}});
+        Json entry{{"id", p.id}, {"name", p.name}, {"steps", steps}};
+        if (p.feedback) {
+            Json f{{"method", feedbackMethodName(p.feedback->method)}};
+            if (p.feedback->weight) f["weight"] = *p.feedback->weight;
+            f["maxIterations"] = p.feedback->maxIterations;
+            f["tolerance"] = p.feedback->tolerance;
+            entry["feedback"] = std::move(f);
+        }
+        list.push_back(std::move(entry));
     }
     file["procedures"] = list;
 }
@@ -128,6 +166,8 @@ std::vector<ValidationIssue> procedureIssues(const std::vector<Procedure>& proce
         if (blank(procedures[i].id)) issues.push_back({"INVALID_ID", at + ".id"});
         else if (!ids.insert(procedures[i].id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
         if (procedures[i].steps.empty()) bad(issues, at + ".steps");
+        if (procedures[i].feedback)
+            for (auto& issue : feedbackIssues(*procedures[i].feedback, at + ".feedback")) issues.push_back(std::move(issue));
         for (std::size_t k = 0; k < procedures[i].steps.size(); ++k) {
             const auto& s = procedures[i].steps[k];
             const auto where = at + ".steps[" + std::to_string(k) + "]";

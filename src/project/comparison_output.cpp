@@ -8,7 +8,11 @@
 
 namespace multra {
 namespace {
-std::string measure(std::size_t runs) {
+std::string measure(std::size_t runs, RandomStreams streams) {
+    if (streams == RandomStreams::perInput) // D526
+        return "Difference of means, alternative minus base: simulated delay and queues, not HCM control delay or LOS; " +
+               std::to_string(runs) + " runs of each on the same seeds, paired by seed (per-input random streams); "
+               "95% CI by the paired t";
     return "Difference of means, alternative minus base: simulated delay and queues, not HCM control delay or LOS; " +
            std::to_string(runs) + " runs of each on the same seeds, independent (no common random numbers); "
            "95% CI by Welch's t";
@@ -20,10 +24,16 @@ Json differenceJson(const Difference& d) {
             {"difference", value(d.difference)}, {"halfWidth95", value(d.halfWidth95)},
             {"degreesOfFreedom", value(d.degreesOfFreedom)}};
 }
+// D526: a paired difference also says how many seeds it paired; Welch's keeps its bytes.
+Json differenceOut(const Difference& d) {
+    auto j = differenceJson(d);
+    if (d.pairs) j["pairs"] = *d.pairs;
+    return j;
+}
 Json rowsJson(const std::vector<ComparisonRow>& rows, const char* key) {
     auto out = Json::array();
     for (const auto& row : rows) {
-        auto j = differenceJson(row.value);
+        auto j = differenceOut(row.value);
         j[key] = row.name;
         out.push_back(std::move(j));
     }
@@ -42,10 +52,10 @@ bool hasNodes(const Comparison& c) { return !c.nodes.empty() || !c.unmatchedNode
 Json nodesJson(const Comparison& c) {
     auto out = Json::array();
     for (const auto& n : c.nodes) {
-        Json row{{"node", n.name}, {"delay", differenceJson(n.delay)}, {"legs", Json::array()},
+        Json row{{"node", n.name}, {"delay", differenceOut(n.delay)}, {"legs", Json::array()},
                  {"unmatched", {{"legs", unmatchedJson(n.unmatchedLegs)}, {"turns", unmatchedJson(n.unmatchedTurns)}}}};
         for (const auto& l : n.legs)
-            row["legs"].push_back({{"leg", l.name}, {"delay", differenceJson(l.delay)}, {"queueMean", differenceJson(l.queueMean)}});
+            row["legs"].push_back({{"leg", l.name}, {"delay", differenceOut(l.delay)}, {"queueMean", differenceOut(l.queueMean)}});
         row["turns"] = rowsJson(n.turns, "turn");
         out.push_back(std::move(row));
     }
@@ -133,9 +143,12 @@ void requireSameRandomStreams(const Scenario& base, const Scenario& alternative)
 Json comparisonJson(const Comparison& c, const ComparedBatch& base, const ComparedBatch& alternative) {
     Json j;
     j["validated"] = false;
-    j["measure"] = measure(c.seeds.size());
+    j["measure"] = measure(c.seeds.size(), c.randomStreams);
     j["seeds"] = c.seeds;
-    if (c.randomStreams == RandomStreams::perInput) j["randomStreams"] = randomStreamsName(c.randomStreams); // IS8: only then, so shared keeps its bytes
+    if (c.randomStreams == RandomStreams::perInput) { // IS8, D526: only then, so shared keeps its bytes
+        j["randomStreams"] = randomStreamsName(c.randomStreams);
+        j["interval"] = "paired";
+    }
     j["base"] = sideJson(base);
     j["alternative"] = sideJson(alternative);
     if (!base.runs.empty()) {
@@ -146,7 +159,7 @@ Json comparisonJson(const Comparison& c, const ComparedBatch& base, const Compar
     j["movements"] = rowsJson(c.movements, "movement");
     if (hasSections(c)) j["sections"] = rowsJson(c.sections, "section");
     j["queues"] = rowsJson(c.queues, "approach");
-    j["network"] = differenceJson(c.network);
+    j["network"] = differenceOut(c.network);
     j["unmatched"] = {{"movements", unmatchedJson(c.unmatchedMovements)}, {"queues", unmatchedJson(c.unmatchedQueues)}};
     if (hasSections(c)) j["unmatched"]["sections"] = unmatchedJson(c.unmatchedSections);
     if (hasNodes(c)) {
@@ -157,7 +170,7 @@ Json comparisonJson(const Comparison& c, const ComparedBatch& base, const Compar
 }
 std::string comparisonCsv(const Comparison& c, const ComparedBatch& base, const ComparedBatch& alternative) {
     std::ostringstream out;
-    out << "# MULTRA - not yet validated. " << measure(c.seeds.size()) << ".\n";
+    out << "# MULTRA - not yet validated. " << measure(c.seeds.size(), c.randomStreams) << ".\n";
     out << "# Base: " << csvQuoted(base.name) << "; alternative: " << csvQuoted(alternative.name) << '\n';
     if (const auto seeds = perSide(base, alternative, [](const ComparedBatch& s) { return seedList(s.report.overloadedSeeds); });
         !seeds.empty())

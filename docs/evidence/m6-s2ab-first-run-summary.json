@@ -1,0 +1,376 @@
+{
+  "amber": 3.0,
+  "approachLength": 2001.0,
+  "band": 0.15,
+  "cooldown": 900.0,
+  "cycle": 90.0,
+  "declaredSaturation": 1900.0,
+  "green": 40.0,
+  "label": "M6 S2-b and S2-a (D539); a comparison, not a calibration",
+  "levels": [
+    {
+      "available": true,
+      "delta": {
+        "halfWidth95": 0.7278143528155279,
+        "mean": 18.509454778619183,
+        "n": 40,
+        "sd": 2.2542126039749766
+      },
+      "differencePercent": -7.377225120772013,
+      "flow": 422.22222222222223,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.0,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "pendingSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "reference": 19.98369710123012,
+      "rows": [
+        "S2-b"
+      ],
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.33129375599827926,
+        "mean": 158.58888919218094,
+        "n": 40,
+        "sd": 1.026094851661736
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 0.7182700786637306,
+        "mean": 177.09834397080022,
+        "n": 40,
+        "sd": 2.2246517372435846
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 6.264836066695129,
+        "mean": 426.6,
+        "n": 40,
+        "sd": 19.403673984649508
+      },
+      "verdict": "pass",
+      "x": 0.5
+    },
+    {
+      "available": true,
+      "delta": {
+        "halfWidth95": 0.8002060075649667,
+        "mean": 21.037296867693044,
+        "n": 40,
+        "sd": 2.4784266221892497
+      },
+      "differencePercent": -16.15262689458533,
+      "flow": 591.1111111111111,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.0,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "pendingSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "reference": 25.089989213191586,
+      "rows": [
+        "S2-b"
+      ],
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.2776511155857654,
+        "mean": 161.48102244471355,
+        "n": 40,
+        "sd": 0.859950950183834
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 0.7784653852966678,
+        "mean": 182.51831931240656,
+        "n": 40,
+        "sd": 2.411090790536751
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 6.961135117422503,
+        "mean": 598.025,
+        "n": 40,
+        "sd": 21.560276269577642
+      },
+      "verdict": "miss",
+      "x": 0.7
+    },
+    {
+      "available": true,
+      "delta": {
+        "halfWidth95": 1.1847005016967647,
+        "mean": 24.609631125764686,
+        "n": 40,
+        "sd": 3.6692966998099417
+      },
+      "differencePercent": -27.412800731734354,
+      "flow": 717.7777777777778,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.0,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "pendingSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "reference": 33.90354135970053,
+      "rows": [
+        "S2-b",
+        "S2-a"
+      ],
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.25809569427459533,
+        "mean": 163.2718664104412,
+        "n": 40,
+        "sd": 0.7993832009698343
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 1.1922878421169814,
+        "mean": 187.8814975362059,
+        "n": 40,
+        "sd": 3.6927964815052836
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 8.7611531332961,
+        "mean": 723.325,
+        "n": 40,
+        "sd": 27.135356347440215
+      },
+      "verdict": "miss",
+      "x": 0.85
+    },
+    {
+      "available": true,
+      "delta": {
+        "halfWidth95": 2.4318591898640713,
+        "mean": 32.090877515190655,
+        "n": 40,
+        "sd": 7.532041125154092
+      },
+      "differencePercent": -40.941959811704066,
+      "flow": 802.2222222222222,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.0,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "pendingSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "reference": 54.33786392652832,
+      "rows": [
+        "S2-b",
+        "S2-a"
+      ],
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.2622672572263097,
+        "mean": 164.32935649404504,
+        "n": 40,
+        "sd": 0.8123035147114527
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 2.455632504398401,
+        "mean": 196.42023400923566,
+        "n": 40,
+        "sd": 7.605672683880895
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 9.460230730964067,
+        "mean": 808.8,
+        "n": 40,
+        "sd": 29.300564447175372
+      },
+      "verdict": "miss",
+      "x": 0.95
+    },
+    {
+      "available": true,
+      "delta": {
+        "halfWidth95": 4.5794317799912445,
+        "mean": 42.418971635493236,
+        "n": 40,
+        "sd": 14.18357964165664
+      },
+      "differencePercent": -51.21017394820206,
+      "flow": 844.4444444444445,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.0,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "pendingSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "reference": 86.94224814505168,
+      "rows": [
+        "S2-a"
+      ],
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.24388360245887514,
+        "mean": 164.84811644242734,
+        "n": 40,
+        "sd": 0.7553650026807904
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 4.6089003446376875,
+        "mean": 207.26708807792056,
+        "n": 40,
+        "sd": 14.274850732409504
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 9.382992991127002,
+        "mean": 852.55,
+        "n": 40,
+        "sd": 29.061340961172775
+      },
+      "verdict": "miss",
+      "x": 1.0
+    },
+    {
+      "available": true,
+      "delta": {
+        "halfWidth95": 11.645137685106238,
+        "mean": 69.55249647617637,
+        "n": 40,
+        "sd": 36.06773628912476
+      },
+      "differencePercent": -52.943204674887454,
+      "flow": 886.6666666666666,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.0,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "pendingSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "reference": 147.80542532835565,
+      "rows": [
+        "S2-a"
+      ],
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.2360067192840938,
+        "mean": 165.3203386910755,
+        "n": 40,
+        "sd": 0.7309684388263661
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 11.68125452167326,
+        "mean": 234.8728351672518,
+        "n": 40,
+        "sd": 36.17959864508151
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 9.193347675176145,
+        "mean": 894.45,
+        "n": 40,
+        "sd": 28.473964716327558
+      },
+      "verdict": "miss",
+      "x": 1.05
+    }
+  ],
+  "measuredSaturationS1": 1944.0,
+  "reference": "HCM 7 d1 + d2",
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81
+  ]
+}

@@ -157,6 +157,10 @@ double stopLineReach(const DriverBehaviour& b, double driverFactor) {
 bool atStopLine(const Vehicle& vehicle, double line, const DriverBehaviour& behaviour) {
     return vehicle.speed < kStoppedSpeed && line - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor);
 }
+bool stopMade(const Vehicle& vehicle, double line, const DriverBehaviour& behaviour) {
+    if (!behaviour.stopArrival) return atStopLine(vehicle, line, behaviour);
+    return vehicle.speed < 0.5 && line - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor); // M6_SWEEP §4 (D546), lever E
+}
 std::uint64_t stopDwellTicks(const DriverBehaviour& b, double dt) {
     if (!b.stopDwellTime) return 1;
     return std::max<std::uint64_t>(1, static_cast<std::uint64_t>(std::ceil(*b.stopDwellTime / dt - 1e-9)));
@@ -182,7 +186,7 @@ std::vector<StopService> refreshStops(const Scenario& scenario, const ScenarioIn
         if (!line) continue; // no Stop ahead: passing the last line cleared its service
         if (old != previous.end() && old->vehicleId == vehicle.id && old->line == *line) { next.push_back(*old); continue; }
         const auto& behaviour = scenario.behaviours[refs[v].behaviour];
-        if (atStopLine(vehicle, *line, behaviour)) next.push_back({vehicle.id, *line, tick, stopDwellTicks(behaviour, scenario.timeStep)});
+        if (stopMade(vehicle, *line, behaviour)) next.push_back({vehicle.id, *line, tick, stopDwellTicks(behaviour, scenario.timeStep)});
     }
     return next;
 }

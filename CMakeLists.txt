@@ -97,7 +97,7 @@ target_sources(multra_model PRIVATE src/model/network/approach_layout.cpp src/mo
 # Run-view geometry is Qt-free and independently testable; the core never imports it.
 add_library(multra_vehicle_pose ${MULTRA_LIBRARY_TYPE} src/editor/vehicle_pose.cpp src/editor/rear_axle_pose.cpp src/editor/lane_change_pose.cpp)
 target_link_libraries(multra_vehicle_pose PUBLIC multra_model PRIVATE multra_options)
-add_library(multra_eval ${MULTRA_LIBRARY_TYPE} src/eval/discharge.cpp src/eval/discharge_passage.cpp src/eval/summary.cpp src/eval/movement.cpp src/eval/nodes.cpp src/eval/sections.cpp src/eval/los.cpp src/eval/lane_changes.cpp src/eval/segment_times.cpp src/eval/stop_lines.cpp src/eval/arrival_phases.cpp src/eval/dead_end_waits.cpp src/eval/lots.cpp)
+add_library(multra_eval ${MULTRA_LIBRARY_TYPE} src/eval/discharge.cpp src/eval/discharge_passage.cpp src/eval/summary.cpp src/eval/movement.cpp src/eval/nodes.cpp src/eval/sections.cpp src/eval/los.cpp src/eval/lane_changes.cpp src/eval/segment_times.cpp src/eval/stop_lines.cpp src/eval/priority_lines.cpp src/eval/fctl_reference.cpp src/eval/arrival_phases.cpp src/eval/dead_end_waits.cpp src/eval/lots.cpp)
 target_link_libraries(multra_eval PUBLIC multra_core PRIVATE multra_options)
 # M5.2 batches: independent seeds and their aggregate. Core and eval only (check_architecture).
 add_library(multra_runner ${MULTRA_LIBRARY_TYPE} src/runner/batch.cpp src/runner/compare.cpp)
@@ -108,7 +108,7 @@ add_library(multra_project ${MULTRA_LIBRARY_TYPE} src/project/load.cpp src/proje
     src/project/parallel_seeds.cpp)
 # D152: the seed scheduler's worker threads live here; runner stays thread-free (check_architecture).
 find_package(Threads REQUIRED)
-target_sources(multra_project PRIVATE src/project/cost_matrix_codec.cpp src/project/deterrence_codec.cpp src/project/trip_distribution_run.cpp src/project/zone_skim.cpp src/project/mode_choice_codec.cpp src/project/period_factor_codec.cpp src/project/mode_choice_run.cpp src/project/mode_choice_output.cpp src/project/procedure_codec.cpp src/project/procedure_run.cpp src/project/procedure_output.cpp src/project/trip_distribution_output.cpp src/project/trip_rate_codec.cpp src/project/trip_generation_run.cpp src/project/trip_generation_output.cpp src/project/macro_run_definition.cpp src/project/observed_schema.cpp src/project/document_envelope.cpp src/project/network_fields.cpp src/project/network_link_codec.cpp src/project/network_connector_codec.cpp src/project/network_signal_head_codec.cpp src/project/signal_control_codec.cpp src/project/right_of_way_codec.cpp src/project/measurement_codec.cpp src/project/demand_codec.cpp src/project/routing_codec.cpp src/project/object_csv.cpp src/project/network_schema.cpp)
+target_sources(multra_project PRIVATE src/project/cost_matrix_codec.cpp src/project/deterrence_codec.cpp src/project/trip_distribution_run.cpp src/project/zone_skim.cpp src/project/procedure_feedback.cpp src/project/dynamic_assignment.cpp src/project/dynamic_assignment_run.cpp src/project/route_costs.cpp src/project/dynamic_assignment_loop.cpp src/project/meso_assignment.cpp src/project/mode_choice_codec.cpp src/project/period_factor_codec.cpp src/project/mode_choice_run.cpp src/project/mode_choice_output.cpp src/project/procedure_codec.cpp src/project/procedure_run.cpp src/project/procedure_output.cpp src/project/trip_distribution_output.cpp src/project/trip_rate_codec.cpp src/project/trip_generation_run.cpp src/project/trip_generation_output.cpp src/project/macro_run_definition.cpp src/project/observed_schema.cpp src/project/document_envelope.cpp src/project/network_fields.cpp src/project/network_link_codec.cpp src/project/network_connector_codec.cpp src/project/network_signal_head_codec.cpp src/project/signal_control_codec.cpp src/project/right_of_way_codec.cpp src/project/measurement_codec.cpp src/project/demand_codec.cpp src/project/routing_codec.cpp src/project/object_csv.cpp src/project/network_schema.cpp src/project/subarea_consistency.cpp)
 target_sources(multra_project PRIVATE src/project/meso_street_segment_demand.cpp src/project/node_analysis_run.cpp src/project/node_analysis_permitted.cpp src/project/node_analysis_output.cpp src/project/node_analysis_report.cpp src/project/build_metadata.cpp)
 target_sources(multra_project PRIVATE src/project/node_model_demand.cpp)
 target_sources(multra_project PRIVATE src/project/node_analysis_fill.cpp)
@@ -159,7 +159,7 @@ add_custom_target(multra-build-info
     BYPRODUCTS ${CMAKE_BINARY_DIR}/generated/build_info.hpp)
 target_include_directories(multra_project PRIVATE ${CMAKE_BINARY_DIR}/generated)
 add_dependencies(multra_project multra-build-info)
-add_executable(multra-cli tools/run_simulation.cpp tools/four_step_cli.cpp)
+add_executable(multra-cli tools/run_simulation.cpp tools/four_step_cli.cpp tools/dynamic_assignment_cli.cpp tools/consistency_cli.cpp)
 target_link_libraries(multra-cli PRIVATE multra_project multra_options)
 target_include_directories(multra-cli PRIVATE ${CMAKE_BINARY_DIR}/generated)
 add_dependencies(multra-cli multra-build-info)
@@ -167,6 +167,9 @@ multra_runtime_data(multra-cli)
 add_executable(multra-project-schema tools/project_schema.cpp)
 target_link_libraries(multra-project-schema PRIVATE multra_project multra_options)
 install(TARGETS multra-cli multra-project-schema RUNTIME DESTINATION bin)
+# D529 (FCTL_REFERENCE): M6 S2-c's analytic reference; pure arithmetic, no engine.
+add_executable(multra-fctl-reference tools/fctl_reference.cpp)
+target_link_libraries(multra-fctl-reference PRIVATE multra_eval multra_options)
 install(DIRECTORY data/ DESTINATION bin/data)
 
 # Not a test and not in `check`: it prints tick rates, it does not assert them. It needs no Qt,
@@ -204,6 +207,18 @@ target_precompile_headers(multra-t-junction-sweep REUSE_FROM multra-four-leg-fix
 add_executable(multra-w74-discharge-sweep tools/w74_discharge_sweep.cpp)
 target_link_libraries(multra-w74-discharge-sweep PRIVATE multra_commands multra_options)
 target_precompile_headers(multra-w74-discharge-sweep REUSE_FROM multra-four-leg-fixture)
+# M6 (D535, D538; docs/reference/M6_S1_RUN.md, M6_S2_RUN.md): the S1 project's builder and the run tools.
+add_executable(multra-m6-s1-fixture tools/m6_s1_fixture.cpp)
+target_link_libraries(multra-m6-s1-fixture PRIVATE multra_commands multra_options)
+target_precompile_headers(multra-m6-s1-fixture REUSE_FROM multra-four-leg-fixture)
+foreach(tool m6_s1_run m6_s2_run m6_u_run)
+    string(REPLACE "_" "-" name "multra-${tool}")
+    add_executable(${name} tools/${tool}.cpp)
+    target_link_libraries(${name} PRIVATE multra_commands multra_runner multra_options)
+    target_precompile_headers(${name} REUSE_FROM multra-four-leg-fixture)
+    target_include_directories(${name} PRIVATE ${CMAKE_BINARY_DIR}/generated)
+    add_dependencies(${name} multra-build-info)
+endforeach()
 # BA38 reaction-time sensitivity. Raw evidence tool; never run the 240-run matrix in check.
 add_executable(multra-reaction-discharge-sweep tools/reaction_discharge_sweep.cpp)
 target_link_libraries(multra-reaction-discharge-sweep PRIVATE multra_commands multra_options)
@@ -285,7 +300,7 @@ if(BUILD_TESTING)
     add_dependencies(check multra-vehicle-pose-tests)
     add_executable(multra-tests tests/main.cpp tests/behaviour_library_tests.cpp tests/behaviour_selection_tests.cpp tests/behaviour_selection_edge_tests.cpp tests/input_manifest_tests.cpp tests/discharge_tests.cpp tests/discharge_passage_tests.cpp tests/discharge_identity_tests.cpp tests/core_tests.cpp tests/station_routing_tests.cpp tests/source_insertion_tests.cpp
         tests/network_tests.cpp tests/reference_tests.cpp tests/project_tests.cpp tests/editor_model_tests.cpp tests/authoring_tests.cpp
-        tests/network_lifecycle_tests.cpp tests/connector_tests.cpp tests/connector_shape_tests.cpp tests/connector_mouth_tests.cpp tests/connector_point_tests.cpp tests/attachment_tests.cpp tests/lane_edge_tests.cpp tests/diagnostics_tests.cpp tests/demand_tests.cpp tests/demand_correctness_tests.cpp tests/demand_catalog_tests.cpp tests/demand_time_types_tests.cpp tests/range_tests.cpp tests/four_leg_tests.cpp tests/m26_study_tests.cpp tests/right_of_way_tests.cpp tests/right_of_way_lifecycle_tests.cpp tests/right_of_way_resolution_tests.cpp tests/conflict_zone_tests.cpp tests/conflict_chain_tests.cpp tests/commitment_tests.cpp tests/lane_change_tests.cpp tests/stop_control_tests.cpp tests/stop_control_model_tests.cpp tests/signal_position_tests.cpp tests/queue_counter_tests.cpp tests/t_junction_tests.cpp tests/t_junction_controlled_tests.cpp tests/t_junction_signal_tests.cpp tests/automatic_conflict_tests.cpp tests/conflict_geometry_tests.cpp tests/conflict_polygon_tests.cpp tests/conflict_mouth_group_tests.cpp tests/conflict_follow_tests.cpp tests/right_of_way_runtime_tests.cpp tests/right_of_way_editor_tests.cpp tests/demand_interval_tests.cpp tests/demand_composition_tests.cpp tests/demand_decision_tests.cpp tests/movement_tests.cpp tests/arrival_phase_tests.cpp tests/wait_cause_tests.cpp tests/routeless_tests.cpp tests/downstream_decision_tests.cpp tests/decision_interval_tests.cpp tests/demand_counts_tests.cpp tests/signal_control_tests.cpp tests/discretionary_tests.cpp tests/lane_change_lab_tests.cpp tests/weaving_lab_tests.cpp tests/macro_example_tests.cpp tests/node_example_tests.cpp tests/pocket_decision_tests.cpp tests/lateral_lab_tests.cpp tests/batch_tests.cpp tests/compare_tests.cpp tests/evaluation_period_tests.cpp tests/cooldown_tests.cpp tests/amber_tests.cpp tests/travel_time_section_tests.cpp tests/los_tests.cpp tests/w74_tests.cpp tests/w74_codec_tests.cpp tests/perception_codec_tests.cpp tests/perception_motion_tests.cpp tests/perception_lane_tests.cpp tests/perception_delay_tests.cpp tests/reaction_discharge_tests.cpp tests/lateral_codec_tests.cpp tests/lateral_span_tests.cpp tests/lateral_motion_tests.cpp tests/lateral_zone_tests.cpp tests/lane_change_duration_tests.cpp tests/lane_swap_tests.cpp tests/straddler_leader_tests.cpp tests/curve_speed_tests.cpp tests/kerb_bias_tests.cpp tests/commitment_deceleration_tests.cpp tests/merge_deceleration_tests.cpp tests/speed_decision_tests.cpp tests/speed_area_tests.cpp tests/speed_distribution_tests.cpp tests/stop_dwell_tests.cpp tests/lane_preference_tests.cpp tests/driver_factor_tests.cpp tests/red_running_tests.cpp tests/merge_clamp_tests.cpp tests/join_anticipation_tests.cpp tests/stop_floor_tests.cpp tests/node_tests.cpp tests/node_membership_tests.cpp tests/node_evaluation_tests.cpp tests/node_suggestion_tests.cpp tests/study_period_tests.cpp tests/mode_pcu_tests.cpp tests/macro_network_tests.cpp tests/meso_network_tests.cpp tests/macro_assign_tests.cpp tests/macro_benchmark_tests.cpp tests/meso_demand_tests.cpp tests/meso_node_model_tests.cpp tests/meso_loading_tests.cpp tests/meso_output_tests.cpp tests/macro_output_tests.cpp tests/street_segment_catalog_tests.cpp tests/street_segment_tests.cpp tests/street_segment_crossing_tests.cpp tests/street_segment_coarse_tests.cpp tests/street_segment_coarse_command_tests.cpp tests/street_segment_seam_tests.cpp tests/street_segment_schema_tests.cpp tests/link_speed_tests.cpp tests/readiness_tests.cpp tests/fill_defaults_tests.cpp tests/node_detail_tests.cpp tests/study_area_tests.cpp tests/study_area_marking_tests.cpp tests/node_proposal_tests.cpp tests/give_way_stop_tests.cpp tests/w74_traits_tests.cpp tests/w74_run_tests.cpp)
+        tests/network_lifecycle_tests.cpp tests/connector_tests.cpp tests/connector_shape_tests.cpp tests/connector_mouth_tests.cpp tests/connector_point_tests.cpp tests/attachment_tests.cpp tests/lane_edge_tests.cpp tests/diagnostics_tests.cpp tests/demand_tests.cpp tests/demand_correctness_tests.cpp tests/demand_catalog_tests.cpp tests/demand_time_types_tests.cpp tests/range_tests.cpp tests/four_leg_tests.cpp tests/m26_study_tests.cpp tests/right_of_way_tests.cpp tests/right_of_way_lifecycle_tests.cpp tests/right_of_way_resolution_tests.cpp tests/conflict_zone_tests.cpp tests/conflict_chain_tests.cpp tests/commitment_tests.cpp tests/lane_change_tests.cpp tests/stop_control_tests.cpp tests/stop_control_model_tests.cpp tests/signal_position_tests.cpp tests/queue_counter_tests.cpp tests/t_junction_tests.cpp tests/t_junction_controlled_tests.cpp tests/t_junction_signal_tests.cpp tests/automatic_conflict_tests.cpp tests/conflict_geometry_tests.cpp tests/conflict_polygon_tests.cpp tests/conflict_mouth_group_tests.cpp tests/conflict_follow_tests.cpp tests/right_of_way_runtime_tests.cpp tests/right_of_way_editor_tests.cpp tests/demand_interval_tests.cpp tests/demand_composition_tests.cpp tests/demand_decision_tests.cpp tests/movement_tests.cpp tests/arrival_phase_tests.cpp tests/wait_cause_tests.cpp tests/routeless_tests.cpp tests/downstream_decision_tests.cpp tests/decision_interval_tests.cpp tests/demand_counts_tests.cpp tests/signal_control_tests.cpp tests/discretionary_tests.cpp tests/lane_change_lab_tests.cpp tests/weaving_lab_tests.cpp tests/macro_example_tests.cpp tests/node_example_tests.cpp tests/pocket_decision_tests.cpp tests/lateral_lab_tests.cpp tests/batch_tests.cpp tests/compare_tests.cpp tests/priority_lines_tests.cpp tests/fctl_reference_tests.cpp tests/m6_s1_tests.cpp tests/m6_s2_tests.cpp tests/m6_u_tests.cpp tests/m6_sweep_tests.cpp tests/evaluation_period_tests.cpp tests/cooldown_tests.cpp tests/amber_tests.cpp tests/travel_time_section_tests.cpp tests/los_tests.cpp tests/w74_tests.cpp tests/w74_codec_tests.cpp tests/perception_codec_tests.cpp tests/perception_motion_tests.cpp tests/perception_lane_tests.cpp tests/perception_delay_tests.cpp tests/reaction_discharge_tests.cpp tests/lateral_codec_tests.cpp tests/lateral_span_tests.cpp tests/lateral_motion_tests.cpp tests/lateral_zone_tests.cpp tests/lane_change_duration_tests.cpp tests/lane_swap_tests.cpp tests/straddler_leader_tests.cpp tests/curve_speed_tests.cpp tests/kerb_bias_tests.cpp tests/commitment_deceleration_tests.cpp tests/merge_deceleration_tests.cpp tests/speed_decision_tests.cpp tests/speed_area_tests.cpp tests/speed_distribution_tests.cpp tests/stop_dwell_tests.cpp tests/lane_preference_tests.cpp tests/driver_factor_tests.cpp tests/red_running_tests.cpp tests/merge_clamp_tests.cpp tests/join_anticipation_tests.cpp tests/stop_floor_tests.cpp tests/node_tests.cpp tests/node_membership_tests.cpp tests/node_evaluation_tests.cpp tests/node_suggestion_tests.cpp tests/study_period_tests.cpp tests/mode_pcu_tests.cpp tests/macro_network_tests.cpp tests/meso_network_tests.cpp tests/macro_assign_tests.cpp tests/macro_benchmark_tests.cpp tests/meso_demand_tests.cpp tests/meso_node_model_tests.cpp tests/meso_loading_tests.cpp tests/meso_output_tests.cpp tests/macro_output_tests.cpp tests/street_segment_catalog_tests.cpp tests/street_segment_tests.cpp tests/street_segment_crossing_tests.cpp tests/street_segment_coarse_tests.cpp tests/street_segment_coarse_command_tests.cpp tests/street_segment_seam_tests.cpp tests/street_segment_schema_tests.cpp tests/link_speed_tests.cpp tests/readiness_tests.cpp tests/fill_defaults_tests.cpp tests/node_detail_tests.cpp tests/study_area_tests.cpp tests/study_area_marking_tests.cpp tests/node_proposal_tests.cpp tests/give_way_stop_tests.cpp tests/w74_traits_tests.cpp tests/w74_run_tests.cpp)
     target_link_libraries(multra-tests PRIVATE multra_lab multra_commands multra_options)
     target_sources(multra-tests PRIVATE tests/node_model_demand_tests.cpp tests/node_model_demand_edge_tests.cpp)
     target_sources(multra-tests PRIVATE tests/node_model_stub_tests.cpp)
@@ -295,7 +310,7 @@ if(BUILD_TESTING)
     target_sources(multra-tests PRIVATE tests/junction_editor_tests.cpp tests/junction_corridor_conflict_tests.cpp tests/transition_tests.cpp tests/transition_reference_tests.cpp tests/junction_layout_tests.cpp tests/junction_template_tests.cpp tests/junction_recipe_tests.cpp tests/junction_command_tests.cpp)
     target_sources(multra-tests PRIVATE tests/junction_fill_tests.cpp tests/junction_fill_run_tests.cpp tests/junction_signal_tests.cpp tests/junction_t_tests.cpp tests/junction_polygon_tests.cpp tests/junction_signal_reference_tests.cpp tests/junction_signal_run_tests.cpp tests/junction_fill_completion_tests.cpp tests/junction_fill_parity_tests.cpp
         tests/reference/j3b/street_segment_commands.cpp tests/reference/j3b/node_detail_commands.cpp tests/reference/j3b/fill_commands.cpp)
-    target_sources(multra-tests PRIVATE tests/observed_schema_tests.cpp tests/project_schema_tests.cpp tests/project_envelope_tests.cpp tests/network_schema_tests.cpp tests/connector_schema_tests.cpp tests/signal_head_schema_tests.cpp tests/signal_control_schema_tests.cpp tests/right_of_way_schema_tests.cpp tests/measurement_schema_tests.cpp tests/demand_schema_tests.cpp tests/routing_schema_tests.cpp tests/object_csv_tests.cpp tests/evaluation_review_tests.cpp tests/study_area_vehicle_type_tests.cpp tests/macro_run_definition_tests.cpp tests/trip_generation_tests.cpp tests/trip_rate_owned_tests.cpp tests/trip_distribution_tests.cpp tests/trip_distribution_owned_tests.cpp tests/trip_distribution_origin_tests.cpp tests/trip_distribution_destination_tests.cpp tests/mode_choice_tests.cpp tests/mode_choice_owned_tests.cpp tests/nested_logit_tests.cpp tests/procedure_tests.cpp tests/street_segment_zone_tests.cpp tests/meso_street_segment_demand_tests.cpp tests/node_analysis_tests.cpp tests/node_analysis_a2_tests.cpp tests/node_analysis_a3_tests.cpp)
+    target_sources(multra-tests PRIVATE tests/procedure_feedback_tests.cpp tests/dynamic_assignment_tests.cpp tests/dynamic_assignment_run_tests.cpp tests/dynamic_assignment_loop_tests.cpp tests/meso_assignment_tests.cpp tests/dynamic_assignment_placed_tests.cpp tests/mode_choice_logsum_tests.cpp tests/observed_schema_tests.cpp tests/project_schema_tests.cpp tests/project_envelope_tests.cpp tests/network_schema_tests.cpp tests/connector_schema_tests.cpp tests/signal_head_schema_tests.cpp tests/signal_control_schema_tests.cpp tests/right_of_way_schema_tests.cpp tests/measurement_schema_tests.cpp tests/demand_schema_tests.cpp tests/routing_schema_tests.cpp tests/object_csv_tests.cpp tests/evaluation_review_tests.cpp tests/study_area_vehicle_type_tests.cpp tests/macro_run_definition_tests.cpp tests/trip_generation_tests.cpp tests/trip_rate_owned_tests.cpp tests/trip_distribution_tests.cpp tests/trip_distribution_owned_tests.cpp tests/trip_distribution_origin_tests.cpp tests/trip_distribution_destination_tests.cpp tests/mode_choice_tests.cpp tests/mode_choice_owned_tests.cpp tests/nested_logit_tests.cpp tests/procedure_tests.cpp tests/street_segment_zone_tests.cpp tests/meso_street_segment_demand_tests.cpp tests/node_analysis_tests.cpp tests/node_analysis_a2_tests.cpp tests/node_analysis_a3_tests.cpp tests/subarea_consistency_tests.cpp)
     # The isolated pre-J3b switch has no junction enum case; its inputs assert that no recipe exists.
     set_source_files_properties(tests/reference/j3b/fill_commands.cpp PROPERTIES COMPILE_OPTIONS
         "$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wno-switch>;$<$<CXX_COMPILER_ID:MSVC>:/wd4061;/wd4062>")
@@ -313,8 +328,8 @@ if(BUILD_TESTING)
         conflict_zone conflict_chain commitment stop_control stop_control_model signal_position
         queue_counter tjunction tjunction_controlled tjunction_signal automatic_conflict conflict_geometry
         rightofway_runtime rightofway_editor lanechange lane_correspondence mouth_sweep conflict_follow
-        discretionary lanelab weavinglab macroexample nodeexample pocketdecision laterallab lane_centres equation batch compare evaluationperiod cooldown amber traveltime los w74 w74codec perceptioncodec perceptionmotion perceptionlane perceptiondelay reactiondischarge lateralcodec lateralspan lateralmotion lateralzone lanechangeduration laneswap straddlerleader curvespeed kerbbias commitdecel mergedecel speeddecision speedarea speeddist stopdwell lanepref driverfactor redrunning mergeclamps joinanticipation stopfloor nodes nodemembership nodeevaluation nodesuggest studyperiods modepcu macronetwork mesonetwork macroassign macrobenchmark mesodemand mesonode mesoloading mesooutput macrooutput streetsegmentcatalog streetsegments streetsegmentcrossings streetsegmentcoarse streetsegmentseams streetsegmentschema linkspeed readiness filldefaults nodedetail studyarea nodeproposals givewaystop w74traits w74run demandcounts zonescodec zonescommands odexpand parkinglot parkingcodec parkingproject parkingoutputs seedmixing inputstreams inputstreamsproject circuit lab)
-    list(APPEND MULTRA_TEST_GROUPS tripgeneration triprateowned tripdistribution tripdistributionowned tripdistributionorigin tripdistributiondestination modechoice modechoiceowned nestedlogit procedure namedmacro streetsegmentzone mesostreetsegment nodeanalysis junctionlayout junctiontemplates junctionfill junctionsignals transitions junctioneditor utdf)
+        discretionary lanelab weavinglab macroexample nodeexample pocketdecision laterallab lane_centres equation batch compare prioritylines fctl m6s1 m6s2 m6u m6sweep evaluationperiod cooldown amber traveltime los w74 w74codec perceptioncodec perceptionmotion perceptionlane perceptiondelay reactiondischarge lateralcodec lateralspan lateralmotion lateralzone lanechangeduration laneswap straddlerleader curvespeed kerbbias commitdecel mergedecel speeddecision speedarea speeddist stopdwell lanepref driverfactor redrunning mergeclamps joinanticipation stopfloor nodes nodemembership nodeevaluation nodesuggest studyperiods modepcu macronetwork mesonetwork macroassign macrobenchmark mesodemand mesonode mesoloading mesooutput macrooutput streetsegmentcatalog streetsegments streetsegmentcrossings streetsegmentcoarse streetsegmentseams streetsegmentschema linkspeed readiness filldefaults nodedetail studyarea nodeproposals givewaystop w74traits w74run demandcounts zonescodec zonescommands odexpand parkinglot parkingcodec parkingproject parkingoutputs seedmixing inputstreams inputstreamsproject circuit lab)
+    list(APPEND MULTRA_TEST_GROUPS tripgeneration triprateowned tripdistribution tripdistributionowned tripdistributionorigin tripdistributiondestination modechoice modechoiceowned nestedlogit procedure procfeedback modechoicelogsum dynassign dynassignrun dynassignloop mesoassign dynassignplaced consistency namedmacro streetsegmentzone mesostreetsegment nodeanalysis junctionlayout junctiontemplates junctionfill junctionsignals transitions junctioneditor utdf)
     foreach(group ${MULTRA_TEST_GROUPS})
         add_test(NAME ${group} COMMAND multra-tests ${group})
     endforeach()
@@ -337,20 +352,17 @@ if(BUILD_TESTING)
     add_test(NAME reaction-discharge-output-guard COMMAND "${CMAKE_COMMAND}"
         "-DTOOL=$<TARGET_FILE:multra-reaction-discharge-sweep>"
         -P "${PROJECT_SOURCE_DIR}/tests/reaction_discharge_cli.cmake")
-    add_dependencies(check multra-reaction-discharge-sweep)
     add_test(NAME project-schema-cli COMMAND "${CMAKE_COMMAND}"
         "-DTOOL=$<TARGET_FILE:multra-project-schema>"
         -P "${PROJECT_SOURCE_DIR}/tests/project_schema_cli.cmake")
-    add_dependencies(check multra-project-schema)
     add_test(NAME cli-help COMMAND multra-cli --help)
     add_executable(multra-study-area-cli-fixture tests/study_area_cli_fixture.cpp)
     target_link_libraries(multra-study-area-cli-fixture PRIVATE multra_commands multra_options)
     target_compile_definitions(multra-study-area-cli-fixture PRIVATE MULTRA_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
     add_test(NAME cli-study-area COMMAND "${CMAKE_COMMAND}"
-        "-DCLI=$<TARGET_FILE:multra-cli>" "-DFIXTURE=$<TARGET_FILE:multra-study-area-cli-fixture>"
-        "-DDATA=${PROJECT_SOURCE_DIR}/data" "-DTEST_ROOT=${CMAKE_BINARY_DIR}/study-area-cli-test"
+        "-DCLI=$<TARGET_FILE:multra-cli>" "-DFIXTURE=$<TARGET_FILE:multra-study-area-cli-fixture>" "-DDATA=${PROJECT_SOURCE_DIR}/data" "-DTEST_ROOT=${CMAKE_BINARY_DIR}/study-area-cli-test"
         -P "${PROJECT_SOURCE_DIR}/tests/study_area_cli.cmake")
-    add_dependencies(check multra-study-area-cli-fixture)
+    include(${PROJECT_SOURCE_DIR}/tests/consistency_cli_register.cmake)
     # Exit code and message, not WILL_FAIL: a crash must not pass as a refusal.
     add_test(NAME cli-phase-bin COMMAND "${CMAKE_COMMAND}"
         "-DCLI=$<TARGET_FILE:multra-cli>"
@@ -368,6 +380,31 @@ if(BUILD_TESTING)
     add_test(NAME cli-compare-conflict COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json"
         --compare "${PROJECT_SOURCE_DIR}/data/projects/four-leg-signalised.traffic.json")
     set_tests_properties(cli-compare-conflict PROPERTIES PASS_REGULAR_EXPRESSION "--compare needs --project and --seeds")
+    # D528 (PRIORITY_LINES PL6): the priority-line counter on the T-junction, and its refusal.
+    add_test(NAME cli-priority-lines COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/data/projects/t-junction-priority.traffic.json" --priority-lines)
+    set_tests_properties(cli-priority-lines PROPERTIES PASS_REGULAR_EXPRESSION "\"priorityLines\".*\"control\": \"yield\".*\"siegloch\".*\"zone\": \"right-of-way/conflict-11\"")
+    add_test(NAME cli-priority-lines-refused COMMAND multra-cli 42 --priority-lines)
+    set_tests_properties(cli-priority-lines-refused PROPERTIES PASS_REGULAR_EXPRESSION "--priority-lines needs --project")
+    # D529 (FCTL_REFERENCE FC6): the S2-c reference script and its refusal.
+    add_test(NAME cli-fctl-reference COMMAND multra-fctl-reference --saturation 3600 --green-slots 5 --red-slots 5 --x 0.8)
+    set_tests_properties(cli-fctl-reference PROPERTIES PASS_REGULAR_EXPRESSION "\"slotSeconds\": 1\\.000000.*\"mu\": 0\\.400000.*\"meanOverflow\": 1\\.097.*\"meanDelaySlots\": 5\\.063.*\"referenceSeconds\": 5\\.063")
+    add_test(NAME cli-fctl-reference-refused COMMAND multra-fctl-reference --green-slots 5 --red-slots 5 --x 0.8)
+    set_tests_properties(cli-fctl-reference-refused PROPERTIES PASS_REGULAR_EXPRESSION "--saturation is required")
+    add_test(NAME cli-m6-s1-run-help COMMAND multra-m6-s1-run --help)
+    set_tests_properties(cli-m6-s1-run-help PROPERTIES PASS_REGULAR_EXPRESSION "usage: multra-m6-s1-run <project> <data-dir>")
+    add_test(NAME cli-m6-s1-run-refused COMMAND multra-m6-s1-run ${CMAKE_SOURCE_DIR}/data/projects/m6-s1-approach.traffic.json ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/data)
+    add_dependencies(check multra-reaction-discharge-sweep multra-project-schema multra-study-area-cli-fixture multra-fctl-reference multra-m6-s1-run multra-m6-s2-run multra-m6-u-run)
+    add_test(NAME cli-m6-s2-run-help COMMAND multra-m6-s2-run --help)
+    add_test(NAME cli-m6-s2-run-mode COMMAND multra-m6-s2-run x a b c)
+    set_tests_properties(cli-m6-s2-run-help cli-m6-s2-run-mode PROPERTIES PASS_REGULAR_EXPRESSION "usage: multra-m6-s2-run c\\|ab\\|arrivals\\|green <data-dir>")
+    add_test(NAME cli-m6-s2-run-refused COMMAND multra-m6-s2-run ab ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/data)
+    add_test(NAME cli-m6-u-run-help COMMAND multra-m6-u-run)
+    set_tests_properties(cli-m6-u-run-help PROPERTIES PASS_REGULAR_EXPRESSION "usage: multra-m6-u-run run\\|split <data-dir>")
+    add_test(NAME cli-m6-u-run-refused COMMAND multra-m6-u-run run ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json ${CMAKE_SOURCE_DIR}/data)
+    set_tests_properties(cli-m6-s1-run-refused cli-m6-s2-run-refused cli-m6-u-run-refused PROPERTIES PASS_REGULAR_EXPRESSION "Output already exists")
+    add_test(NAME cli-m6-sweep-refused COMMAND multra-m6-u-run run ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json x --candidate X)
+    add_test(NAME cli-m6-sweep-refused-mode COMMAND multra-m6-s2-run c ${CMAKE_SOURCE_DIR}/data ${CMAKE_BINARY_DIR}/compile_commands.json x --candidate E)
+    set_tests_properties(cli-m6-sweep-refused cli-m6-sweep-refused-mode PROPERTIES PASS_REGULAR_EXPRESSION "Unknown candidate|--candidate needs mode ab")
     # S2.3 (MACRO_NETWORK §9, D275): one period's static assignment, and its refusals.
     add_test(NAME cli-macro COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --macro matrix:am)
     add_test(NAME cli-street-segment-zone COMMAND "${CMAKE_COMMAND}" "-DCLI=$<TARGET_FILE:multra-cli>"
@@ -388,7 +425,6 @@ if(BUILD_TESTING)
     # M10.3 D1 (TRIP_DISTRIBUTION §8, D473): TD11.
     set(MULTRA_TD_CLI multra-cli --project "${PROJECT_SOURCE_DIR}/tests/trip-generation.traffic.json" --data-dir "${PROJECT_SOURCE_DIR}/tests/data/trip-distribution")
     add_test(NAME cli-trip-distribution COMMAND ${MULTRA_TD_CLI} --trip-distribution one-way --deterrence hand)
-    set_tests_properties(cli-trip-distribution PROPERTIES PASS_REGULAR_EXPRESSION "\"validated\": false")
     add_test(NAME cli-trip-distribution-origin COMMAND ${MULTRA_TD_CLI} --trip-distribution one-way --deterrence hand-origin)
     set_tests_properties(cli-trip-distribution-origin PROPERTIES PASS_REGULAR_EXPRESSION "\"constraint\": \"origin\"")
     add_test(NAME cli-trip-distribution-destination COMMAND ${MULTRA_TD_CLI} --trip-distribution one-way --deterrence hand-destination)
@@ -396,19 +432,19 @@ if(BUILD_TESTING)
     # PROCEDURE_SEQUENCE §4 (D484): PS9.
     set(MULTRA_PS_CLI multra-cli --project "${PROJECT_SOURCE_DIR}/tests/data/trip-distribution/procedure.traffic.json" --data-dir "${PROJECT_SOURCE_DIR}/tests/data/trip-distribution")
     add_test(NAME cli-procedure COMMAND ${MULTRA_PS_CLI} --procedure four-step)
-    set_tests_properties(cli-procedure PROPERTIES PASS_REGULAR_EXPRESSION "\"completed\": true")
     add_test(NAME cli-procedure-unknown COMMAND ${MULTRA_PS_CLI} --procedure none)
+    add_test(NAME cli-procedure-feedback COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/data/procedure-feedback/example-11-3.traffic.json" --data-dir "${PROJECT_SOURCE_DIR}/tests/data/procedure-feedback" --procedure cw-005)
+    set_tests_properties(cli-procedure-feedback PROPERTIES PASS_REGULAR_EXPRESSION "\"converged\": true")
     set_tests_properties(cli-procedure-unknown PROPERTIES PASS_REGULAR_EXPRESSION "PROCEDURE_UNKNOWN")
     add_test(NAME cli-procedure-conflict COMMAND ${MULTRA_PS_CLI} --procedure four-step --macro period-am)
     set_tests_properties(cli-procedure-conflict PROPERTIES PASS_REGULAR_EXPRESSION "--procedure needs --project and takes only --data-dir")
     # D492: the shipped Macro example runs its four-step procedure on the installed data.
     add_test(NAME cli-macro-example COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/data/projects/macro-four-step.traffic.json" --data-dir "${PROJECT_SOURCE_DIR}/data" --procedure four-step)
-    set_tests_properties(cli-macro-example PROPERTIES PASS_REGULAR_EXPRESSION "\"completed\": true")
+    set_tests_properties(cli-procedure cli-macro-example PROPERTIES PASS_REGULAR_EXPRESSION "\"completed\": true")
     add_test(NAME cli-node-example COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/data/projects/signalised-node-analysis.traffic.json" --data-dir "${PROJECT_SOURCE_DIR}/data" --node-analysis)
     set_tests_properties(cli-node-example PROPERTIES PASS_REGULAR_EXPRESSION "\"name\": \"Example junction\"")
     set(MULTRA_MC_CLI multra-cli --project "${PROJECT_SOURCE_DIR}/tests/data/trip-distribution/mode-choice.traffic.json" --data-dir "${PROJECT_SOURCE_DIR}/tests/data/trip-distribution")
     add_test(NAME cli-mode-choice COMMAND ${MULTRA_MC_CLI} --trip-distribution one-way --deterrence hand --mode-choice hand --period period-am)
-    set_tests_properties(cli-mode-choice PROPERTIES PASS_REGULAR_EXPRESSION "\"validated\": false")
     add_test(NAME cli-mode-choice-nested COMMAND ${MULTRA_MC_CLI} --trip-distribution one-way --deterrence hand --mode-choice nested --period period-am)
     set_tests_properties(cli-mode-choice-nested PROPERTIES PASS_REGULAR_EXPRESSION "\"nests\": \\[")
     add_test(NAME cli-mode-choice-alone COMMAND ${MULTRA_MC_CLI} --period period-am)
@@ -433,7 +469,7 @@ if(BUILD_TESTING)
     add_test(NAME cli-utdf COMMAND "${CMAKE_COMMAND}" "-DCLI=$<TARGET_FILE:multra-cli>" "-DSOURCE=${PROJECT_SOURCE_DIR}"
         "-DTEST_ROOT=${CMAKE_BINARY_DIR}/utdf-cli-test" -P "${PROJECT_SOURCE_DIR}/tests/utdf_cli.cmake")
     add_test(NAME cli-meso COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/meso-two-route.traffic.json" --meso)
-    set_tests_properties(cli-meso PROPERTIES PASS_REGULAR_EXPRESSION "\"validated\": false")
+    set_tests_properties(cli-trip-distribution cli-mode-choice cli-meso PROPERTIES PASS_REGULAR_EXPRESSION "\"validated\": false")
     add_test(NAME cli-meso-seeds COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/meso-two-route.traffic.json" --meso --seeds 1-2)
     set_tests_properties(cli-meso-seeds PROPERTIES PASS_REGULAR_EXPRESSION "--meso needs --project and takes only --csv and --data-dir")
     add_test(NAME cli-meso-refused COMMAND multra-cli --project "${PROJECT_SOURCE_DIR}/tests/macro-two-route.traffic.json" --meso)

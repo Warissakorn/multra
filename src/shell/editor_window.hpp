@@ -30,6 +30,9 @@
 #include <QKeySequence>
 #include <QPointer>
 #include "run_identity.hpp"
+#include "object_tab.hpp"
+#include "object_tab_context.hpp"
+#include "object_selection.hpp"
 
 class QTreeWidget;
 class QTreeWidgetItem;
@@ -50,16 +53,16 @@ class QToolBar;
 namespace multra {
 namespace lab { struct FocusSettings; }
 class BehaviourLabWindow;
-class AutomationServer;
-struct MacroPanel; struct MacroRun; struct MesoPanel; struct MesoRun;
+class MacroPanel;
+struct BatchSession; struct RunSession; struct RecoverySession; struct AutomationHost; class StudyPeriodsPanel; class ModesPanel; class OdPanel; class SpeedDecisionsPanel; class SpeedAreasPanel; class CountersPanel; class SectionsPanel; class LinkTypesPanel; class ZonesPanel; class CrossSectionsPanel; class StreetSegmentsPanel; class NodesPanel; class ConflictsPanel; struct MacroRun; class MesoPanel; struct MesoRun;
 class EditorWindow : public QMainWindow {
 public:
     explicit EditorWindow(const std::filesystem::path& data, const QString& language = "en", QWidget* parent = nullptr, bool deferRecovery = false);
     ~EditorWindow() override;
     void autosaveNow();
     void recoverFile(const QString&);
-    QString recoveryPath() const { return recoveryFile_; }
-    bool autosaveActive() const { return autosaveTimer_.isActive(); }
+    QString recoveryPath() const;
+    bool autosaveActive() const;
     const History& history() const { return history_; }
     EditorCanvas* canvas() const { return canvas_; }
     // D165: Simulation > Behaviour Lab; opens (or raises) the lab window. Null until first opened.
@@ -79,13 +82,8 @@ protected:
     void closeEvent(QCloseEvent*) override;
     void resizeEvent(QResizeEvent*) override;
 private:
-    QString automationSession_; // with History::generation(), the automation documentId
+    std::unique_ptr<AutomationHost> automationHost_; // server, endpoint, session id, quit flags (editor_automation_state.hpp, D519)
     QJsonObject automationState(bool includeSelection = true);
-    std::unique_ptr<AutomationServer> automationServer_;
-    QString automationEndpoint_;
-    bool automationStartupComplete_{};
-    bool automationClosing_{}, automationCloseReady_{};
-    bool automationWasEnabled_{}, automationLabWasEnabled_{};
     void beginAutomationQuit();
     void completeAutomationQuit(bool delivered);
     void newFile();
@@ -127,13 +125,10 @@ private:
     void createLinkDialog(const std::vector<Point>&);
     void createRangeDialog(LaneReference,LaneReference,const std::vector<Point>&);
     bool deferRecovery_{};
-    QString recoveryDirectory_, recoveryFile_;
+    std::unique_ptr<RecoverySession> recoverySession_; // recovery and autosave state (editor_recovery_state.hpp, D518)
     QJsonArray recoveryEntries() const;
     QString recoveryCandidate(const QString& id) const;
     void discardRecovery(const QString& id);
-    std::unique_ptr<QLockFile> recoveryLock_;
-    QTimer autosaveTimer_;
-    std::optional<std::uint64_t> autosavedRevision_;
     void buildRecovery();
     void startAutosave();
     void clearRecovery();
@@ -186,27 +181,10 @@ private:
     void stepRun();
     void tickRun();
     void clearRun(const char* reason = "documentChanged");
-    RunIdentity runIdentity_;
+    std::unique_ptr<RunSession> runSession_; // the single run's state (editor_run_state.hpp, D517)
     QJsonObject automationRunState() const;
     void checkAutomationRunId(const QJsonObject&,bool required = false) const;
     void pauseRun();
-    QTimer runTimer_;
-    QElapsedTimer runElapsed_;
-    double runCredit_{};
-    std::optional<RunSnapshot> runSnapshot_;
-    SimState runState_;
-    // Fed every step, exactly as the retired M0 window did: the clamp count is the only signal
-    // that the prototype car-following is being pushed, so it has to be visible where the run is.
-    SummaryAccumulator runSummary_;
-    // M2.5: per-movement delay and approach queues, fed the same states as runSummary_.
-    std::optional<MovementAccumulator> runMovements_;
-    // D144: queue discharge with the CLI's default spec, fed the same states; the reason it
-    // could not be set up, if any, is shown instead of a table.
-    std::optional<DischargeAccumulator> runDischarge_;
-    std::string runDischargeError_;
-    // D144: one row per SafetyClampEvent, read off the published vehicle (blank once it left).
-    struct ClampRow { double time{}; std::uint64_t vehicleId{}; std::string typeId, routeId, segmentId; };
-    std::vector<ClampRow> runClamps_;
     QWidget* resultsPage_{};
     QTabWidget* resultsTabs_{};
     QTableWidget *movementTable_{}, *queueTable_{}, *dischargeTable_{}, *clampTable_{};
@@ -224,16 +202,7 @@ private:
 public:
     struct BatchResult { BatchReport report; std::vector<SeedRun> runs; };
 private:
-    QLineEdit* batchSeeds_{};
-    QLabel* batchNote_{};
-    QWidget* batchView_{};
-    QTableWidget *batchMovementTable_{}, *batchSectionTable_{}, *batchQueueTable_{};
-    // Every live worker by generation; each is joined by its own finishBatch, or at teardown.
-    struct BatchWorker { std::thread thread; std::shared_ptr<std::atomic<bool>> cancel; };
-    std::map<std::uint64_t, BatchWorker> batchWorkers_;
-    std::shared_ptr<std::atomic<bool>> batchCancel_;
-    std::uint64_t batchGeneration_{};
-    std::size_t batchDone_{}, batchTotal_{}; // batchTotal_ is non-zero while a batch runs
+    std::unique_ptr<BatchSession> batchSession_; // the worker and its widgets (editor_batch_state.hpp, D514)
     std::optional<BatchResult> batch_;
     void buildBatch(QToolBar*, QVBoxLayout*);
     void translateBatch();
@@ -252,139 +221,68 @@ private:
 public:
     struct ComparisonResult { Comparison comparison; ComparedBatch base, alternative; };
 private:
-    QWidget* compareView_{};
-    QLabel* compareNote_{};
-    QTableWidget *compareMovementTable_{}, *compareSectionTable_{}, *compareQueueTable_{};
-    bool batchComparing_{}; // the running job is a comparison
     std::optional<ComparisonResult> comparison_;
     void buildCompare(QToolBar*, QVBoxLayout*);
     void translateCompare();
     void refreshCompare();
     bool batchShown() const { return batchRunning() || batch_ || comparison_; }
-    // M3.2.4, src/shell/editor_priority.cpp: the Conflict areas tab, its dialogs and actions.
-    QTableWidget* conflictTable_{};
+    // M3.2.4: the Conflict areas tab, its own panel (conflicts_panel.hpp, D523); editor_conflicts.cpp
+    // builds it and keeps the run-protection note and the canvas gestures.
+    ConflictsPanel* conflicts_{};
     QLabel* runProtection_{};
-    std::uint64_t conflictRevision_{UINT64_MAX}; // the rows are rebuilt only when this goes stale
-    void buildConflicts();
-    void translateConflicts();
-    void refreshConflicts();
-    void editConflict(const std::string& id);
-    void addCrossings();
-    // Shows the area in the tab and on the canvas; a waiting line or rule id names its area.
-    bool selectConflict(const std::string& id);
-    void showConflicts();
-    void cyclePriority(const std::string& id);
-    std::string selectedConflict() const;
+    void buildConflicts(); void translateConflicts(); void showConflicts();
     PriorityDefaults priorityDefaults() const; // data/priority-rules, as Run reads them
-    // M3.2.4c (D68): the automatic areas, derived once per revision and only while the Conflict
-    // area tool or tab is in use (3.4 ms a revision on the four-leg template, Release).
-    std::vector<AutomaticConflict> automatic_;
-    std::uint64_t automaticRevision_{UINT64_MAX};
-    bool automaticShown() const;
-    void authorConflict(const std::string& key);
+    bool automaticShown() const; // the automatic areas are derived only while this holds (D68)
     // M3.2.6c, src/shell/editor_counters.cpp: the Queue counters tab and the tool's commit.
-    QTableWidget* counterTable_{};
-    std::uint64_t counterRevision_{UINT64_MAX};
-    void buildCounters();
-    void translateCounters();
-    void refreshCounters();
-    void showCounters();
-    void editCounter(const std::string& id);
-    void addCounter(std::vector<MeasurementLine> lines);
-    std::string selectedCounter() const;
+    CountersPanel* counters_{}; // its own panel (counters_panel.hpp, D521)
     // M5.4b, src/shell/editor_sections.cpp: the Travel-time sections tab and the tool's commit.
-    QTableWidget* sectionTable_{};
-    std::uint64_t sectionRevision_{UINT64_MAX};
-    void buildSections();
-    void translateSections();
-    void refreshSections();
-    void showSections();
-    void editSection(const std::string& id);
-    std::string selectedSection() const;
+    SectionsPanel* sections_{}; // its own panel (sections_panel.hpp, D521)
     // B-6 (D223), src/shell/editor_speed_decisions.cpp: the Speed decisions tab and its dialog.
-    QTableWidget* speedDecisionTable_{};
-    std::uint64_t speedDecisionRevision_{UINT64_MAX};
-    void buildSpeedDecisions(); void translateSpeedDecisions(); void refreshSpeedDecisions();
-    void editSpeedDecision(const std::string& id, const std::string& linkId); // new on linkId when id is empty
-    std::string selectedSpeedDecision() const;
+    SpeedDecisionsPanel* speedDecisions_{}; // its own panel (speed_decisions_panel.hpp, D521)
     // B-6 §7 (D225): the reduced-speed areas tab, same pattern.
-    QTableWidget* speedAreaTable_{};
-    std::uint64_t speedAreaRevision_{UINT64_MAX};
-    void buildSpeedAreas(); void translateSpeedAreas(); void refreshSpeedAreas();
-    void editSpeedArea(const std::string& id, const std::string& linkId); // new on linkId when id is empty
-    std::string selectedSpeedArea() const;
+    SpeedAreasPanel* speedAreas_{}; // its own panel (speed_areas_panel.hpp, D521)
     // M8.6a (D161): the Zones tab -- zones, the selected zone's connectors, and their dialogs.
-    QTableWidget *zoneTable_{}, *zoneConnectorTable_{};
-    std::uint64_t zoneRevision_{UINT64_MAX}; std::string zoneConnectorsOf_;
-    // S0.1 (NODES §6): the Nodes tab -- the drawn polygons, rename and delete.
-    QTableWidget* nodeTable_{}; std::uint64_t nodeRevision_{UINT64_MAX};
-    void buildNodes(); void translateNodes(); void refreshNodes(); void showNodes();
+    ZonesPanel* zones_{}; // its own panel (zones_panel.hpp, D521)
+    // S0.1 (NODES §6): the Nodes tab, its own panel (nodes_panel.hpp, D523); built in editor_proposals.cpp.
+    NodesPanel* nodes_{};
+    void buildNodes(); void showNodes();
     void editCoarse(const std::string& id); // S3.6b (D311): editor_coarse.cpp
     // S4.4 (D317): Node proposals from the Macro and Meso results, editor_proposals.cpp.
     QTableWidget* nodeProposalTable_{}; QLabel* nodeProposalNote_{}; std::array<std::uint64_t, 3> nodeProposalKey_{UINT64_MAX, UINT64_MAX, UINT64_MAX};
     void buildNodeProposals(QVBoxLayout*); void refreshNodeProposals(); void translateNodeProposals();
     // S3.3b (STREET_SEGMENTS §16, D307): the StreetSegments and Cross-sections tabs and the StreetSegment tool's commit.
-    QTableWidget* streetSegmentTable_{}; QComboBox* streetSegmentTemplate_{}; std::uint64_t streetSegmentRevision_{UINT64_MAX}; QTableWidget* crossSectionTable_{}; std::uint64_t crossSectionRevision_{UINT64_MAX};
-    enum class StreetSegmentStatus { noTemplate, unknownTemplate, notApplied, applied, detached };
-    std::vector<CrossSection> crossSectionRows() const; // D433: Default template; chosenTemplate resolves the tool's choice in a Command
-    CrossSection defaultCrossSection() const; QString defaultTemplateLabel() const; std::optional<std::string> chosenTemplate(ProjectDocument&, const std::vector<CrossSection>& installed) const;
-    StreetSegmentStatus streetSegmentStatus(const StreetSegment&, const std::vector<CrossSection>&) const;
-    void buildStreetSegments(); void translateStreetSegments(); void refreshStreetSegments(); void showStreetSegments(); void editStreetSegment(const std::string& id);
+    StreetSegmentsPanel* streetSegments_{}; CrossSectionsPanel* crossSections_{}; // both tabs are panels (D521)
+    std::vector<CrossSection> crossSectionRows() const; // D433: Default template (Properties' lane count and width)
+    CrossSection defaultCrossSection() const; QString defaultTemplateLabel() const;
     void findCrossingsDialog(); // S3.5 (D309)
     void seamChecksDialog(); // S3.7 (D312): editor_seams.cpp
     double seamSpeedJump_{20}; // km/h, a display choice kept for the session (STREET_SEGMENTS §7)
-    std::string selectedStreetSegment() const; std::vector<std::string> selectedStreetSegmentRows() const; std::vector<std::string> selectedLinks() const;
-    void buildCrossSections(); void translateCrossSections(); void refreshCrossSections(); void editCrossSection(const std::string& id);
-    std::string selectedCrossSection() const;
-    std::string selectedNode() const;
-    void buildZones();
-    void translateZones();
-    void refreshZones();
-    void showZones();
-    void editZone(const std::string& id);
-    void editZoneConnector(const std::string& id);
-    void addZoneConnector(bool origin);
-    std::string selectedZone() const;
-    std::string selectedZoneConnector() const;
+    std::string selectedStreetSegment() const;
     // M8.6b (D162): the OD matrices tab, the lot dialog and the catalog's compositions for both.
-    QTableWidget* odTable_{};
-    std::uint64_t odRevision_{UINT64_MAX};
-    void buildOd();
-    void translateOd();
-    void refreshOd();
-    void showOd();
-    void editOd(const std::string& id); // empty: a new matrix
+    OdPanel* od_{}; // its own panel (od_panel.hpp, D521)
     void editLot(const std::string& zoneId);
-    std::string selectedOd() const;
     std::vector<std::pair<std::string, QString>> compositionChoices() const;
     // S1.1 (STUDY_PERIODS §8): the Study periods tab and the choices the OD dialog offers.
-    QTableWidget* periodTable_{}; std::uint64_t periodRevision_{UINT64_MAX};
-    void buildPeriods(); void translatePeriods(); void refreshPeriods(); void showPeriods();
-    void editPeriod(const std::string& id); // empty: a new period
-    std::string selectedPeriod() const;
+    StudyPeriodsPanel* periods_{}; // its own panel (study_periods_panel.hpp, D521)
     std::vector<std::pair<std::string, QString>> periodChoices() const;
+    ObjectTabContext objectTabContext(); // D521: what an object tab's panel needs from this window
+    ObjectSelection objectSelection_; // D522: the selection hub the panels listen to
     // S1.2 (STUDY_PERIODS §8, D269): the Modes tab -- installed modes read-only, owned ones edited.
-    QTableWidget* modeTable_{}; std::uint64_t modeRevision_{UINT64_MAX};
-    void buildModes(); void translateModes(); void refreshModes(); void showModes();
-    void editMode(const std::string& id); // empty: a new mode
-    std::string selectedMode() const;
+    ModesPanel* modes_{}; // its own panel (modes_panel.hpp, D521)
     std::vector<std::pair<std::string, QString>> modeChoices() const;
     // S2.4 (MACRO_NETWORK §20, D277), editor_link_types.cpp: the Link types tab and the Link's type field.
-    QTableWidget* linkTypeTable_{}; QComboBox* linkType_{}; QLineEdit* linkSpeed_{}; std::uint64_t linkTypeRevision_{UINT64_MAX};
-    void buildLinkTypes(); void translateLinkTypes(); void refreshLinkTypes(); void editLinkType(const std::string& id);
-    std::string selectedLinkType() const; void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
-    // S2.4, editor_macro.cpp: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.
-    std::unique_ptr<MacroPanel> macro_;
-    void buildMacro(QToolBar*, QVBoxLayout*); void refreshMacro(); void startMacro(const std::string& period, const std::string& definitionId = {}); void discardMacro();
+    LinkTypesPanel* linkTypes_{}; QComboBox* linkType_{}; QLineEdit* linkSpeed_{}; // the tab is its own panel (D521)
+    void buildLinkTypeField(QFormLayout*); void refreshLinkTypeField();
+    // S2.4: Run Macro on its own worker, in stages (§19 a); the result stays after an edit, marked stale.
+    std::unique_ptr<MacroPanel> macro_; // its functions are its own (macro_panel.hpp, D524)
 public:
     bool macroRunning() const; const MacroRun* macroResult() const; bool macroStale() const;
     bool macroTabShown() const; // Export and Copy then write the Macro CSV
     bool mesoRunning() const; const MesoRun* mesoResult() const; bool mesoStale() const;
     bool mesoTabShown() const; // Export and Copy then write the Meso CSV
 private:
-    // M11.4, editor_meso.cpp: Run Meso on its own worker over the whole run; stale after an edit (D300).
-    std::unique_ptr<MesoPanel> meso_;
-    void buildMeso(QToolBar*, QVBoxLayout*); void refreshMeso(); void startMeso(); void discardMeso();
+    // M11.4: Run Meso on its own worker over the whole run; stale after an edit (D300).
+    std::unique_ptr<MesoPanel> meso_; // its functions are its own (meso_panel.hpp, D524)
     // S5.5a (STUDY_AREA §8-§9, D331), editor_side_files.cpp: the Macro and Meso side files.
     void loadSideFiles(); void writeMacroSide(); void writeMesoSide(const std::vector<std::string>& watched);
     StudyAreaSources studyAreaSources() const; const std::string& projectSha() const;
@@ -403,11 +301,9 @@ private:
     QComboBox* runSpeed_{};
     QLabel* runInfo_{};
 public:
-    const SimState& runState() const { return runState_; }
-    RunSummary runSummary() const { return runSummary_.summary(); }
-    std::optional<MovementReport> runReport() const {
-        return runMovements_ ? std::optional(runMovements_->report(runState_)) : std::nullopt;
-    }
+    const SimState& runState() const;
+    RunSummary runSummary() const;
+    std::optional<MovementReport> runReport() const;
     // The finished run's report as the CLI's CSV, replaced atomically; throws before the end.
     // With a finished batch, the batch's CSV instead (`--seeds --csv`); with a finished
     // comparison, the comparison's (`--compare --csv`).
@@ -416,7 +312,7 @@ public:
     void copyResults() const;
     std::string singleRunCsv() const;
     std::string resultsCsv() const; // what Export writes; throws EDIT_CSV_UNFINISHED without a finished run, batch or comparison
-    bool batchRunning() const { return batchTotal_ > 0; }
+    bool batchRunning() const;
     const std::optional<BatchResult>& batchResult() const { return batch_; }
     // The open project (base) against `file` (alternative) over the Seeds field. Refuses, before
     // any run and leaving the results on show, a bad list, an alternative that cannot be read or

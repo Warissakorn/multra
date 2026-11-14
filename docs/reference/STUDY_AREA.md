@@ -52,7 +52,7 @@ coarser model's flows to a finer one; it does not make either one right.
 | Macro result | `MacroAssignment` keeps link flows per class and the gap, but **no path flows** | `src/macro/assign.hpp` |
 | Macro and Meso links | Each carries its `source` Link (or Connector) id and its stations on it | `src/macro/graph.hpp`, `src/meso/graph.hpp` |
 | Meso result | Per-link cumulative curves, and per (class, path) `demand`, `entered` and `arrived`. Nothing per path at an inner link | `src/meso/loading.hpp` |
-| Stale | `macroStale()` / `mesoStale()` compare an in-memory `revision`; nothing survives a reopen | `src/shell/editor_macro.cpp:38`, `editor_meso.cpp:33` |
+| Stale | `macroStale()` / `mesoStale()` compare an in-memory `revision`; nothing survives a reopen | `src/shell/macro_panel.cpp` (was `editor_macro.cpp`), `meso_panel.cpp` (was `editor_meso.cpp`) |
 | Hashes | `inputSha256` of exact bytes; `InputManifest` records the files a run read | `src/project/input_manifest.hpp` |
 | Export marker | The first CSV line is `# MULTRA - not yet validated. …` | `src/project/batch_output.cpp:97` and the Macro and Meso CSVs |
 | OD to Micro | A period's matrix becomes Micro inputs and routes through zone connectors (M8.3) | `src/project/od_demand.*` |
@@ -258,7 +258,7 @@ nothing is refused silently.
 - **Gates on a Street segment-only arm:** a kept leg must be a Link (§4). An area Node with a Link-less arm
   gives `MICRO_AREA_NODE_COARSE`, or `SEAM_STREET_SEGMENT_NOT_GENERATED` for that arm.
 - **M12's consistency report:** S5 records, per gate, the flow it was fed. Comparing that with
-  Micro's measured throughput is M12's, not S5's.
+  Micro's measured throughput is M12's, not S5's: [SUBAREA_CONSISTENCY](SUBAREA_CONSISTENCY.md) (D553).
 
 ## 14. Slices
 

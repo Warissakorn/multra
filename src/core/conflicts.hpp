@@ -91,6 +91,7 @@ double stopLineReach(const DriverBehaviour&, double driverFactor);
 // Come to the line, in that sense: below walking pace with the front within stopLineReach. A Stop and a
 // parking lot's gate (M8.4a) use this one test.
 bool atStopLine(const Vehicle&, double line, const DriverBehaviour&);
+bool stopMade(const Vehicle&, double line, const DriverBehaviour&); // refreshStops' test: atStopLine, or lever E (D546)
 // Held at rest by its Stop this tick: service began but has not yet run a whole tick at zero.
 inline bool restsAtStop(const StopService* s, std::uint64_t tick) { return s && s->since + s->ticks >= tick; }
 // B-8 (docs/reference/STOP_DWELL.md, D231): the whole ticks of rest after coming to the line; one without

@@ -2,6 +2,7 @@
 #include "dialog_fit.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/mode_choice_codec.hpp"
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -59,6 +60,14 @@ std::optional<Json> editModeChoiceNests(QWidget* parent, const Json& set, const 
     auto* add = new QPushButton(text("editorModeChoiceNestAdd"), &dialog); add->setObjectName("editorModeChoiceNestAdd");
     auto* remove = new QPushButton(text("editorTripRateRemove"), &dialog); remove->setObjectName("editorModeChoiceNestRemove");
     buttons->addWidget(add); buttons->addWidget(remove); buttons->addStretch(); layout->addLayout(buttons);
+    // D548 (MODE_CHOICE_LOGSUM §2): per purpose, the distribution's cost is the logsum composite (Eq. 6.10).
+    std::vector<QCheckBox*> logsums;
+    for (const auto& p : set.at("purposes")) {
+        auto* check = new QCheckBox(text("editorModeChoiceLogsum").arg(qs(p.at("id"))), &dialog);
+        check->setObjectName("editorModeChoiceLogsum-" + qs(p.at("id")));
+        check->setChecked(p.contains("distributionCost"));
+        layout->addWidget(check); logsums.push_back(check);
+    }
     auto* error = new QLabel(&dialog); error->setObjectName("editorModeChoiceNestsError"); error->setWordWrap(true); layout->addWidget(error);
     QObject::connect(add, &QPushButton::clicked, &dialog, [&] {
         addRow(qs(set.at("purposes")[0].at("id")), "", "1", ""); table->selectRow(table->rowCount() - 1);
@@ -71,7 +80,11 @@ std::optional<Json> editModeChoiceNests(QWidget* parent, const Json& set, const 
     QObject::connect(box, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
     QObject::connect(box, &QDialogButtonBox::accepted, &dialog, [&] {
         Json edited = set;
-        for (auto& p : edited.at("purposes")) p.erase("nests");
+        for (std::size_t k = 0; k < edited.at("purposes").size(); ++k) {
+            auto& p = edited.at("purposes")[k];
+            p.erase("nests"); p.erase("distributionCost");
+            if (logsums[k]->isChecked()) p["distributionCost"] = "logsum";
+        }
         for (int r = 0; r < table->rowCount(); ++r) {
             const auto cell = [&](int column) { return table->item(r, column) ? table->item(r, column)->text().trimmed() : QString(); };
             const auto purpose = static_cast<QComboBox*>(table->cellWidget(r, 0))->currentData().toString().toStdString();

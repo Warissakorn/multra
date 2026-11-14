@@ -1,5 +1,5 @@
-#include "editor_macro.hpp"
-#include "editor_meso.hpp"
+#include "macro_panel.hpp"
+#include "meso_panel.hpp"
 #include "editor_storage.hpp"
 #include "editor_window.hpp"
 #include "../project/input_manifest.hpp"

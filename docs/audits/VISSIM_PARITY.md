@@ -78,7 +78,7 @@ Vissim users work with one hand on the keyboard. **Rewritten 2026-09-22 (M1.27.3
 | Command palette · Network Objects dock · focus on network | `Ctrl+K` · `Ctrl+Shift+T` · `Ctrl+Shift+F` | `editor_workspace.cpp` |
 | Keyboard and mouse shortcuts | platform Help key (`F1` on Windows/Linux) | `editor_workspace.cpp` |
 | Run faster · slower | `+` · `-` | `editor_run.cpp` |
-| Conflict area tool · cycle the selected area's priority | `A` · `P` | `editor_palette.cpp`, `editor_priority.cpp` |
+| Conflict area tool · cycle the selected area's priority | `A` · `P` | `editor_palette.cpp`, `conflicts_panel.cpp` |
 | Delete the selection · delete a geometry point | `Delete` · `Ctrl+Delete` | `canvas_input.cpp` |
 | Nudge the selection by one grid step (`Shift` ×10) | arrow keys | `canvas_input.cpp` |
 | Finish the Link or route being drawn · drop its last segment | `Enter` · `Backspace` | `canvas_input.cpp` |

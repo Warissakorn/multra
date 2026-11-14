@@ -1,5 +1,6 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
+#include "editor_batch_state.hpp"
 #include "message_label.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "editor_batch_cells.hpp"
@@ -37,39 +38,40 @@ void EditorWindow::buildCompare(QToolBar* bar, QVBoxLayout* layout) {
             file_.isEmpty()?QString():QFileInfo(file_).absolutePath(),text("editorFilter"));
         if(!file.isEmpty()) compareWithFile(file);
     }));
-    compareView_=new QWidget(layout->parentWidget()); layout->addWidget(compareView_,1);
-    auto* column=new QVBoxLayout(compareView_); column->setContentsMargins(0,0,0,0); column->setSpacing(editorDesign::space1);
-    compareNote_=new ReflowLabel(compareView_); compareNote_->setObjectName("editorCompareNote"); compareNote_->setWordWrap(true);
-    column->addWidget(compareNote_);
-    compareMovementTable_=table(compareView_,"editorCompareMovementTable",7); column->addWidget(compareMovementTable_,3);
-    compareSectionTable_=table(compareView_,"editorCompareSectionTable",7); column->addWidget(compareSectionTable_,2);
-    compareQueueTable_=table(compareView_,"editorCompareQueueTable",7); column->addWidget(compareQueueTable_,2);
-    compareView_->hide();
+    batchSession_->compareView=new QWidget(layout->parentWidget()); layout->addWidget(batchSession_->compareView,1);
+    auto* column=new QVBoxLayout(batchSession_->compareView); column->setContentsMargins(0,0,0,0); column->setSpacing(editorDesign::space1);
+    batchSession_->compareNote=new ReflowLabel(batchSession_->compareView); batchSession_->compareNote->setObjectName("editorCompareNote"); batchSession_->compareNote->setWordWrap(true);
+    column->addWidget(batchSession_->compareNote);
+    batchSession_->compareMovementTable=table(batchSession_->compareView,"editorCompareMovementTable",7); column->addWidget(batchSession_->compareMovementTable,3);
+    batchSession_->compareSectionTable=table(batchSession_->compareView,"editorCompareSectionTable",7); column->addWidget(batchSession_->compareSectionTable,2);
+    batchSession_->compareQueueTable=table(batchSession_->compareView,"editorCompareQueueTable",7); column->addWidget(batchSession_->compareQueueTable,2);
+    batchSession_->compareView->hide();
 }
 void EditorWindow::translateCompare() {
-    if(!compareMovementTable_) return;
+    if(!batchSession_->compareMovementTable) return;
     const QStringList delay{text("editorCompareBaseN"),text("editorCompareBaseDelay"),text("editorCompareAlternativeN"),
         text("editorCompareAlternativeDelay"),text("editorCompareDifferenceDelay"),text("editorResultsCi")};
-    compareMovementTable_->setHorizontalHeaderLabels(QStringList{text("editorResultsMovement")}+delay);
-    compareSectionTable_->setHorizontalHeaderLabels(QStringList{text("editorResultsSection")}+delay);
-    compareQueueTable_->setHorizontalHeaderLabels({text("editorResultsApproach"),text("editorCompareBaseN"),
+    batchSession_->compareMovementTable->setHorizontalHeaderLabels(QStringList{text("editorResultsMovement")}+delay);
+    batchSession_->compareSectionTable->setHorizontalHeaderLabels(QStringList{text("editorResultsSection")}+delay);
+    batchSession_->compareQueueTable->setHorizontalHeaderLabels({text("editorResultsApproach"),text("editorCompareBaseN"),
         text("editorCompareBaseQueue"),text("editorCompareAlternativeN"),text("editorCompareAlternativeQueue"),
         text("editorCompareDifferenceQueue"),text("editorResultsQueueCi")});
 }
 void EditorWindow::refreshCompare() {
-    if(!compareView_) return;
-    const bool running=batchRunning()&&batchComparing_;
-    compareView_->setVisible(running||comparison_);
-    for(auto* t:{compareMovementTable_,compareSectionTable_,compareQueueTable_}) t->setRowCount(0);
-    compareSectionTable_->hide();
-    if(running){ compareNote_->setText(text("editorCompareProgress").arg(batchDone_).arg(batchTotal_)); return; }
+    if(!batchSession_->compareView) return;
+    const bool running=batchRunning()&&batchSession_->comparing;
+    batchSession_->compareView->setVisible(running||comparison_);
+    for(auto* t:{batchSession_->compareMovementTable,batchSession_->compareSectionTable,batchSession_->compareQueueTable}) t->setRowCount(0);
+    batchSession_->compareSectionTable->hide();
+    if(running){ batchSession_->compareNote->setText(text("editorCompareProgress").arg(batchSession_->done).arg(batchSession_->total)); return; }
     if(!comparison_) return;
     const auto& c=comparison_->comparison;
     const auto& base=comparison_->base; const auto& alternative=comparison_->alternative;
     const auto& first=base.runs.front().report;
     const auto figure=[&](const std::optional<double>& v){ return v?editorDesign::formatValue(*v,1):text("empty"); };
     // Every argument in one arg() call, so a file name holding "%1" is never substituted again.
-    QString note=text("editorCompareNote").arg(QString::number(c.seeds.size()),seedText(c.seeds),
+    const bool paired=c.randomStreams==RandomStreams::perInput; // D526: rows paired by seed
+    QString note=text(paired?"editorCompareNotePaired":"editorCompareNote").arg(QString::number(c.seeds.size()),seedText(c.seeds),
         QString::fromStdString(base.name),QString::fromStdString(alternative.name),
         QString::number(first.warmup,'f',0),QString::number(first.evaluationEnd,'f',0));
     if(first.cooldown) note+=" "+text("editorCooldownNote").arg(*first.cooldown,0,'f',0); // M5.9
@@ -97,7 +99,7 @@ void EditorWindow::refreshCompare() {
     if(!alternativeOnly.isEmpty()) unmatched<<text("editorCompareAlternativeOnly").arg(alternativeOnly.join(", "));
     if(!ambiguous.isEmpty()) unmatched<<text("editorCompareAmbiguous").arg(ambiguous.join(", "));
     if(!unmatched.isEmpty()) note+=" "+text("editorCompareUnmatched").arg(unmatched.join("; "));
-    compareNote_->setText(note);
+    batchSession_->compareNote->setText(note);
     const auto fill=[](QTableWidget* t,const std::vector<ComparisonRow>& rows){
         t->setRowCount(static_cast<int>(rows.size()));
         for(int i=0;i<t->rowCount();++i){
@@ -108,9 +110,9 @@ void EditorWindow::refreshCompare() {
             t->setItem(i,5,number(d.difference)); t->setItem(i,6,number(d.halfWidth95));
         }
     };
-    fill(compareMovementTable_,c.movements);
-    fill(compareSectionTable_,c.sections); compareSectionTable_->setVisible(!c.sections.empty());
-    fill(compareQueueTable_,c.queues);
+    fill(batchSession_->compareMovementTable,c.movements);
+    fill(batchSession_->compareSectionTable,c.sections); batchSession_->compareSectionTable->setVisible(!c.sections.empty());
+    fill(batchSession_->compareQueueTable,c.queues);
 }
 void EditorWindow::compareWithFile(const QString& file) {
     auto list=batchSeedList(); if(!list) return;

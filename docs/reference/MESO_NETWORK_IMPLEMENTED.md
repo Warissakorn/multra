@@ -167,7 +167,7 @@ section here. Every Meso result carries the not-validated marker (rule 4).
   and `cli-meso-refused`.
   - Fixture: `tests/meso-two-route.traffic.json` is the Macro two-route project with a test
     `jamDensity`, at schema 52.
-- **The editor** (`src/shell/editor_meso.*`):
+- **The editor** (`src/shell/meso_panel.*`):
   - Run Meso and Cancel Meso on the Results toolbar;
   - the Meso links tab, with the marker note, the stages, the step reached and a stale notice by
     revision;

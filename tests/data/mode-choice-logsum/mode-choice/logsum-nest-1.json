@@ -1,0 +1,39 @@
+{
+  "id": "logsum-nest-1",
+  "name": "Car and walk in one nest at phi 1",
+  "source": {
+    "citation": "Hand-computed fixture (MODE_CHOICE_LOGSUM \u00a76)"
+  },
+  "costUnit": "min",
+  "purposes": [
+    {
+      "id": "all",
+      "alternatives": [
+        {
+          "id": "car",
+          "costMatrix": "car-times",
+          "constant": 0,
+          "timeCoefficient": -0.1,
+          "occupancy": 1
+        },
+        {
+          "id": "walk",
+          "costMatrix": "walk-times",
+          "constant": -0.5,
+          "timeCoefficient": -0.1
+        }
+      ],
+      "nests": [
+        {
+          "id": "both",
+          "phi": 1,
+          "alternatives": [
+            "car",
+            "walk"
+          ]
+        }
+      ],
+      "distributionCost": "logsum"
+    }
+  ]
+}

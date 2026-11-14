@@ -1,0 +1,154 @@
+{
+  "buildCommit": "2a9e2cc72698",
+  "compiler": "GNU-13.3.0",
+  "compilerCommand": {
+    "command": "/usr/bin/c++ -DMULTRA_COMPILER=\\\"GNU-13.3.0\\\" -DMULTRA_VERSION=\\\"0.2.0\\\" -I/home/user/multra/build/desktop/generated -g -std=c++20 -fPIE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off -Wno-missing-field-initializers -Winvalid-pch -include /home/user/multra/build/desktop/CMakeFiles/multra-four-leg-fixture.dir/cmake_pch.hxx -o CMakeFiles/multra-m6-s1-run.dir/tools/m6_s1_run.cpp.o -c /home/user/multra/tools/m6_s1_run.cpp",
+    "directory": "/home/user/multra/build/desktop",
+    "file": "/home/user/multra/tools/m6_s1_run.cpp",
+    "output": "CMakeFiles/multra-m6-s1-run.dir/tools/m6_s1_run.cpp.o"
+  },
+  "complete": true,
+  "discharge": {
+    "startupLast": 4,
+    "steadyFirst": 5,
+    "steadyLast": 12,
+    "vehicleTypeIds": [
+      "car"
+    ],
+    "warmup": 900.0
+  },
+  "duration": 4500.0,
+  "firstSeed": 42,
+  "inputManifest": {
+    "algorithm": "SHA-256",
+    "coverage": "exact bytes parsed from project, catalog and evaluation files actually read",
+    "fallbacks": [],
+    "files": [
+      {
+        "bytes": 615749,
+        "logicalPath": "build/compile_commands.json",
+        "reads": 1,
+        "sha256": "ae89ae6a448fa58ddba9b6788e20ef206ce7f10c8822ecf983146e7334ebd48d"
+      },
+      {
+        "bytes": 76,
+        "logicalPath": "catalog/compositions/car-only.json",
+        "reads": 1,
+        "sha256": "01e212b12301f5fe6f208c60a078f2ea81ef467d1cfd30bf9e289ecc19b702dd"
+      },
+      {
+        "bytes": 555,
+        "logicalPath": "catalog/compositions/urban-diverse.json",
+        "reads": 1,
+        "sha256": "f80ba845c53612a32e4d1ae261b849b267130dcc6fe2164b9e491825cf281480"
+      },
+      {
+        "bytes": 147,
+        "logicalPath": "catalog/compositions/urban-mixed.json",
+        "reads": 1,
+        "sha256": "13618f4f33b0d86a8d2c53c1afa9995af9f809ef75f814009d1761fbe3669531"
+      },
+      {
+        "bytes": 255,
+        "logicalPath": "catalog/driver-behaviour/default.json",
+        "reads": 1,
+        "sha256": "5c196dbad0fcead42ef31009d201430cf3c3314b006fecffb59bc323eff3f65f"
+      },
+      {
+        "bytes": 466,
+        "logicalPath": "catalog/priority-rules/default.json",
+        "reads": 1,
+        "sha256": "133a43fa486ddbc45be23d0f62a100ddd351fabec8996ba01dc2b69ad676da51"
+      },
+      {
+        "bytes": 353,
+        "logicalPath": "catalog/vehicle-types/bus.json",
+        "reads": 1,
+        "sha256": "c3226d0125e71b329807928838f5f28d77b82cd2a7cb2e3f84961b7653cd4e7c"
+      },
+      {
+        "bytes": 308,
+        "logicalPath": "catalog/vehicle-types/car.json",
+        "reads": 1,
+        "sha256": "c8d99f76ed01dec7d91866d239b40ed1e682a1f4358a9c8ca084fc4dec8d87e9"
+      },
+      {
+        "bytes": 313,
+        "logicalPath": "catalog/vehicle-types/heavy-vehicle.json",
+        "reads": 1,
+        "sha256": "158e88a84ef482b054c727900a5c91d41732dae639c5804667f8fe6d73ddaca8"
+      },
+      {
+        "bytes": 367,
+        "logicalPath": "catalog/vehicle-types/motorcycle.json",
+        "reads": 1,
+        "sha256": "63ebe79c979101abcd1c972fb42076e59346b10cfa95e92686876661e804db09"
+      },
+      {
+        "bytes": 359,
+        "logicalPath": "catalog/vehicle-types/pickup.json",
+        "reads": 1,
+        "sha256": "473ccb098937b2da22be3b038f019e622ebcc8a2a326e8032b13a42eee983c6a"
+      },
+      {
+        "bytes": 368,
+        "logicalPath": "catalog/vehicle-types/rigid-truck.json",
+        "reads": 1,
+        "sha256": "a6f22c8d5356a9ac0fb0cb90403eb82a0f75c73660b62f8b67c3416a4087bffb"
+      },
+      {
+        "bytes": 353,
+        "logicalPath": "catalog/vehicle-types/van.json",
+        "reads": 1,
+        "sha256": "79f206d00a23f3cbd75293a62df389ff876135db97445e90ab718583e4baf653"
+      },
+      {
+        "bytes": 236,
+        "logicalPath": "evaluation/queue-counter.json",
+        "reads": 1,
+        "sha256": "04bff220abb06e80db644e1b94afb53f3e0af790ffe2371e06eff5f2b82a1de9"
+      },
+      {
+        "bytes": 3337,
+        "logicalPath": "project",
+        "reads": 1,
+        "sha256": "3f137632c314d4933eb1e3bae0ac4b7219e582feb677fc349908c53f45fe5674"
+      }
+    ],
+    "schemaVersion": 1
+  },
+  "label": "M6 kind S1 first comparable run (D535)",
+  "lastSeed": 81,
+  "outputs": [
+    {
+      "bytes": 3804294,
+      "file": "runs.jsonl",
+      "sha256": "6052cff03c5cc74bc5584c024e0265efc0acf7985e8f0613b88ff0c31fa440df"
+    },
+    {
+      "bytes": 341732,
+      "file": "cycles.csv",
+      "sha256": "2c41d3e833a55cee321292f1bc5f6304e7c65f44c752e76bf77a60733fdda27c"
+    },
+    {
+      "bytes": 8382,
+      "file": "summary.json",
+      "sha256": "87c8c77630c53f18e4ed72d58c46e1d0d2ec2f5a35f34349f72dfa6397e5e15e"
+    }
+  ],
+  "timeStep": 0.1,
+  "toolSources": [
+    {
+      "file": "m6_s1_run.cpp",
+      "sha256": "ded2e216f4288393a36f1eb48aad0a5e48d7ed32076edf0d19d3c55af2354061"
+    },
+    {
+      "file": "m6_s1_summary.hpp",
+      "sha256": "bc715a1d71d6606fb2ee881e697879597fad833270267e4ff334fb97c20bd23e"
+    },
+    {
+      "file": "m6_s1_network.hpp",
+      "sha256": "6011963592122ced7db56f9052694e0c3f1fe58d4aecd3dc6b6e29e26ef31f4d"
+    }
+  ]
+}

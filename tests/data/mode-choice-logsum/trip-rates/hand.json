@@ -1,0 +1,32 @@
+{
+  "id": "hand",
+  "name": "O produces 100, D1 and D2 attract 100 each",
+  "source": {
+    "citation": "Hand-computed fixture (MODE_CHOICE_LOGSUM \u00a76)"
+  },
+  "unit": "trips per day",
+  "purposes": [
+    {
+      "id": "all",
+      "productions": {
+        "method": "crossClassification",
+        "categories": [
+          {
+            "attribute": "workers",
+            "rate": 1
+          }
+        ]
+      },
+      "attractions": {
+        "method": "regression",
+        "constant": 0,
+        "terms": [
+          {
+            "attribute": "jobs",
+            "coefficient": 1
+          }
+        ]
+      }
+    }
+  ]
+}

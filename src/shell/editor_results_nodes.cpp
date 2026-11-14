@@ -1,4 +1,5 @@
 #include "editor_window.hpp"
+#include "editor_batch_state.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../project/los_output.hpp"
 #include <QHeaderView>
@@ -31,7 +32,7 @@ void EditorWindow::refreshResultNodes() {
     const auto level = [&](const char* key, const std::string& name, int indent) {
         return std::pair{plain(text(key)), plain(QString(indent * 2, ' ') + q(name))};
     };
-    if (batchRunning() && batchComparing_) { t->setColumnCount(0); nodeResultNote_->setText(marker + " " + text("editorNodeResultsRunning")); return; }
+    if (batchRunning() && batchSession_->comparing) { t->setColumnCount(0); nodeResultNote_->setText(marker + " " + text("editorNodeResultsRunning")); return; }
     if (comparison_) { refreshComparedNodes(marker); return; }
     if (batch_) {
         t->setColumnCount(11);
@@ -116,7 +117,7 @@ void EditorWindow::refreshComparedNodes(const QString& marker) {
         collect(n.unmatchedLegs, n.name); collect(n.unmatchedTurns, n.name);
     }
     if (c.nodes.empty() && c.unmatchedNodes.empty()) { nodeResultNote_->setText(marker + " " + text("editorNodeResultsNone")); return; }
-    QString note = marker + " " + text("editorNodeResultsCompared").arg(c.seeds.size());
+    QString note = marker + " " + text(c.randomStreams == RandomStreams::perInput ? "editorNodeResultsComparedPaired" : "editorNodeResultsCompared").arg(c.seeds.size()); // D526
     QStringList unmatched;
     if (!baseOnly.isEmpty()) unmatched << text("editorCompareBaseOnly").arg(baseOnly.join(", "));
     if (!alternativeOnly.isEmpty()) unmatched << text("editorCompareAlternativeOnly").arg(alternativeOnly.join(", "));

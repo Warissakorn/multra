@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
 #include <map>
 #include <set>
 
@@ -49,9 +50,15 @@ MacroTree shortestTree(const MacroGraph& g, std::size_t origin, const std::strin
 }
 std::vector<std::vector<double>> freeFlowSkim(const MacroGraph& g, const std::vector<std::size_t>& origins,
                                               const std::vector<std::size_t>& destinations, const std::string& mode) {
-    constexpr double inf = std::numeric_limits<double>::infinity();
     std::vector<double> times(g.links.size());
     for (std::size_t a = 0; a < times.size(); ++a) times[a] = g.links[a].freeTime;
+    return skimAt(g, origins, destinations, mode, times);
+}
+std::vector<std::vector<double>> skimAt(const MacroGraph& g, const std::vector<std::size_t>& origins,
+                                        const std::vector<std::size_t>& destinations, const std::string& mode,
+                                        const std::vector<double>& times) {
+    constexpr double inf = std::numeric_limits<double>::infinity();
+    if (times.size() != g.links.size()) throw std::invalid_argument("skimAt: one time per Macro link");
     std::vector<std::vector<double>> skim(origins.size(), std::vector<double>(destinations.size(), inf));
     for (std::size_t i = 0; i < origins.size(); ++i) {
         if (origins[i] >= g.nodes.size()) continue;

@@ -1,6 +1,6 @@
 add_library(multra_shell ${MULTRA_LIBRARY_TYPE} form_values.cpp example_menu.cpp recent_files.cpp results_levels.cpp table_layout.cpp table_grid.cpp folded_note.cpp presentation.cpp workspace_layout.cpp editor_interaction.cpp message_label.cpp editor_style.cpp editor_appearance.cpp editor_workspace.cpp editor_window.cpp editor_commands.cpp editor_signal.cpp signal_timing_view.cpp editor_inspector.cpp editor_connectors.cpp editor_files.cpp editor_history.cpp editor_rotation.cpp
     editor_tables.cpp editor_diagnostics.cpp editor_demand.cpp editor_demand_preview.cpp editor_catalog.cpp demand_catalog_dialog.cpp behaviour_library_dialog.cpp editor_behaviour.cpp demand_type_rules_dialog.cpp demand_period_editor.cpp editor_input.cpp editor_decision.cpp editor_routing.cpp editor_control.cpp editor_run.cpp editor_results.cpp editor_batch.cpp editor_compare.cpp editor_storage.cpp editor_recovery.cpp editor_palette.cpp editor_creation.cpp behaviour_editor.cpp dialog_fit.cpp editor_lab.cpp behaviour_lab_window.cpp behaviour_lab_panel.cpp behaviour_lab_telemetry.cpp
-    ../editor/canvas_feedback.cpp ../editor/canvas_cursors.cpp ../editor/editor_glyph.cpp ../editor/canvas_spatial.cpp ../editor/canvas_rotation.cpp ../editor/canvas.cpp ../editor/canvas_lanes.cpp ../editor/canvas_input.cpp ../editor/canvas_connectors.cpp ../editor/canvas_select.cpp ../editor/canvas_run.cpp ../editor/vehicle_shape.cpp ../editor/canvas_display.cpp ../editor/canvas_labels.cpp ../editor/canvas_markings.cpp ../editor/canvas_demand.cpp ../editor/canvas_cache.cpp ../editor/canvas_heads.cpp ../editor/canvas_conflicts.cpp ../editor/canvas_counters.cpp ../editor/canvas_sections.cpp ../editor/canvas_zones.cpp ../editor/canvas_street_segments.cpp ../editor/canvas_creation_preview.cpp editor_priority.cpp editor_zones.cpp editor_nodes.cpp editor_coarse.cpp editor_seams.cpp editor_fill.cpp editor_proposals.cpp editor_periods.cpp editor_modes.cpp editor_od.cpp od_lot_dialogs.cpp gate_flow_dialog.cpp editor_counters.cpp editor_sections.cpp editor_speed_decisions.cpp editor_speed_areas.cpp)
+    ../editor/canvas_feedback.cpp ../editor/canvas_cursors.cpp ../editor/editor_glyph.cpp ../editor/canvas_spatial.cpp ../editor/canvas_rotation.cpp ../editor/canvas.cpp ../editor/canvas_lanes.cpp ../editor/canvas_input.cpp ../editor/canvas_connectors.cpp ../editor/canvas_select.cpp ../editor/canvas_run.cpp ../editor/vehicle_shape.cpp ../editor/canvas_display.cpp ../editor/canvas_labels.cpp ../editor/canvas_markings.cpp ../editor/canvas_demand.cpp ../editor/canvas_cache.cpp ../editor/canvas_heads.cpp ../editor/canvas_conflicts.cpp ../editor/canvas_counters.cpp ../editor/canvas_sections.cpp ../editor/canvas_zones.cpp ../editor/canvas_street_segments.cpp ../editor/canvas_creation_preview.cpp editor_conflicts.cpp conflicts_panel.cpp zones_panel.cpp nodes_panel.cpp editor_coarse.cpp editor_seams.cpp editor_fill.cpp editor_proposals.cpp editor_periods.cpp study_periods_panel.cpp object_table.cpp editor_modes.cpp modes_panel.cpp editor_od.cpp od_panel.cpp od_lot_dialogs.cpp gate_flow_dialog.cpp counters_panel.cpp sections_panel.cpp speed_decisions_panel.cpp speed_areas_panel.cpp)
 target_sources(multra_shell PRIVATE junction_preview_dialog.cpp junction_cross_section_dialog.cpp junction_polygon_dialog.cpp
     junction_form_widgets.cpp junction_catalog_dialog.cpp junction_recipe_dialog.cpp junction_site_dialogs.cpp node_analysis_dialog.cpp node_analysis_panel.cpp node_analysis_fill_dialog.cpp node_analysis_manual_dialog.cpp)
 include(ui_pch.cmake) # MULTRA_UI_PCH: the Qt PCH the UI executables reuse
@@ -8,9 +8,9 @@ include(node_analysis_tests.cmake)
 target_sources(multra_shell PRIVATE ../editor/road_crossbar.cpp ../editor/canvas_decisions.cpp ../editor/canvas_route_overlay.cpp)
 target_sources(multra_shell PRIVATE vehicle_color_dialog.cpp object_export.cpp utdf_export_dialog.cpp image_export.cpp ../editor/canvas_image.cpp)
 target_sources(multra_shell PRIVATE automation_server.cpp editor_automation.cpp editor_automation_lifecycle.cpp automation_geometry.cpp automation_document.cpp)
-target_sources(multra_shell PRIVATE trip_generation_panel.cpp trip_rate_dialog.cpp trip_distribution_panel.cpp mode_choice_panel.cpp mode_choice_nests_dialog.cpp procedure_panel.cpp procedures_dialog.cpp period_factors_dialog.cpp owned_list_dialog.cpp editor_macro.cpp editor_link_types.cpp macro_run_dialog.cpp street_segment_zone_dialog.cpp) # Macro dialogs
-target_sources(multra_shell PRIVATE editor_street_segments.cpp editor_cross_sections.cpp editor_crossings.cpp) # S3.3b (D307), S3.5 (D309)
-target_sources(multra_shell PRIVATE editor_meso.cpp) # M11.4 (D300)
+target_sources(multra_shell PRIVATE trip_generation_panel.cpp trip_rate_dialog.cpp trip_distribution_panel.cpp mode_choice_panel.cpp mode_choice_nests_dialog.cpp procedure_panel.cpp dynamic_assignment_panel.cpp consistency_panel.cpp procedures_dialog.cpp period_factors_dialog.cpp owned_list_dialog.cpp macro_panel.cpp editor_link_types.cpp link_types_panel.cpp macro_run_dialog.cpp street_segment_zone_dialog.cpp) # Macro dialogs
+target_sources(multra_shell PRIVATE editor_street_segments.cpp street_segments_panel.cpp cross_sections_panel.cpp editor_crossings.cpp) # S3.3b (D307), S3.5 (D309)
+target_sources(multra_shell PRIVATE meso_panel.cpp) # M11.4 (D300)
 target_sources(multra_shell PRIVATE editor_side_files.cpp) # S5.5a (D331)
 target_sources(multra_shell PRIVATE editor_results_nodes.cpp) # S0.6 (D278)
 target_sources(multra_shell PRIVATE legacy_storage.cpp) # D286
@@ -401,6 +401,12 @@ target_precompile_headers(multra-gesture-tests REUSE_FROM ${MULTRA_UI_PCH})
     add_test(NAME studyperiod-ui COMMAND multra-studyperiod-ui-tests "${PROJECT_SOURCE_DIR}/data")
     set_tests_properties(studyperiod-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
     add_dependencies(check multra-studyperiod-ui-tests)
+    add_executable(multra-objecttable-ui-tests ../../tests/object_table_ui_tests.cpp)
+    target_link_libraries(multra-objecttable-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+    target_precompile_headers(multra-objecttable-ui-tests REUSE_FROM ${MULTRA_UI_PCH})
+    add_test(NAME objecttable-ui COMMAND multra-objecttable-ui-tests "${PROJECT_SOURCE_DIR}/data")
+    set_tests_properties(objecttable-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 120)
+    add_dependencies(check multra-objecttable-ui-tests)
     add_executable(multra-modepcu-ui-tests ../../tests/mode_pcu_ui_tests.cpp)
     target_link_libraries(multra-modepcu-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
     target_precompile_headers(multra-modepcu-ui-tests REUSE_FROM ${MULTRA_UI_PCH})

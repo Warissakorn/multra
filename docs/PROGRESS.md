@@ -5,216 +5,100 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-12 — Random streams per input in the project (D510); NEXT and OWNER_SITTING slimmed
+## 2026-11-14 — Windows CI fixed: a header leaned on the PCH
 
-- **D510 (INPUT_STREAMS §8 slice 3):** `definition.randomStreams` at schema 74
-  (`random_streams_codec.*`), written only as `perInput`, so a file that keeps the single stream
-  keeps its version and bytes; older files naming the key are refused. `newProjectDocument` sets
-  `perInput` (D505 1 b); shipped projects are not regenerated. *Run settings → Random streams*
-  lists `shared`/`perInput`, one Undo step. The mapping rides on `MovementReport`, so run, batch and
-  comparison JSON/CSV state `perInput` (nothing under `shared`, IS1), `aggregate` refuses mixed
-  runs, `compareBatches` mixed batches, and `requireSameRandomStreams` two projects before any run
-  (CLI `--compare`, desktop Compare page, new locale key `editorCompareStreams`).
-- **Rows:** `inputstreamsproject` (codec, schema floor, Undo, IS8 output and refusals, each output
-  row forced by first asserting the two batches ran different mappings) and a Run settings step in
-  `study-period-ui`. `cooldown`'s new-project schema expectation moves 27 → 74.
-- **Docs pass (optimize-program, docs dimension):** NEXT held 32 lines of shipped work against its
-  own rule (D319) and owner checks that OWNER_SITTING lacked. Finished slices are one-line pointers;
-  OWNER_SITTING split at its 500-line limit (sections C–I to `plans/OWNER_SITTING_WINDOWS.md`,
-  item names unchanged) and gained B46, C14–C16, E35, E36; the container build note moved to
-  BUILDING. NEXT ≈6,400 → ≈4,450 tokens (chars ÷ 4), 349 → 250 lines.
-- **Build pass (D511):** a schema step dirtied 542 objects through `document.hpp`; `kLatestSchema`
-  has its own header and a step now dirties 35 (66 s). A signal head's look dirtied 181 through
-  `canvas.hpp`; `road_crossbar_geometry.hpp` holds what the canvas needs, and it dirties 10 (13 s).
-  The UI executables' reused PCH was refused in the shared build (85 warnings); `ui_pch.cmake`
-  gives them one, 986 → 852 CPU-s. `check` 321/321 after each step.
-- **Verified on Linux:** desktop build, `check` (321/321, docs, file sizes, architecture), and the
-  real CLI: a `perInput` copy of the T-junction writes `"randomStreams": "perInput"`, the shipped
-  file writes none, and `--compare` between them is refused. Headless not rebuilt this session.
+- **Cause:** run 754 failed both Windows jobs (C2027 in the M6 run tools). Windows CI configures with `CMAKE_DISABLE_PRECOMPILE_HEADERS=ON`; on Linux the shared PCH supplied `<nlohmann/json.hpp>`, so `tools/m6_s1_summary.hpp` (Json used whole from line 138) compiled with only `json_fwd.hpp`. The last green Windows build was `main@fcfeb56`, 103 commits before.
+- **Fix (`bb2ac4f`):** the header includes `<nlohmann/json.hpp>`. Run 755 is green on all six jobs, Windows build and tests included.
+- **Guard:** `tools/check_no_pch.py` repeats the syntax pass without the PCH: 647 units, 0 failures, 8 m 52 s on 8 jobs; run by hand (NEXT standing facts).
 
-## 2026-11-11 — Route marks: bright ends, a tint between them, hover previews (D509)
+## 2026-11-14 — O1 read: TAG M3.1 §3.3.10 (D557)
 
-- **D509d (follow-up, 2026-11-12):** owner: "เปลี่ยนระยะ offset เป็น 0.6m". The tint's inset is
-  0.6 m (was D509c's 0.8 m), still at most a quarter of the narrowest lane. Images:
-  `docs/images/route-tint-d509d/` (`before.png` is D509c).
-- **D509c (follow-up, 2026-11-12):** owner: "ตกลงทั้ง 2 ข้อ" to a 50 % yellow and a wider inset.
-  The tint is 50 % stored and 35 % preview (2.25:1 on the road; lane marks 2.3:1 through it), and
-  its own inset is 0.8 m, at most a quarter of the narrowest lane (was the conflict area's 0.5 m and
-  a fifth), so a grey edge shows between it and the selection outline. Only the selected route is
-  tinted, as before. Images: `docs/images/route-tint-d509c/` (`before.png` is D509b).
-- **D509b (follow-up, 2026-11-12):** owner: "สีเหลืองเพิ่มความทึบ" after the violet, yellow and white
-  tints were compared on the road. `routeTintHex` is `#FACC15`, 59 % stored and 43 % preview (was
-  violet at 39 % and 27 %): 2.5:1 on the road `#5A5D61` against violet's 1.2:1, and the lane marks
-  still read through it at 2.1:1. White was not taken (it greys the road and is the lane-mark and
-  car colour). Images: `docs/images/route-tint-d509b/` (`before.png` is the violet tint).
-- **D509a (follow-up):** owner: "บาร์ปลายทางยังมีกรอบสีขาวอยู่". The moving bars lost their Base
-  casing too; no route end has a white frame now.
+- **D557** (owner: "เข้า gov.uk และช่วยตรวจสอบ"): the environment gained `www.gov.uk` and `assets.publishing.service.gov.uk` (owner approved). TAG unit M3.1, May 2026, §3.3.10, p. 31: GEH = √((M − C)² / ((M + C)/2)), the report's formula; Table 2's GEH < 5 criterion is a validation guideline against counts and stays unapplied. The PDF stays out of the repository. Docs only.
 
-- **Owner:** the destination bar should show while pointing; the tint should not look like the
-  selection blue and should be inset like a conflict area; the tint past the destination is cut;
-  the end colours were too dark (measured 1.0:1 on the road) and option 3 (brighter canvas tones)
-  was chosen.
-- **D509:** `canvas_route_overlay.cpp` (moved out of `canvas_demand.cpp`) draws a route's violet
-  tint between its green origin and red destination bars, inset 0.5 m (at most a fifth of the
-  narrowest lane) from the road's outer edges once the Link/Connector seams are closed. Hover sets
-  `routeHover_`: before a route starts a green bar shows the origin; with a draft the red bar and
-  the tint's end follow the pointer, re-cut in place (`retintRoutePreview`) along one road. New
-  tokens `routeStartHex`, `routeEndHex`, `routeTintHex`; the tint colour was my recommendation
-  and is one token to change.
-- **Images:** `docs/images/route-tint-d509/` (hover origin, hover destination, stored route, the
-  inset at a Link/Connector join; `before.png` is D508's stored route).
-- **Rows:** `station-routing-ui` hovers the origin and destination bars, checks their colours, that
-  the tint item moves in place and stops at the hovered bar.
+## 2026-11-14 — O1: the GEH source confirmed by the owner (D556)
 
-## 2026-11-11 — Ctrl+right previews the route's ends; thin end bars (D508)
+- **D556** (owner: "O1 ยืนยัน"): TAG unit M3.1 recorded as the GEH source on the owner's confirmation; a second fetch of gov.uk and its asset host failed (outside the session's network), so no paragraph or edition is cited. Docs only.
 
-- **Owner:** a correct preview of the origin and destination while Ctrl + the button is held, movable
-  until release; and end bars shaped like the other canvas objects. Chose the inputs' thin bar and
-  an origin at the release point.
-- **D508:** `EditorCanvas::applyRoutePress` re-applies a press snapshot on each move, so the green
-  origin or red destination bar sits where the release will put it; `finishRoutePress` places it.
-  An origin mid-Link opens or joins that Link's routing decision at the station (within 10 px of
-  the start it stays a whole-Link route); a destination near its far end keeps the boundary marker.
-  Route ends lose D435's width and casing, sit above a placed decision's bar, and a draft that is
-  only its origin no longer shows a red bar at the origin's far end.
-- **Images:** `docs/images/route-press-d508/` (held origin, held destination, the stored route, and
-  the earlier wide ends for comparison).
-- **Rows:** `station-routing-ui` holds, slides and releases an origin and a destination and checks
-  the stored station, destination and thin bar; `demand-ui` presses its whole-Link route at the
-  Link's first metre.
+## 2026-11-14 — O2: a gate counts the demand loaded onto its Link (D555)
 
-## 2026-11-11 — Pick the origin once, then several destinations (D507)
+- **D555** (owner asked for a recommendation, then approved (b)): amendment first (SUBAREA_CONSISTENCY §15, SC11), then the fed-flow bookkeeping in `consistencyReport` adds each inside zone's flows by connector share to the gate on its connector's Link. SC11 passes first time: the corridor's west entry gate now reads Macro 600 = its Link row (GEH 0); shares 3 : 1 split 450 / 150. Verified on Linux: `check` 353/353.
 
-- **Owner:** "ต้องการให้เลือกต้นทางครั้งเดียว และเลือกปลายทางได้หลายอัน" (pick the origin once, then
-  several destinations).
-- **D507:** after the Route tool saves a traced destination, `EditorCanvas::commitRouteDraft` keeps
-  the start object and station, so the next click is another destination from the same origin and
-  joins the same routing decision. A click back on the origin's line does nothing; the same
-  destination by the same roads is refused (`EDIT_ROUTE_DUPLICATE`, en/th); Esc or Backspace on the
-  bare origin ends it. The status hint says the origin stays. `Ctrl`+right/`Enter` is unchanged.
-- **Rows:** `station-routing-ui` now draws two destinations from one origin click and checks the
-  no-op click, the refused duplicate, Esc and Backspace; `road-crossbar-ui` expects the bare origin
-  after a commit. Verified: Linux, desktop ctest 312/312 and `check`; Windows is the owner's.
+## 2026-11-14 — M12 R2: the Cross-level Consistency page (D554)
 
-## 2026-11-11 — Random streams per input in the engine (D506)
+- **D554** (owner: "ทำงานถัดไป", then both recommended options): amendment first (SUBAREA_CONSISTENCY §13, SC8–SC10), then `ConsistencyPanel` under a new *Cross-level* Results level (seeds, Run/Cancel on a worker via a `cancelled` hook on `consistencyReport`, the 19-column table, CSV through Export). `consistency-ui` passes; pins `workspace-ui` (14 tabs) and `results-tabs-ui` (5 levels) updated. The capture showed open finding O2 (§14). Owner check: C18. Verified on Linux: `check` 353/353.
 
-- **Owner:** "ทำตามคำแนะนำ" after D505: the recommendations, in their order. B9 and B43 needed no
-  code; B44 (streams before the M6 runs) is the first that did. Branch protection and B45 stay the
-  owner's; the D500 move and the `EditorWindow` split wait for their own sessions.
-- **D506 ([INPUT_STREAMS](reference/INPUT_STREAMS.md) §4, §8 slices 1–2):** `Scenario::randomStreams`,
-  `shared` by default. Under `perInput` each input and each lot draws from its own xorshift32 state
-  seeded from the run seed and an FNV-1a key of its id; a routing draw is hashed from the seed, the
-  vehicle's origin key and ordinal, and the decision's id (its id, not its index, so an added
-  decision moves no other). A vehicle carries `streamKey` and `ordinal`; under `shared` they and
-  the new state fields stay zero. A `perInput` checkpoint also writes the stream states.
-- **Moved to slice 3:** the codec key and IS8's summary/CSV field and `--compare` refusal. No run
-  outside the tests can be `perInput` until the project sets it, and an unconditional field would
-  change every existing output's bytes.
-- **Rows:** IS1–IS7 and IS6b (a lot's draws) in `inputstreams`. Each `perInput` row runs again
-  under `shared` and expects the check to fail there, which is its failure-first proof.
-- **Split:** `types.hpp` was at 500 lines; the event structs moved whole to `event_types.hpp`
-  (no rebuild change measured: `types.hpp` includes it).
-- **IS9 (callgrind, Release, `multra-engine-benchmark 12 300`, seed 42):** `shared` 909.8 M →
-  914.0 M instructions (+0.46 %, the larger `PendingVehicle`), same 553 trips. `perInput` against
-  `shared` per vehicle-tick: 2408 vs 2419 (−0.4 %); the two runs are different traffic (551 and 553
-  trips), so the whole-run totals are not compared. The benchmark takes `shared|perInput`.
-- **Verified:** Linux, GCC 13.3: headless ctest 208/208 and `check`; `multra-cli 42`, its event
-  file and a four-leg 42–45 batch CSV byte-identical to the base commit. Desktop not built.
-- **CI:** the Canonical archives stopped answering the Linux runners (`azure.archive` did not
-  resolve; `archive.ubuntu.com` timed out on every package); the apt step hung ~47 min. apt's
-  mirror list now tries kernel.org and MIT first, then the Canonical ones, security included, with
-  short timeouts and a 15-min step limit (`native.yml`). Windows jobs passed throughout.
+## 2026-11-14 — M12 contract and R1: the subarea workflow and consistency report (D553)
 
-## 2026-11-11 — The owner's answers to the open questions (D505)
+- **D553** (owner: "ช่วยตัดสินใจ", then "ทำต่อตามแนะนำ"; every recommended option): [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), rows SC1–SC7, before code. Meso runs opt-in on the study area's run-time copy (the same cut Micro runs on; `"meso"` as the source is `MESO_AREA_SOURCE_SELF`); per study period, every gate and kept Link gets Macro, Meso and Micro (multi-seed `Estimate`) veh/h with Δ, % and GEH, reported only. R1 is the CLI `--consistency-report`, R2 a Results page. Open: O1, TAG M3.1's GEH paragraph (the publisher's host was not reachable).
+- **R1:** `src/project/subarea_consistency.*` (`runMesoArea`, `consistencyReport`, JSON/CSV), `tools/consistency_cli.*`, `estimate` made public. Groups `consistency` (SC1–SC6) and `cli-consistency` (SC7) pass first time. Corridor (area {A}, 600 veh/h): Macro 600, Meso 592.7 (bound 12.0), Micro 240 over seeds 42–43; Micro's west→east movement gives way and queues at the source, Meso ignores Node priority (SUBAREA_CONSISTENCY §12). Nothing tuned. Verified on Linux: `check` 352/352.
 
-- **Owner:** asked for a recommendation on each open question, then took all of them. Documents
-  only; no code, example or baseline changed, and no new work was started.
-- **M6 benchmark sources (was B9):** Q4 (d); S1-a, S1-d second; S2-b below saturation, S2-a
-  across it, S2-c first; U-a after U-c, U-e booked for R7. Sources only: no gate closes and the
-  tolerance is still written before any comparable run ([ROADMAP](ROADMAP.md) M6.0).
-- **Random streams (was B44):** `perInput` for new documents at a schema step, traits re-keyed by
-  input, paired comparison as a later slice, before the M6 runs
-  ([INPUT_STREAMS](reference/INPUT_STREAMS.md) §7).
-- **Micro's M6 gate (was B43):** may close before M10 and M11.
-- **Approved, not started:** the D500 example on the pocket template; `EditorWindow` split in
-  small steps. **Waits:** `src/project/`. **Not wanted:** a start page; tool names at 1366 px.
-- **Still the owner's:** B45 on Windows, and requiring `Native C++` on GitHub.
-- **Verified:** Linux: headless `check`.
+## 2026-11-13 — M9 A4: the Dynamic assignment Results page (D552)
 
-## 2026-11-11 — File → Open recent (D504)
+- **D552** (owner picked A4: a Micro-level Results page, Apply as one Undo step): contract first (DYNAMIC_ASSIGNMENT §17), then `DynamicAssignmentPanel` (level, iteration cap, gap, seed; Run/Cancel on a worker via a new `keepGoing` hook in `iterateMsa`; δ and cell tables; CSV; *Apply weights*; *Save route costs…*), en/th keys. `dynamic-assignment-ui` passes DA14–DA17 first time; an offscreen capture checked the layout. Owner check: OWNER_SITTING_WINDOWS C17.
 
-- **Owner:** asked for the rest of the UI review's queue: recent files and a start page.
-- **D504:** the last eight projects opened or saved, newest first, in `recent-files.json` in the
-  application's local data folder (as `vehicle-colors.json` is), never in a project. Remembered
-  on *Open*, on a save (`saveFile`, so an automation save too), on `--scenario` and when opened
-  from the menu; not an example (it opens untitled) and not a recovery draft. A file that is gone
-  is listed disabled; a damaged list reads as empty. An empty drawing's status line names the
-  menu once the list holds a file (`recent_files.*`, free functions; no new window member).
-- **Not built: the start page.** A panel over the empty canvas would sit where a drawing starts;
-  its look is the owner's choice and is an Ask in NEXT. Both things it would offer are in File.
-- **Tests:** new `recent-files-ui` (failed before the menu existed): order, no repeats, the cap,
-  a missing file, an example leaves the list alone, a second window reads it, Thai, Clear list,
-  a damaged file.
-- **Verified:** Linux, GCC 13.3: desktop ctest and headless `check`. The folder on Windows and the
-  menu's look there are the owner's (B45). Images (composited from the two menus):
-  [en](images/open-recent-d504/open-recent-en.png), [th](images/open-recent-d504/open-recent-th.png).
+## 2026-11-13 — M9 A2b: placed and positioned decisions in the loop (D551)
 
-## 2026-11-11 — The palette names its tools on a 1440 px window (D503)
+- **D551** (owner: "ทำต่อตามแนะนำ"): contract first (DYNAMIC_ASSIGNMENT §15, MESO_ASSIGNMENT §10), then `routeFamilies` exported from `expandRouteless` into `RunSnapshot`, `decisionFamilyName`, placed (departure) and positioned (`RoutingEvent`) costs in `measureDecisionCosts`, families in the Meso measurement. Group `dynassignplaced` passes DA10–DA13; `mesoassign` passes MA9.
+- **Recorded:** the first DA10/DA11 recomputation mapped by departure route and dropped stub left-turners (test fix, values unchanged); MA9's first fixture contradicted §15 (both routes end on one Link) and was amended before re-running (§10.1).
 
-- **Owner:** chose this from the UI review's remaining items: at 1440 × 900 the palette was 16
-  icons with no names.
-- **Cause:** the palette went icons-only automatically below 1500 px of window width, so a
-  maximised window on a 1366 or 1440 px laptop never showed a tool's name.
-- **D503:** the threshold is 1440 px, one constant (`namedPaletteMinWindowWidth`) in place of
-  three literals. A person's own toggle still stops the automatic switch.
-- **Why not lower (the plan said 1280):** with names, a 1366 px window leaves the canvas 810 px,
-  and `ui-audit-layout` (D432's audit) requires 900 there; at 1280 that row and
-  `properties-layout-ui` failed. They were left as they are and the threshold raised instead.
-  At 1440 the canvas is 884 px with names (1066 with icons). 1366 px windows keep the rail.
-- **Tests:** new `palette-width-ui` (failed at the old threshold: "Wrong palette view at 1440 px");
-  `workspace-ui` reads the constant instead of the literal 1500.
-- **Verified:** Linux, GCC 13.3, desktop ctest 318/318 and headless `check`. Thai captions fit at
-  1440 ([en](images/palette-d503/palette-1440-en.png), [th](images/palette-d503/palette-1440-th.png)).
-  Windows and high-DPI are the owner's (B45).
+## 2026-11-13 — M11.5 Meso assignment contract (D550)
 
-## 2026-11-10 — Process review: stated facts checked, ROADMAP tables, a user guide (D502)
+- **D550** (owner: "ทำงานถัดไปตามแนะนำ" after asking what M11.5 is, then every recommended option): [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md), rows MA1–MA8, before code. Free-flow times read from the compiled fixture graph (t_s 55.356464, t_l 109.904888 s); deterministic-queueing equilibrium x* = 0.590914; an analytic MSA reference stops at n = 11 for gap 0.01.
+- **S1:** `src/project/meso_assignment.*` (cohort integral, `measureMesoDecisionCosts`), `DaLevel` through `runDynamicAssignment`, the file's `level` and `--dynamic-assignment --meso` / `--route-costs --meso`. Group `mesoassign` passes MA1–MA8 first time; converged at n = 6 with short share 0.5833 (x* 0.5909), costs 107.49 / 109.905 s. Two CLI runs `cmp`-identical.
 
-- **Owner:** asked for the rest of the queue: the process review's three proposals.
-- **`multra-check-docs` checks facts:** a decision id in any maintained document must be a row of a
-  decision record (`D18` names the family D18a–D18d); no document cites a schema above
-  `kLatestSchema`, read from `src/project/document.hpp`; `data/projects/README.md` lists exactly
-  the shipped projects. Negative fixtures for each. On its first run it flagged nothing wrong in
-  the documents, and then this session's own `D502` until the row existed.
-- **ROADMAP:** M10, M11, M13 and M14 are one table row per slice (contract, implemented, open)
-  with scope and done-condition above; their paragraphs are whole in
-  [the archive](archive/ROADMAP-implemented-2026-11-10.md). To stay at 500 lines the M1 and M2
-  implemented-slice tables and the S1–S5 stage lines went there too, M0.1 became a paragraph of
-  M0, and M8's follow-up line joined its paragraph. No scope, gate or status changed.
-- **[USER_GUIDE](USER_GUIDE.md):** the Micro sentence on the four-leg example in five steps, with
-  where LOS letters and the HCM table come from. Every quoted control was checked against
-  `data/locales/en.json`. English only, no pictures.
-- **Not done:** milestone status statements are not checked against code (no mechanical source
-  for "implemented"); branch protection is the owner's on GitHub.
-- **Verified:** Linux, GCC 13.3: headless `check`; desktop `documentation` rows.
+## 2026-11-13 — M9 dynamic assignment contract (D549)
 
-## 2026-11-10 — A routing decision reaches a pocket lane (D501)
+- **D549** (owner: "ทำงานถัดไป", chose the M9 contract, then every recommended option): [DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9, before code. MSA (Ortúzar Eq. 10.23) over routing-decision cells, cost from the decision to arrival, δ (Eq. 10.22) stopping, a separate `MultraRouteCosts` file and `--route-costs`.
+- **Hand values:** Example 10.6's MSA trace (book p. 371) computed exactly; every row equals the printed table (row 7 printed rounded), reaching Example 11.1's 600 / 1400 at 22 min at n = 10 with δ = 0.
+- **A1:** `src/project/dynamic_assignment.*` (`iterateMsa` behind a cost provider, `allOrNothing`, `msaStep`, `msaDelta`); group `dynassign` passes DA1–DA3 against that table to 1e-9.
+- **A2:** amendments recorded before code (§11: unplaced decisions only, placed ones refused until A2b; cost = departure to arrival; free-flow fill by authored route length over the mean desired speed); measurement, the `MultraRouteCosts` codec and `--route-costs`; group `dynassignrun` passes DA4–DA6 and DA9.
+- **A3:** fixture (§13) fixed before running; the first run showed the 1 : 1 start already inside the gap (δ 0.027) and the 5 % cost criterion inconsistent with δ, so §13.1 amends both openly (start 19 : 1; δ alone). `runDynamicAssignment`, `--dynamic-assignment`, `fixture::twoRoute()`; δ 0.810 → 0.0108, converged at n = 2 with 0.475 / 0.525 at 70.2 / 68.7 s. Group `dynassignloop` passes DA7–DA8; two CLI runs `cmp`-identical.
 
-- **Owner:** chose this defect, found by D500, as the next work.
-- **Cause:** `routeLaneFamily` took the first lane path leaving a lane at a named Connector and
-  stopped. Fill's pocket taper is 1 → 2: first path to the ordinary lane, second into the pocket.
-  A route still reached the pocket by D459's joined chain and a lane change; a decision's family
-  is built without joining, so every chain to the far turn was a stub, the family was empty and
-  `entryDecision` skipped the destination with no issue.
-- **D501:** without joining, a chain forks over every path leaving its lane, and each first-Link
-  lane keeps its first full chain, else its first stub. With joining (routes, compile, Node
-  membership) nothing changes. An entry decision's destination that no lane serves now adds the
-  existing advisory `ROUTING_DECISION_UNREACHABLE`.
-- **Tests:** `pocketdecision`, 4 rows on the P3 pocket template, both driving sides; three failed
-  before the fix (a destination at 1/2 instead of 1/3, a turn with no vehicle, no advisory), the
-  fourth pins that a route's family is as before.
-- **Unchanged results:** CLI output of the eight shipped projects and `crossing.json` is
-  byte-identical before and after (build metadata lines aside); no fixture or baseline moved.
-- **Not done:** the D500 example stays on the template without pockets; moving it is an Ask in NEXT.
-  A decision's destination that needs a lane change on a later Link with no fan-out is still not
-  served; it is now named instead of dropped.
-- **Verified:** Linux, GCC 13.3: desktop ctest and headless `check`.
+## 2026-11-13 — Logsum composite cost into distribution, G/D/MS/A (D548)
+
+- **D548** (owner: "ทำงานถัดไป", chose logsum feedback, then every recommended option): contract first ([MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md), Ortúzar §6.5.2), hand values before code (Example 6.3's C_B = 49.2298; a one-origin, two-destination table).
+- **L1:** `distributionCost: "logsum"` per mode-choice purpose at schema 76 (one shared negative coefficient); `logsum`/`compositeCost` in `src/macro/mode_choice`; `runModeChoice` checks Eq. 6.11 (β > λ refused) and re-runs the distribution on the composite; skim-pass balancing refusals are held until the set is known. LS1–LS8 pass against the hand values; the first test run's zone order was fixed in the test only.
+- **L2:** a per-purpose check box in the *Nests* dialog; `nested-logit-ui` covers LS9.
+
+## 2026-11-13 — Procedure feedback: congested costs back into demand (D547)
+
+- **D547** (owner: "ทำงานถัดไป", chose M10 congested-cost feedback, then answered the contract's four choices with every recommended option): contract first ([PROCEDURE_FEEDBACK](reference/PROCEDURE_FEEDBACK.md), Ortúzar §11.3; the CW formula checked on the p. 432 image), hand fixed point of Example 11.3 before code.
+- **F1:** `feedback` on a procedure at schema 75; `skimAt` and an optional `linkTimes` through `zoneSkim`, distribution and mode choice; `procedure_feedback.cpp` (re-run mode choice on congested times, average the OD-mode matrices by CW or MSA, assign, TMF/RSE); JSON `feedback` block and CLI lines. Fixture `tests/data/procedure-feedback/`. MSA's fixture stop (2 persons in 200 iterations) and FB7's naive case (λ 0.6, where naive's factor 2λ > 1) were amended after the first test run, before commit; no definition or hand value changed.
+- **F2:** the dialog's *Feedback* group and the page's iterations table and CSV section; `procedure-ui` covers FB10.
+- **Result:** CW reaches 999.80 / 999.07 veh/h against the hand 999.79 / 999.08 in 7 and 10 iterations; MSA takes 127 and 49. Not a validation.
+
+## 2026-11-13 — Sensitivity sweep phase 2: engine levers D and E (D546)
+
+- **D546** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_SWEEP](reference/M6_SWEEP.md) §4, rows SW5–SW10), then runtime-only `DriverBehaviour` flags `standingTarget` (D) and `stopArrival` (E), off by default (`following.cpp`, `conflicts.cpp` `stopMade`), and candidates `D`, `E`, `DE`. Rows SW7 and SW9 were amended after the first test run, before any sweep figure; no definition changed. No `src/core` split was needed (largest file 469 lines).
+- **Result** ([evidence](evidence/m6-sweep-phase2.md)): D: S1 1,910.2 veh/h (jam spacing 6.50 m, `t_x` 1.35 s), S2 misses shrink, U `t_f` 6.91 s with U-c passing at `v_c` 200 and 400; E alone equals base; DE `t_f` 5.82 s. U-a misses everywhere. Nothing adopted.
+
+## 2026-11-13 — No calibration on M6; sensitivity sweep phase 1 (D544, D545)
+
+- **D544** (owner asked for calibration options and chose "ไม่ calibrate + sweep"): [options sheet](evidence/m6-calibration-options.md) with five options A–E and estimated effects; D540's hold is closed as no calibration on M6.
+- **D545:** contract first ([M6_SWEEP](reference/M6_SWEEP.md), rows SW1–SW4), then `tools/m6_candidates.hpp` and `--candidate base|B|C` on the S1, S2 (`ab`) and U (`run`) tools; no flag keeps outputs byte-identical (a `base` S1 rerun matched the first run).
+- **Result** ([evidence](evidence/m6-sweep-phase1.md)): B 2,029.8 veh/h, C 2,109.5 (S1-f would pass, S1-a would miss for both); S2 misses grow; U `t_f` 12.89 / 12.98 s (base 13.67). The D544 arithmetic overstated both levers on U. Nothing adopted.
+
+## 2026-11-13 — Where the Stop follow-up goes (D543)
+
+- **D543** (owner: "ทำงานถัดไป"): contract first ([M6_U_RUN](reference/M6_U_RUN.md) §6, rows SU1–SU5), then `tools/m6_u_split.hpp` and mode `split` of `multra-m6-u-run` (the D542 run is mode `run`). Row SU4 was moved to `v_c` 200 and its dwell value corrected to one observed tick from the first test run, before any split figure; no definition changed.
+- **Result** ([evidence](evidence/m6-u-split.md)): move-up 10.7–12.2 s of the 12.5–13.9 s headway (settle 3.75 s), service 0.1 s, release 1.6 s with almost no gap-rule blocking. Nothing tuned.
+
+## 2026-11-13 — Kind U first run: U-c and U-a (D542)
+
+- **D542** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_U_RUN](reference/M6_U_RUN.md), rows U1–U6), then `tools/m6_u_network.hpp`, `m6_u_summary.hpp` and `multra-m6-u-run`. A left-hand T, Stop on the minor left turn's merge, `gapTime` 5.804 s from `t_c` 6.2 s, minor demand 1,800 veh/h, seeds 42–81.
+- **Result** ([evidence](evidence/m6-u-first-run.md)): 228.5, 196.0, 159.4, 119.2, 81.6 veh/h at `v_c` 200 … 1,000; U-a (HCM 846 … 298) and U-c miss at every level. The follow-up headway is 13.7 s, so the Stop service caps the movement. Nothing tuned.
+- `CMakeLists.txt`: the scattered `add_dependencies(check …)` lines folded into one to stay at 500 lines.
+
+## 2026-11-13 — The engine's effective green, and the references at its own values (D541)
+
+- **D541** (owner: as recommended): contract first (M6_S2_RUN §8, rows S2E1–S2E4), then `tools/m6_s2_green.hpp` and mode `green` of `multra-m6-s2-run`. Every crossing per cycle is counted on the saturated S1 project, amber included.
+- **The run:** 40 seeds on build `db17252`.
+  - **Capacity** 913.0 veh/h against HCM's 844.4.
+  - **Effective green** 42.27 s against 40 s.
+  - **Lost time** 0.73 s against 3 s.
+  - **Amber crossings** about 1.6 per cycle.
+- **At the engine's own green and capacity:**
+  - HCM `d1 + d2` lies between −9.5 % and +13.1 % of its S2-b/S2-a delay.
+  - FCTL lies 6–8 % below it, the deceleration share.
+- **Reading:** the S2-b/S2-a miss is about capacity, not queueing. D539's verdicts stand. [m6-s2-green](evidence/m6-s2-green.md).
+- **Verified on Linux:** `check` 335/335 (`m6s2` 15/15).

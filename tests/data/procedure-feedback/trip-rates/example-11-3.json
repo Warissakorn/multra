@@ -1,0 +1,32 @@
+{
+  "id": "example-11-3",
+  "name": "Example 11.3: 2,000 persons from A to B",
+  "source": {
+    "citation": "Fixture: Ortuzar and Willumsen (2011), Example 11.3, p. 405, and Example 10.4, p. 368 (PROCEDURE_FEEDBACK \u00a75)"
+  },
+  "unit": "trips per day",
+  "purposes": [
+    {
+      "id": "all",
+      "productions": {
+        "method": "crossClassification",
+        "categories": [
+          {
+            "attribute": "workers",
+            "rate": 1
+          }
+        ]
+      },
+      "attractions": {
+        "method": "regression",
+        "constant": 0,
+        "terms": [
+          {
+            "attribute": "jobs",
+            "coefficient": 1
+          }
+        ]
+      }
+    }
+  ]
+}

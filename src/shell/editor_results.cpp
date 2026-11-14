@@ -4,18 +4,24 @@
 #include "editor_interaction.hpp"
 #include "table_layout.hpp"
 #include "editor_window.hpp"
+#include "editor_recovery_state.hpp"
+#include "editor_run_state.hpp"
+#include "editor_batch_state.hpp"
 #include "folded_note.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../core/simulation.hpp"
 #include <map>
 #include "editor_storage.hpp"
-#include "editor_macro.hpp"
-#include "editor_meso.hpp"
+#include "macro_panel.hpp"
+#include "message_label.hpp"
+#include "meso_panel.hpp"
 #include "node_analysis_panel.hpp"
 #include "trip_generation_panel.hpp"
 #include "trip_distribution_panel.hpp"
 #include "mode_choice_panel.hpp"
 #include "procedure_panel.hpp"
+#include "dynamic_assignment_panel.hpp"
+#include "consistency_panel.hpp"
 #include "../project/macro_output.hpp"
 #include "../project/meso_output.hpp"
 #include "../project/batch_output.hpp"
@@ -128,13 +134,19 @@ void EditorWindow::buildResults() {
     clampTable_=resultTable(page,"editorClampTable",5); tab(clampNote_,"editorClampNote","editorResultsTabClamps")->addWidget(clampTable_,1);
     lotTable_=resultTable(page,"editorLotTable",10); tab(lotNote_,"editorLotNote","editorResultsTabLots")->addWidget(lotTable_,1); // M8.6b
     nodeResultTable_=resultTable(page,"editorNodeResultTable",10); tab(nodeResultNote_,"editorNodeResultsNote","editorResultsTabNodes")->addWidget(nodeResultTable_,1); // S0.6
-    macro_=std::make_unique<MacroPanel>();auto* macroBox=tab(macro_->note,"editorMacroNote","editorResultsTabMacro");
-    buildMacro(localBar(macroBox,"editorMacroToolbar"),macroBox);
-    meso_=std::make_unique<MesoPanel>();auto* mesoBox=tab(meso_->note,"editorMesoNote","editorResultsTabMeso");
-    buildMeso(localBar(mesoBox,"editorMesoToolbar"),mesoBox);
+    macro_=std::make_unique<MacroPanel>(objectTabContext(),MacroHooks{[this]()->const std::string&{return projectSha();},[this]{return macroSideStale();},
+        [this]{error_->clear();},[this]{refreshRun();},[this]{
+            writeMacroSide();objects_->setCurrentWidget(resultsPage_);resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMacro"));refreshRun();}});
+    auto* macroBox=tab(macro_->note,"editorMacroNote","editorResultsTabMacro");
+    macro_->build(localBar(macroBox,"editorMacroToolbar"),macroBox); // D524
+    meso_=std::make_unique<MesoPanel>(objectTabContext(),MesoHooks{[this]()->const std::string&{return projectSha();},[this]{return mesoSideStale();},
+        [this]{error_->clear();},[this]{refreshRun();},[this](const std::vector<std::string>& watched){
+            writeMesoSide(watched);objects_->setCurrentWidget(resultsPage_);resultsTabs_->setCurrentWidget(resultPages_.at("editorResultsTabMeso"));refreshRun();}});
+    auto* mesoBox=tab(meso_->note,"editorMesoNote","editorResultsTabMeso");
+    meso_->build(localBar(mesoBox,"editorMesoToolbar"),mesoBox); // D524
     auto* analysis=new NodeAnalysisPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
         [this]{return history_.generation();},[this]{return file_;},data_,[this](const char* key){return text(key);},
-        [this]{return NodeAnalysisMicroBatchView{batch_?&batch_->report:nullptr,batch_&&!batch_->runs.empty()?&batch_->runs.front().report:nullptr,batchGeneration_};},
+        [this]{return NodeAnalysisMicroBatchView{batch_?&batch_->report:nullptr,batch_&&!batch_->runs.empty()?&batch_->runs.front().report:nullptr,batchSession_->generation};},
         [this]{refreshRun();}});
     resultPages_.emplace("editorResultsTabNodeAnalysis",analysis);resultsTabs_->addTab(analysis,{});
     // M10.2 G2 (TRIP_GENERATION §8, D471): self-owned like Node analysis; the window lends History and file dialogs.
@@ -166,6 +178,16 @@ void EditorWindow::buildResults() {
         [this]{return history_.generation();},data_,[this](const char* key){return text(key);},
         [this](const char* name,std::function<void(ProjectDocument&)> change){return execute(name,change);},{},[this]{refreshRun();}});
     resultPages_.emplace("editorResultsTabProcedure",procedure);resultsTabs_->addTab(procedure,{});
+    // DYNAMIC_ASSIGNMENT §17 (D552): the same context; Apply is the page's only History step.
+    auto* dynamic=new DynamicAssignmentPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
+        [this]{return history_.generation();},data_,[this](const char* key){return text(key);},
+        [this](const char* name,std::function<void(ProjectDocument&)> change){return execute(name,change);},
+        {{},[this](const QString& name){return QFileDialog::getSaveFileName(this,text("editorDynamicSave"),name,"JSON (*.json)");}},[this]{refreshRun();}});
+    resultPages_.emplace("editorResultsTabDynamic",dynamic);resultsTabs_->addTab(dynamic,{});
+    // SUBAREA_CONSISTENCY §13 (D554): the same context and the side files; its run never changes the document.
+    auto* consistency=new ConsistencyPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
+        [this]{return history_.generation();},data_,[this](const char* key){return text(key);},{},{},[this]{refreshRun();}},[this]{return studyAreaSources();});
+    resultPages_.emplace("editorResultsTabConsistency",consistency);resultsTabs_->addTab(consistency,{});
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -190,6 +212,8 @@ void EditorWindow::translateResults() {
     static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->translate();
     static_cast<ModeChoicePanel*>(resultPages_.at("editorResultsTabModeChoice"))->translate();
     static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->translate();
+    static_cast<DynamicAssignmentPanel*>(resultPages_.at("editorResultsTabDynamic"))->translate();
+    static_cast<ConsistencyPanel*>(resultPages_.at("editorResultsTabConsistency"))->translate();
     lotTable_->setHorizontalHeaderLabels({text("editorLotColumn"),text("editorLotCapacity"),text("editorLotOccupancyMean"),
         text("editorLotOccupancyPeak"),text("editorLotOccupancyEnd"),text("editorLotAdmitted"),text("editorLotDeparted"),
         text("editorLotWaitMean"),text("editorLotWaitMax"),text("editorLotWaitedOverTick")});
@@ -209,6 +233,8 @@ void EditorWindow::refreshResults() {
         std::set<std::string> withoutData;
         if(history_.document().zones.parkingLots.empty())withoutData.insert("editorResultsTabLots");
         if(history_.document().network.nodes.empty())withoutData.insert("editorResultsTabNodes");
+        if(!history_.document().definition||history_.document().definition->routingDecisions.empty())withoutData.insert("editorResultsTabDynamic"); // D552
+        if(const auto& a=history_.document().zones.studyArea;a.nodes.empty()||a.flowSource=="meso")withoutData.insert("editorResultsTabConsistency"); // D554
         applyResultsLevel(resultsTabs_,resultPages_,withoutData);
     }
     if(!resultsPage_->isVisible())return;
@@ -219,6 +245,8 @@ void EditorWindow::refreshResults() {
     static_cast<TripDistributionPanel*>(resultPages_.at("editorResultsTabTripDistribution"))->refresh();
     static_cast<ModeChoicePanel*>(resultPages_.at("editorResultsTabModeChoice"))->refresh();
     static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->refresh();
+    static_cast<DynamicAssignmentPanel*>(resultPages_.at("editorResultsTabDynamic"))->refresh();
+    static_cast<ConsistencyPanel*>(resultPages_.at("editorResultsTabConsistency"))->refresh();
     refreshBatch(); // M5.6/M5.8b: a running or finished batch or comparison takes the single run's place
     if(batchShown())return;
     if(!movementTable_->isVisible())return;
@@ -257,16 +285,16 @@ void EditorWindow::refreshResults() {
 void EditorWindow::refreshDischarge() {
     if(!dischargeTable_->isVisible())return;
     dischargeTable_->setRowCount(0);
-    if(!runDischarge_){
-        dischargeNote_->setText(runDischargeError_.empty()?text("editorResultsEmpty")
-                                 :text("editorDischargeUnavailable").arg(text(runDischargeError_.c_str())));
+    if(!runSession_->discharge){
+        dischargeNote_->setText(runSession_->dischargeError.empty()?text("editorResultsEmpty")
+                                 :text("editorDischargeUnavailable").arg(text(runSession_->dischargeError.c_str())));
         return;
     }
     struct Head { std::string head,lane; int greens{},estimates{},startups{}; double headway{},rate{},startup{};
                   std::map<std::string,int> reasons; };
     std::vector<Head> heads;
-    DischargeSpec spec; spec.windowEnd=runState_.scenario->duration;
-    for(const auto& cycle:runDischarge_->report()){
+    DischargeSpec spec; spec.windowEnd=runSession_->state.scenario->duration;
+    for(const auto& cycle:runSession_->discharge->report()){
         auto at=std::find_if(heads.begin(),heads.end(),[&](const auto& h){return h.head==cycle.headId&&h.lane==cycle.laneId;});
         if(at==heads.end()){heads.push_back({cycle.headId,cycle.laneId});at=heads.end()-1;}
         const auto e=estimateDischarge(cycle,spec); ++at->greens;
@@ -291,16 +319,23 @@ void EditorWindow::refreshDischarge() {
 }
 void EditorWindow::refreshClamps() {
     if(!clampTable_->isVisible())return;
-    clampTable_->setRowCount(static_cast<int>(runClamps_.size()));
+    clampTable_->setRowCount(static_cast<int>(runSession_->clamps.size()));
     for(int r=0;r<clampTable_->rowCount();++r){
-        const auto& c=runClamps_[static_cast<std::size_t>(r)];
+        const auto& c=runSession_->clamps[static_cast<std::size_t>(r)];
         clampTable_->setItem(r,0,figure(c.time,1)); clampTable_->setItem(r,1,figure(double(c.vehicleId),0));
         clampTable_->setItem(r,2,new QTableWidgetItem(QString::fromStdString(c.typeId)));
         clampTable_->setItem(r,3,new QTableWidgetItem(QString::fromStdString(c.routeId)));
         clampTable_->setItem(r,4,new QTableWidgetItem(QString::fromStdString(c.segmentId)));
     }
-    clampNote_->setText(text("editorClampNote").arg(runClamps_.size()));
+    clampNote_->setText(text("editorClampNote").arg(runSession_->clamps.size()));
 }
+// D524: the Macro and Meso runs' state and functions are their panels'; these read it for Export, Copy and tests.
+bool EditorWindow::macroRunning() const { return macro_ && macro_->running; }
+const MacroRun* EditorWindow::macroResult() const { return macro_ && macro_->result ? &*macro_->result : nullptr; }
+bool EditorWindow::macroStale() const { return macro_ && macro_->stale(); }
+bool EditorWindow::mesoRunning() const { return meso_ && meso_->running; }
+const MesoRun* EditorWindow::mesoResult() const { return meso_ && meso_->result ? &*meso_->result : nullptr; }
+bool EditorWindow::mesoStale() const { return meso_ && meso_->stale(); }
 bool EditorWindow::macroTabShown() const {
     return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMacro");
 }
@@ -308,7 +343,7 @@ bool EditorWindow::mesoTabShown() const {
     return resultsTabs_ && resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabMeso");
 }
 bool EditorWindow::runFinished() const {
-    return runState_.scenario && runState_.tick>=totalTicks(*runState_.scenario);
+    return runSession_->state.scenario && runSession_->state.tick>=totalTicks(*runSession_->state.scenario);
 }
 std::string EditorWindow::resultsCsv() const {
     if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabNodeAnalysis"))
@@ -321,6 +356,10 @@ std::string EditorWindow::resultsCsv() const {
         return static_cast<ModeChoicePanel*>(resultPages_.at("editorResultsTabModeChoice"))->csv();
     if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabProcedure"))
         return static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->csv();
+    if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabDynamic"))
+        return static_cast<DynamicAssignmentPanel*>(resultPages_.at("editorResultsTabDynamic"))->csv();
+    if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabConsistency"))
+        return static_cast<ConsistencyPanel*>(resultPages_.at("editorResultsTabConsistency"))->csv(); // D554
     if(macroTabShown()){ // S2.4: the Macro tab exports its own CSV, the CLI's --macro --csv
         if(const auto* r=macroResult())return markedCsv(macroCsv(*r),exportMarking(history_.document(),{},macroStale())); // S5.5b
         throw std::runtime_error("EDIT_CSV_UNFINISHED");
@@ -341,7 +380,7 @@ std::string EditorWindow::singleRunCsv() const {
 }
 void EditorWindow::exportResults(const QString& file) const {
     const bool analytical=resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabNodeAnalysis");
-    checkExportDestination(file,{file_,recoveryFile_},analytical?"EDIT_ANALYSIS_EXPORT_PROTECTED":"EDIT_EXPORT_PROJECT");
+    checkExportDestination(file,{file_,recoverySession_->file},analytical?"EDIT_ANALYSIS_EXPORT_PROTECTED":"EDIT_EXPORT_PROJECT");
     writeEditorBytes(file,resultsCsv(),"EDIT_CSV_WRITE");
 }
 void EditorWindow::copyResults() const {

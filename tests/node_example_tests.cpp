@@ -37,7 +37,7 @@ TEST(nodeexample, every_lane_group_is_analysed_below_capacity) {
     CHECK(run.nodes.size() == 1);
     const auto& node = run.nodes[0];
     CHECK(node.advisories.empty() && node.los && node.delay && node.critical && node.approaches.size() == 4);
-    CHECK(node.groups.size() == 8); // per approach: the far-turn lane, and the lane through and kerb turn share
+    CHECK(node.groups.size() == 10); // major: pocket, through, through+kerb; minor: far-turn lane, through+kerb (D513)
     for (const auto& g : node.groups) CHECK(!g.issue && g.result && g.los && g.result->ratio < 1 && *g.los != 'F');
     for (const auto& a : node.approaches) CHECK(a.delay && a.los);
     // The counts are the demand: each approach's analysis volume is its input's, over the evaluation window.
@@ -59,8 +59,8 @@ TEST(nodeexample, each_movement_has_a_signalised_section_and_a_route) {
     }
     CHECK(movements.size() == 12);
     for (const auto& entry : t.entries) CHECK(std::count_if(movements.begin(), movements.end(), [&](const auto& m) { return m.first == entry; }) == 3);
-    // Every decision destination becomes a path: none is dropped from the routeless walk (the reason
-    // this example has no pocket), and nothing blocks a run.
+    // Every decision destination becomes a path, the far turn into the major's pocket included (D501,
+    // D513): none is dropped from the routeless walk, and nothing blocks a run.
     const auto issues = routelessIssues(d.network, *d.definition);
     CHECK(issues.blocking.empty() && issues.advisory.empty());
     const auto placed = placedDecisions(d.network, *d.definition);

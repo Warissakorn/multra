@@ -60,7 +60,7 @@ struct ProcedurePanel::Data {
     QComboBox* choice{};
     QPushButton *runButton{}, *cancelButton{}, *editButton{};
     QLabel* note{};
-    QTableWidget* table{};
+    QTableWidget *table{}, *iterations{};   // iterations: PROCEDURE_FEEDBACK §4 (D547), shown with feedback only
     std::optional<ProcedureRun> result;
     std::uint64_t resultGeneration{}, ticket{}, serial{}, shown{};
     std::vector<ValidationIssue> refusal;
@@ -93,6 +93,13 @@ ProcedurePanel::ProcedurePanel(QWidget* parent, TripGenerationContext context) :
     d_->table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     d_->table->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(d_->table, 1);
+    d_->iterations = new QTableWidget(0, 5, this); d_->iterations->setObjectName("editorProcedureIterations");
+    d_->iterations->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    d_->iterations->verticalHeader()->hide();
+    d_->iterations->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    d_->iterations->horizontalHeader()->setStretchLastSection(true);
+    d_->iterations->hide();
+    layout->addWidget(d_->iterations, 1);
     connect(d_->runButton, &QPushButton::clicked, this, [this] { run(); });
     connect(d_->cancelButton, &QPushButton::clicked, this, [this] { cancel(); });
     connect(d_->editButton, &QPushButton::clicked, this, [this] { editProcedures(); });
@@ -167,6 +174,12 @@ std::string ProcedurePanel::csv() const {
     for (const auto& s : r.steps)
         out << s.index + 1 << ',' << procedureStepKindName(s.kind) << ',' << procedureStepStatusName(s.status) << ','
             << csvQuoted(summary(s, text).toStdString()) << '\n';
+    if (r.feedback) { // D547: the iterations follow the steps, marked by their own header
+        const auto cell = [](const std::optional<double>& v) { return v ? std::to_string(*v) : std::string(); };
+        out << "iteration,weight,tmf,rse,assignmentGap\n";
+        for (const auto& it : r.feedback->iterations)
+            out << it.n << ',' << cell(it.weight) << ',' << cell(it.tmf) << ',' << cell(it.rse) << ',' << it.relativeGap << '\n';
+    }
     return markedCsv(out.str(), exportMarking(d_->context.document(), {}, stale()));
 }
 void ProcedurePanel::translate() {
@@ -176,6 +189,8 @@ void ProcedurePanel::translate() {
     d_->editButton->setText(text("editorProcedures"));
     d_->table->setHorizontalHeaderLabels({text("editorProcedureStep"), text("editorProcedureKind"), text("editorProcedureStatus"),
                                           text("editorProcedureSummary")});
+    d_->iterations->setHorizontalHeaderLabels({text("editorFeedbackIteration"), text("editorFeedbackWeight"), text("editorFeedbackTmf"),
+                                               text("editorFeedbackRse"), text("editorFeedbackGap")});
     ++d_->serial; // the kind and status cells are translated text
     refresh();
 }
@@ -202,6 +217,9 @@ void ProcedurePanel::refresh() {
     if (d_->valid()) {
         const auto& r = *d_->result;
         lines << text(r.cancelled ? "editorProcedureCancelled" : r.completed() ? "editorProcedureCompleted" : "editorProcedureStopped");
+        if (r.feedback)
+            lines << text(r.feedback->converged ? "editorProcedureFeedbackConverged" : "editorProcedureFeedbackLimit")
+                         .arg(r.feedback->iterations.size());
         if (stale()) lines << text("editorTripStale").arg(r.revision).arg(doc.revision);
     }
     d_->note->setText(lines.join(" "));
@@ -209,7 +227,19 @@ void ProcedurePanel::refresh() {
     d_->shown = d_->serial;
     auto* table = d_->table;
     table->setRowCount(0);
+    d_->iterations->setRowCount(0);
+    d_->iterations->setVisible(d_->valid() && d_->result->feedback.has_value());
     if (!d_->valid()) return;
+    if (const auto& f = d_->result->feedback)
+        for (const auto& it : f->iterations) {
+            const int row = d_->iterations->rowCount(); d_->iterations->insertRow(row);
+            const auto cell = [](const std::optional<double>& v, int digits) { return v ? editorDesign::formatValue(*v, digits) : QString("—"); };
+            d_->iterations->setItem(row, 0, new QTableWidgetItem(QString::number(it.n)));
+            d_->iterations->setItem(row, 1, new QTableWidgetItem(cell(it.weight, 3)));
+            d_->iterations->setItem(row, 2, new QTableWidgetItem(cell(it.tmf, 2)));
+            d_->iterations->setItem(row, 3, new QTableWidgetItem(cell(it.rse, 2)));
+            d_->iterations->setItem(row, 4, new QTableWidgetItem(editorDesign::formatValue(it.relativeGap * 100, 4)));
+        }
     for (const auto& s : d_->result->steps) {
         const int row = table->rowCount(); table->insertRow(row);
         table->setItem(row, 0, new QTableWidgetItem(QString::number(s.index + 1)));

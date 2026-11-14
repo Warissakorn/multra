@@ -1,0 +1,161 @@
+#include "table_layout.hpp"
+#include "cross_sections_panel.hpp"
+#include "../editor/ui_design_tokens.hpp"
+#include "../commands/street_segment_commands.hpp"
+#include "../project/link_type_codec.hpp"
+#include <QAction>
+#include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QDoubleSpinBox>
+#include <QFormLayout>
+#include <QHeaderView>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QSignalBlocker>
+#include <QSpinBox>
+#include <QTableWidget>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <algorithm>
+
+// S3.3b (D307, docs/reference/STREET_SEGMENTS.md §16): the Cross-sections tab, its own panel since D521. Installed templates
+// (data/cross-sections/; none ship, B12) are listed read-only until the first Add owns them, as on the
+// Link types tab; each change is one History step and a template a StreetSegment names cannot be deleted.
+namespace multra {
+namespace {
+bool ownsCrossSections(const ProjectDocument& d) { return d.definition && !d.definition->externalCrossSections; }
+}
+CrossSectionsPanel::CrossSectionsPanel(QWidget* parent, ObjectTabContext context, std::function<std::vector<CrossSection>()> rows)
+    : ObjectTabPanel(parent, std::move(context)), rows_(std::move(rows)) {
+    auto* body = this; auto* layout = new QVBoxLayout(body);
+    layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
+    auto* bar = new QToolBar(body); layout->addWidget(bar);
+    tab_.table = new QTableWidget(0, 8, body); tab_.table->setObjectName("editorCrossSectionTable");
+    tab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    tab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    tab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
+    tab_.table->horizontalHeader()->setStretchLastSection(true); tab_.table->verticalHeader()->hide();
+    layout->addWidget(tab_.table);
+    bar->addAction(action("editorAddCrossSection", [this] { edit({}); }));
+    bar->addAction(action("editorEditCrossSection", [this] { const auto id = selected(); if (!id.empty()) edit(id); }));
+    bar->addAction(action("editorDeleteCrossSection", [this] {
+        const auto id = selected(); if (id.empty()) return;
+        context_.execute("editorDeleteCrossSection", [&](auto& d) { deleteCrossSection(d, id); });
+    }));
+    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
+        const auto id = selected(); if (!id.empty() && ownsCrossSections(context_.document())) edit(id);
+    });
+    connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
+}
+void CrossSectionsPanel::translate() {
+    tab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorCrossSectionDirections"),
+        text("editorStreetSegmentLanes"), text("editorStreetSegmentLaneWidth"), text("editorStreetSegmentMedian"), text("editorLinkType"), text("editorLinkTypeSource")});
+    tab_.invalidate();
+}
+std::string CrossSectionsPanel::selected() const {
+    const auto* cell = tab_.table->item(tab_.table->currentRow(), 0);
+    return cell && !tab_.table->selectedItems().isEmpty() ? cell->data(Qt::UserRole).toString().toStdString() : std::string{};
+}
+void CrossSectionsPanel::refresh() {
+    if (tab_.revision != context_.revision()) {
+        const auto rows = rows_();
+        const auto keep = selected();
+        const QSignalBlocker block(tab_.table);
+        tab_.table->setRowCount(static_cast<int>(rows.size()));
+        for (int r = 0; r < tab_.table->rowCount(); ++r) {
+            const auto& s = rows[static_cast<std::size_t>(r)];
+            const QStringList values{QString::fromStdString(s.id), QString::fromStdString(s.name), QString::number(s.directions),
+                s.directions == 2 ? QStringLiteral("%1 + %2").arg(s.lanesForward).arg(s.lanesBackward) : QString::number(s.lanesForward),
+                editorDesign::formatValue(s.laneWidth, 2), editorDesign::formatValue(s.median, 2),
+                QString::fromStdString(s.linkType.value_or("")), QString::fromStdString(s.source)};
+            for (int col = 0; col < values.size(); ++col) {
+                auto* cell = new QTableWidgetItem(values[col]); cell->setData(Qt::UserRole, QString::fromStdString(s.id));
+                if (col >= 2 && col <= 5) editorDesign::setNumericText(cell, true);
+                tab_.table->setItem(r, col, cell);
+            }
+            if (s.id == keep) tab_.table->selectRow(r);
+        }
+        fitTableColumns(tab_.table);
+        tab_.revision = context_.revision();
+    }
+    const bool chosen = !selected().empty() && ownsCrossSections(context_.document());
+    for (const auto* key : {"editorEditCrossSection", "editorDeleteCrossSection"}) actions_.at(key)->setEnabled(chosen);
+}
+void CrossSectionsPanel::edit(const std::string& id) {
+    const auto& d = context_.document();
+    const auto installed = rows_();
+    CrossSection value{"", "", 2, 1, 1, 3.5, {}, 0, std::nullopt, "", std::nullopt};
+    if (!id.empty()) {
+        if (!ownsCrossSections(d)) return;
+        const auto found = std::find_if(installed.begin(), installed.end(), [&](const auto& s) { return s.id == id; });
+        if (found == installed.end()) return;
+        value = *found;
+    }
+    QDialog dialog(this); dialog.setObjectName("editorCrossSectionDialog");
+    dialog.setWindowTitle(text(id.empty() ? "editorAddCrossSection" : "editorEditCrossSection"));
+    auto* form = new QFormLayout(&dialog);
+    form->setContentsMargins(editorDesign::space3, editorDesign::space3, editorDesign::space3, editorDesign::space3);
+    auto* name = new QLineEdit(QString::fromStdString(value.name), &dialog); name->setObjectName("editorCrossSectionName");
+    auto* directions = new QComboBox(&dialog); directions->setObjectName("editorCrossSectionDirections");
+    directions->addItem(text("editorCrossSectionOneWay"), 1); directions->addItem(text("editorCrossSectionTwoWay"), 2);
+    directions->setCurrentIndex(value.directions == 2 ? 1 : 0);
+    const auto count = [&](const char* object, int low, int number) {
+        auto* box = new QSpinBox(&dialog); box->setObjectName(object); box->setRange(low, 12); box->setValue(number); return box;
+    };
+    auto* forward = count("editorCrossSectionLanesForward", 1, value.lanesForward);
+    auto* backward = count("editorCrossSectionLanesBackward", 1, std::max(1, value.lanesBackward));
+    auto* width = new QDoubleSpinBox(&dialog); width->setObjectName("editorCrossSectionLaneWidth");
+    width->setRange(0.5, 10); width->setDecimals(2); width->setSingleStep(0.25); width->setSuffix(" m"); width->setValue(value.laneWidth);
+    auto* median = new QDoubleSpinBox(&dialog); median->setObjectName("editorCrossSectionMedian");
+    median->setRange(0, 100); median->setDecimals(2); median->setSingleStep(0.5); median->setSuffix(" m"); median->setValue(value.median);
+    auto* type = new QComboBox(&dialog); type->setObjectName("editorCrossSectionLinkType");
+    type->addItem(text("editorLinkTypeNone"), QString());
+    try {
+        for (const auto& t : resolveLinkTypes(d.definition.value_or(AuthoringDefinition{}), context_.data))
+            type->addItem(QString::fromStdString(t.type.name.empty() ? t.type.id : t.type.name + " (" + t.type.id + ")"), QString::fromStdString(t.type.id));
+    } catch (const std::exception&) {}
+    const auto currentType = QString::fromStdString(value.linkType.value_or(""));
+    if (type->findData(currentType) < 0) type->addItem(currentType + " " + text("editorBehaviourMissing"), currentType);
+    type->setCurrentIndex(type->findData(currentType));
+    // J1 (D390): the posted speed copied onto generated Links; 0 shows "(none)" and leaves theirs alone.
+    auto* speed = new QDoubleSpinBox(&dialog); speed->setObjectName("editorCrossSectionSpeed");
+    speed->setRange(0, 200); speed->setDecimals(1); speed->setSingleStep(5); speed->setSuffix(" km/h");
+    speed->setSpecialValueText(text("editorLinkTypeNone")); speed->setValue(value.speedLimit.value_or(0));
+    auto* source = new QLineEdit(QString::fromStdString(value.source), &dialog); source->setObjectName("editorCrossSectionSource");
+    backward->setEnabled(value.directions == 2);
+    connect(directions, &QComboBox::currentIndexChanged, &dialog, [=](int index) { backward->setEnabled(index == 1); });
+    form->addRow(text("editorColumnName"), name); form->addRow(text("editorCrossSectionDirections"), directions);
+    form->addRow(text("editorStreetSegmentLanesForward"), forward); form->addRow(text("editorStreetSegmentLanesBackward"), backward);
+    form->addRow(text("editorStreetSegmentLaneWidth"), width); form->addRow(text("editorStreetSegmentMedian"), median);
+    form->addRow(text("editorLinkType"), type); form->addRow(text("editorLinkSpeed"), speed);
+    form->addRow(text("editorLinkTypeSource"), source);
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));
+    buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
+    form->addRow(buttons);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    if (dialog.exec() != QDialog::Accepted) return;
+    const auto before = value;
+    value.name = name->text().toStdString();
+    value.directions = directions->currentData().toInt();
+    value.lanesForward = forward->value();
+    value.lanesBackward = value.directions == 2 ? backward->value() : 0;
+    if (width->value() != before.laneWidth) value.laneWidth = width->value(); // untouched keeps the stored metres
+    if (median->value() != before.median) value.median = median->value();
+    // Per-lane widths are kept only while the lanes and the uniform width are unchanged.
+    if (value.lanesForward != before.lanesForward || value.lanesBackward != before.lanesBackward || value.laneWidth != before.laneWidth)
+        value.laneWidths.clear();
+    const auto chosen = type->currentData().toString().toStdString();
+    value.linkType = chosen.empty() ? std::nullopt : std::optional(chosen);
+    if (speed->value() != before.speedLimit.value_or(0)) value.speedLimit = speed->value() > 0 ? std::optional(speed->value()) : std::nullopt;
+    value.source = source->text().toStdString();
+    std::string created;
+    if (context_.execute(id.empty() ? "editorAddCrossSection" : "editorEditCrossSection", [&](auto& doc) { created = putCrossSection(doc, value, installed); })) {
+        context_.show(this);
+        for (int r = 0; r < tab_.table->rowCount(); ++r)
+            if (tab_.table->item(r, 0)->data(Qt::UserRole).toString().toStdString() == created) tab_.table->selectRow(r);
+    }
+}
+}

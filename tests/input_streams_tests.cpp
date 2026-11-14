@@ -1,7 +1,8 @@
-// INPUT_STREAMS §6 rows IS1-IS7 (D496, D505): under `perInput` each input and lot draws from its own
+// INPUT_STREAMS §6 rows IS1-IS7 and IS10-IS11 (D496, D505, D512): under `perInput` each input and lot draws from its own
 // stream and a routing draw is hashed, so an edit to one object leaves every other one's draws alone.
 // Each perInput row runs the same check under `shared` and expects it to fail: that is its forcing.
 #include "test.hpp"
+#include "../src/core/w74.hpp"
 #include "../src/project/evaluation.hpp"
 #include "../src/project/parallel_seeds.hpp"
 #include "../src/project/run.hpp"
@@ -173,4 +174,66 @@ TEST(inputstreams, is7_replay_is_exact_and_threads_change_nothing) {
     CHECK(runSeedsParallel(snapshot.scenario, spec, seeds, {}, 4) == inline_);
     auto shared = snapshot.scenario; shared.randomStreams = RandomStreams::shared;
     CHECK(!(runSeedsParallel(shared, spec, seeds, {}, 1) == inline_)); // the switch is really on
+}
+namespace {
+// twoRoads with an unused w74 behaviour (as w74traits' fixture), so every vehicle carries traits.
+Scenario withTraits(Scenario s) {
+    DriverBehaviour w74{"w74"}; w74.w74 = W74Parameters{2, 2, 1, 2, .5, 16, 4, .5, .5, 20, 1, 1, 3, .25, .5, -1, .5, .25};
+    s.behaviours.push_back(w74);
+    return s;
+}
+// Input `input`'s vehicles in scheduled order, each with its W74 traits, read before insertion.
+std::vector<std::pair<double, W74Traits>> traitsOf(const Scenario& s) {
+    auto state = createSimulation(s, 42);
+    std::map<std::uint64_t, std::pair<double, W74Traits>> seen;
+    while (state.tick < totalTicks(s)) {
+        for (const auto& v : upcomingArrivals(state))
+            if (v.inputIndex != PendingVehicle::kNoInput && state.scenario->inputs[v.inputIndex].id == "input" && v.w74Traits)
+                seen.emplace(v.id, std::pair{v.scheduledTime, *v.w74Traits});
+        state = stepSimulation(std::move(state));
+    }
+    std::vector<std::pair<double, W74Traits>> result;
+    for (const auto& [id, t] : seen) result.push_back(t);
+    std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+    return result;
+}
+// A head 100 m along `road`, red 15 s then green 15 s, and half the drivers runners for 3 s.
+Scenario withRunners(Scenario s) {
+    s.signalPrograms = {{"p", 0, {{15, SignalColor::red}, {15, SignalColor::green}}}};
+    s.signalHeads = {{"h", "road", 100, "p"}};
+    for (auto& b : s.behaviours) { b.redRunningShare = 0.5; b.redRunningTime = 3; }
+    return s;
+}
+// The scheduled times of the vehicles on `road` that ran the red.
+std::vector<double> runnersOf(const Scenario& s) {
+    auto state = createSimulation(s, 42);
+    std::vector<double> runners;
+    while (state.tick < totalTicks(s)) {
+        state = stepSimulation(std::move(state));
+        for (const auto& e : state.events)
+            if (const auto* r = std::get_if<RedRunningEvent>(&e))
+                for (const auto& v : state.vehicles) if (v.id == r->vehicleId) runners.push_back(v.scheduledTime);
+    }
+    std::sort(runners.begin(), runners.end());
+    return runners;
+}
+}
+TEST(inputstreams, is10_an_added_input_leaves_the_others_w74_traits_alone) {
+    for (const auto streams : {RandomStreams::perInput, RandomStreams::shared}) {
+        const auto base = traitsOf(withTraits(twoRoads(streams)));
+        const auto added = traitsOf(withTraits(withSide(twoRoads(streams), 600)));
+        CHECK(base.size() > 30);
+        CHECK((base == added) == (streams == RandomStreams::perInput));
+    }
+    // A vehicle with no origin key (shared, or placed by hand) keeps hashing on its id, to the bit.
+    CHECK(detail::traitIdentity(7, 0, 3) == 7);
+    CHECK(detail::traitIdentity(7, detail::streamKey(detail::kInputStream, "input"), 3) != 7);
+}
+TEST(inputstreams, is11_an_added_input_leaves_the_others_red_runners_alone) {
+    for (const auto streams : {RandomStreams::perInput, RandomStreams::shared}) {
+        const auto base = runnersOf(withRunners(twoRoads(streams)));
+        const auto added = runnersOf(withRunners(withSide(twoRoads(streams), 600)));
+        CHECK(base.size() >= 3); // the head really is run
+        CHECK((base == added) == (streams == RandomStreams::perInput));
+    }
 }

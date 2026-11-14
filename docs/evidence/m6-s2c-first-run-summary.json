@@ -1,0 +1,181 @@
+{
+  "band": 0.15,
+  "cycle": 60.6,
+  "declaredSaturation": 1900.0,
+  "green": 30.3,
+  "label": "M6 S2-c (D538); a comparison, not a calibration",
+  "levels": [
+    {
+      "delta": {
+        "halfWidth95": 0.31021198949716305,
+        "mean": 11.824533307996715,
+        "n": 40,
+        "sd": 0.9607996516192623
+      },
+      "differencePercent": 7.716803364316016,
+      "flow": 475.0,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.25,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "reference": 10.977426862551974,
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.04692582937476324,
+        "mean": 22.7366555992447,
+        "n": 40,
+        "sd": 0.14534035447275898
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 0.30930716517492846,
+        "mean": 34.56118890724143,
+        "n": 40,
+        "sd": 0.9579971974169317
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 6.791067087513962,
+        "mean": 477.525,
+        "n": 40,
+        "sd": 21.033535494172522
+      },
+      "verdict": "pass",
+      "x": 0.5
+    },
+    {
+      "delta": {
+        "halfWidth95": 0.38258765224811025,
+        "mean": 14.133794118530224,
+        "n": 40,
+        "sd": 1.1849641388447287
+      },
+      "differencePercent": 4.742876006465679,
+      "flow": 665.0,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.35,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "reference": 13.493799919774743,
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.04484414996837467,
+        "mean": 23.039714544689296,
+        "n": 40,
+        "sd": 0.1388929026779939
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 0.3795273014949926,
+        "mean": 37.17350866321952,
+        "n": 40,
+        "sd": 1.1754855112062728
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 7.898380459500087,
+        "mean": 670.375,
+        "n": 40,
+        "sd": 24.463146012328686
+      },
+      "verdict": "pass",
+      "x": 0.7
+    },
+    {
+      "delta": {
+        "halfWidth95": 1.0193139802429514,
+        "mean": 19.785749527305253,
+        "n": 40,
+        "sd": 3.1570556595686567
+      },
+      "differencePercent": 1.082996506913858,
+      "flow": 807.5,
+      "inSlotBoundSeconds": 1.894736842105263,
+      "mu": 0.425,
+      "overloadedSeedsNone": [],
+      "overloadedSeedsSignal": [],
+      "reference": 19.573766321769014,
+      "seedsMissing": [],
+      "slotSeconds": 1.894736842105263,
+      "travelTimeNone": {
+        "halfWidth95": 0.04172219362266013,
+        "mean": 23.25919072914525,
+        "n": 40,
+        "sd": 0.12922346799819565
+      },
+      "travelTimeSignal": {
+        "halfWidth95": 1.0193911918416945,
+        "mean": 43.04494025645051,
+        "n": 40,
+        "sd": 3.1572948020895297
+      },
+      "unfinishedSignal": {
+        "halfWidth95": 0.0,
+        "mean": 0.0,
+        "n": 40,
+        "sd": 0.0
+      },
+      "vehiclesSignal": {
+        "halfWidth95": 9.242334998669339,
+        "mean": 814.575,
+        "n": 40,
+        "sd": 28.625690004000397
+      },
+      "verdict": "pass",
+      "x": 0.85
+    }
+  ],
+  "measuredSaturationS1": 1944.0,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81
+  ]
+}

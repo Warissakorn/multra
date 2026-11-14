@@ -21,6 +21,7 @@ ProcedureRun runProcedure(const ProjectDocument& d, const std::filesystem::path&
     const auto found = std::find_if(d.procedures.begin(), d.procedures.end(), [&](const auto& p) { return p.id == id; });
     if (found == d.procedures.end()) throw ValidationError({{"PROCEDURE_UNKNOWN", "procedures"}});
     const auto at = "procedures[" + std::to_string(found - d.procedures.begin()) + "]";
+    if (found->feedback) checkFeedbackSteps(*found, at + ".feedback"); // D547
     ProcedureRun run;
     run.procedure = *found; run.revision = d.revision;
     const auto& steps = run.procedure.steps;
@@ -66,20 +67,8 @@ ProcedureRun runProcedure(const ProjectDocument& d, const std::filesystem::path&
                 break;
             }
             case ProcedureStepKind::assignment: {
-                // §3.4: the nearest earlier mode choice's matrices replace the generated ones, in a copy only.
-                auto copy = d;
-                if (const auto c = nearest(k, ProcedureStepKind::modeChoice)) {
-                    auto& list = copy.zones.odMatrices;
-                    const auto& periods = run.steps[*c].modeChoice->periods;
-                    std::erase_if(list, [&](const auto& x) {
-                        return x.generatedBy == "mode-choice" &&
-                               std::any_of(periods.begin(), periods.end(), [&](const auto& p) { return p.id == x.periodId; });
-                    });
-                    for (auto& x : generatedOdMatrices(*run.steps[*c].modeChoice)) list.push_back(std::move(x));
-                }
-                const MacroObserver* macroObserver = observer ? &observer->macro : nullptr;
-                result.macro = s.macroRun ? runNamedMacro(copy, data, *s.macroRun, m, macroObserver)
-                                          : runMacro(copy, data, *s.period, m, macroObserver);
+                const auto c = nearest(k, ProcedureStepKind::modeChoice);
+                result.macro = assignProcedureStep(d, data, s, c ? &*run.steps[*c].modeChoice : nullptr, m, observer);
                 if (result.macro->assignment.cancelled) { result.macro.reset(); run.cancelled = true; }
                 break;
             }
@@ -94,6 +83,23 @@ ProcedureRun runProcedure(const ProjectDocument& d, const std::filesystem::path&
         if (run.cancelled) break;
         result.status = ProcedureStepStatus::done;
     }
+    if (run.procedure.feedback && run.completed()) iterateFeedback(run, d, data, manifest, observer); // D547
     return run;
+}
+MacroRun assignProcedureStep(const ProjectDocument& d, const std::filesystem::path& data, const ProcedureStep& s,
+                             const ModeChoiceRun* modeChoice, InputManifest* m, const ProcedureObserver* observer) {
+    // §3.4: the mode choice's matrices replace the generated ones of its periods, in a copy only.
+    auto copy = d;
+    if (modeChoice) {
+        auto& list = copy.zones.odMatrices;
+        const auto& periods = modeChoice->periods;
+        std::erase_if(list, [&](const auto& x) {
+            return x.generatedBy == "mode-choice" &&
+                   std::any_of(periods.begin(), periods.end(), [&](const auto& p) { return p.id == x.periodId; });
+        });
+        for (auto& x : generatedOdMatrices(*modeChoice)) list.push_back(std::move(x));
+    }
+    const MacroObserver* macroObserver = observer ? &observer->macro : nullptr;
+    return s.macroRun ? runNamedMacro(copy, data, *s.macroRun, m, macroObserver) : runMacro(copy, data, *s.period, m, macroObserver);
 }
 }
