@@ -10,13 +10,13 @@ namespace multra::networkCodec {
 enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
-    vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour };
+    vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
     routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix,
     compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu,
-    behaviours,behaviourModel,w74Model,integerToken };
+    behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};

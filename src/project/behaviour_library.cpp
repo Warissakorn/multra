@@ -256,7 +256,7 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
         const auto& classes = list(j, "vehicleClasses");
         for (std::size_t i = 0; i < classes.size(); ++i) {
             const auto& c = classes[i];
-            requireKnownFields(c, {"id", "name", "vehicleTypeIds"}, at("vehicleClasses", i));
+            networkCodec::knownFields(c, networkCodec::Object::vehicleClass, at("vehicleClasses", i), networkCodec::behaviourVersion); // D565
             d.vehicleClasses.push_back({text(c, "id"), text(c, "name", false), texts(c, "vehicleTypeIds")});
         }
     }
@@ -264,12 +264,12 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
         const auto& types = list(j, "linkBehaviourTypes");
         for (std::size_t i = 0; i < types.size(); ++i) {
             const auto& t = types[i]; const auto path = at("linkBehaviourTypes", i);
-            requireKnownFields(t, {"id", "name", "defaultBehaviourId", "overrides"}, path);
+            networkCodec::knownFields(t, networkCodec::Object::linkBehaviourType, path, networkCodec::behaviourVersion);
             LinkBehaviourType type{text(t, "id"), text(t, "name", false), text(t, "defaultBehaviourId", false), {}};
             if (t.contains("overrides")) {
                 const auto& overrides = list(t, "overrides");
                 for (std::size_t k = 0; k < overrides.size(); ++k) {
-                    requireKnownFields(overrides[k], {"classId", "behaviourId"}, path + at(".overrides", k));
+                    networkCodec::knownFields(overrides[k], networkCodec::Object::behaviourOverride, path + at(".overrides", k), networkCodec::behaviourVersion);
                     type.overrides.push_back({text(overrides[k], "classId"), text(overrides[k], "behaviourId")});
                 }
             }

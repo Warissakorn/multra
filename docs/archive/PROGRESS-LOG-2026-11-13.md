@@ -2,6 +2,12 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-13 — Logsum composite cost into distribution, G/D/MS/A (D548)
+
+- **D548** (owner: "ทำงานถัดไป", chose logsum feedback, then every recommended option): contract first ([MODE_CHOICE_LOGSUM](../reference/MODE_CHOICE_LOGSUM.md), Ortúzar §6.5.2), hand values before code (Example 6.3's C_B = 49.2298; a one-origin, two-destination table).
+- **L1:** `distributionCost: "logsum"` per mode-choice purpose at schema 76 (one shared negative coefficient); `logsum`/`compositeCost` in `src/macro/mode_choice`; `runModeChoice` checks Eq. 6.11 (β > λ refused) and re-runs the distribution on the composite; skim-pass balancing refusals are held until the set is known. LS1–LS8 pass against the hand values; the first test run's zone order was fixed in the test only.
+- **L2:** a per-purpose check box in the *Nests* dialog; `nested-logit-ui` covers LS9.
+
 ## 2026-11-13 — Procedure feedback: congested costs back into demand (D547)
 
 - **D547** (owner: "ทำงานถัดไป", chose M10 congested-cost feedback, then answered the contract's four choices with every recommended option): contract first ([PROCEDURE_FEEDBACK](../reference/PROCEDURE_FEEDBACK.md), Ortúzar §11.3; the CW formula checked on the p. 432 image), hand fixed point of Example 11.3 before code.

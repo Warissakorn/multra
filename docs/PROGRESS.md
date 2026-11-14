@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Vehicle classes and link behaviour types in the schema (D565)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D564's NEXT proposed these catalogs.
+- **D565:** both `false` below 21 and closed rows from it (class: `id`, `vehicleTypeIds`; link type: `id`, optional `name`/`defaultBehaviourId`/`overrides` of `{classId, behaviourId}`). `parseBehaviourLibrary`'s three `requireKnownFields` lists became `networkCodec::knownFields` on the tables; `requireKnownFields` had no other caller and is removed. The `text()` sentences stay (a null name is `Expected text: name`). Pins (BC1) passed on the unchanged reader first.
+- **One-off `jsonschema`:** 3,040 labels, a round-trip and all 18 projects agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1659/1659, group `project` 87/87); `check_no_pch.py` on the changed units 5/5. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — Behaviour schema slice B2: floors and closure (D564)
 
 - **Pick:** the owner asked for the next work ("ทำงานถัดไป"); NEXT's B2.
@@ -106,9 +113,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **A1:** `src/project/dynamic_assignment.*` (`iterateMsa` behind a cost provider, `allOrNothing`, `msaStep`, `msaDelta`); group `dynassign` passes DA1–DA3 against that table to 1e-9.
 - **A2:** amendments recorded before code (§11: unplaced decisions only, placed ones refused until A2b; cost = departure to arrival; free-flow fill by authored route length over the mean desired speed); measurement, the `MultraRouteCosts` codec and `--route-costs`; group `dynassignrun` passes DA4–DA6 and DA9.
 - **A3:** fixture (§13) fixed before running; the first run showed the 1 : 1 start already inside the gap (δ 0.027) and the 5 % cost criterion inconsistent with δ, so §13.1 amends both openly (start 19 : 1; δ alone). `runDynamicAssignment`, `--dynamic-assignment`, `fixture::twoRoute()`; δ 0.810 → 0.0108, converged at n = 2 with 0.475 / 0.525 at 70.2 / 68.7 s. Group `dynassignloop` passes DA7–DA8; two CLI runs `cmp`-identical.
-
-## 2026-11-13 — Logsum composite cost into distribution, G/D/MS/A (D548)
-
-- **D548** (owner: "ทำงานถัดไป", chose logsum feedback, then every recommended option): contract first ([MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md), Ortúzar §6.5.2), hand values before code (Example 6.3's C_B = 49.2298; a one-origin, two-destination table).
-- **L1:** `distributionCost: "logsum"` per mode-choice purpose at schema 76 (one shared negative coefficient); `logsum`/`compositeCost` in `src/macro/mode_choice`; `runModeChoice` checks Eq. 6.11 (β > λ refused) and re-runs the distribution on the composite; skim-pass balancing refusals are held until the set is known. LS1–LS8 pass against the hand values; the first test run's zone order was fixed in the test only.
-- **L2:** a per-purpose check box in the *Nests* dialog; `nested-logit-ui` covers LS9.

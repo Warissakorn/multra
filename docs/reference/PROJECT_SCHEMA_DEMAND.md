@@ -257,3 +257,29 @@ in the old order, so the duplicate D563 noted is gone.
 | BH4 | On the unchanged reader: each of the 18 floored keys, null, is refused at `behaviours[0].<key>` one version below its floor; an unknown key is refused from 21 and kept out of the save below |
 | BH5 | Both rows closed exactly from 21; every floored key `false` exactly below its floor in both rows |
 | BH6 | 14,076 version- and model-dependent labels, a W74 writer round-trip and all 18 projects in the repository agree with the emitted schema (`jsonschema`, one-off) |
+
+## Vehicle-class and link-behaviour-type extension (D565)
+
+The composed CLI coverage adds `-behaviour-classes`; complete remains false. Both catalogs are read
+by `parseBehaviourLibrary` from 21 and refused below it, even null, at `definition.vehicleClasses`
+and `definition.linkBehaviourTypes` (`rejectBehaviourLibraryBefore21`); the schema gives each
+`false` below 21. From 21 a present value must be an array (null or another type is
+`EDIT_CATALOG_READ`).
+
+- A vehicle class requires text `id` and a `vehicleTypeIds` array of text; optional text `name`.
+- A link behaviour type requires text `id`; optional text `name` and `defaultBehaviourId`, and an
+  `overrides` array of rows that each require text `classId` and `behaviourId`.
+- All three rows are closed: an unknown key is `EDIT_UNSUPPORTED_FIELD` at `vehicleClasses[i].<key>`,
+  `linkBehaviourTypes[i].<key>` or `linkBehaviourTypes[i].overrides[k].<key>`.
+- Optional texts are contains-based: a null `name` is `Expected text: name` (the reader keeps its
+  own `text()` helper, whose sentence differs from `value()`'s `Field is null`).
+
+The key checks now use `networkCodec::knownFields` with the same tables, so `requireKnownFields`
+(its only callers) is removed. Reference resolution (known classes, behaviours, vehicle types)
+stays with the library validators.
+
+| Row | Check |
+|---|---|
+| BC1 | On the unchanged reader: both gates refuse null at their paths below 21; the three unknown-key paths; `Expected text: name` and `: vehicleTypeIds`; `EDIT_CATALOG_READ` for a null catalog; `Missing field: id` |
+| BC2 | Both catalogs `false` below 21; from 21 closed rows with `id` required, `vehicleTypeIds` required on a class, `classId`/`behaviourId` on an override |
+| BC3 | Every case labelled refused is refused by `parseDocument`; the 3,040 labels, a writer round-trip and all 18 projects agree with the emitted schema (`jsonschema`, one-off) |

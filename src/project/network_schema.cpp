@@ -55,6 +55,9 @@ class NetworkSchema {
             rule={{"type","string"},{"enum",version<w74ModelVersion?Json::array({kPrototypeBehaviourModel}):Json::array({kPrototypeBehaviourModel,kW74BehaviourModel})}};break;
         case Kind::w74Model:rule={{"type","string"},{"const",kW74BehaviourModel}};break;
         case Kind::integerToken:rule={{"type","integer"},{"x-multra-nativeType","integer-token"}};break;
+        case Kind::vehicleClasses:rule={{"type","array"},{"items",reference(Object::vehicleClass,version)}};break;
+        case Kind::linkBehaviourTypes:rule={{"type","array"},{"items",reference(Object::linkBehaviourType,version)}};break;
+        case Kind::behaviourOverrides:rule={{"type","array"},{"items",reference(Object::behaviourOverride,version)}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -196,6 +199,9 @@ public:
                 case Object::pcu:return "pcu";
                 case Object::behaviour:return "behaviour";
                 case Object::w74Behaviour:return "w74Behaviour";
+                case Object::vehicleClass:return "vehicleClass";
+                case Object::linkBehaviourType:return "linkBehaviourType";
+                case Object::behaviourOverride:return "behaviourOverride";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -207,8 +213,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type and per-model behaviour structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

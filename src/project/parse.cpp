@@ -92,9 +92,6 @@ Network parseNetwork(const Json& value, int schemaVersion) {
     network.travelTimeSections=networkCodec::readTravelTimeSections(value,schemaVersion);
     return network;
 }
-void requireKnownFields(const Json& value,std::initializer_list<const char*> keys,const std::string& path) {
-    knownFields(value,keys,path,21);
-}
 PriorityDefaults parsePriorityDefaults(const Json& value) {
     return {field<double>(value, "gapTime"), field<double>(value, "headway")};
 }

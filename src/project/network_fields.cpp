@@ -54,7 +54,8 @@ constexpr Field definitionFields[]={
     {"duration",Kind::number,true},{"timeStep",Kind::number,true},
     {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions},
     {"compositions",Kind::compositions},{"modes",Kind::modes,false,0,modeVersion},
-    {"vehicleTypes",Kind::vehicleTypes},{"behaviours",Kind::behaviours}};
+    {"vehicleTypes",Kind::vehicleTypes},{"behaviours",Kind::behaviours},
+    {"vehicleClasses",Kind::vehicleClasses,false,0,behaviourVersion},{"linkBehaviourTypes",Kind::linkBehaviourTypes,false,0,behaviourVersion}};
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -142,6 +143,11 @@ constexpr const char* prototypeRequired[]={"standstillDistance","additiveSafetyD
     "multiplicativeSafetyDistance","followingTime","speedThreshold"};
 constexpr const char* prototypeOptional[]={"discretionaryLaneChangeThreshold","acceptedDecelerationTrailingVehicle",
     "discretionaryLaneChangeHoldTime"};
+// D565: the M3.3.2 library rows (refused below 21, closed); their reader keeps its own text sentences.
+constexpr Field vehicleClassFields[]={{"id",Kind::text,true},{"name",Kind::text},{"vehicleTypeIds",Kind::texts,true}};
+constexpr Field linkBehaviourTypeFields[]={{"id",Kind::text,true},{"name",Kind::text},{"defaultBehaviourId",Kind::text},
+    {"overrides",Kind::behaviourOverrides}};
+constexpr Field behaviourOverrideFields[]={{"classId",Kind::text,true},{"behaviourId",Kind::text,true}};
 using B=DriverBehaviour;
 const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B::maxDecelerationCooperativeBraking,0,false},
     {"amberDeceleration",&B::amberDeceleration,amberVersion,false},
@@ -208,6 +214,9 @@ std::span<const Field> fields(Object object) {
     case Object::pcu:return pcuFields;
     case Object::behaviour:{static const auto row=behaviourRow(false);return row;}
     case Object::w74Behaviour:{static const auto row=behaviourRow(true);return row;}
+    case Object::vehicleClass:return vehicleClassFields;
+    case Object::linkBehaviourType:return linkBehaviourTypeFields;
+    case Object::behaviourOverride:return behaviourOverrideFields;
     }
     return {};
 }
@@ -220,7 +229,8 @@ bool allowsAdditionalFields(Object object,int version) {
     if(object==Object::signalController || object==Object::signalGroup || object==Object::routingDecision ||
        object==Object::routingRoute || object==Object::routingTypeRule || object==Object::composition ||
        object==Object::compositionShare || object==Object::compositionInterval || object==Object::mode ||
-       object==Object::axles || object==Object::pcu)return false;
+       object==Object::axles || object==Object::pcu || object==Object::vehicleClass ||
+       object==Object::linkBehaviourType || object==Object::behaviourOverride)return false;
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
     if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
@@ -271,6 +281,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
     case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:case Kind::modes:
     case Kind::vehicleTypes:case Kind::speedCurve:case Kind::behaviours:
+    case Kind::vehicleClasses:case Kind::linkBehaviourTypes:case Kind::behaviourOverrides:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:

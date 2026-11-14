@@ -206,12 +206,13 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Behaviours (the owner agreed, "เห็นด้วย", 2026-11-14):** the inventory is done (D561,
   [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-extension-d561-inventory-d563-b1-d564-b2)).
   **B1 and B2 done (D563, D564, BH1–BH6); B3 needed nothing.** Owned behaviours are fully mapped.
-- **Proposed next (this session's, not the owner's):** the remaining definition catalogs beside
-  behaviours, `vehicleClasses` and `linkBehaviourTypes` (both refused below 21, read in
-  `parseBehaviourLibrary` with `requireKnownFields`, small closed rows), then the zone layer
-  (`zone_codec.cpp`, root `zones`/`zoneConnectors`/`odMatrices`/`parkingLots`, whose
-  `odMatrices[i].modeId` D559 left codec-owned). Same method: inventory, pin on unchanged code,
-  map as read, one source for keys, `jsonschema` dump.
+- **Done (D565, BC1–BC3):** `vehicleClasses` and `linkBehaviourTypes`.
+- **Proposed next (this session's, not the owner's):** the zone layer (`zone_codec.cpp`: root
+  `zones`, `zoneConnectors`, `odMatrices`, `parkingLots`, optional from 31 with nonempty arrays
+  and exact keys; `odMatrices[i].modeId` refused below 49, D559; `generatedBy` from 70; a zone
+  connector's linkId **or** streetSegmentId/Direction, 57/59). These are root fields, so the
+  schema needs root properties beside `network`/`definition` in `compose()`'s per-version branch.
+  Same method: inventory, pin on the unchanged code, map as read, one key source, `jsonschema` dump.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.
