@@ -12,6 +12,7 @@
 #include "../src/project/macro_output.hpp"
 #include "four_step_cli.hpp"
 #include "dynamic_assignment_cli.hpp"
+#include "consistency_cli.hpp"
 #include "../src/project/meso_output.hpp"
 #include "../src/project/node_analysis_run.hpp"
 #include "../src/project/node_analysis_report.hpp"
@@ -234,6 +235,7 @@ int runUtdfExport(const std::filesystem::path& file, const std::filesystem::path
 }
 int main(int argc, char** argv) {
     try {
+        if (const auto code = consistencyCommand(argc, argv)) return *code; // M12 (D553)
         std::uint32_t seed = 42;
         std::filesystem::path data, scenarioFile, eventsFile, projectFile, csvFile, compareFile;
         std::optional<std::string> procedureId, macroPeriod, macroRunId, tripRateSet, utdfMode, tripDistribution, deterrenceSet, skimMode, costMatrix, modeChoice;
@@ -241,8 +243,7 @@ int main(int argc, char** argv) {
         std::filesystem::path utdfFile;
         bool meso = false, nodeAnalysis = false, utdfUnsignalised = false;
         std::optional<int> iterations; std::optional<double> gap; // --dynamic-assignment (D549)
-        bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false, priorityLines = false;
-        bool arrivalPhases = false, waitCauses = false;
+        bool seedSet = false, laneChanges = false, segmentTimes = false, stopLines = false, priorityLines = false, arrivalPhases = false, waitCauses = false;
         DischargeOptions discharge;
         double binWidth = 10;
         unsigned threads = 0; // --threads: 0 is one per hardware thread (D152)
@@ -280,7 +281,7 @@ int main(int argc, char** argv) {
                              "  id, or matrix:ID for a matrix with its own times.\n"
                              "--macro-run ID (with --project, alone) runs a saved Macro definition's period and settings.\n"
                              "--dynamic-assignment OUT [--meso] [--iterations N] [--gap G] (with --project) runs the M9/M11.5 MSA loop.\n"
-                             "--route-costs FILE (with --project, a single run or --seeds) uses a dynamic assignment's weights.\n"
+                             "--route-costs FILE (with --project, a single run or --seeds) uses a dynamic assignment's weights;\n--consistency-report OUT --project P [--seeds LIST] [--csv FILE] compares Macro, Meso and Micro on the study area.\n"
                              "--procedure ID (with --project, alone) runs a saved procedure's steps in order (JSON only).\n"
                              "--meso (with --project, alone) loads the whole run's demand on the Meso graph by the link\n"
                              "  transmission model and reports each link's flows, density, travel time and queue by slice (M11.4).\n"

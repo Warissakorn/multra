@@ -116,6 +116,7 @@ keeps its schema and bytes.
 | `study_area_run.*` | The document a Micro run over a study area compiles; never saved | [STUDY_AREA §4, §5](../../docs/reference/STUDY_AREA.md) |
 | `study_area_macro.*` | Gate flows cut from Macro's assignment | [STUDY_AREA §6](../../docs/reference/STUDY_AREA.md) |
 | `study_area_meso.*` | Gate flows cut from Meso's loading, with composition and single-type classes per slice | [STUDY_AREA §7](../../docs/reference/STUDY_AREA.md) |
+| `subarea_consistency.*` | M12 R1 (D553): `runMesoArea` (Meso on the study area's run-time copy), `consistencyReport` with Macro, Meso and Micro veh/h per gate and kept Link, Δ/%/GEH, JSON and CSV | [SUBAREA_CONSISTENCY](../../docs/reference/SUBAREA_CONSISTENCY.md) |
 | `side_files.*` | The `<project>.macro.json` and `<project>.meso.json` side files | [STUDY_AREA §8, §9](../../docs/reference/STUDY_AREA.md) |
 | `export_marking.*` | Program-drawn objects a study-area run rests on, and the marking every export carries | [STUDY_AREA §8, §10, §11](../../docs/reference/STUDY_AREA.md) |
 | `node_analysis_run.*` | M13: HCM on every Node that carries `analysis`; `node_analysis_output.cpp` writes the JSON and CSV | [NODE_ANALYSIS](../../docs/reference/NODE_ANALYSIS.md) |

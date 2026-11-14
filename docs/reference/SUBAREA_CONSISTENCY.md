@@ -170,3 +170,31 @@ Each row first asserts that its forcing worked (AGENTS).
 | SC5 | Micro column | Recomputed independently from the raw events of each seed; mean, sd and half-width equal the batch `Estimate` to 1e-9; the report twice gives the same bytes |
 | SC6 | Arithmetic | Δ, % and GEH on fixed numbers by hand (e.g. a = 400, b = 360: Δ −40, % −10, GEH 2.0520); a = 0 gives empty %, a = b = 0 empty GEH |
 | SC7 | CLI | A separate process writes JSON and CSV with the marker, exact hashes and the seeds; a project without a study area is refused with `CONSISTENCY_NO_STUDY_AREA`; a stale Macro side file shows in the marking |
+
+## 12. R1 as implemented (D553)
+
+- **Code:**
+  - `src/project/subarea_consistency.*`: `runMesoArea`, `compareVolumes`, `microVolumes`,
+    `consistencyReport`, `consistencyJson`, `consistencyCsv`;
+  - `tools/consistency_cli.*`: `--consistency-report`, handled before `run_simulation`'s own parsing;
+  - `estimate` (batch.cpp) is now public, so the report's `Estimate` is the batch's.
+- **`runMesoArea`** is a new function rather than an `area` argument on `runMeso`. `runMeso` is
+  untouched, so SC1 holds by construction and the test still checks it.
+- **Readings taken:**
+  - A Link's Macro value comes from `runMacro` on the original document for each period, not from
+    the side file. A fresh side file gives the same flows (SA13). A stale one shows in the marking.
+  - Rows come in cut order: entry gates, exit gates, kept Links. A zone inside the area is no
+    gate. The flow it originates shows on the Link rows, and its fed value is left out of the
+    gate rows.
+  - A `"meso"` source refuses the whole report with `MESO_AREA_SOURCE_SELF`.
+- **Observed on SC2–SC5's corridor** (area {A}, 600 veh/h west to east in 0–600 s, seeds 42–43):
+  - Macro is 600 on A's outbound leg.
+  - Meso is 592.7, inside the free-flow bound of 11.99 veh/h. All 100 trips entered.
+  - Micro averages 240.
+  - Micro is lower because A's major road runs north–south, so this movement gives way. Micro
+    discharged about 306 veh/h onto the west leg in the period, and the rest queued at the source.
+    Meso's Node ignores priority (`MESO_PRIORITY_IGNORED`).
+  - The report shows the difference as designed. Nothing was tuned.
+- **Rows:** all passed on their first run.
+  - SC1–SC6 are in group `consistency` (`tests/subarea_consistency_tests.cpp`).
+  - SC7 is `cli-consistency` (`tests/consistency_cli.cmake`, with its fixture and registration).

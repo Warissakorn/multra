@@ -12,6 +12,13 @@ void rejectDuplicates(std::vector<std::uint32_t> seeds) {
     std::sort(seeds.begin(), seeds.end());
     if (std::adjacent_find(seeds.begin(), seeds.end()) != seeds.end()) throw std::invalid_argument("duplicate seed in batch");
 }
+template<class F> Estimate over(const std::vector<SeedRun>& runs, F value) {
+    std::vector<std::optional<double>> values;
+    values.reserve(runs.size());
+    for (const auto& run : runs) values.push_back(value(run));
+    return estimate(values);
+}
+}
 Estimate estimate(const std::vector<std::optional<double>>& values) {
     Estimate e;
     e.perSeed = values;
@@ -26,13 +33,6 @@ Estimate estimate(const std::vector<std::optional<double>>& values) {
     e.sd = std::sqrt(squares / (n - 1));
     e.halfWidth95 = tQuantile975(e.n - 1) * *e.sd / std::sqrt(n);
     return e;
-}
-template<class F> Estimate over(const std::vector<SeedRun>& runs, F value) {
-    std::vector<std::optional<double>> values;
-    values.reserve(runs.size());
-    for (const auto& run : runs) values.push_back(value(run));
-    return estimate(values);
-}
 }
 double tQuantile975(std::size_t df) {
     static constexpr std::array<double, 30> table{

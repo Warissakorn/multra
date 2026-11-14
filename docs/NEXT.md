@@ -212,19 +212,18 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
 Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done (below); when the owner asks for an engine
-slice, M9 and M11.5 are done to their owner gates; M12's contract is written (D553) and R1 is next; the M11 gate waits on the book. Each starts with its contract. M13 is
+slice, M9 and M11.5 are done to their owner gates; M12 R1 is done (D553), R2 waits for the owner; the M11 gate waits on the book. Each starts with its contract. M13 is
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
 
-## M12 subarea workflow — contract written (D553); R1 next
+## M12 subarea workflow — R1 done (D553); stop for the owner
 
-- [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), rows SC1–SC7. Owner chose every recommended option: Meso
-  runs opt-in on the study area's run-time copy (`MESO_AREA_SOURCE_SELF` for a `"meso"` source); per study period,
-  every gate and kept Link gets Macro, Meso and Micro (seeds 42–46, `Estimate`) veh/h with Δ, % and GEH, no pass/fail.
-- **R1:** `runMeso`'s `area` argument, `src/project/subarea_consistency.*`, JSON/CSV, `--consistency-report`; rows
-  SC1–SC7. `tools/run_simulation.cpp` is at 499 lines: put the flag's handling in `tools/consistency_cli.*`.
-- **R2:** a Results page, amendment first. **O1:** confirm TAG M3.1's GEH paragraph and edition (owner's copy, or
-  the publisher's host allowed).
+- [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), rows SC1–SC7 pass first time. `runMesoArea` runs Meso on the
+  study area's run-time copy; `--consistency-report OUT --project P [--seeds] [--csv]` writes Macro, Meso and Micro
+  veh/h per gate and kept Link with Δ, % and GEH (no pass/fail). On the corridor fixture Micro reads 240 against
+  Macro 600 and Meso 593: the movement gives way in Micro, while Meso ignores priority inside a Node (§12).
+- **Next on the owner's pick:** R2, a Results page for the report (amendment first); **O1:** confirm TAG M3.1's GEH
+  paragraph and edition (owner's copy, or the publisher's host allowed for the session).
 
 ## M11.5 Meso assignment — S1 done (D550); stop for the owner
 
