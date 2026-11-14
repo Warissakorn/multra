@@ -206,8 +206,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Behaviours (the owner agreed, "เห็นด้วย", 2026-11-14):** the inventory is done (D561,
   [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-inventory-d561-before-code)).
   Next is **slice B1**: pin the reader's model-tag and row diagnostics on the unchanged code, then
-  the generator's two missing pieces (a per-model branch; version-dependent requiredness, since
-  `model` is required only from 21), then the per-model branch with keys generated from `w74ParameterKeys`, `perceptionParameterKeys` and
+  the generator's missing per-model branch (requiredness from a version already works through
+  `rejectBefore`), then the per-model branch with keys generated from `w74ParameterKeys`, `perceptionParameterKeys` and
   `lateralParameterKeys`, `parseBehaviourLibrary`'s `common[]` moved to the table, and a
   completeness test; the row stays open until B2. B2 and B3 follow as carved there. Prove each with
   codec-parity cases and a one-off `jsonschema` run (case labels, the nine projects, the installed file).

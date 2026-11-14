@@ -184,7 +184,9 @@ intervals stay with the catalog validators. `parseMode` takes its exact key list
 metadata and keeps its bare `EDIT_CATALOG_READ` (D559); `modeVersion` (49) is its document guard.
 `parseVehicleType` reads its scalars and axles through the metadata (D560); the type row's from-21
 key check in `parseBehaviourLibrary` uses the same table, and the curve/kerbLanes/pcu guards share
-`speedCurveVersion`, `kerbLanesVersion` and `modeVersion` with the schema.
+`speedCurveVersion`, `kerbLanesVersion` and `modeVersion` with the schema. `parseSpeedRange`
+(`speed_curve.cpp`) reads the bounds through the same metadata, and from 21 `desiredSpeed` and its
+curve points are checked against it too (D562).
 
 ## Tests
 

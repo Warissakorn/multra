@@ -205,8 +205,9 @@ guards (`behaviour_library.cpp`), and the key lists in `src/core/`. Nothing belo
   own behaviours, all prototype; no file in the repository carries a W74 row.
 - **Out of scope:** `vehicleClasses` and `linkBehaviourTypes` (refused below 21; separate rows).
 
-**Generator gap.** `network_schema.cpp` has neither a per-model branch nor a requiredness that
-depends on version (`model` is required only from 21; W74 rows only from 25). B1 adds both.
+**Generator gap.** `network_schema.cpp` has no per-model branch; B1 adds one (the `whenNonNull`
+`if`/`then` is the precedent). Requiredness from a version already works: a required field with
+`rejectBefore` is `false` and absent from `required` below its floor, required from it.
 
 **Slices** (what the schema newly refuses in each):
 - **B1:** `model` and `name` `false` below 21; from 21 `model` required, a prototype-only enum
