@@ -76,4 +76,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 
 [D560](RECORD.md#d560) — owned vehicle types join the composed schema: row open below 21 and closed from it, closed axles/pcu, open speed range, curve/kerbLanes/pcu gated at 40/42/49.
 
-[D561](RECORD.md#d561) — the behaviour reader inventoried before code: model tag, per-model rows, closure from 21, eleven floors; slices B1–B3.
+[D561](RECORD.md#d561) — the behaviour reader inventoried before code: model tag, per-model rows, closure from 21, ten floors; slices B1–B3.

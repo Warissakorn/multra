@@ -8,7 +8,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ## 2026-11-14 — Behaviour schema inventory, before code (D561)
 
 - **Pick:** the owner replied "เห็นด้วย" to D560's report; read as agreement with the proposed order (behaviours next), not as an answer to OWNER_SITTING 49, which stays open.
-- **D561 (docs only):** PROJECT_SCHEMA_DEMAND's behaviour inventory: the model tag (refused below 21, required from 21, `w74` refused below 25), the prototype and W74 rows and the keys each refuses, the both-model keys, closure from 21 by `common[]` plus the core lists, eleven presence floors, census (no W74 row anywhere in the repository). Slices B1–B3 carved; B1 is next.
+- **D561 (docs only):** PROJECT_SCHEMA_DEMAND's behaviour inventory: the model tag (refused below 21, required from 21, `w74` refused below 25), the prototype and W74 rows and the keys each refuses, the both-model keys, closure from 21 by `common[]` plus the core lists, ten presence floors, census (no W74 row anywhere in the repository). Slices B1–B3 carved; B1 is next.
 - **Item 49(b) reworded:** a refusal "from the next schema step" would cover almost nothing, since the writer picks a version from features; options (b1)–(b3) now state their effect.
 
 ## 2026-11-14 — Owned vehicle types in the composed project schema (D560)

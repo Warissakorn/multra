@@ -203,10 +203,17 @@ guards (`behaviour_library.cpp`), and the key lists in `src/core/`. Nothing belo
   own behaviours, all prototype; no file in the repository carries a W74 row.
 - **Out of scope:** `vehicleClasses` and `linkBehaviourTypes` (refused below 21; separate rows).
 
-**Slices.** B1: the common row and the model tag as a per-model branch (`if model` then the W74
-row, else the prototype), keys generated from the core lists rather than copied into
-`network_fields.cpp` (they stay `core/`'s; floors stay project-side), the `common[]` list replaced
-by the same table, a completeness test that every core and common key has a property in the
-latest row; the row open until B2 maps the rest. B2: the W74 row and the closed from-21 row with
-all floors. B3: perception's integer token and lateral, if not already in B2. Each slice pins the
+**Generator gap.** `network_schema.cpp` has neither a per-model branch nor a requiredness that
+depends on version (`model` is required only from 21; W74 rows only from 25). B1 adds both.
+
+**Slices** (what the schema newly refuses in each):
+- **B1:** `model` and `name` `false` below 21; from 21 `model` required, a prototype-only enum
+  21–24 and both values from 25; `if model == w74` selects the W74 branch, else the prototype.
+  Prototype branch: its five required numbers, its optional numbers, every W74 key `false`. W74
+  branch: the 18 W74 keys required, the eight prototype-only keys `false`. Keys come from the core
+  lists, not copies in `network_fields.cpp` (floors stay project-side); `common[]` moves to the
+  same table. Both branches stay open (`additionalProperties` true); a completeness test checks
+  every core and common key has a property in the latest branches.
+- **B2:** the ten floors (`false` below each) and both branches closed from 21.
+- **B3:** perception's integer token and the lateral numbers' types, if B2 left them unchecked. Each slice pins the
 reader first; the reader stays schema-only unless a pin shows identical diagnostics and values.
