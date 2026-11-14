@@ -84,6 +84,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [AMBER.md](AMBER.md) | Amber stop-or-go: the continuous check, `amberDeceleration`, M0 legacy and acceptance rows (M4.2) |
 | [VEHICLE_POSE.md](VEHICLE_POSE.md) | Vehicle pose — rear axle reference and continuous lane changes |
 | [PROJECT_SCHEMA.md](PROJECT_SCHEMA.md) | Project schema inventory and partial formal envelope/background/Network/Link/Lane/Connector/reference/SignalHead and signal/right-of-way control measurement and base Route/VehicleInput/RoutingDecision coverage, with version rules |
+| [PROJECT_SCHEMA_DEMAND.md](PROJECT_SCHEMA_DEMAND.md) | Demand rows of the composed project schema: Route/VehicleInput/intervals (D363), RoutingDecision (D364), owned compositions with type-share and interval rows (D558, CS1–CS4) |
 | [NETWORK_EDITOR.md](NETWORK_EDITOR.md) | Native network editor |
 | [NETWORK_EDITOR_CONNECTORS.md](NETWORK_EDITOR_CONNECTORS.md) | Native network editor — Connectors |
 | [CONNECTOR_FOUR_POINT_MOUTH.md](CONNECTOR_FOUR_POINT_MOUTH.md) | Centred Connector axis and four-point mouths |

@@ -194,21 +194,20 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
   remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
-## AI automation follow-up (D344–D350)
+## AI automation follow-up (D344–D350, D558)
 
-- Open automation work: an authoritative formal schema covering every optional/versioned
-  field remains separate from D350 observed-shape discovery plus codec dry validation.
-  Use [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) for root presence rules, codec owners
-  and save-version floors. Next: map project-owned Composition/type-share/interval rows,
-  preserving catalog presence/ownership, contains-based optionals and feature-selected save
-  floors 18/19 without inventing new read gates. Extend the composed partial schema only with
-  codec parity cases; keep type references, unique positive weights, valid time windows and
-  run-readiness in existing validators. Vehicle/behaviour catalogs and other optional-feature
-  fields remain codec-owned until mapped.
-  Never promote sample-derived hints to an authoritative contract.
-  Explicit batch/comparison/Macro/Meso identities/exports remain separate from single-run APIs.
-  Reuse existing validation,
-  History and GUI run timer; no generic job/session subsystem is booked yet.
+- An authoritative formal schema covering every optional/versioned field remains separate from D350
+  observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
+  floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
+- **Done (D558):** owned `definition.compositions` with type-share and interval rows (CS1–CS4).
+- **Next, same method:** owned `modes` (`mode_codec.cpp`, schema 49) — read the reader first, pin
+  its diagnostics with tests on the unchanged code, then move it onto `networkCodec` metadata and
+  add the schema rows; no new read gates. Then the vehicle-type and behaviour catalogs, each its
+  own slice (behaviours carry per-model parameter sets and many version floors: inventory first).
+  Prove each with codec-parity cases and a one-off `jsonschema` run over shipped and test projects.
+- Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
+  Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
+  History and GUI run timer; no generic job/session subsystem is booked.
 
 ## Order of level work (D378)
 

@@ -7,11 +7,12 @@
 namespace multra::networkCodec {
 enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
-    routingDecision,routingRoute,routingInterval,routingTypeRule };
+    routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
-    routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix };
+    routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix,
+    compositions,compositionShares,compositionIntervals };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};

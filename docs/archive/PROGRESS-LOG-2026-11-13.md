@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-13 — The engine's effective green, and the references at its own values (D541)
+
+- **D541** (owner: as recommended): contract first (M6_S2_RUN §8, rows S2E1–S2E4), then `tools/m6_s2_green.hpp` and mode `green` of `multra-m6-s2-run`. Every crossing per cycle is counted on the saturated S1 project, amber included.
+- **The run:** 40 seeds on build `db17252`.
+  - **Capacity** 913.0 veh/h against HCM's 844.4.
+  - **Effective green** 42.27 s against 40 s.
+  - **Lost time** 0.73 s against 3 s.
+  - **Amber crossings** about 1.6 per cycle.
+- **At the engine's own green and capacity:**
+  - HCM `d1 + d2` lies between −9.5 % and +13.1 % of its S2-b/S2-a delay.
+  - FCTL lies 6–8 % below it, the deceleration share.
+- **Reading:** the S2-b/S2-a miss is about capacity, not queueing. D539's verdicts stand. [m6-s2-green](../evidence/m6-s2-green.md).
+- **Verified on Linux:** `check` 335/335 (`m6s2` 15/15).
+
 ## 2026-11-13 — The arrival process at the line (D540)
 
 - **D540** (the owner asked for a recommendation): measure before changing anything; hold any S1 calibration until every kind has its first run.

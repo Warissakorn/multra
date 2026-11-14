@@ -186,21 +186,28 @@ VehicleType parseVehicleType(const Json& t) {
     }
     type.kerbLanes=parseKerbLanes(t); type.pcu=parsePcu(t); return type; // B-7 (D234); S1.2 (D270)
 }
+// D558: the rows read through the field metadata the composed schema is generated from. They are
+// closed at every file version (allowsAdditionalFields), so the version argument is not a gate.
 Composition parseComposition(const Json& c) {
-    knownFields(c,{"id","name","types","intervals"},"composition",19);
-    Composition composition{field<std::string>(c, "id"), {}};
-    if(c.contains("name"))composition.name=field<std::string>(c,"name");
-    for (const auto& t : array(c, "types")) {
-        knownFields(t,{"vehicleTypeId","share"},"composition.types",18);
-        composition.types.push_back({field<std::string>(t, "vehicleTypeId"), field<double>(t, "share")});
-    }
-    if(c.contains("intervals"))for(const auto& p:array(c,"intervals")) {
-        knownFields(p,{"startTime","endTime","types"},"composition.intervals",19);
-        CompositionInterval period{field<double>(p,"startTime"),field<double>(p,"endTime"),{}};
-        for(const auto& t:array(p,"types")) {
-            knownFields(t,{"vehicleTypeId","share"},"composition.intervals.types",19);
-            period.types.push_back({field<std::string>(t,"vehicleTypeId"),field<double>(t,"share")});
+    using networkCodec::Object;using networkCodec::value;
+    const auto shares=[](const Json& row,Object object,const std::string& path) {
+        std::vector<CompositionShare> result;
+        for(const auto& t:value(row,object,"types")) {
+            networkCodec::knownFields(t,Object::compositionShare,path,networkCodec::strictVersion);
+            result.push_back({value(t,Object::compositionShare,"vehicleTypeId").get<std::string>(),
+                value(t,Object::compositionShare,"share").get<double>()});
         }
+        return result;
+    };
+    networkCodec::knownFields(c,Object::composition,"composition",networkCodec::strictVersion);
+    Composition composition{value(c,Object::composition,"id").get<std::string>(),{}};
+    if(c.contains("name"))composition.name=value(c,Object::composition,"name").get<std::string>();
+    composition.types=shares(c,Object::composition,"composition.types");
+    if(c.contains("intervals"))for(const auto& p:value(c,Object::composition,"intervals")) {
+        networkCodec::knownFields(p,Object::compositionInterval,"composition.intervals",networkCodec::strictVersion);
+        CompositionInterval period{value(p,Object::compositionInterval,"startTime").get<double>(),
+            value(p,Object::compositionInterval,"endTime").get<double>(),{}};
+        period.types=shares(p,Object::compositionInterval,"composition.intervals.types");
         composition.intervals.push_back(std::move(period));
     }
     return composition;

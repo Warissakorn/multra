@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Owned compositions in the composed project schema (D558)
+
+- **Pick:** NEXT's AI-automation "Next" (map Composition/type-share/interval rows), the only open item not waiting on the owner.
+- **D558:** `networkCodec` gains composition, type-share and interval rows; `definition.compositions` is optional, never null; all three rows are closed at every version (the reader always was); no read gate (18/19 stay writer floors). `parseComposition` now reads through that metadata; its diagnostics were pinned by tests on the unchanged reader first (CS1). Coverage id ends `-compositions`.
+- **Docs:** PROJECT_SCHEMA.md was at the 500-line limit, so its D363/D364 sections and the new one moved to [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
+- **CS4 (one-off, Python `jsonschema` 4.26):** the 2 shipped and 7 test projects with owned compositions validate against the emitted schema; an interval row validates, unknown keys and null `name`/`intervals` are refused.
+- **Environment:** the session had no toolchain; the personal cloud environment now has a setup script installing BUILDING's apt line (unproven until a fresh session).
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1646/1646, group `project` 74/74); `check_no_pch.py` on the changed units 5/5. Windows not run (CI).
+
 ## 2026-11-14 — Windows CI fixed: a header leaned on the PCH
 
 - **Cause:** run 754 failed both Windows jobs (C2027 in the M6 run tools). Windows CI configures with `CMAKE_DISABLE_PRECOMPILE_HEADERS=ON`; on Linux the shared PCH supplied `<nlohmann/json.hpp>`, so `tools/m6_s1_summary.hpp` (Json used whole from line 138) compiled with only `json_fwd.hpp`. The last green Windows build was `main@fcfeb56`, 103 commits before.
@@ -88,17 +97,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D542** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_U_RUN](reference/M6_U_RUN.md), rows U1–U6), then `tools/m6_u_network.hpp`, `m6_u_summary.hpp` and `multra-m6-u-run`. A left-hand T, Stop on the minor left turn's merge, `gapTime` 5.804 s from `t_c` 6.2 s, minor demand 1,800 veh/h, seeds 42–81.
 - **Result** ([evidence](evidence/m6-u-first-run.md)): 228.5, 196.0, 159.4, 119.2, 81.6 veh/h at `v_c` 200 … 1,000; U-a (HCM 846 … 298) and U-c miss at every level. The follow-up headway is 13.7 s, so the Stop service caps the movement. Nothing tuned.
 - `CMakeLists.txt`: the scattered `add_dependencies(check …)` lines folded into one to stay at 500 lines.
-
-## 2026-11-13 — The engine's effective green, and the references at its own values (D541)
-
-- **D541** (owner: as recommended): contract first (M6_S2_RUN §8, rows S2E1–S2E4), then `tools/m6_s2_green.hpp` and mode `green` of `multra-m6-s2-run`. Every crossing per cycle is counted on the saturated S1 project, amber included.
-- **The run:** 40 seeds on build `db17252`.
-  - **Capacity** 913.0 veh/h against HCM's 844.4.
-  - **Effective green** 42.27 s against 40 s.
-  - **Lost time** 0.73 s against 3 s.
-  - **Amber crossings** about 1.6 per cycle.
-- **At the engine's own green and capacity:**
-  - HCM `d1 + d2` lies between −9.5 % and +13.1 % of its S2-b/S2-a delay.
-  - FCTL lies 6–8 % below it, the deceleration share.
-- **Reading:** the S2-b/S2-a miss is about capacity, not queueing. D539's verdicts stand. [m6-s2-green](evidence/m6-s2-green.md).
-- **Verified on Linux:** `check` 335/335 (`m6s2` 15/15).

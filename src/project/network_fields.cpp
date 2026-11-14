@@ -49,7 +49,8 @@ constexpr Field signalHeadFields[]={
 constexpr Field definitionFields[]={
     {"signalPrograms",Kind::programs,true},{"signalControllers",Kind::controllers},
     {"duration",Kind::number,true},{"timeStep",Kind::number,true},
-    {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions}};
+    {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions},
+    {"compositions",Kind::compositions}};
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -111,6 +112,12 @@ constexpr Field routingRouteFields[]={
 constexpr Field routingIntervalFields[]={{"startTime",Kind::number,true},{"endTime",Kind::number,true}};
 constexpr Field routingTypeRuleFields[]={
     {"vehicleTypeId",Kind::text,true},{"relativeFlows",Kind::numbers,true},{"intervalFlows",Kind::numberMatrix,true}};
+// D558: owned compositions; name and intervals are contains-based (explicit null fails).
+constexpr Field compositionFields[]={
+    {"id",Kind::text,true},{"name",Kind::text},{"types",Kind::compositionShares,true},{"intervals",Kind::compositionIntervals}};
+constexpr Field compositionShareFields[]={{"vehicleTypeId",Kind::text,true},{"share",Kind::number,true}};
+constexpr Field compositionIntervalFields[]={
+    {"startTime",Kind::number,true},{"endTime",Kind::number,true},{"types",Kind::compositionShares,true}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -145,12 +152,16 @@ std::span<const Field> fields(Object object) {
     case Object::routingRoute:return routingRouteFields;
     case Object::routingInterval:return routingIntervalFields;
     case Object::routingTypeRule:return routingTypeRuleFields;
+    case Object::composition:return compositionFields;
+    case Object::compositionShare:return compositionShareFields;
+    case Object::compositionInterval:return compositionIntervalFields;
     }
     return {};
 }
 bool allowsAdditionalFields(Object object,int version) {
     if(object==Object::signalController || object==Object::signalGroup || object==Object::routingDecision ||
-       object==Object::routingRoute || object==Object::routingTypeRule)return false;
+       object==Object::routingRoute || object==Object::routingTypeRule || object==Object::composition ||
+       object==Object::compositionShare || object==Object::compositionInterval)return false;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
@@ -197,6 +208,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::queueCounters:case Kind::measurementLines:case Kind::travelTimeSections:
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
+    case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:
