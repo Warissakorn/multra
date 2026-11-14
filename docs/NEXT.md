@@ -35,6 +35,11 @@ All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none o
 review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
 (random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
+**Review waiting (code, not a gate):** D570 on branch `claude/optimistic-bohr-lpfu98`, the
+`tripRateSets` schema rows (PROJECT_SCHEMA_DEMAND, TR1–TR3). Verified on Linux headless only; the
+desktop preset, `check_no_pch.py` and Windows CI were not run. Nothing is merged; an owner change
+request stays in D570 before the next slice starts.
+
 ## Review of 2026-11-10 — queued proposals (D493)
 
 The first review's proposals are done (D493, [PROGRESS](PROGRESS.md)). The rest wait here in review
@@ -214,12 +219,45 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Done (D568, MP1–MP3):** the root `map`, with the codec's ranges; the root key table is `rootFeatures`.
 - **Done (D569, MR1–MR3):** `definition.macroSettings` and the root `macroRuns`.
 - **Done (D570, TR1–TR3):** the root `tripRateSets`; its codec checks keys with `knownKey`.
-- **Proposed next (this session's, not the owner's):** the remaining Macro root arrays in floor
-  order (`deterrenceSets` and `costMatrices` 67, `periodFactors` 69, `modeChoiceSets` 70,
-  `procedures` 73), each with its own version-gated keys
-  ([PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) root table); start with `deterrenceSets`. Same
-  method: inventory, pin on the unchanged code, map as read, one key source, `jsonschema` dump with
-  writer output.
+- **Next slice, ready to start (`deterrenceSets` and `costMatrices`, schema 67).** Proposed by the
+  sessions, not the owner; the owner said to continue as recommended. Both land at 67, so one slice.
+  Copy D570 (commit "Owned trip-rate sets in the composed schema"): read its diff first.
+  1. **Inventory (read, change nothing):** `deterrence_codec.cpp` `parseDeterrenceSet` and
+     `cost_matrix_codec.cpp` `parseCostMatrix`; the floors in `document.cpp` `parseDocument`
+     (both keys `EDIT_UNSUPPORTED_FIELD` below 67; a purpose's `constraint` refused at its path below 68,
+     and its value `"destination"` below 72). Codes: `INVALID_DETERRENCE_SET`, `INVALID_COST_MATRIX`,
+     `INVALID_ID`, `DUPLICATE_ID`.
+  2. **Pins first (DS1/CM1)** in `tests/deterrence_schema_tests.cpp` + `_cases.hpp`, built and passing
+     on the unchanged readers, then the tables.
+  3. **Rows as read.** Deterrence set closed `{id, name, source, function, costUnit, purposes}`, all
+     required; `function` const `"exponential"`, `costUnit` const `"min"`; `source` closed `{citation?,
+     table?}` (the same row shape as `tripRateSource`: reuse it or add `deterrenceSource`, but one
+     table); `purposes` nonempty, closed `{id, beta, intrazonalShare?, constraint?}`, `beta` > 0
+     (`exclusiveMinimum` 0), `intrazonalShare` 0 ≤ x < 1, `constraint` `false` below 68, enum
+     `double`/`origin` from 68, plus `destination` from 72 (a version-dependent enum, as
+     `behaviourModel` does). Cost matrix closed `{id, name, source?, unit, zoneIds, rows}`; `source`
+     closed `{citation?}` only (not `table`); `unit` const `"min"`; `zoneIds` nonempty array of
+     strings; `rows` nonempty array of arrays of `number ≥ 0 | null`. Left to the codec: n×n agreement,
+     blank and unique zone ids, blank and unique ids.
+  4. **One key source:** replace both codecs' `onlyKeys({...})` with the field tables through
+     `networkCodec::knownKey` (D570's `onlyKeys(j, Object)` helper). The reader has no version: use
+     `constraint`'s widest active version (72) so the floor stays with `document.cpp`.
+  5. **Coverage string** gains `-deterrence-cost` in `network_schema.cpp` (twice: value and `$comment`),
+     `tests/network_schema_tests.cpp`, `tests/project_schema_cli.cmake`, `tools/project_schema.cpp`'s
+     help, `tools/README.md`, DESKTOP_AUTOMATION's schema sentence.
+  6. **One-off `jsonschema`** (not in `check`): add a temporary test that dumps `cases()` and a writer
+     document to the scratchpad when an environment variable is set, validate with Python's
+     `jsonschema` 4.x against `multra-project-schema`'s output, then delete the test. Include all
+     `TrafficSim` projects under `data/` and `tests/` (18 at D570). Every label must agree.
+  - **Pitfalls met in D570:** the test binary filters by group, not test name (`multra-tests project`);
+    a closed row with no required key still emits `"required": []`; moving a PROGRESS entry into
+    `docs/archive/` needs its relative links rewritten to `../reference/…` or `multra-check-docs` fails;
+    the headless preset is enough for these tests (about 15 min first build on 4 jobs).
+  - **Session end:** `cmake --build build/headless --target check` green; the next decision ID in RECORD (append) and
+    the decisions README; PROJECT_SCHEMA_DEMAND section with rows DS1–DS3/CM1–CM3; PROJECT_SCHEMA and
+    reference README lines; PROGRESS entry (oldest moved whole to the archive); this item rewritten.
+- **After it:** `periodFactors` 69, `modeChoiceSets` 70 (nests from 71), `procedures` 73 (feedback 75),
+  each its own slice by the same steps.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.
