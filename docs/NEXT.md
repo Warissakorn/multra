@@ -8,6 +8,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## Standing facts
 
+- **Windows CI builds without precompiled headers.** After adding an include of a header that uses a type whole
+  (e.g. `Json` past `json_fwd.hpp`), run `python3 tools/check_no_pch.py build/desktop` (about 9 min on 8 jobs).
 - **Books:** five owner copies (Sheffi, HCM 7, Ortúzar & Willumsen, Planning Handbook 4th ed.,
   Yperman); repositories, page rules, caveats and the chapter map by milestone are in
   [BOOKS](reference/BOOKS.md). Attach with `add_repo`, never vendor; cite the book, read the image
