@@ -84,7 +84,7 @@ save floors 18 (owned compositions) and 19 (composition intervals) stay writer-o
 cannot disagree on keys, requiredness or types. The installed catalog (`loadCompositions`) uses
 the same reader and keeps its diagnostics. Positive shares, a positive sum, known vehicle types,
 unique ids, ordered and non-overlapping intervals and an input's `compositionId` remain the
-existing catalog and time-type validators. Owned modes are D559 (below); owned vehicle types and
+existing catalog and time-type validators. Owned modes are D559 and owned vehicle types D560 (below);
 behaviours remain codec-owned and outside the coverage claim.
 
 Acceptance (`tests/composition_schema_tests.cpp`, group `project`):
@@ -112,8 +112,8 @@ The composed CLI coverage adds `-modes` to the D558 identifier; complete remains
   schema and reader cannot disagree on keys; its diagnostic is unchanged.
 
 Unique ids, nonblank ids and a known composition (`MODE_COMPOSITION_UNKNOWN`) remain the catalog
-validators. The same schema-49 guard also refuses `odMatrices[i].modeId` and a vehicle type's
-`pcu`; both stay codec-owned (zones and vehicle types are not in the coverage claim).
+validators. The same schema-49 guard also refuses `odMatrices[i].modeId` (codec-owned; zones are not in the
+coverage claim) and a vehicle type's `pcu` (mapped by D560).
 
 | Row | Check |
 |---|---|
@@ -121,3 +121,46 @@ validators. The same schema-49 guard also refuses `odMatrices[i].modeId` and a v
 | MS2 | Below 49 `modes` is `false`; from 49 it is an array of closed rows with three required strings; it is never required |
 | MS3 | The base document is refused at `definition.modes` below 49 and parses from 49; every case labelled refused is refused by `parseDocument`; the 1,672 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
 | MS4 | A project owning the two installed modes validates at its own version 50 and is refused at `definition` at 48 (one-off, `jsonschema`; no shipped or test file owns modes) |
+
+## Owned vehicle-type extension (D560)
+
+The composed CLI coverage adds `-vehicle-types` to the D559 identifier; complete remains false.
+`definition.vehicleTypes` is optional and never required; absence means the installed catalog.
+A present value must be an array (`parseDefinition`'s `Expected array` / `Field is null`).
+
+- **The row** requires text `id` and `behaviourId`, numeric `length`, `width`, `maxAcceleration`,
+  `comfortableDeceleration`, `maxDeceleration`, and a `desiredSpeed` object. `desiredSpeed` is
+  read before `id`. Optional `name` (text, contains-based; a null is `EDIT_CATALOG_READ`, read by
+  `parseAuthoringDefinition`, ignored by a bare definition) and `axles`.
+- **Open below 21, closed from 21:** before `behaviourVersion` an unknown key is read and not
+  written back (the legacy additive rule, as the network below 7); from 21
+  `parseBehaviourLibrary` refuses it at `vehicleTypes[i].<key>` after the definition is read.
+- **`axles`** is closed at every version (`vehicleType.axles.<key>`) and requires numeric
+  `wheelbase`, `frontOverhang` and `rearOverhang`.
+- **`desiredSpeed`** stays open and requires numeric `min` and `max`. Its `curve` (from 40) is an
+  array of open points with numeric `speed` and `share`; a bad curve or point is
+  `INVALID_SPEED_CURVE` at `vehicleType.desiredSpeed.curve`.
+- **`kerbLanes`** (from 42) is a JSON integer token: `2.0` is `INVALID_KERB_LANES` in the reader
+  although JSON Schema's `integer` admits it, so the rule carries `x-multra-nativeType:
+  integer-token`; 1–16 is the validator's.
+- **`pcu`** (from 49) is closed `{value: number, source: text}`; anything else is `INVALID_PCU`.
+- **Gates:** `curve` below 40, `kerbLanes` below 42 and `pcu` below 49 are refused even when null,
+  at `vehicleTypes[i].desiredSpeed.curve`, `.kerbLanes` and `.pcu`. The schema gives each `false`,
+  and the document guards use the same constants (`speedCurveVersion`, `kerbLanesVersion`,
+  `modeVersion`).
+
+`parseVehicleType` reads the scalars and axles through `networkCodec::value()` with unchanged
+diagnostics, and the from-21 key check uses the same field table. The speed range and curve,
+`kerbLanes` and `pcu` keep their own readers and codes; for those the table drives only the
+schema. Two reader limits are recorded, not changed: `desiredSpeed.min`/`max` are read with the
+JSON library's `.at()`, so a missing or non-numeric bound reports that library's message
+(NEXT, Ask); and the below-21 open row drops unknown keys on save. The installed catalog
+(`resolveDemandCatalog`) uses the same `parseVehicleType`. Ranges, unknown behaviours and duplicate ids
+remain the catalog validators.
+
+| Row | Check |
+|---|---|
+| VT1 | On the unchanged reader: an unknown key is kept out of the save below 21 and refused at `vehicleTypes[0].extra` from 21; `vehicleType.axles.extra` refused; `desiredSpeed` missing is reported before `id`; field sentences; a missing bound throws; float `kerbLanes`, partial `pcu` and a non-array curve keep their codes; `name: null` refused in a project and ignored bare; the three guards refuse null at their paths |
+| VT2 | At every version the row is open exactly below 21, the eight keys are required, `axles` and `pcu` are closed, `desiredSpeed` and curve points are open, and `curve`/`kerbLanes`/`pcu` are `false` below 40/42/49 |
+| VT3 | The base row parses at every version, and every case labelled refused is refused by `parseDocument`; the 5,700 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
+| VT4 | One-off `jsonschema`: the 9 shipped and test projects owning types, the 7 installed `data/vehicle-types/` files, and a writer round-trip carrying `curve`, `kerbLanes` and `pcu` all validate |

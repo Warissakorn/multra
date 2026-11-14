@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Owned vehicle types in the composed project schema (D560)
+
+- **Pick:** the owner asked for the next work again ("ทำงานถัดไป"); D559's NEXT proposed vehicle types.
+- **Inventory finding:** the type row is closed from 21 by a second hand-kept key list in `parseBehaviourLibrary` (open, additive, below 21). That list is now the field table.
+- **D560:** the schema maps the row (open < 21, closed from 21), closed `axles` and `pcu`, open `desiredSpeed` and curve points, `curve`/`kerbLanes`/`pcu` `false` below 40/42/49 (shared constants with the guards), `kerbLanes` an `integer-token`. `parseVehicleType`'s scalars and axles read through `value()` with unchanged sentences; kerbLanes, pcu and the curve keep their own codes. Pins (VT1, VT3) passed on the unchanged reader first.
+- **One-off `jsonschema`:** 5,700 labels, 9 projects, 7 installed type files and a round-trip carrying every gated key agree.
+- **Ask (NEXT):** `desiredSpeed.min`/`max` report the JSON library's message; recommended to read them through `value()`.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1652/1652, group `project` 80/80); `check_no_pch.py` on the changed units 7/7. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — Owned modes in the composed project schema (D559)
 
 - **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D558's NEXT named owned modes first.
@@ -94,8 +103,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D544** (owner asked for calibration options and chose "ไม่ calibrate + sweep"): [options sheet](evidence/m6-calibration-options.md) with five options A–E and estimated effects; D540's hold is closed as no calibration on M6.
 - **D545:** contract first ([M6_SWEEP](reference/M6_SWEEP.md), rows SW1–SW4), then `tools/m6_candidates.hpp` and `--candidate base|B|C` on the S1, S2 (`ab`) and U (`run`) tools; no flag keeps outputs byte-identical (a `base` S1 rerun matched the first run).
 - **Result** ([evidence](evidence/m6-sweep-phase1.md)): B 2,029.8 veh/h, C 2,109.5 (S1-f would pass, S1-a would miss for both); S2 misses grow; U `t_f` 12.89 / 12.98 s (base 13.67). The D544 arithmetic overstated both levers on U. Nothing adopted.
-
-## 2026-11-13 — Where the Stop follow-up goes (D543)
-
-- **D543** (owner: "ทำงานถัดไป"): contract first ([M6_U_RUN](reference/M6_U_RUN.md) §6, rows SU1–SU5), then `tools/m6_u_split.hpp` and mode `split` of `multra-m6-u-run` (the D542 run is mode `run`). Row SU4 was moved to `v_c` 200 and its dwell value corrected to one observed tick from the first test run, before any split figure; no definition changed.
-- **Result** ([evidence](evidence/m6-u-split.md)): move-up 10.7–12.2 s of the 12.5–13.9 s headway (settle 3.75 s), service 0.1 s, release 1.6 s with almost no gap-rule blocking. Nothing tuned.

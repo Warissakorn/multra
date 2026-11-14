@@ -2,6 +2,11 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-13 — Where the Stop follow-up goes (D543)
+
+- **D543** (owner: "ทำงานถัดไป"): contract first ([M6_U_RUN](../reference/M6_U_RUN.md) §6, rows SU1–SU5), then `tools/m6_u_split.hpp` and mode `split` of `multra-m6-u-run` (the D542 run is mode `run`). Row SU4 was moved to `v_c` 200 and its dwell value corrected to one observed tick from the first test run, before any split figure; no definition changed.
+- **Result** ([evidence](../evidence/m6-u-split.md)): move-up 10.7–12.2 s of the 12.5–13.9 s headway (settle 3.75 s), service 0.1 s, release 1.6 s with almost no gap-rule blocking. Nothing tuned.
+
 ## 2026-11-13 — Kind U first run: U-c and U-a (D542)
 
 - **D542** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_U_RUN](../reference/M6_U_RUN.md), rows U1–U6), then `tools/m6_u_network.hpp`, `m6_u_summary.hpp` and `multra-m6-u-run`. A left-hand T, Stop on the minor left turn's merge, `gapTime` 5.804 s from `t_c` 6.2 s, minor demand 1,800 veh/h, seeds 42–81.

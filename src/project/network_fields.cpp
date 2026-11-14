@@ -50,7 +50,8 @@ constexpr Field definitionFields[]={
     {"signalPrograms",Kind::programs,true},{"signalControllers",Kind::controllers},
     {"duration",Kind::number,true},{"timeStep",Kind::number,true},
     {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions},
-    {"compositions",Kind::compositions},{"modes",Kind::modes,false,0,modeVersion}};
+    {"compositions",Kind::compositions},{"modes",Kind::modes,false,0,modeVersion},
+    {"vehicleTypes",Kind::vehicleTypes}};
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -120,6 +121,18 @@ constexpr Field compositionIntervalFields[]={
     {"startTime",Kind::number,true},{"endTime",Kind::number,true},{"types",Kind::compositionShares,true}};
 // D559: exactly these keys, each required text; parseMode counts and checks them.
 constexpr Field modeFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"compositionId",Kind::text,true}};
+// D560: open below behaviourVersion, closed from it (parseBehaviourLibrary). name is read by
+// parseAuthoringDefinition; kerbLanes, pcu and the curve keep their own readers and codes.
+constexpr Field vehicleTypeFields[]={
+    {"id",Kind::text,true},{"name",Kind::text},{"length",Kind::number,true},{"width",Kind::number,true},
+    {"desiredSpeed",Kind::speedRange,true},{"maxAcceleration",Kind::number,true},
+    {"comfortableDeceleration",Kind::number,true},{"maxDeceleration",Kind::number,true},
+    {"behaviourId",Kind::text,true},{"axles",Kind::axles},{"kerbLanes",Kind::kerbLanes,false,0,kerbLanesVersion},
+    {"pcu",Kind::pcu,false,0,modeVersion}};
+constexpr Field speedRangeFields[]={{"min",Kind::number,true},{"max",Kind::number,true},{"curve",Kind::speedCurve,false,0,speedCurveVersion}};
+constexpr Field speedPointFields[]={{"speed",Kind::number,true},{"share",Kind::number,true}};
+constexpr Field axleFields[]={{"wheelbase",Kind::number,true},{"frontOverhang",Kind::number,true},{"rearOverhang",Kind::number,true}};
+constexpr Field pcuFields[]={{"value",Kind::number,true},{"source",Kind::text,true}};
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -158,13 +171,21 @@ std::span<const Field> fields(Object object) {
     case Object::compositionShare:return compositionShareFields;
     case Object::compositionInterval:return compositionIntervalFields;
     case Object::mode:return modeFields;
+    case Object::vehicleType:return vehicleTypeFields;
+    case Object::speedRange:return speedRangeFields;
+    case Object::speedPoint:return speedPointFields;
+    case Object::axles:return axleFields;
+    case Object::pcu:return pcuFields;
     }
     return {};
 }
 bool allowsAdditionalFields(Object object,int version) {
     if(object==Object::signalController || object==Object::signalGroup || object==Object::routingDecision ||
        object==Object::routingRoute || object==Object::routingTypeRule || object==Object::composition ||
-       object==Object::compositionShare || object==Object::compositionInterval || object==Object::mode)return false;
+       object==Object::compositionShare || object==Object::compositionInterval || object==Object::mode ||
+       object==Object::axles || object==Object::pcu)return false;
+    if(object==Object::speedRange || object==Object::speedPoint)return true;
+    if(object==Object::vehicleType)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
@@ -212,9 +233,11 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
     case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:case Kind::modes:
+    case Kind::vehicleTypes:case Kind::speedCurve:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:
+    case Kind::speedRange:case Kind::axles:case Kind::kerbLanes:case Kind::pcu:
     case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:case Kind::sectionLine:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);

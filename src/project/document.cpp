@@ -336,9 +336,9 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 35) rejectKerbBefore35(j);
     if (version < 36) rejectCommitmentBefore36(j);
     if (version < 37) rejectMandatoryBefore37(j);
-    if (version < 40) rejectSpeedCurveBefore40(j);
+    if (version < networkCodec::speedCurveVersion) rejectSpeedCurveBefore40(j);
     if (version < 41) rejectStopDwellBefore41(j);
-    if (version < 42) rejectKerbLanesBefore42(j);
+    if (version < networkCodec::kerbLanesVersion) rejectKerbLanesBefore42(j);
     if (version < 43) rejectDriverFactorSpreadBefore43(j);
     if (version < 44) rejectRedRunningBefore44(j);
     if (version < 45) rejectClampRulesBefore45(j);

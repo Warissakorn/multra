@@ -174,15 +174,19 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
     readOptionals(b, path, behaviour);
     return behaviour;
 }
+// D560: the scalars and axles read through the schema's field metadata; desiredSpeed is read before id.
 VehicleType parseVehicleType(const Json& t) {
-    const auto& range = member(t, "desiredSpeed");
-    VehicleType type{field<std::string>(t, "id"), field<double>(t, "length"), field<double>(t, "width"),
-        parseSpeedRange(range), field<double>(t, "maxAcceleration"),
-        field<double>(t, "comfortableDeceleration"), field<double>(t, "maxDeceleration"), field<std::string>(t, "behaviourId")};
+    using networkCodec::Object;using networkCodec::value;
+    const auto& range = value(t, Object::vehicleType, "desiredSpeed");
+    const auto number = [&](const char* key) { return value(t, Object::vehicleType, key).get<double>(); };
+    const auto text = [&](const char* key) { return value(t, Object::vehicleType, key).get<std::string>(); };
+    VehicleType type{text("id"), number("length"), number("width"), parseSpeedRange(range), number("maxAcceleration"),
+        number("comfortableDeceleration"), number("maxDeceleration"), text("behaviourId")};
     if(t.contains("axles")) {
-        const auto& a=member(t,"axles");
-        knownFields(a,{"wheelbase","frontOverhang","rearOverhang"},"vehicleType.axles",17);
-        type.axles=VehicleAxles{field<double>(a,"wheelbase"),field<double>(a,"frontOverhang"),field<double>(a,"rearOverhang")};
+        const auto& a=value(t,Object::vehicleType,"axles");
+        networkCodec::knownFields(a,Object::axles,"vehicleType.axles",networkCodec::strictVersion);
+        const auto axle=[&](const char* key) { return value(a,Object::axles,key).get<double>(); };
+        type.axles=VehicleAxles{axle("wheelbase"),axle("frontOverhang"),axle("rearOverhang")};
     }
     type.kerbLanes=parseKerbLanes(t); type.pcu=parsePcu(t); return type; // B-7 (D234); S1.2 (D270)
 }

@@ -1,4 +1,5 @@
 #include "behaviour_library.hpp"
+#include "network_fields.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
@@ -251,8 +252,7 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
     if (j.contains("vehicleTypes")) {
         const auto& types = list(j, "vehicleTypes");
         for (std::size_t i = 0; i < types.size(); ++i)
-            requireKnownFields(types[i], {"id", "name", "length", "width", "desiredSpeed", "maxAcceleration",
-                "comfortableDeceleration", "maxDeceleration", "behaviourId", "axles", "kerbLanes", "pcu"}, at("vehicleTypes", i));
+            networkCodec::knownFields(types[i], networkCodec::Object::vehicleType, at("vehicleTypes", i), networkCodec::behaviourVersion); // D560
     }
     if (j.contains("vehicleClasses")) {
         const auto& classes = list(j, "vehicleClasses");

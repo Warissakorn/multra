@@ -199,15 +199,19 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - An authoritative formal schema covering every optional/versioned field remains separate from D350
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
   floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
-- **Done:** owned `definition.compositions` with type-share and interval rows (D558, CS1–CS4) and owned
-  `definition.modes` (D559, MS1–MS4; a mode row's only diagnostic stays the bare `EDIT_CATALOG_READ`).
-- **Proposed next (this session's order, not the owner's):** the vehicle-type catalog
-  (`parseVehicleType` in `parse.cpp`, with `axles`, `kerbLanes`, `pcu`, the speed curve and the
-  name rule in `parseAuthoringDefinition`), then behaviours (per-model parameter sets and many
-  version floors). Each is larger than D558/D559: inventory its reader, version floors and
-  diagnostics first, pin them with tests on the unchanged code, then map the rows; no new read
-  gates. Prove each with codec-parity cases and a one-off `jsonschema` run over the case labels and
-  shipped/test projects (a scratch dump linked against the build's object files, as D558/D559).
+- **Done:** owned `definition.compositions` with type-share and interval rows (D558, CS1–CS4), owned
+  `definition.modes` (D559, MS1–MS4) and owned `definition.vehicleTypes` (D560, VT1–VT4).
+- **Ask (D560):** `desiredSpeed.min`/`max` are read with the JSON library's `.at()`, so a missing or
+  non-numeric bound reports nlohmann's own message (and parse.cpp's comment calls such escapes
+  defects). Recommendation: read them through `networkCodec::value()` (`Missing field: min`,
+  `Expected number: max`), the sentences every other row uses; it changes only the text of an
+  error already refused, not what loads. Not done without the owner's yes.
+- **Proposed next (this session's order, not the owner's):** behaviours. Inventory first: the
+  reader (`parseBehaviour` in `parse.cpp`, `parseBehaviourLibrary`'s key lists from
+  `w74ParameterKeys`, `perceptionParameterKeys`, `lateralParameterKeys`), the explicit `model` from
+  21, the per-model parameter sets, and the many floors (21, 25, 28, 32–37, 41, 43, 44). Pin on the
+  unchanged code, map rows as they are, no new read gates, and prove with codec-parity cases plus a
+  one-off `jsonschema` run (case labels, projects, installed `data/driver-behaviour/` files).
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.
