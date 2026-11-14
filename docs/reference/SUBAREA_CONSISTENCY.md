@@ -101,9 +101,10 @@ value and b the finer (Micro's is its mean):
 - **%** = 100 · (b − a) / a, empty when a = 0;
 - **GEH** = √(2 (b − a)² / (a + b)), empty when a + b = 0.
   - Source: the GEH statistic of the UK DfT's TAG unit M3.1 *Highway assignment modelling*, used
-    there to compare a modelled hourly flow with a count. Paraphrased here, not quoted. **The
-    paragraph and edition are to be confirmed** (open item O1): this session's network did not
-    reach the publisher's host.
+    there to compare a modelled hourly flow with a count. Paraphrased here, not quoted. **O1
+    answered (D556):** the owner confirmed this source and formula in chat on 2026-11-14. No
+    paragraph or edition is cited, because this session could not read the document: the
+    publisher's hosts are outside its network.
   - MULTRA writes the number only. TAG's acceptability criteria are not applied (owner 2).
 - A pair with an empty side gives empty Δ, % and GEH.
 
@@ -142,9 +143,9 @@ value and b the finer (Micro's is its mean):
 
 ## 9. Open items
 
-- **O1 GEH source:** confirm TAG unit M3.1's paragraph, table and edition for §5. Needs the owner's
-  copy, or the publisher's host allowed for the session. The formula carries no tuned number; R1
-  may implement it, and the citation stays marked unconfirmed until then.
+- **O1 GEH source: answered (D556).** The owner confirmed TAG unit M3.1 and the formula. The
+  paragraph and edition stay uncited until a session can read the document. No number in MULTRA
+  depends on them: no threshold is applied.
 - **Warm-up:** a rule to drop the first minutes needs a source; none is invented (§4).
 - **A gate on a Link that is also a kept Link** appears both as a gate row and as a Link row on
   purpose: the gate row compares what was fed, the Link row what passed.

@@ -212,7 +212,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
 Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done (below); when the owner asks for an engine
-slice, M9 and M11.5 are done to their owner gates; M12 R1 and R2 are done (D553, D554) and wait for the owner (C18, O1); the M11 gate waits on the book. Each starts with its contract. M13 is
+slice, M9 and M11.5 are done to their owner gates; M12 R1 and R2 are done (D553, D554) and wait for the owner (C18); the M11 gate waits on the book. Each starts with its contract. M13 is
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
 
@@ -223,8 +223,8 @@ user roles) is open.
   veh/h per gate and kept Link with Δ, % and GEH (no pass/fail). On the corridor fixture Micro reads 240 against
   Macro 600 and Meso 593: the movement gives way in Micro, while Meso ignores priority inside a Node (§12).
 - **R2 done (D554, §13–§14, SC8–SC10):** *Results → Cross-level → Consistency* (seeds, Run/Cancel, the table, CSV).
-  **Owner:** C18 on Windows. **O2 answered (D555, §15):** a gate counts the inside zones' trips on its Link (SC11). **O1:** confirm TAG M3.1's GEH
-  paragraph and edition (owner's copy, or the publisher's host allowed for the session).
+  **Owner:** C18 on Windows. **O2 answered (D555, §15):** a gate counts the inside zones' trips on its Link (SC11). **O1 answered (D556):** the owner
+  confirmed TAG M3.1's GEH; paragraph and edition uncited (the publisher's hosts are outside the session's network).
 
 ## M11.5 Meso assignment — S1 done (D550); stop for the owner
 

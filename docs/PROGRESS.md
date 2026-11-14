@@ -5,6 +5,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — O1: the GEH source confirmed by the owner (D556)
+
+- **D556** (owner: "O1 ยืนยัน"): TAG unit M3.1 recorded as the GEH source on the owner's confirmation; a second fetch of gov.uk and its asset host failed (outside the session's network), so no paragraph or edition is cited. Docs only.
+
 ## 2026-11-14 — O2: a gate counts the demand loaded onto its Link (D555)
 
 - **D555** (owner asked for a recommendation, then approved (b)): amendment first (SUBAREA_CONSISTENCY §15, SC11), then the fed-flow bookkeeping in `consistencyReport` adds each inside zone's flows by connector share to the gate on its connector's Link. SC11 passes first time: the corridor's west entry gate now reads Macro 600 = its Link row (GEH 0); shares 3 : 1 split 450 / 150. Verified on Linux: `check` 353/353.
