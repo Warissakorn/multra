@@ -101,10 +101,15 @@ value and b the finer (Micro's is its mean):
 - **%** = 100 · (b − a) / a, empty when a = 0;
 - **GEH** = √(2 (b − a)² / (a + b)), empty when a + b = 0.
   - Source: the GEH statistic of the UK DfT's TAG unit M3.1 *Highway assignment modelling*, used
-    there to compare a modelled hourly flow with a count. Paraphrased here, not quoted. **O1
-    answered (D556):** the owner confirmed this source and formula in chat on 2026-11-14. No
-    paragraph or edition is cited, because this session could not read the document: the
-    publisher's hosts are outside its network.
+    there to compare a modelled hourly flow M with an observed hourly flow C. Paraphrased here, not
+    quoted. **Read (D557):** TAG unit M3.1, May 2026 edition, §3.3.10, p. 31.
+    - The unit writes it as the square root of (M − C)² over (M + C)/2, which is the formula
+      above with a, b in place of C, M. The statistic is symmetric, so the order does not matter.
+    - Its Table 2 criterion (GEH < 5 in more than 85 % of cases) is a base-year validation
+      guideline for a model against counts. MULTRA compares two models, a use the unit does not
+      describe, so the criterion is not applied (owner 2).
+    - The owner first confirmed the source in chat (D556); the reading followed once the
+      publisher's hosts were allowed.
   - MULTRA writes the number only. TAG's acceptability criteria are not applied (owner 2).
 - A pair with an empty side gives empty Δ, % and GEH.
 
@@ -143,9 +148,8 @@ value and b the finer (Micro's is its mean):
 
 ## 9. Open items
 
-- **O1 GEH source: answered (D556).** The owner confirmed TAG unit M3.1 and the formula. The
-  paragraph and edition stay uncited until a session can read the document. No number in MULTRA
-  depends on them: no threshold is applied.
+- **O1 GEH source: answered (D556), read (D557):** TAG unit M3.1, May 2026, §3.3.10, p. 31; the
+  formula matches §5. The PDF was read in the session's scratch space and is not in the repository.
 - **Warm-up:** a rule to drop the first minutes needs a source; none is invented (§4).
 - **A gate on a Link that is also a kept Link** appears both as a gate row and as a Link row on
   purpose: the gate row compares what was fed, the Link row what passed.

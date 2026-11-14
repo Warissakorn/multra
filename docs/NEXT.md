@@ -223,8 +223,8 @@ user roles) is open.
   veh/h per gate and kept Link with Δ, % and GEH (no pass/fail). On the corridor fixture Micro reads 240 against
   Macro 600 and Meso 593: the movement gives way in Micro, while Meso ignores priority inside a Node (§12).
 - **R2 done (D554, §13–§14, SC8–SC10):** *Results → Cross-level → Consistency* (seeds, Run/Cancel, the table, CSV).
-  **Owner:** C18 on Windows. **O2 answered (D555, §15):** a gate counts the inside zones' trips on its Link (SC11). **O1 answered (D556):** the owner
-  confirmed TAG M3.1's GEH; paragraph and edition uncited (the publisher's hosts are outside the session's network).
+  **Owner:** C18 on Windows. **O2 answered (D555, §15):** a gate counts the inside zones' trips on its Link (SC11). **O1 answered and read (D556, D557):**
+  TAG M3.1, May 2026, §3.3.10, p. 31; the formula matches.
 
 ## M11.5 Meso assignment — S1 done (D550); stop for the owner
 
