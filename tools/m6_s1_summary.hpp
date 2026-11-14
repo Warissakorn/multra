@@ -3,6 +3,7 @@
 // over discharge cycles, so `m6s1` drives them with synthetic cycles (MS2-MS6) before any run.
 #include "../src/project/json.hpp"
 #include "../src/runner/batch.hpp"
+#include <nlohmann/json.hpp> // Json is used whole here; Windows CI builds without the PCH that hid this
 #include <array>
 #include <cmath>
 #include <cstdint>
