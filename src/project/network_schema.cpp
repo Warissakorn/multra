@@ -38,6 +38,7 @@ class NetworkSchema {
         case Kind::compositions:rule={{"type","array"},{"items",reference(Object::composition,version)}};break;
         case Kind::compositionShares:rule={{"type","array"},{"items",reference(Object::compositionShare,version)}};break;
         case Kind::compositionIntervals:rule={{"type","array"},{"items",reference(Object::compositionInterval,version)}};break;
+        case Kind::modes:rule={{"type","array"},{"items",reference(Object::mode,version)}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -171,6 +172,7 @@ public:
                 case Object::composition:return "composition";
                 case Object::compositionShare:return "compositionShare";
                 case Object::compositionInterval:return "compositionInterval";
+                case Object::mode:return "mode";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -182,8 +184,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval and mode structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

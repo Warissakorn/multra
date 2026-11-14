@@ -270,7 +270,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 61) rejectJunctionFieldsBefore61(j); // J3a: presence, even null, at its path
     if (version < 63) rejectTransitionFieldsBefore63(j);
     d.map=parseMapSettings(j,version);
-    if (version < 49) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
+    if (version < networkCodec::modeVersion) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
     if (version < networkCodec::linkTypeVersion) rejectLinkTypesBefore50(j); // S2.1, before the network is read
     if (version < 51) rejectMacroSettingsBefore51(j); // S2.3
     if (version < 52) rejectMesoFieldsBefore52(j); // M11.2

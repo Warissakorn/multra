@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Owned modes in the composed project schema (D559)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D558's NEXT named owned modes first.
+- **D559:** `definition.modes` is `false` below 49 and an array of closed `{id, name, compositionId}` text rows from it. `parseMode` takes its key list and count from the new `Object::mode` metadata but keeps its bare `EDIT_CATALOG_READ` (no `value()` sentences); `document.cpp`'s guard and the schema share `networkCodec::modeVersion`. Pins (MS1, MS3) passed on the unchanged reader first.
+- **One-off `jsonschema`:** all 1,672 version-dependent case labels agree with the emitted schema; a project owning the two installed modes validates at 50 and is refused at 48. No shipped or test file owns modes.
+- **Left codec-owned:** `odMatrices[i].modeId` and a vehicle type's `pcu` (same schema-49 guard).
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1649/1649, group `project` 77/77); `check_no_pch.py` on the changed units 5/5. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — Owned compositions in the composed project schema (D558)
 
 - **Pick:** NEXT's AI-automation "Next" (map Composition/type-share/interval rows), the only open item not waiting on the owner.
@@ -91,9 +99,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **D543** (owner: "ทำงานถัดไป"): contract first ([M6_U_RUN](reference/M6_U_RUN.md) §6, rows SU1–SU5), then `tools/m6_u_split.hpp` and mode `split` of `multra-m6-u-run` (the D542 run is mode `run`). Row SU4 was moved to `v_c` 200 and its dwell value corrected to one observed tick from the first test run, before any split figure; no definition changed.
 - **Result** ([evidence](evidence/m6-u-split.md)): move-up 10.7–12.2 s of the 12.5–13.9 s headway (settle 3.75 s), service 0.1 s, release 1.6 s with almost no gap-rule blocking. Nothing tuned.
-
-## 2026-11-13 — Kind U first run: U-c and U-a (D542)
-
-- **D542** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_U_RUN](reference/M6_U_RUN.md), rows U1–U6), then `tools/m6_u_network.hpp`, `m6_u_summary.hpp` and `multra-m6-u-run`. A left-hand T, Stop on the minor left turn's merge, `gapTime` 5.804 s from `t_c` 6.2 s, minor demand 1,800 veh/h, seeds 42–81.
-- **Result** ([evidence](evidence/m6-u-first-run.md)): 228.5, 196.0, 159.4, 119.2, 81.6 veh/h at `v_c` 200 … 1,000; U-a (HCM 846 … 298) and U-c miss at every level. The follow-up headway is 13.7 s, so the Stop service caps the movement. Nothing tuned.
-- `CMakeLists.txt`: the scattered `add_dependencies(check …)` lines folded into one to stay at 500 lines.

@@ -84,8 +84,8 @@ save floors 18 (owned compositions) and 19 (composition intervals) stay writer-o
 cannot disagree on keys, requiredness or types. The installed catalog (`loadCompositions`) uses
 the same reader and keeps its diagnostics. Positive shares, a positive sum, known vehicle types,
 unique ids, ordered and non-overlapping intervals and an input's `compositionId` remain the
-existing catalog and time-type validators. Owned modes, vehicle types and behaviours remain
-codec-owned and outside the coverage claim.
+existing catalog and time-type validators. Owned modes are D559 (below); owned vehicle types and
+behaviours remain codec-owned and outside the coverage claim.
 
 Acceptance (`tests/composition_schema_tests.cpp`, group `project`):
 
@@ -95,3 +95,29 @@ Acceptance (`tests/composition_schema_tests.cpp`, group `project`):
 | CS2 | At every schema version the four rows are closed, `id`/`types`, `vehicleTypeId`/`share` and `startTime`/`endTime`/`types` are required, `name` is not nullable and `compositions` is not required |
 | CS3 | The base document parses at every version, and every case labelled refused is refused by `parseDocument`; the 4,408 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
 | CS4 | The shipped projects with owned compositions validate against the emitted schema (checked once with Python `jsonschema` when this was built; not in `check`) |
+
+## Owned mode extension (D559)
+
+The composed CLI coverage adds `-modes` to the D558 identifier; complete remains false. Contract:
+[STUDY_PERIODS](STUDY_PERIODS.md) §6 (D269).
+
+- `definition.modes` is optional and never required. Below schema 49 it is refused even when
+  null: the schema gives it `false`, and `rejectModesBefore49` refuses it at `definition.modes`
+  (`EDIT_UNSUPPORTED_FIELD`) before the definition is read. Both use `networkCodec::modeVersion`.
+- From 49 a present value must be an array (null or another type is `EDIT_CATALOG_READ`). A mode
+  row has exactly `id`, `name` and `compositionId`, each required text; it is closed at every
+  version. Every structural refusal of a row is the bare `EDIT_CATALOG_READ`, with no path, for
+  an owned entry and an installed `data/modes/` file alike.
+- `parseMode` takes its key list and count from the same metadata (`Object::mode`), so the
+  schema and reader cannot disagree on keys; its diagnostic is unchanged.
+
+Unique ids, nonblank ids and a known composition (`MODE_COMPOSITION_UNKNOWN`) remain the catalog
+validators. The same schema-49 guard also refuses `odMatrices[i].modeId` and a vehicle type's
+`pcu`; both stay codec-owned (zones and vehicle types are not in the coverage claim).
+
+| Row | Check |
+|---|---|
+| MS1 | `parseMode`'s what() is exactly `EDIT_CATALOG_READ` for two or four keys, a swapped key, a number, a null and a non-object; `modes: null` from 49 gives the same code; at 48 an array, null or empty array is `EDIT_UNSUPPORTED_FIELD` at `definition.modes` |
+| MS2 | Below 49 `modes` is `false`; from 49 it is an array of closed rows with three required strings; it is never required |
+| MS3 | The base document is refused at `definition.modes` below 49 and parses from 49; every case labelled refused is refused by `parseDocument`; the 1,672 labels were checked once against the emitted schema with `jsonschema` (0 disagree) |
+| MS4 | A project owning the two installed modes validates at its own version 50 and is refused at `definition` at 48 (one-off, `jsonschema`; no shipped or test file owns modes) |

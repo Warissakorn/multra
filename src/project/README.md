@@ -22,7 +22,7 @@ keeps its schema and bytes.
 | `document_schema.*` | `documentSchemaVersion`: the writer version chosen from features alone, the rule `documentJson` uses; input versions are not retained | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `document_envelope.*` | Envelope and background field metadata, read and validation stages, the envelope-only partial draft-2020-12 schema | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `network_schema.*` | `projectDocumentSchema`: the composed partial schema for schemas 1 to the latest, printed by `multra-project-schema` | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
-| `network_fields.*` | Versioned known-key and type metadata shared by the row codecs (`network_link_codec.cpp`, `network_connector_codec.cpp`, `network_signal_head_codec.cpp`, `signal_control_codec.cpp`, `right_of_way_codec.cpp`, `measurement_codec.cpp`, `demand_codec.cpp`, `routing_codec.cpp`, and `parseComposition` in `parse.cpp`); rules below | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
+| `network_fields.*` | Versioned known-key and type metadata shared by the row codecs (`network_link_codec.cpp`, `network_connector_codec.cpp`, `network_signal_head_codec.cpp`, `signal_control_codec.cpp`, `right_of_way_codec.cpp`, `measurement_codec.cpp`, `demand_codec.cpp`, `routing_codec.cpp`, `parseComposition` in `parse.cpp` and `parseMode` in `mode_codec.cpp`); rules below | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `json.*` | Section accessors that fail with a named, translatable code; `parseNetwork`; `output.cpp` writes the run's state and event JSON | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `observed_schema.*` | Bounded structural JSON hints for desktop automation (50,000 values, depth 32); no required fields, ranges or version rules | [DESKTOP_AUTOMATION](../../docs/reference/DESKTOP_AUTOMATION.md) |
 | `junction_template_codec.*` | Strict structural loader, installed/owned catalog resolution in filename order, field paths and schema-61/63 guards | [JUNCTION_TEMPLATES §3–§4](../../docs/reference/JUNCTION_TEMPLATES.md) |
@@ -180,7 +180,8 @@ weights, time windows and destination reachability to existing model validators.
 `parseComposition` (owned and installed compositions) reads composition, type-share and interval
 rows through the same metadata (D558, [PROJECT_SCHEMA_DEMAND](../../docs/reference/PROJECT_SCHEMA_DEMAND.md)). All three rows
 are closed at every file version; `name` and `intervals` are contains-based; shares, ids and
-intervals stay with the catalog validators.
+intervals stay with the catalog validators. `parseMode` takes its exact key list from the same
+metadata and keeps its bare `EDIT_CATALOG_READ` (D559); `modeVersion` (49) is its document guard.
 
 ## Tests
 

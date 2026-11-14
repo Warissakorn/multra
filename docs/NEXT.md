@@ -199,12 +199,15 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - An authoritative formal schema covering every optional/versioned field remains separate from D350
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
   floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
-- **Done (D558):** owned `definition.compositions` with type-share and interval rows (CS1–CS4).
-- **Proposed order (this session's, not the owner's; NEXT named no successor):** owned `modes` (`mode_codec.cpp`, schema 49) — read the reader first, pin
-  its diagnostics with tests on the unchanged code, then move it onto `networkCodec` metadata and
-  add the schema rows; no new read gates. Then the vehicle-type and behaviour catalogs, each its
-  own slice (behaviours carry per-model parameter sets and many version floors: inventory first).
-  Prove each with codec-parity cases and a one-off `jsonschema` run over shipped and test projects.
+- **Done:** owned `definition.compositions` with type-share and interval rows (D558, CS1–CS4) and owned
+  `definition.modes` (D559, MS1–MS4; a mode row's only diagnostic stays the bare `EDIT_CATALOG_READ`).
+- **Proposed next (this session's order, not the owner's):** the vehicle-type catalog
+  (`parseVehicleType` in `parse.cpp`, with `axles`, `kerbLanes`, `pcu`, the speed curve and the
+  name rule in `parseAuthoringDefinition`), then behaviours (per-model parameter sets and many
+  version floors). Each is larger than D558/D559: inventory its reader, version floors and
+  diagnostics first, pin them with tests on the unchanged code, then map the rows; no new read
+  gates. Prove each with codec-parity cases and a one-off `jsonschema` run over the case labels and
+  shipped/test projects (a scratch dump linked against the build's object files, as D558/D559).
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.

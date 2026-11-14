@@ -7,12 +7,12 @@
 namespace multra::networkCodec {
 enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
-    routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval };
+    routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
     routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix,
-    compositions,compositionShares,compositionIntervals };
+    compositions,compositionShares,compositionIntervals,modes };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -24,6 +24,8 @@ inline const char* streetSegmentsKey(int version) {return version<streetSegmentK
 inline const char* streetSegmentIdKey(int version) {return version<streetSegmentKeyVersion?"roadId":"streetSegmentId";}
 inline const char* streetSegmentDirectionKey(int version) {return version<streetSegmentKeyVersion?"roadDirection":"streetSegmentDirection";}
 inline constexpr int levelLimit=1000,countedVolumeVersion=26,routingPositionVersion=20;
+// S1.2 (D269, D559): owned definition.modes is refused below it, even null (rejectModesBefore49).
+inline constexpr int modeVersion=49;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}
