@@ -356,3 +356,26 @@ stay with `studyAreaIssues` and `validateDocument`.
 | SP1 | On the unchanged reader: both bases parse (periods and clockStart from 49, the SA2 corridor from 55); the three floors even null, at their paths; `INVALID_NUMBER` for a null, text or negative clockStart; `EDIT_ZONE_INVALID` for null, `[]`, a number or an unknown key; `EDIT_STUDY_AREA_INVALID` for a null area, an unknown key and `modeId` beside `compositionId`; a mode gate flow parses |
 | SP2 | The three keys `false` below their floors; from them a number clockStart, nonempty closed period rows, a closed area with `nodes`/`flowSource` required and a three-value enum, and closed gate flows with the `modeId` condition |
 | SP3 | Every case labelled refused is refused by `parseDocument`; the 2,888 labels, writer output (periods with clockStart at 49; the corridor at 55, 58 and 59; a mode gate flow), D566's 9,668 labels and all 18 projects agree with the emitted schema (`jsonschema`, one-off) |
+
+## Map extension (D568)
+
+The composed CLI coverage adds `-map`; complete remains false. The root `map` (M1.21,
+`map_codec.cpp`) joins the root feature table (`rootFeatures`, renamed from D566's zone-layer
+table). Below 29 it is refused when present, even null (`UNSUPPORTED_FIELD: map`); the schema gives
+it `false`. From 29 it is a closed object; anything else is `EDIT_MAP_INVALID`.
+
+- `providerId` is text of 1–80 characters from `a`–`z`, `0`–`9` and `-` (`^[a-z0-9-]{1,80}$`);
+  `opacity` a number from 0 to 1; `reference` a closed object.
+- The reference requires `projectedCrs`, a WGS 84 UTM zone (`EPSG:32601`–`32660` or
+  `32701`–`32760`), `anchorLongitude` −180 to 180, `anchorLatitude` −80 to 84, `anchorWorldX` and
+  `anchorWorldY` within ±`mapWorldAnchorLimit` (10⁷ m) and `rotationDegrees` within ±180.
+
+These ranges are the codec's own (`validateMapSettings`, `utmCrs`), written as `minimum`,
+`maximum` and `pattern`. Left to the codec: the CRS must be the anchor's own UTM zone, including
+the Norway and Svalbard exceptions.
+
+| Row | Check |
+|---|---|
+| MP1 | On the unchanged reader: the base parses from 29; the 29 gate even null; `EDIT_MAP_INVALID` for null, a number, `{}` and an unknown key in either object; a well-formed zone that is not the anchor's is refused; the limits (80 characters, opacity 1, rotation −180, anchor 10⁷) parse |
+| MP2 | `map` `false` below 29; from 29 both objects closed with every key required, and the opacity, latitude and anchor bounds |
+| MP3 | Every case labelled refused is refused by `parseDocument`; the 4,636 labels, writer output (a southern zone at the range limits), D566's and D567's labels and all 18 projects agree with the emitted schema (`jsonschema`, one-off) |

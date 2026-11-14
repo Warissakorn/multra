@@ -149,10 +149,16 @@ constexpr Field vehicleClassFields[]={{"id",Kind::text,true},{"name",Kind::text}
 constexpr Field linkBehaviourTypeFields[]={{"id",Kind::text,true},{"name",Kind::text},{"defaultBehaviourId",Kind::text},
     {"overrides",Kind::behaviourOverrides}};
 constexpr Field behaviourOverrideFields[]={{"classId",Kind::text,true},{"behaviourId",Kind::text,true}};
-// D566 (PROJECT_SCHEMA_DEMAND, zone layer): the root zone layer and its closed rows (zone_codec.cpp's key lists).
-constexpr Field zoneLayerFields[]={{"zones",Kind::zones,false,0,zoneLayerVersion},{"zoneConnectors",Kind::zoneConnectors,false,0,zoneLayerVersion},
+// D566-D568 (PROJECT_SCHEMA_DEMAND): the root feature keys (zone layer, studies, map) and the zone rows (zone_codec.cpp's key lists).
+constexpr Field rootFeatureFields[]={{"zones",Kind::zones,false,0,zoneLayerVersion},{"zoneConnectors",Kind::zoneConnectors,false,0,zoneLayerVersion},
     {"odMatrices",Kind::odMatrices,false,0,zoneLayerVersion},{"parkingLots",Kind::parkingLots,false,0,zoneLayerVersion},
-    {"studyPeriods",Kind::studyPeriods,false,0,modeVersion},{"studyArea",Kind::studyArea,false,0,studyAreaVersion}};
+    {"studyPeriods",Kind::studyPeriods,false,0,modeVersion},{"studyArea",Kind::studyArea,false,0,studyAreaVersion},
+    {"map",Kind::map,false,0,mapVersion}};
+// D568: map_codec.cpp's two closed objects; the CRS-anchor agreement stays with validateMapSettings.
+constexpr Field mapFields[]={{"providerId",Kind::providerId,true},{"opacity",Kind::opacity,true},{"reference",Kind::mapReference,true}};
+constexpr Field mapReferenceFields[]={{"projectedCrs",Kind::utmCrs,true},{"anchorLongitude",Kind::longitude,true},
+    {"anchorLatitude",Kind::latitude,true},{"anchorWorldX",Kind::worldAnchor,true},{"anchorWorldY",Kind::worldAnchor,true},
+    {"rotationDegrees",Kind::rotation,true}};
 // D567: S1.1 periods and the S5.2a study area with its typed gate flows (study_period_codec.cpp, study_area_codec.cpp).
 constexpr Field studyPeriodFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"start",Kind::number,true},{"end",Kind::number,true}};
 constexpr Field studyAreaFields[]={{"nodes",Kind::nodeIds,true},{"flowSource",Kind::flowSource,true},{"gateFlows",Kind::gateFlows}};
@@ -246,7 +252,7 @@ std::span<const Field> fields(Object object) {
     case Object::vehicleClass:return vehicleClassFields;
     case Object::linkBehaviourType:return linkBehaviourTypeFields;
     case Object::behaviourOverride:return behaviourOverrideFields;
-    case Object::zoneLayer:return zoneLayerFields;
+    case Object::rootFeatures:return rootFeatureFields;
     case Object::zone:return zoneFields;
     case Object::zoneLinkConnector:return zoneLinkConnectorFields;
     case Object::zoneStreetConnector:return zoneStreetConnectorFields;
@@ -255,6 +261,8 @@ std::span<const Field> fields(Object object) {
     case Object::studyPeriod:return studyPeriodFields;
     case Object::studyArea:return studyAreaFields;
     case Object::gateFlow:return gateFlowFields;
+    case Object::map:return mapFields;
+    case Object::mapReference:return mapReferenceFields;
     }
     return {};
 }
@@ -270,8 +278,9 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::axles || object==Object::pcu || object==Object::vehicleClass ||
        object==Object::linkBehaviourType || object==Object::behaviourOverride || object==Object::zone ||
        object==Object::zoneLinkConnector || object==Object::zoneStreetConnector || object==Object::odMatrix ||
-       object==Object::parkingLot || object==Object::studyPeriod || object==Object::studyArea || object==Object::gateFlow)return false;
-    if(object==Object::zoneLayer)return true; // the root: other features have their own codecs
+       object==Object::parkingLot || object==Object::studyPeriod || object==Object::studyArea || object==Object::gateFlow ||
+       object==Object::map || object==Object::mapReference)return false;
+    if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
     if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
@@ -340,7 +349,9 @@ const Json& value(const Json& j,Object object,const char* name) {
     // D566: zone_codec.cpp keeps its own EDIT_ZONE_INVALID refusal for these.
     case Kind::zones:case Kind::zoneConnectors:case Kind::odMatrices:case Kind::parkingLots:case Kind::pairs:case Kind::numberMap:
     case Kind::zoneDirection:case Kind::travelDirection:case Kind::segmentId:case Kind::unsignedCount:case Kind::generatedBy:
-    case Kind::studyPeriods:case Kind::studyArea:case Kind::nodeIds:case Kind::flowSource:case Kind::gateFlows:break;
+    case Kind::studyPeriods:case Kind::studyArea:case Kind::nodeIds:case Kind::flowSource:case Kind::gateFlows:
+    case Kind::map:case Kind::mapReference:case Kind::providerId:case Kind::opacity:case Kind::utmCrs:case Kind::longitude:
+    case Kind::latitude:case Kind::worldAnchor:case Kind::rotation:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

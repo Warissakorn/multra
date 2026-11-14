@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — The root map in the schema (D568)
+
+- **Pick:** the owner asked to continue ("พัฒนาต่อ"); D567's NEXT proposed the map first.
+- **D568:** root `map` is `false` below 29; from 29 a closed object (`providerId` matching `^[a-z0-9-]{1,80}$`, `opacity` 0–1, `reference`) with a closed reference (`projectedCrs` a UTM `EPSG:326xx`/`327xx` zone, longitude −180–180, latitude −80–84, anchors within ±10⁷ m, rotation ±180°). `map_codec.cpp` checks keys with `exactFields` on the same tables; `EDIT_MAP_INVALID` unchanged. The CRS must also be the anchor's own zone: that stays the codec's. The root key table is renamed `rootFeatures` (zone layer, studies, map). Pins (MP1) passed on the unchanged reader first.
+- **One-off `jsonschema`:** 4,636 labels, writer output (a southern zone at the range limits), D566/D567's labels and all 18 projects agree; no shipped project has a map.
+- **Archive:** the oldest entry starts `PROGRESS-LOG-2026-11-14.md`; the 2026-11-13 file's index row was stale (it stopped at D540) and now lists all 35 entries' range.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1668/1668, group `project` 96/96); `check_no_pch.py` on the changed units 4/4. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — Study periods, clockStart and the study area in the schema (D567)
 
 - **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D566's NEXT proposed these root keys.
@@ -109,8 +117,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ## 2026-11-13 — M9 A4: the Dynamic assignment Results page (D552)
 
 - **D552** (owner picked A4: a Micro-level Results page, Apply as one Undo step): contract first (DYNAMIC_ASSIGNMENT §17), then `DynamicAssignmentPanel` (level, iteration cap, gap, seed; Run/Cancel on a worker via a new `keepGoing` hook in `iterateMsa`; δ and cell tables; CSV; *Apply weights*; *Save route costs…*), en/th keys. `dynamic-assignment-ui` passes DA14–DA17 first time; an offscreen capture checked the layout. Owner check: OWNER_SITTING_WINDOWS C17.
-
-## 2026-11-13 — M9 A2b: placed and positioned decisions in the loop (D551)
-
-- **D551** (owner: "ทำต่อตามแนะนำ"): contract first (DYNAMIC_ASSIGNMENT §15, MESO_ASSIGNMENT §10), then `routeFamilies` exported from `expandRouteless` into `RunSnapshot`, `decisionFamilyName`, placed (departure) and positioned (`RoutingEvent`) costs in `measureDecisionCosts`, families in the Meso measurement. Group `dynassignplaced` passes DA10–DA13; `mesoassign` passes MA9.
-- **Recorded:** the first DA10/DA11 recomputation mapped by departure route and dropped stub left-turners (test fix, values unchanged); MA9's first fixture contradicted §15 (both routes end on one Link) and was amended before re-running (§10.1).

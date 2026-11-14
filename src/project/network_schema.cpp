@@ -3,6 +3,7 @@
 #include "network_fields.hpp"
 #include "document.hpp"
 #include "document_envelope.hpp"
+#include "map_settings.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <map>
@@ -81,6 +82,15 @@ class NetworkSchema {
         case Kind::nodeIds:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
         case Kind::flowSource:rule={{"type","string"},{"enum",Json::array({"typed","macro","meso"})}};break;
         case Kind::gateFlows:rule={{"type","array"},{"minItems",1},{"items",reference(Object::gateFlow,version)}};break;
+        case Kind::map:rule=reference(Object::map,version);break;
+        case Kind::mapReference:rule=reference(Object::mapReference,version);break;
+        case Kind::providerId:rule={{"type","string"},{"pattern","^[a-z0-9-]{1,80}$"}};break;
+        case Kind::opacity:rule={{"type","number"},{"minimum",0},{"maximum",1}};break;
+        case Kind::utmCrs:rule={{"type","string"},{"pattern","^EPSG:32[67](0[1-9]|[1-5][0-9]|60)$"}};break;
+        case Kind::longitude:rule={{"type","number"},{"minimum",-180},{"maximum",180}};break;
+        case Kind::latitude:rule={{"type","number"},{"minimum",-80},{"maximum",84}};break;
+        case Kind::worldAnchor:rule={{"type","number"},{"minimum",-mapWorldAnchorLimit},{"maximum",mapWorldAnchorLimit}};break;
+        case Kind::rotation:rule={{"type","number"},{"minimum",-180},{"maximum",180}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -235,7 +245,7 @@ public:
                 case Object::vehicleClass:return "vehicleClass";
                 case Object::linkBehaviourType:return "linkBehaviourType";
                 case Object::behaviourOverride:return "behaviourOverride";
-                case Object::zoneLayer:return "zoneLayer";
+                case Object::rootFeatures:return "rootFeatures";
                 case Object::zone:return "zone";
                 case Object::zoneLinkConnector:return "zoneLinkConnector";
                 case Object::zoneStreetConnector:return "zoneStreetConnector";
@@ -244,6 +254,8 @@ public:
                 case Object::studyPeriod:return "studyPeriod";
                 case Object::studyArea:return "studyArea";
                 case Object::gateFlow:return "gateFlow";
+                case Object::map:return "map";
+                case Object::mapReference:return "mapReference";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -255,14 +267,14 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart and study area. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area and map settings. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);
             const auto definition=reference(Object::definition,version);
             // D566: the root zone layer sits beside network and definition (false below 31).
-            Json properties=objectSchema(Object::zoneLayer,version).at("properties");
+            Json properties=objectSchema(Object::rootFeatures,version).at("properties");
             properties["network"]=ref;properties["definition"]=definition;
             const auto key=properties.dump();
             auto [it,inserted]=indices.emplace(key,groups.size());

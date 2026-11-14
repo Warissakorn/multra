@@ -11,7 +11,7 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
     vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
-    zoneLayer,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow };
+    rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
@@ -19,7 +19,8 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu,
     behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
     zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy,
-    studyPeriods,studyArea,nodeIds,flowSource,gateFlows };
+    studyPeriods,studyArea,nodeIds,flowSource,gateFlows,
+    map,mapReference,providerId,opacity,utmCrs,longitude,latitude,worldAnchor,rotation };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -54,6 +55,8 @@ inline constexpr int zoneLayerVersion=31,streetZoneConnectorVersion=57,generated
 inline constexpr const char* kGeneratedByModeChoice="mode-choice";
 // D567: root studyPeriods and definition.clockStart use modeVersion (49, S1.1); the root studyArea is refused below 55.
 inline constexpr int studyAreaVersion=55;
+// D568: the root map (M1.21) is refused below 29.
+inline constexpr int mapVersion=29;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}
