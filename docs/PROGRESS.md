@@ -5,6 +5,95 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Macro settings and runs in the schema (D569)
+
+- **Pick:** the owner asked to continue ("ทำต่อ"); D568's NEXT proposed `macroRuns`, whose rows embed the settings row `definition.macroSettings` uses.
+- **D569:** `definition.macroSettings` is `false` below 51 and root `macroRuns` below 56; from them one shared closed settings row (0 < `targetGap` < 1, integer `maxIterations` 1–100,000) and closed run rows (`id`, `name`, `period`, `settings`). Both readers check membership with a new `networkCodec::knownKey`; codes and paths unchanged. Pins (MR1) passed on the unchanged readers first.
+- **One-off `jsonschema`:** 1,557 labels, writer output, D566–D568's labels and all 18 projects (2 with Macro runs or settings) agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1671/1671, group `project` 99/99); `check_no_pch.py` on the changed units 6/6. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — The root map in the schema (D568)
+
+- **Pick:** the owner asked to continue ("พัฒนาต่อ"); D567's NEXT proposed the map first.
+- **D568:** root `map` is `false` below 29; from 29 a closed object (`providerId` matching `^[a-z0-9-]{1,80}$`, `opacity` 0–1, `reference`) with a closed reference (`projectedCrs` a UTM `EPSG:326xx`/`327xx` zone, longitude −180–180, latitude −80–84, anchors within ±10⁷ m, rotation ±180°). `map_codec.cpp` checks keys with `exactFields` on the same tables; `EDIT_MAP_INVALID` unchanged. The CRS must also be the anchor's own zone: that stays the codec's. The root key table is renamed `rootFeatures` (zone layer, studies, map). Pins (MP1) passed on the unchanged reader first.
+- **One-off `jsonschema`:** 4,636 labels, writer output (a southern zone at the range limits), D566/D567's labels and all 18 projects agree; no shipped project has a map.
+- **Archive:** the oldest entry starts `PROGRESS-LOG-2026-11-14.md`; the 2026-11-13 file's index row was stale (it stopped at D540) and now lists all 35 entries' range.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1668/1668, group `project` 96/96); `check_no_pch.py` on the changed units 4/4. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — Study periods, clockStart and the study area in the schema (D567)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D566's NEXT proposed these root keys.
+- **D567:** root `studyPeriods` and `definition.clockStart` are `false` below 49, root `studyArea` below 55; from them closed period rows, a number clockStart, a closed area (`nodes` nonempty, `flowSource` typed/macro/meso, optional `gateFlows`) and closed gate flows taking `compositionId` or `modeId` through `unless`. D566's `exactKeys` moved to `networkCodec::exactFields`; the period, area and zone codecs all use it and take the file version. Codes unchanged; pins (SP1) passed on the unchanged readers first.
+- **One-off `jsonschema`:** 2,888 labels, writer output (periods with clockStart; the SA2 corridor at 55, 58 and 59; a mode gate flow), D566's 9,668 labels and all 18 projects agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1665/1665, group `project` 93/93); `check_no_pch.py` on the changed units 7/7. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — The root zone layer in the schema (D566)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D565's NEXT proposed the zone layer.
+- **D566:** `zones`, `zoneConnectors`, `odMatrices` and `parkingLots` join each version branch beside `network`/`definition`: `false` below 31, nonempty arrays of closed rows from it. A connector picks the street row from 57 by its id key (`roadId` 57–58, `streetSegmentId` from 59); a matrix's either-or keys use a new field attribute `unless` (`if required [modeId] then compositionId false else required`, the same for `periodId` and the times); `generatedBy` from 70; lot counts are unsigned tokens. `zone_codec.cpp`'s `exactKeys` now reads the same tables; the ambiguity and `generatedBy` codes keep their order. Pins (ZL1) passed on the unchanged reader first. D565's unused `knownFields` helper in `parse.cpp` is removed.
+- **One-off `jsonschema`:** 9,668 labels, writer output (period, mode and generated matrices; the street fixture at 57, 58 and 59) and all 18 projects (8 with zones) agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1662/1662, group `project` 90/90); `check_no_pch.py` on the changed units 5/5. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — Vehicle classes and link behaviour types in the schema (D565)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D564's NEXT proposed these catalogs.
+- **D565:** both `false` below 21 and closed rows from it (class: `id`, `vehicleTypeIds`; link type: `id`, optional `name`/`defaultBehaviourId`/`overrides` of `{classId, behaviourId}`). `parseBehaviourLibrary`'s three `requireKnownFields` lists became `networkCodec::knownFields` on the tables; `requireKnownFields` had no other caller and is removed. The `text()` sentences stay (a null name is `Expected text: name`). Pins (BC1) passed on the unchanged reader first.
+- **One-off `jsonschema`:** 3,040 labels, a round-trip and all 18 projects agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1659/1659, group `project` 87/87); `check_no_pch.py` on the changed units 5/5. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — Behaviour schema slice B2: floors and closure (D564)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); NEXT's B2.
+- **D564:** both behaviour rows close from 21; the 18 floored keys are `false` below their floors (28, 32–37, 41, 43, 44), with the floors as `network_fields.hpp` constants that `document.cpp`'s `reject*` calls use. `readOptionals` now iterates `behaviourOptionalNumbers` (name, member, floor, code) in the old order, removing D563's duplicate list. Floors pinned on the unchanged reader first (BH4). B3 had nothing left.
+- **One-off `jsonschema`:** 14,076 labels, a W74 round-trip and all 18 projects agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1656/1656, group `project` 84/84); `check_no_pch.py` on the changed units 5/5. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — Behaviour schema slice B1: the model tag and per-model rows (D563)
+
+- **Pick:** continued "ตามแนะนำ" into B1, the slice D561 carved.
+- **D563:** the composed schema's `definition.behaviours`: prototype row below 25, `if model == "w74"` W74 row else prototype from 25; `model`/`name` `false` below 21, `model` required from 21 (prototype-only enum at 21–24). Rows are built from core's `w74ParameterKeys`, `perceptionParameterKeys`, `lateralParameterKeys` plus one project-side list; `parseBehaviourLibrary`'s hand-kept `common[]` (equal to the table's non-core keys, checked) is replaced by `behaviourKey`. Rows open; floors are B2.
+- **One-off `jsonschema`:** 7,036 labels, a W74 writer round-trip and all 18 projects agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1655/1655, group `project` 83/83); `check_no_pch.py` on the changed units 6/6. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — Owner item 49: vehicle-type reader limits fixed (D562)
+
+- **Owner:** "ทำต่อตามแนะนำ", read as accepting the session's recommendations on OWNER_SITTING 49, (a) and (b2), then continuing.
+- **(a):** `parseSpeedRange` reads `min`/`max` through `networkCodec::value()`: `Missing field: min`, `Expected number: max`, `Field is null: min` replace the JSON library's message. What loads is unchanged.
+- **(b2):** from 21 `parseBehaviourLibrary` also checks `desiredSpeed` (`vehicleTypes[i].desiredSpeed.<key>`) and each curve point (`….curve[k].<key>`) against the same table; the schema closes both from 21. Below 21, the installed catalog and bare definitions stay additive. All 18 projects in the repository still validate (`jsonschema`, one-off), 5,700 labels agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1652/1652); `check_no_pch.py` on the changed units 4/4. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — Behaviour schema inventory, before code (D561)
+
+- **Pick:** the owner replied "เห็นด้วย" to D560's report; read as agreement with the proposed order (behaviours next), not as an answer to OWNER_SITTING 49, which stays open.
+- **D561 (docs only):** PROJECT_SCHEMA_DEMAND's behaviour inventory: the model tag (refused below 21, required from 21, `w74` refused below 25), the prototype and W74 rows and the keys each refuses, the both-model keys, closure from 21 by `common[]` plus the core lists, ten presence floors, census (no W74 row anywhere in the repository). Slices B1–B3 carved; B1 is next.
+- **Item 49(b) reworded:** a refusal "from the next schema step" would cover almost nothing, since the writer picks a version from features; options (b1)–(b3) now state their effect.
+
+## 2026-11-14 — Owned vehicle types in the composed project schema (D560)
+
+- **Pick:** the owner asked for the next work again ("ทำงานถัดไป"); D559's NEXT proposed vehicle types.
+- **Inventory finding:** the type row is closed from 21 by a second hand-kept key list in `parseBehaviourLibrary` (open, additive, below 21). That list is now the field table.
+- **D560:** the schema maps the row (open < 21, closed from 21), closed `axles` and `pcu`, open `desiredSpeed` and curve points, `curve`/`kerbLanes`/`pcu` `false` below 40/42/49 (shared constants with the guards), `kerbLanes` an `integer-token`. `parseVehicleType`'s scalars and axles read through `value()` with unchanged sentences; kerbLanes, pcu and the curve keep their own codes. Pins (VT1, VT3) passed on the unchanged reader first.
+- **One-off `jsonschema`:** 5,700 labels, 9 projects, 7 installed type files and a round-trip carrying every gated key agree.
+- **Owner (OWNER_SITTING 49):** (a) `desiredSpeed.min`/`max` report the JSON library's message; (b) an unknown key inside `desiredSpeed` or a curve point is dropped on save (round-trip at the latest schema). `min: true` is refused, so the schema is not over-strict there.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1652/1652, group `project` 80/80); `check_no_pch.py` on the changed units 7/7. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — Owned modes in the composed project schema (D559)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D558's NEXT named owned modes first.
+- **D559:** `definition.modes` is `false` below 49 and an array of closed `{id, name, compositionId}` text rows from it. `parseMode` takes its key list and count from the new `Object::mode` metadata but keeps its bare `EDIT_CATALOG_READ` (no `value()` sentences); `document.cpp`'s guard and the schema share `networkCodec::modeVersion`. Pins (MS1, MS3) passed on the unchanged reader first.
+- **One-off `jsonschema`:** all 1,672 version-dependent case labels agree with the emitted schema; a project owning the two installed modes validates at 50 and is refused at 48. No shipped or test file owns modes.
+- **Left codec-owned:** `odMatrices[i].modeId` and a vehicle type's `pcu` (same schema-49 guard).
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1649/1649, group `project` 77/77); `check_no_pch.py` on the changed units 5/5. Windows not run (no CI run on a branch push).
+
+## 2026-11-14 — Owned compositions in the composed project schema (D558)
+
+- **Pick:** NEXT's AI-automation "Next" (map Composition/type-share/interval rows), the only open item not waiting on the owner.
+- **D558:** `networkCodec` gains composition, type-share and interval rows; `definition.compositions` is optional, never null; all three rows are closed at every version (the reader always was); no read gate (18/19 stay writer floors). `parseComposition` now reads through that metadata; its diagnostics were pinned by tests on the unchanged reader first (CS1). Coverage id ends `-compositions`.
+- **Docs:** PROJECT_SCHEMA.md was at the 500-line limit, so its D363/D364 sections and the new one moved to [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
+- **CS4 (one-off, Python `jsonschema` 4.26):** the 2 shipped and 7 test projects with owned compositions validate against the emitted schema; an interval row validates, unknown keys and null `name`/`intervals` are refused; all 4,408 CS3 case labels agree with the emitted schema.
+- **Environment:** the session had no toolchain; the personal cloud environment now has a setup script installing BUILDING's apt line (unproven until a fresh session).
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1646/1646, group `project` 74/74); `check_no_pch.py` on the changed units 5/5. Windows not run (CI).
+
 ## 2026-11-14 — Windows CI fixed: a header leaned on the PCH
 
 - **Cause:** run 754 failed both Windows jobs (C2027 in the M6 run tools). Windows CI configures with `CMAKE_DISABLE_PRECOMPILE_HEADERS=ON`; on Linux the shared PCH supplied `<nlohmann/json.hpp>`, so `tools/m6_s1_summary.hpp` (Json used whole from line 138) compiled with only `json_fwd.hpp`. The last green Windows build was `main@fcfeb56`, 103 commits before.
@@ -31,74 +120,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **D553** (owner: "ช่วยตัดสินใจ", then "ทำต่อตามแนะนำ"; every recommended option): [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), rows SC1–SC7, before code. Meso runs opt-in on the study area's run-time copy (the same cut Micro runs on; `"meso"` as the source is `MESO_AREA_SOURCE_SELF`); per study period, every gate and kept Link gets Macro, Meso and Micro (multi-seed `Estimate`) veh/h with Δ, % and GEH, reported only. R1 is the CLI `--consistency-report`, R2 a Results page. Open: O1, TAG M3.1's GEH paragraph (the publisher's host was not reachable).
 - **R1:** `src/project/subarea_consistency.*` (`runMesoArea`, `consistencyReport`, JSON/CSV), `tools/consistency_cli.*`, `estimate` made public. Groups `consistency` (SC1–SC6) and `cli-consistency` (SC7) pass first time. Corridor (area {A}, 600 veh/h): Macro 600, Meso 592.7 (bound 12.0), Micro 240 over seeds 42–43; Micro's west→east movement gives way and queues at the source, Meso ignores Node priority (SUBAREA_CONSISTENCY §12). Nothing tuned. Verified on Linux: `check` 352/352.
-
-## 2026-11-13 — M9 A4: the Dynamic assignment Results page (D552)
-
-- **D552** (owner picked A4: a Micro-level Results page, Apply as one Undo step): contract first (DYNAMIC_ASSIGNMENT §17), then `DynamicAssignmentPanel` (level, iteration cap, gap, seed; Run/Cancel on a worker via a new `keepGoing` hook in `iterateMsa`; δ and cell tables; CSV; *Apply weights*; *Save route costs…*), en/th keys. `dynamic-assignment-ui` passes DA14–DA17 first time; an offscreen capture checked the layout. Owner check: OWNER_SITTING_WINDOWS C17.
-
-## 2026-11-13 — M9 A2b: placed and positioned decisions in the loop (D551)
-
-- **D551** (owner: "ทำต่อตามแนะนำ"): contract first (DYNAMIC_ASSIGNMENT §15, MESO_ASSIGNMENT §10), then `routeFamilies` exported from `expandRouteless` into `RunSnapshot`, `decisionFamilyName`, placed (departure) and positioned (`RoutingEvent`) costs in `measureDecisionCosts`, families in the Meso measurement. Group `dynassignplaced` passes DA10–DA13; `mesoassign` passes MA9.
-- **Recorded:** the first DA10/DA11 recomputation mapped by departure route and dropped stub left-turners (test fix, values unchanged); MA9's first fixture contradicted §15 (both routes end on one Link) and was amended before re-running (§10.1).
-
-## 2026-11-13 — M11.5 Meso assignment contract (D550)
-
-- **D550** (owner: "ทำงานถัดไปตามแนะนำ" after asking what M11.5 is, then every recommended option): [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md), rows MA1–MA8, before code. Free-flow times read from the compiled fixture graph (t_s 55.356464, t_l 109.904888 s); deterministic-queueing equilibrium x* = 0.590914; an analytic MSA reference stops at n = 11 for gap 0.01.
-- **S1:** `src/project/meso_assignment.*` (cohort integral, `measureMesoDecisionCosts`), `DaLevel` through `runDynamicAssignment`, the file's `level` and `--dynamic-assignment --meso` / `--route-costs --meso`. Group `mesoassign` passes MA1–MA8 first time; converged at n = 6 with short share 0.5833 (x* 0.5909), costs 107.49 / 109.905 s. Two CLI runs `cmp`-identical.
-
-## 2026-11-13 — M9 dynamic assignment contract (D549)
-
-- **D549** (owner: "ทำงานถัดไป", chose the M9 contract, then every recommended option): [DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9, before code. MSA (Ortúzar Eq. 10.23) over routing-decision cells, cost from the decision to arrival, δ (Eq. 10.22) stopping, a separate `MultraRouteCosts` file and `--route-costs`.
-- **Hand values:** Example 10.6's MSA trace (book p. 371) computed exactly; every row equals the printed table (row 7 printed rounded), reaching Example 11.1's 600 / 1400 at 22 min at n = 10 with δ = 0.
-- **A1:** `src/project/dynamic_assignment.*` (`iterateMsa` behind a cost provider, `allOrNothing`, `msaStep`, `msaDelta`); group `dynassign` passes DA1–DA3 against that table to 1e-9.
-- **A2:** amendments recorded before code (§11: unplaced decisions only, placed ones refused until A2b; cost = departure to arrival; free-flow fill by authored route length over the mean desired speed); measurement, the `MultraRouteCosts` codec and `--route-costs`; group `dynassignrun` passes DA4–DA6 and DA9.
-- **A3:** fixture (§13) fixed before running; the first run showed the 1 : 1 start already inside the gap (δ 0.027) and the 5 % cost criterion inconsistent with δ, so §13.1 amends both openly (start 19 : 1; δ alone). `runDynamicAssignment`, `--dynamic-assignment`, `fixture::twoRoute()`; δ 0.810 → 0.0108, converged at n = 2 with 0.475 / 0.525 at 70.2 / 68.7 s. Group `dynassignloop` passes DA7–DA8; two CLI runs `cmp`-identical.
-
-## 2026-11-13 — Logsum composite cost into distribution, G/D/MS/A (D548)
-
-- **D548** (owner: "ทำงานถัดไป", chose logsum feedback, then every recommended option): contract first ([MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md), Ortúzar §6.5.2), hand values before code (Example 6.3's C_B = 49.2298; a one-origin, two-destination table).
-- **L1:** `distributionCost: "logsum"` per mode-choice purpose at schema 76 (one shared negative coefficient); `logsum`/`compositeCost` in `src/macro/mode_choice`; `runModeChoice` checks Eq. 6.11 (β > λ refused) and re-runs the distribution on the composite; skim-pass balancing refusals are held until the set is known. LS1–LS8 pass against the hand values; the first test run's zone order was fixed in the test only.
-- **L2:** a per-purpose check box in the *Nests* dialog; `nested-logit-ui` covers LS9.
-
-## 2026-11-13 — Procedure feedback: congested costs back into demand (D547)
-
-- **D547** (owner: "ทำงานถัดไป", chose M10 congested-cost feedback, then answered the contract's four choices with every recommended option): contract first ([PROCEDURE_FEEDBACK](reference/PROCEDURE_FEEDBACK.md), Ortúzar §11.3; the CW formula checked on the p. 432 image), hand fixed point of Example 11.3 before code.
-- **F1:** `feedback` on a procedure at schema 75; `skimAt` and an optional `linkTimes` through `zoneSkim`, distribution and mode choice; `procedure_feedback.cpp` (re-run mode choice on congested times, average the OD-mode matrices by CW or MSA, assign, TMF/RSE); JSON `feedback` block and CLI lines. Fixture `tests/data/procedure-feedback/`. MSA's fixture stop (2 persons in 200 iterations) and FB7's naive case (λ 0.6, where naive's factor 2λ > 1) were amended after the first test run, before commit; no definition or hand value changed.
-- **F2:** the dialog's *Feedback* group and the page's iterations table and CSV section; `procedure-ui` covers FB10.
-- **Result:** CW reaches 999.80 / 999.07 veh/h against the hand 999.79 / 999.08 in 7 and 10 iterations; MSA takes 127 and 49. Not a validation.
-
-## 2026-11-13 — Sensitivity sweep phase 2: engine levers D and E (D546)
-
-- **D546** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_SWEEP](reference/M6_SWEEP.md) §4, rows SW5–SW10), then runtime-only `DriverBehaviour` flags `standingTarget` (D) and `stopArrival` (E), off by default (`following.cpp`, `conflicts.cpp` `stopMade`), and candidates `D`, `E`, `DE`. Rows SW7 and SW9 were amended after the first test run, before any sweep figure; no definition changed. No `src/core` split was needed (largest file 469 lines).
-- **Result** ([evidence](evidence/m6-sweep-phase2.md)): D: S1 1,910.2 veh/h (jam spacing 6.50 m, `t_x` 1.35 s), S2 misses shrink, U `t_f` 6.91 s with U-c passing at `v_c` 200 and 400; E alone equals base; DE `t_f` 5.82 s. U-a misses everywhere. Nothing adopted.
-
-## 2026-11-13 — No calibration on M6; sensitivity sweep phase 1 (D544, D545)
-
-- **D544** (owner asked for calibration options and chose "ไม่ calibrate + sweep"): [options sheet](evidence/m6-calibration-options.md) with five options A–E and estimated effects; D540's hold is closed as no calibration on M6.
-- **D545:** contract first ([M6_SWEEP](reference/M6_SWEEP.md), rows SW1–SW4), then `tools/m6_candidates.hpp` and `--candidate base|B|C` on the S1, S2 (`ab`) and U (`run`) tools; no flag keeps outputs byte-identical (a `base` S1 rerun matched the first run).
-- **Result** ([evidence](evidence/m6-sweep-phase1.md)): B 2,029.8 veh/h, C 2,109.5 (S1-f would pass, S1-a would miss for both); S2 misses grow; U `t_f` 12.89 / 12.98 s (base 13.67). The D544 arithmetic overstated both levers on U. Nothing adopted.
-
-## 2026-11-13 — Where the Stop follow-up goes (D543)
-
-- **D543** (owner: "ทำงานถัดไป"): contract first ([M6_U_RUN](reference/M6_U_RUN.md) §6, rows SU1–SU5), then `tools/m6_u_split.hpp` and mode `split` of `multra-m6-u-run` (the D542 run is mode `run`). Row SU4 was moved to `v_c` 200 and its dwell value corrected to one observed tick from the first test run, before any split figure; no definition changed.
-- **Result** ([evidence](evidence/m6-u-split.md)): move-up 10.7–12.2 s of the 12.5–13.9 s headway (settle 3.75 s), service 0.1 s, release 1.6 s with almost no gap-rule blocking. Nothing tuned.
-
-## 2026-11-13 — Kind U first run: U-c and U-a (D542)
-
-- **D542** (owner: "ทำงานถัดไป", plan approved): contract first ([M6_U_RUN](reference/M6_U_RUN.md), rows U1–U6), then `tools/m6_u_network.hpp`, `m6_u_summary.hpp` and `multra-m6-u-run`. A left-hand T, Stop on the minor left turn's merge, `gapTime` 5.804 s from `t_c` 6.2 s, minor demand 1,800 veh/h, seeds 42–81.
-- **Result** ([evidence](evidence/m6-u-first-run.md)): 228.5, 196.0, 159.4, 119.2, 81.6 veh/h at `v_c` 200 … 1,000; U-a (HCM 846 … 298) and U-c miss at every level. The follow-up headway is 13.7 s, so the Stop service caps the movement. Nothing tuned.
-- `CMakeLists.txt`: the scattered `add_dependencies(check …)` lines folded into one to stay at 500 lines.
-
-## 2026-11-13 — The engine's effective green, and the references at its own values (D541)
-
-- **D541** (owner: as recommended): contract first (M6_S2_RUN §8, rows S2E1–S2E4), then `tools/m6_s2_green.hpp` and mode `green` of `multra-m6-s2-run`. Every crossing per cycle is counted on the saturated S1 project, amber included.
-- **The run:** 40 seeds on build `db17252`.
-  - **Capacity** 913.0 veh/h against HCM's 844.4.
-  - **Effective green** 42.27 s against 40 s.
-  - **Lost time** 0.73 s against 3 s.
-  - **Amber crossings** about 1.6 per cycle.
-- **At the engine's own green and capacity:**
-  - HCM `d1 + d2` lies between −9.5 % and +13.1 % of its S2-b/S2-a delay.
-  - FCTL lies 6–8 % below it, the deceleration share.
-- **Reading:** the S2-b/S2-a miss is about capacity, not queueing. D539's verdicts stand. [m6-s2-green](evidence/m6-s2-green.md).
-- **Verified on Linux:** `check` 335/335 (`m6s2` 15/15).

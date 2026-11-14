@@ -1,6 +1,7 @@
 #include "macro_run_definition.hpp"
 #include "document.hpp"
 #include "macro_settings.hpp"
+#include "network_fields.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <set>
@@ -29,7 +30,7 @@ std::vector<MacroRunDefinition> parseMacroRunDefinitions(const Json& file) {
         const auto& row = list[i];
         if (!row.is_object()) invalid(path);
         for (const auto& [key, _] : row.items())
-            if (key != "id" && key != "name" && key != "period" && key != "settings") invalid(path + "." + key);
+            if (!networkCodec::knownKey(key, networkCodec::Object::macroRun, networkCodec::macroRunVersion)) invalid(path + "." + key); // D569
         result.push_back({text(row, "id", path), text(row, "name", path), text(row, "period", path), readSettings(row, path + ".settings")});
     }
     return result;

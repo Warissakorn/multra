@@ -1,5 +1,6 @@
 #include "mode_codec.hpp"
 #include "input_manifest.hpp"
+#include "network_fields.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -27,9 +28,11 @@ void rejectModesBefore49(const Json& j) {
         if (types[i].is_object() && types[i].contains("pcu")) refuse("vehicleTypes[" + std::to_string(i) + "].pcu");
 }
 Mode parseMode(const Json& j) {
-    if (!j.is_object() || j.size() != 3) throw std::invalid_argument("EDIT_CATALOG_READ");
-    for (const auto* key : {"id", "name", "compositionId"})
-        if (!j.contains(key) || !j.at(key).is_string()) throw std::invalid_argument("EDIT_CATALOG_READ");
+    // D559: the key list is the schema's (every field required text); the only diagnostic stays the bare code.
+    const auto keys = networkCodec::fields(networkCodec::Object::mode);
+    if (!j.is_object() || j.size() != keys.size()) throw std::invalid_argument("EDIT_CATALOG_READ");
+    for (const auto& field : keys)
+        if (!j.contains(field.name) || !j.at(field.name).is_string()) throw std::invalid_argument("EDIT_CATALOG_READ");
     return {j.at("id").get<std::string>(), j.at("name").get<std::string>(), j.at("compositionId").get<std::string>()};
 }
 Json modeJson(const Mode& m) { return {{"id", m.id}, {"name", m.name}, {"compositionId", m.compositionId}}; }

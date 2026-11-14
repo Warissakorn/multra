@@ -1,5 +1,6 @@
 #include "study_area_codec.hpp"
 #include "../core/validate.hpp"
+#include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 #include <cmath>
 #include <set>
@@ -10,9 +11,10 @@ namespace {
 constexpr const char* kArea = "studyArea";
 [[noreturn]] void invalid() { throw std::invalid_argument("EDIT_STUDY_AREA_INVALID"); }
 bool text(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
-GateFlow parseFlow(const Json& f) {
-    if (!f.is_object() || f.size() != 5 || !text(f, "periodId") || !text(f, "from") || !text(f, "to") ||
-        !f.contains("vehiclesPerHour") || !f.at("vehiclesPerHour").is_number() || text(f, "compositionId") == text(f, "modeId"))
+// D567: the area's and the gate flow's key lists are the schema's (network_fields.cpp); the only refusal stays the bare code.
+GateFlow parseFlow(const Json& f, int version) {
+    if (!networkCodec::exactFields(f, networkCodec::Object::gateFlow, version) || !text(f, "periodId") || !text(f, "from") || !text(f, "to") ||
+        !f.at("vehiclesPerHour").is_number() || text(f, "compositionId") == text(f, "modeId"))
         invalid();
     GateFlow flow{f.at("periodId").get<std::string>(), f.at("from").get<std::string>(), f.at("to").get<std::string>(), "", "",
                   f.at("vehiclesPerHour").get<double>()};
@@ -24,12 +26,12 @@ bool usesStudyArea(const ProjectDocument& d) { return !d.zones.studyArea.nodes.e
 void rejectStudyAreaBefore55(const Json& j) {
     if (j.contains(kArea)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", kArea}});
 }
-StudyArea parseStudyArea(const Json& j) {
+StudyArea parseStudyArea(const Json& j, int version) {
     StudyArea area;
     if (!j.contains(kArea)) return area;
     const auto& a = j.at(kArea);
-    if (!a.is_object() || !a.contains("nodes") || !a.at("nodes").is_array() || a.at("nodes").empty() || !text(a, "flowSource") ||
-        (a.at("flowSource") != "typed" && a.at("flowSource") != "macro" && a.at("flowSource") != "meso") || a.size() != (a.contains("gateFlows") ? 3u : 2u))
+    if (!networkCodec::exactFields(a, networkCodec::Object::studyArea, version) || !a.at("nodes").is_array() || a.at("nodes").empty() ||
+        !text(a, "flowSource") || (a.at("flowSource") != "typed" && a.at("flowSource") != "macro" && a.at("flowSource") != "meso"))
         invalid();
     for (const auto& n : a.at("nodes")) {
         if (!n.is_string()) invalid();
@@ -38,7 +40,7 @@ StudyArea parseStudyArea(const Json& j) {
     area.flowSource = a.at("flowSource").get<std::string>();
     if (a.contains("gateFlows")) {
         if (!a.at("gateFlows").is_array() || a.at("gateFlows").empty()) invalid();
-        for (const auto& f : a.at("gateFlows")) area.gateFlows.push_back(parseFlow(f));
+        for (const auto& f : a.at("gateFlows")) area.gateFlows.push_back(parseFlow(f, version));
     }
     return area;
 }

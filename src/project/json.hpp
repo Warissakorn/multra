@@ -26,7 +26,6 @@ inline constexpr const char* kPrototypeBehaviourModel = "prototype";
 inline constexpr const char* kW74BehaviourModel = "w74";
 PriorityDefaults parsePriorityDefaults(const Json& value);
 // EDIT_UNSUPPORTED_FIELD for any key outside `keys`, whatever the schema (M3.3.2a strict sections).
-void requireKnownFields(const Json& value, std::initializer_list<const char*> keys, const std::string& path);
 VehicleType parseVehicleType(const Json& value);
 std::optional<int> parseKerbLanes(const Json& vehicleType); // B-7 (D234): a whole number, else INVALID_KERB_LANES
 std::optional<Pcu> parsePcu(const Json& vehicleType); // S1.2 (D270): {value, source}, else INVALID_PCU (mode_codec.cpp)

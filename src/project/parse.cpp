@@ -19,17 +19,6 @@ const Json& section(const Json& value, const char* name) {
     return value.at(name);
 }
 namespace {
-// Schema 7 is implemented incrementally. Never accept a target-spec field and then silently
-// discard it on save (or imply its simulation behavior exists). Legacy readers stay additive.
-void knownFields(const Json& value,std::initializer_list<const char*> keys,
-                 const std::string& path,int version) {
-    if(version<7 || !value.is_object())return;
-    for(const auto& [key,unused]:value.items()) {
-        (void)unused;
-        if(std::none_of(keys.begin(),keys.end(),[&](const char* k){return key==k;}))
-            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",path+"."+key}});
-    }
-}
 // Every accessor goes through this: reaching .at() on a null or a non-object is how an
 // nlohmann type_error escapes to the user instead of a sentence naming the missing field.
 const Json& member(const Json& value, const char* name) {
@@ -92,9 +81,6 @@ Network parseNetwork(const Json& value, int schemaVersion) {
     network.travelTimeSections=networkCodec::readTravelTimeSections(value,schemaVersion);
     return network;
 }
-void requireKnownFields(const Json& value,std::initializer_list<const char*> keys,const std::string& path) {
-    knownFields(value,keys,path,21);
-}
 PriorityDefaults parsePriorityDefaults(const Json& value) {
     return {field<double>(value, "gapTime"), field<double>(value, "headway")};
 }
@@ -111,10 +97,13 @@ static void readPerception(const Json& b, const std::string& path, PerceptionPar
     }
 }
 // One optional number each (curve D212, kerb D215, commitment D219, mandatory D221, Stop dwell D231, spread D236, red running D238); ranges are the validator's.
+// D564: the keys, their order and members are the schema's table (networkCodec::behaviourOptionalNumbers).
 static void readOptionals(const Json& b, const std::string& path, DriverBehaviour& d) {
-    for (const auto& [key, value] : {std::pair{"curveLateralAcceleration", &d.curveLateralAcceleration}, std::pair{"kerbLaneBias", &d.kerbLaneBias}, std::pair{"commitmentDeceleration", &d.commitmentDeceleration}, std::pair{"mandatoryDecelerationOwn", &d.mandatoryDecelerationOwn}, std::pair{"mandatoryDecelerationTrailingVehicle", &d.mandatoryDecelerationTrailingVehicle}, std::pair{"stopDwellTime", &d.stopDwellTime}, std::pair{"driverFactorSpread", &d.driverFactorSpread}, std::pair{"redRunningShare", &d.redRunningShare}, std::pair{"redRunningTime", &d.redRunningTime}})
-        if (b.contains(key) && !b.at(key).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key}});
-        else if (b.contains(key)) *value = b.at(key).get<double>();
+    for (const auto& key : networkCodec::behaviourOptionalNumbers()) {
+        if (!key.parameter || !b.contains(key.name)) continue;
+        if (!b.at(key.name).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key.name}});
+        d.*key.member = b.at(key.name).get<double>();
+    }
 }
 // M3.7 (LATERAL.md §9, D187): the same for the lateral keys; completeness and ranges are the validator's.
 static void readLateral(const Json& b, const std::string& path, LateralParameters& p) {
@@ -174,33 +163,44 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
     readOptionals(b, path, behaviour);
     return behaviour;
 }
+// D560: the scalars and axles read through the schema's field metadata; desiredSpeed is read before id.
 VehicleType parseVehicleType(const Json& t) {
-    const auto& range = member(t, "desiredSpeed");
-    VehicleType type{field<std::string>(t, "id"), field<double>(t, "length"), field<double>(t, "width"),
-        parseSpeedRange(range), field<double>(t, "maxAcceleration"),
-        field<double>(t, "comfortableDeceleration"), field<double>(t, "maxDeceleration"), field<std::string>(t, "behaviourId")};
+    using networkCodec::Object;using networkCodec::value;
+    const auto& range = value(t, Object::vehicleType, "desiredSpeed");
+    const auto number = [&](const char* key) { return value(t, Object::vehicleType, key).get<double>(); };
+    const auto text = [&](const char* key) { return value(t, Object::vehicleType, key).get<std::string>(); };
+    VehicleType type{text("id"), number("length"), number("width"), parseSpeedRange(range), number("maxAcceleration"),
+        number("comfortableDeceleration"), number("maxDeceleration"), text("behaviourId")};
     if(t.contains("axles")) {
-        const auto& a=member(t,"axles");
-        knownFields(a,{"wheelbase","frontOverhang","rearOverhang"},"vehicleType.axles",17);
-        type.axles=VehicleAxles{field<double>(a,"wheelbase"),field<double>(a,"frontOverhang"),field<double>(a,"rearOverhang")};
+        const auto& a=value(t,Object::vehicleType,"axles");
+        networkCodec::knownFields(a,Object::axles,"vehicleType.axles",networkCodec::strictVersion);
+        const auto axle=[&](const char* key) { return value(a,Object::axles,key).get<double>(); };
+        type.axles=VehicleAxles{axle("wheelbase"),axle("frontOverhang"),axle("rearOverhang")};
     }
     type.kerbLanes=parseKerbLanes(t); type.pcu=parsePcu(t); return type; // B-7 (D234); S1.2 (D270)
 }
+// D558: the rows read through the field metadata the composed schema is generated from. They are
+// closed at every file version (allowsAdditionalFields), so the version argument is not a gate.
 Composition parseComposition(const Json& c) {
-    knownFields(c,{"id","name","types","intervals"},"composition",19);
-    Composition composition{field<std::string>(c, "id"), {}};
-    if(c.contains("name"))composition.name=field<std::string>(c,"name");
-    for (const auto& t : array(c, "types")) {
-        knownFields(t,{"vehicleTypeId","share"},"composition.types",18);
-        composition.types.push_back({field<std::string>(t, "vehicleTypeId"), field<double>(t, "share")});
-    }
-    if(c.contains("intervals"))for(const auto& p:array(c,"intervals")) {
-        knownFields(p,{"startTime","endTime","types"},"composition.intervals",19);
-        CompositionInterval period{field<double>(p,"startTime"),field<double>(p,"endTime"),{}};
-        for(const auto& t:array(p,"types")) {
-            knownFields(t,{"vehicleTypeId","share"},"composition.intervals.types",19);
-            period.types.push_back({field<std::string>(t,"vehicleTypeId"),field<double>(t,"share")});
+    using networkCodec::Object;using networkCodec::value;
+    const auto shares=[](const Json& row,Object object,const std::string& path) {
+        std::vector<CompositionShare> result;
+        for(const auto& t:value(row,object,"types")) {
+            networkCodec::knownFields(t,Object::compositionShare,path,networkCodec::strictVersion);
+            result.push_back({value(t,Object::compositionShare,"vehicleTypeId").get<std::string>(),
+                value(t,Object::compositionShare,"share").get<double>()});
         }
+        return result;
+    };
+    networkCodec::knownFields(c,Object::composition,"composition",networkCodec::strictVersion);
+    Composition composition{value(c,Object::composition,"id").get<std::string>(),{}};
+    if(c.contains("name"))composition.name=value(c,Object::composition,"name").get<std::string>();
+    composition.types=shares(c,Object::composition,"composition.types");
+    if(c.contains("intervals"))for(const auto& p:value(c,Object::composition,"intervals")) {
+        networkCodec::knownFields(p,Object::compositionInterval,"composition.intervals",networkCodec::strictVersion);
+        CompositionInterval period{value(p,Object::compositionInterval,"startTime").get<double>(),
+            value(p,Object::compositionInterval,"endTime").get<double>(),{}};
+        period.types=shares(p,Object::compositionInterval,"composition.intervals.types");
         composition.intervals.push_back(std::move(period));
     }
     return composition;

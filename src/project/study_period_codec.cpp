@@ -1,5 +1,6 @@
 #include "study_period_codec.hpp"
 #include "../core/validate.hpp"
+#include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <stdexcept>
@@ -22,14 +23,14 @@ void rejectStudyPeriodsBefore49(const Json& j) {
             if (j.at("odMatrices")[i].is_object() && j.at("odMatrices")[i].contains("periodId"))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "odMatrices[" + std::to_string(i) + "].periodId"}});
 }
-std::vector<StudyPeriod> parseStudyPeriods(const Json& j) {
+std::vector<StudyPeriod> parseStudyPeriods(const Json& j, int version) {
     std::vector<StudyPeriod> periods;
     if (!j.contains(kPeriods)) return periods;
     const auto& values = j.at(kPeriods);
     if (!values.is_array() || values.empty()) invalid(); // never written empty
     for (const auto& p : values) {
-        if (!p.is_object() || p.size() != 4 || !p.contains("id") || !p.contains("name") || !p.contains("start") || !p.contains("end") ||
-            !p.at("id").is_string() || !p.at("name").is_string() || !p.at("start").is_number() || !p.at("end").is_number()) invalid();
+        // D567: the key list is the schema's (network_fields.cpp); the only refusal stays the bare code.
+        if (!networkCodec::exactFields(p, networkCodec::Object::studyPeriod, version) || !p.at("id").is_string() || !p.at("name").is_string() || !p.at("start").is_number() || !p.at("end").is_number()) invalid();
         periods.push_back({p.at("id").get<std::string>(), p.at("name").get<std::string>(), p.at("start").get<double>(), p.at("end").get<double>()});
     }
     return periods;

@@ -1,5 +1,6 @@
 #include "speed_curve.hpp"
 #include "../core/validate.hpp"
+#include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 
 namespace multra {
@@ -9,7 +10,9 @@ SpeedRange parseSpeedRange(const Json& range) {
             throw ValidationError({{"INVALID_SPEED_CURVE", "vehicleType.desiredSpeed.curve"}});
         return o.at(key).get<double>();
     };
-    SpeedRange r{range.at("min").get<double>(), range.at("max").get<double>(), {}};
+    // D562 (owner, OWNER_SITTING 49a): the bounds use the shared sentences, not the JSON library's.
+    using networkCodec::Object; using networkCodec::value;
+    SpeedRange r{value(range, Object::speedRange, "min").get<double>(), value(range, Object::speedRange, "max").get<double>(), {}};
     if (!range.contains("curve")) return r;
     const auto& curve = range.at("curve");
     if (!curve.is_array()) throw ValidationError({{"INVALID_SPEED_CURVE", "vehicleType.desiredSpeed.curve"}});

@@ -270,17 +270,17 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 61) rejectJunctionFieldsBefore61(j); // J3a: presence, even null, at its path
     if (version < 63) rejectTransitionFieldsBefore63(j);
     d.map=parseMapSettings(j,version);
-    if (version < 49) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
+    if (version < networkCodec::modeVersion) { rejectStudyPeriodsBefore49(j); rejectModesBefore49(j); } // S1.1, S1.2: before the matrices are read
     if (version < networkCodec::linkTypeVersion) rejectLinkTypesBefore50(j); // S2.1, before the network is read
-    if (version < 51) rejectMacroSettingsBefore51(j); // S2.3
+    if (version < networkCodec::macroSettingsVersion) rejectMacroSettingsBefore51(j); // S2.3
     if (version < 52) rejectMesoFieldsBefore52(j); // M11.2
     if (version < 53) rejectCapacityBasisBefore53(j); // S3.2
     if (version < networkCodec::streetSegmentVersion) rejectStreetSegmentFieldsBefore53(j); // S3.3
     rejectOtherStreetSegmentKeys(j, version); // D389
     rejectLinkSpeedFields(j, version); // J1 (D390)
     if (version < 54) rejectGeneratedControllersBefore54(j); // S4.5c
-    if (version < 55) rejectStudyAreaBefore55(j); // S5.2a
-    if (version < 56 && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
+    if (version < networkCodec::studyAreaVersion) rejectStudyAreaBefore55(j); // S5.2a
+    if (version < networkCodec::macroRunVersion && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
     d.macroRuns = parseMacroRunDefinitions(j);
     if (version < 66 && j.contains("tripRateSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "tripRateSets"}});
     d.tripRateSets = parseOwnedTripRateSets(j);
@@ -322,25 +322,25 @@ ProjectDocument parseDocument(const Json& j) {
     for (std::size_t i = 0; version < 75 && i < d.procedures.size(); ++i) // PROCEDURE_FEEDBACK §2 (D547)
         if (d.procedures[i].feedback) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures[" + std::to_string(i) + "].feedback"}});
     d.zones=parseZoneLayer(j,version);
-    d.zones.studyPeriods=parseStudyPeriods(j);
-    d.zones.studyArea=parseStudyArea(j);
+    d.zones.studyPeriods=parseStudyPeriods(j,version);
+    d.zones.studyArea=parseStudyArea(j,version);
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
-    if (version < 25) rejectW74Before25(j);
+    if (version < networkCodec::w74ModelVersion) rejectW74Before25(j);
     if (version < networkCodec::countedVolumeVersion) rejectCountedVolumesBefore26(j);
     if (version < 27) rejectCooldownBefore27(j);
-    if (version < 28) rejectAmberBefore28(j);
-    if (version < 32) rejectPerceptionBefore32(j);
-    if (version < 33) rejectLateralBefore33(j);
-    if (version < 34) rejectCurveBefore34(j);
-    if (version < 35) rejectKerbBefore35(j);
-    if (version < 36) rejectCommitmentBefore36(j);
-    if (version < 37) rejectMandatoryBefore37(j);
-    if (version < 40) rejectSpeedCurveBefore40(j);
-    if (version < 41) rejectStopDwellBefore41(j);
-    if (version < 42) rejectKerbLanesBefore42(j);
-    if (version < 43) rejectDriverFactorSpreadBefore43(j);
-    if (version < 44) rejectRedRunningBefore44(j);
+    if (version < networkCodec::amberVersion) rejectAmberBefore28(j);
+    if (version < networkCodec::perceptionVersion) rejectPerceptionBefore32(j);
+    if (version < networkCodec::lateralVersion) rejectLateralBefore33(j);
+    if (version < networkCodec::curveLateralVersion) rejectCurveBefore34(j);
+    if (version < networkCodec::kerbBiasVersion) rejectKerbBefore35(j);
+    if (version < networkCodec::commitmentVersion) rejectCommitmentBefore36(j);
+    if (version < networkCodec::mandatoryVersion) rejectMandatoryBefore37(j);
+    if (version < networkCodec::speedCurveVersion) rejectSpeedCurveBefore40(j);
+    if (version < networkCodec::stopDwellVersion) rejectStopDwellBefore41(j);
+    if (version < networkCodec::kerbLanesVersion) rejectKerbLanesBefore42(j);
+    if (version < networkCodec::driverFactorSpreadVersion) rejectDriverFactorSpreadBefore43(j);
+    if (version < networkCodec::redRunningVersion) rejectRedRunningBefore44(j);
     if (version < 45) rejectClampRulesBefore45(j);
     if (version < 46) rejectJoinAnticipationBefore46(j);
     if (version < 47) rejectStandingStopFloorBefore47(j);

@@ -159,6 +159,19 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     column; type in the field above the table to filter rows. Should the other tabs move to this
     table (one per commit), or does the pilot need changes first? *Owner:*
 
+49. **Vehicle-type reader limits** (listed 2026-11-14, D560, [PROJECT_SCHEMA_DEMAND](../reference/PROJECT_SCHEMA_DEMAND.md#owned-vehicle-type-extension-d560)).
+    **(a)** A missing or non-numeric `desiredSpeed.min`/`max` is refused with the JSON library's
+    own message (e.g. `type must be number, but is boolean`), not MULTRA's. *Session's
+    recommendation:* read them like every other row (`Missing field: min`, `Expected number: max`);
+    only the error text changes. **(b)** An unknown key inside `desiredSpeed` or a curve point is
+    accepted at every version and dropped on save (checked at the latest schema). Options: **(b1)**
+    refuse it from a new schema step 77; the writer picks a file's version from its features, so
+    today no file would declare 77 and the refusal would cover only files using a later feature;
+    **(b2)** refuse it from 21, as the type row is, which can refuse an existing 21+ file that has
+    such a key (none in the repository); **(b3)** leave it open, as routes and inputs are (D363).
+    *Session's recommendation:* (b2), since the repository has no such file and the row it sits in
+    is already closed from 21. *Owner:* **"ทำต่อตามแนะนำ", 2026-11-14: (a) and (b2) (D562).**
+
 ## C–I — on the Windows machine
 
 Sections C (Run view), D (Right-of-way), E (Drawing and gestures), F (Dialogs), G (Object

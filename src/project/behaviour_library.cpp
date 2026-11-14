@@ -1,4 +1,5 @@
 #include "behaviour_library.hpp"
+#include "network_fields.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
@@ -224,22 +225,10 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
         for (std::size_t i = 0; i < behaviours.size(); ++i) {
             const auto& b = behaviours[i]; const auto path = at("behaviours", i);
             // Every model's keys are known here; parseBehaviour already refused the other model's.
+            // D563: the schema's behaviour table, which generates W74/perception/lateral from core.
             for (const auto& [key, unused] : b.items()) {
                 (void)unused;
-                static constexpr const char* common[] = {"id", "name", "model", "standstillDistance",
-                    "additiveSafetyDistance", "multiplicativeSafetyDistance", "followingTime", "speedThreshold",
-                    "maxDecelerationCooperativeBraking", "discretionaryLaneChangeThreshold",
-                    "acceptedDecelerationTrailingVehicle", "discretionaryLaneChangeHoldTime", "amberDeceleration",
-                    "curveLateralAcceleration", "kerbLaneBias", "commitmentDeceleration", "mandatoryDecelerationOwn",
-                    "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime"}; // M3.6, M3.4 (D215), B-2 (D219), B-3 (D221), B-8 (D231), B-4 (D236), B-9 (D238), both models
-                const auto& w74 = w74ParameterKeys();
-                const auto& perception = perceptionParameterKeys(); // M3.5, both models
-                const auto& lateral = lateralParameterKeys(); // M3.7, both models
-                if (std::none_of(std::begin(common), std::end(common), [&](const char* k) { return key == k; }) &&
-                    std::none_of(w74.begin(), w74.end(), [&](const auto& k) { return key == k.name; }) &&
-                    std::none_of(perception.begin(), perception.end(), [&](const auto& k) { return key == k.name; }) &&
-                    std::none_of(lateral.begin(), lateral.end(), [&](const auto& k) { return key == k.name; }))
-                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + "." + key}});
+                if (!networkCodec::behaviourKey(key)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + "." + key}});
             }
             // The model is explicit from schema 21: a missing or unknown model is never read as the prototype.
             if (!b.contains("model") || !b.at("model").is_string() ||
@@ -251,14 +240,23 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
     if (j.contains("vehicleTypes")) {
         const auto& types = list(j, "vehicleTypes");
         for (std::size_t i = 0; i < types.size(); ++i)
-            requireKnownFields(types[i], {"id", "name", "length", "width", "desiredSpeed", "maxAcceleration",
-                "comfortableDeceleration", "maxDeceleration", "behaviourId", "axles", "kerbLanes", "pcu"}, at("vehicleTypes", i));
+        {
+            using networkCodec::Object;
+            const auto path = at("vehicleTypes", i);
+            networkCodec::knownFields(types[i], Object::vehicleType, path, networkCodec::behaviourVersion); // D560
+            if (!types[i].is_object() || !types[i].contains("desiredSpeed")) continue;
+            const auto& speed = types[i].at("desiredSpeed"); // D562: closed from 21 with the row
+            networkCodec::knownFields(speed, Object::speedRange, path + ".desiredSpeed", networkCodec::behaviourVersion);
+            if (!speed.is_object() || !speed.contains("curve") || !speed.at("curve").is_array()) continue;
+            for (std::size_t k = 0; k < speed.at("curve").size(); ++k)
+                networkCodec::knownFields(speed.at("curve")[k], Object::speedPoint, path + ".desiredSpeed" + at(".curve", k), networkCodec::behaviourVersion);
+        }
     }
     if (j.contains("vehicleClasses")) {
         const auto& classes = list(j, "vehicleClasses");
         for (std::size_t i = 0; i < classes.size(); ++i) {
             const auto& c = classes[i];
-            requireKnownFields(c, {"id", "name", "vehicleTypeIds"}, at("vehicleClasses", i));
+            networkCodec::knownFields(c, networkCodec::Object::vehicleClass, at("vehicleClasses", i), networkCodec::behaviourVersion); // D565
             d.vehicleClasses.push_back({text(c, "id"), text(c, "name", false), texts(c, "vehicleTypeIds")});
         }
     }
@@ -266,12 +264,12 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
         const auto& types = list(j, "linkBehaviourTypes");
         for (std::size_t i = 0; i < types.size(); ++i) {
             const auto& t = types[i]; const auto path = at("linkBehaviourTypes", i);
-            requireKnownFields(t, {"id", "name", "defaultBehaviourId", "overrides"}, path);
+            networkCodec::knownFields(t, networkCodec::Object::linkBehaviourType, path, networkCodec::behaviourVersion);
             LinkBehaviourType type{text(t, "id"), text(t, "name", false), text(t, "defaultBehaviourId", false), {}};
             if (t.contains("overrides")) {
                 const auto& overrides = list(t, "overrides");
                 for (std::size_t k = 0; k < overrides.size(); ++k) {
-                    requireKnownFields(overrides[k], {"classId", "behaviourId"}, path + at(".overrides", k));
+                    networkCodec::knownFields(overrides[k], networkCodec::Object::behaviourOverride, path + at(".overrides", k), networkCodec::behaviourVersion);
                     type.overrides.push_back({text(overrides[k], "classId"), text(overrides[k], "behaviourId")});
                 }
             }

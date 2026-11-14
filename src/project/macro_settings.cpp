@@ -1,5 +1,6 @@
 #include "macro_settings.hpp"
 #include "../core/validate.hpp"
+#include "network_fields.hpp"
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -24,7 +25,7 @@ MacroSettings parseMacroSettingsValue(const Json& j, const std::string& path) {
     const auto invalid = [](const std::string& at) { throw ValidationError({{"INVALID_MACRO_SETTING", at}}); };
     if (!j.is_object()) invalid(path);
     for (const auto& [name, value] : j.items())
-        if (name != "targetGap" && name != "maxIterations") invalid(path + "." + name);
+        if (!networkCodec::knownKey(name, networkCodec::Object::macroSettings, networkCodec::macroSettingsVersion)) invalid(path + "." + name); // D569
     if (!j.contains("targetGap") || !j.at("targetGap").is_number()) invalid(path + ".targetGap");
     if (!j.contains("maxIterations") || !j.at("maxIterations").is_number_integer()) invalid(path + ".maxIterations");
     // JSON's mixed signed/unsigned comparisons can narrow an unsigned value themselves. Read its

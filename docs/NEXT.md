@@ -194,21 +194,34 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
   remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
-## AI automation follow-up (D344–D350)
+## AI automation follow-up (D344–D350, D558–D569)
 
-- Open automation work: an authoritative formal schema covering every optional/versioned
-  field remains separate from D350 observed-shape discovery plus codec dry validation.
-  Use [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) for root presence rules, codec owners
-  and save-version floors. Next: map project-owned Composition/type-share/interval rows,
-  preserving catalog presence/ownership, contains-based optionals and feature-selected save
-  floors 18/19 without inventing new read gates. Extend the composed partial schema only with
-  codec parity cases; keep type references, unique positive weights, valid time windows and
-  run-readiness in existing validators. Vehicle/behaviour catalogs and other optional-feature
-  fields remain codec-owned until mapped.
-  Never promote sample-derived hints to an authoritative contract.
-  Explicit batch/comparison/Macro/Meso identities/exports remain separate from single-run APIs.
-  Reuse existing validation,
-  History and GUI run timer; no generic job/session subsystem is booked yet.
+- An authoritative formal schema covering every optional/versioned field remains separate from D350
+  observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
+  floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
+- **Done:** owned `definition.compositions` with type-share and interval rows (D558, CS1–CS4), owned
+  `definition.modes` (D559, MS1–MS4) and owned `definition.vehicleTypes` (D560, VT1–VT4).
+- **Item 49 answered (D562):** the speed bounds use `value()` sentences; `desiredSpeed` and curve
+  points close with the type row from 21.
+- **Behaviours (the owner agreed, "เห็นด้วย", 2026-11-14):** the inventory is done (D561,
+  [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md#behaviour-extension-d561-inventory-d563-b1-d564-b2)).
+  **B1 and B2 done (D563, D564, BH1–BH6); B3 needed nothing.** Owned behaviours are fully mapped.
+- **Done (D565, BC1–BC3):** `vehicleClasses` and `linkBehaviourTypes`.
+- **Done (D566, ZL1–ZL3):** the root zone layer (`zones`, `zoneConnectors`, `odMatrices`,
+  `parkingLots`); either-or keys use the field attribute `unless`.
+- **Done (D567, SP1–SP3):** root `studyPeriods`, `definition.clockStart` and `studyArea`;
+  their codecs and the zone codec share `networkCodec::exactFields`.
+- **Done (D568, MP1–MP3):** the root `map`, with the codec's ranges; the root key table is `rootFeatures`.
+- **Done (D569, MR1–MR3):** `definition.macroSettings` and the root `macroRuns`.
+- **Proposed next (this session's, not the owner's):** the remaining Macro root arrays in floor
+  order (`tripRateSets` 66, `deterrenceSets` and `costMatrices` 67, `periodFactors` 69,
+  `modeChoiceSets` 70, `procedures` 73), each with its own version-gated keys
+  ([PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md) root table); start with `tripRateSets`. Same
+  method: inventory, pin on the unchanged code, map as read, one key source, `jsonschema` dump with
+  writer output.
+- Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
+  Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
+  History and GUI run timer; no generic job/session subsystem is booked.
 
 ## Order of level work (D378)
 

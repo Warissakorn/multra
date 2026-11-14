@@ -1,5 +1,8 @@
 #include "network_fields.hpp"
 #include "../core/validate.hpp"
+#include "../core/w74.hpp"
+#include "../core/perception.hpp"
+#include "../core/lateral.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cmath>
@@ -49,7 +52,12 @@ constexpr Field signalHeadFields[]={
 constexpr Field definitionFields[]={
     {"signalPrograms",Kind::programs,true},{"signalControllers",Kind::controllers},
     {"duration",Kind::number,true},{"timeStep",Kind::number,true},
-    {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions}};
+    {"routes",Kind::routes,true},{"inputs",Kind::inputs,true},{"routingDecisions",Kind::routingDecisions},
+    {"compositions",Kind::compositions},{"modes",Kind::modes,false,0,modeVersion},
+    {"vehicleTypes",Kind::vehicleTypes},{"behaviours",Kind::behaviours},
+    {"vehicleClasses",Kind::vehicleClasses,false,0,behaviourVersion},{"linkBehaviourTypes",Kind::linkBehaviourTypes,false,0,behaviourVersion},
+    {"clockStart",Kind::number,false,0,modeVersion},
+    {"macroSettings",Kind::macroSettings,false,0,macroSettingsVersion}}; // D567: its range and INVALID_NUMBER stay with study_period_codec.cpp
 constexpr Field controllerFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},
     {"cycle",Kind::number,true},{"offset",Kind::number,true},{"groups",Kind::groups,true},
@@ -111,6 +119,95 @@ constexpr Field routingRouteFields[]={
 constexpr Field routingIntervalFields[]={{"startTime",Kind::number,true},{"endTime",Kind::number,true}};
 constexpr Field routingTypeRuleFields[]={
     {"vehicleTypeId",Kind::text,true},{"relativeFlows",Kind::numbers,true},{"intervalFlows",Kind::numberMatrix,true}};
+// D558: owned compositions; name and intervals are contains-based (explicit null fails).
+constexpr Field compositionFields[]={
+    {"id",Kind::text,true},{"name",Kind::text},{"types",Kind::compositionShares,true},{"intervals",Kind::compositionIntervals}};
+constexpr Field compositionShareFields[]={{"vehicleTypeId",Kind::text,true},{"share",Kind::number,true}};
+constexpr Field compositionIntervalFields[]={
+    {"startTime",Kind::number,true},{"endTime",Kind::number,true},{"types",Kind::compositionShares,true}};
+// D559: exactly these keys, each required text; parseMode counts and checks them.
+constexpr Field modeFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"compositionId",Kind::text,true}};
+// D560: open below behaviourVersion, closed from it (parseBehaviourLibrary). name is read by
+// parseAuthoringDefinition; kerbLanes, pcu and the curve keep their own readers and codes.
+constexpr Field vehicleTypeFields[]={
+    {"id",Kind::text,true},{"name",Kind::text},{"length",Kind::number,true},{"width",Kind::number,true},
+    {"desiredSpeed",Kind::speedRange,true},{"maxAcceleration",Kind::number,true},
+    {"comfortableDeceleration",Kind::number,true},{"maxDeceleration",Kind::number,true},
+    {"behaviourId",Kind::text,true},{"axles",Kind::axles},{"kerbLanes",Kind::kerbLanes,false,0,kerbLanesVersion},
+    {"pcu",Kind::pcu,false,0,modeVersion}};
+constexpr Field speedRangeFields[]={{"min",Kind::number,true},{"max",Kind::number,true},{"curve",Kind::speedCurve,false,0,speedCurveVersion}};
+constexpr Field speedPointFields[]={{"speed",Kind::number,true},{"share",Kind::number,true}};
+constexpr Field axleFields[]={{"wheelbase",Kind::number,true},{"frontOverhang",Kind::number,true},{"rearOverhang",Kind::number,true}};
+constexpr Field pcuFields[]={{"value",Kind::number,true},{"source",Kind::text,true}};
+// D563 (PROJECT_SCHEMA_DEMAND, behaviour inventory): the two model rows. The parameter keys come
+// from core's lists; a key of the other model is `false` at every version (rejectFrom 1).
+constexpr const char* prototypeRequired[]={"standstillDistance","additiveSafetyDistance",
+    "multiplicativeSafetyDistance","followingTime","speedThreshold"};
+constexpr const char* prototypeOptional[]={"discretionaryLaneChangeThreshold","acceptedDecelerationTrailingVehicle",
+    "discretionaryLaneChangeHoldTime"};
+// D565: the M3.3.2 library rows (refused below 21, closed); their reader keeps its own text sentences.
+constexpr Field vehicleClassFields[]={{"id",Kind::text,true},{"name",Kind::text},{"vehicleTypeIds",Kind::texts,true}};
+constexpr Field linkBehaviourTypeFields[]={{"id",Kind::text,true},{"name",Kind::text},{"defaultBehaviourId",Kind::text},
+    {"overrides",Kind::behaviourOverrides}};
+constexpr Field behaviourOverrideFields[]={{"classId",Kind::text,true},{"behaviourId",Kind::text,true}};
+// D566-D568 (PROJECT_SCHEMA_DEMAND): the root feature keys (zone layer, studies, map) and the zone rows (zone_codec.cpp's key lists).
+constexpr Field rootFeatureFields[]={{"zones",Kind::zones,false,0,zoneLayerVersion},{"zoneConnectors",Kind::zoneConnectors,false,0,zoneLayerVersion},
+    {"odMatrices",Kind::odMatrices,false,0,zoneLayerVersion},{"parkingLots",Kind::parkingLots,false,0,zoneLayerVersion},
+    {"studyPeriods",Kind::studyPeriods,false,0,modeVersion},{"studyArea",Kind::studyArea,false,0,studyAreaVersion},
+    {"map",Kind::map,false,0,mapVersion},{"macroRuns",Kind::macroRuns,false,0,macroRunVersion}};
+// D569: macro_run_definition.cpp's run row and macro_settings.cpp's settings row (both closed).
+constexpr Field macroRunFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"period",Kind::text,true},{"settings",Kind::macroSettings,true}};
+constexpr Field macroSettingsFields[]={{"targetGap",Kind::targetGap,true},{"maxIterations",Kind::iterationCap,true}};
+// D568: map_codec.cpp's two closed objects; the CRS-anchor agreement stays with validateMapSettings.
+constexpr Field mapFields[]={{"providerId",Kind::providerId,true},{"opacity",Kind::opacity,true},{"reference",Kind::mapReference,true}};
+constexpr Field mapReferenceFields[]={{"projectedCrs",Kind::utmCrs,true},{"anchorLongitude",Kind::longitude,true},
+    {"anchorLatitude",Kind::latitude,true},{"anchorWorldX",Kind::worldAnchor,true},{"anchorWorldY",Kind::worldAnchor,true},
+    {"rotationDegrees",Kind::rotation,true}};
+// D567: S1.1 periods and the S5.2a study area with its typed gate flows (study_period_codec.cpp, study_area_codec.cpp).
+constexpr Field studyPeriodFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"start",Kind::number,true},{"end",Kind::number,true}};
+constexpr Field studyAreaFields[]={{"nodes",Kind::nodeIds,true},{"flowSource",Kind::flowSource,true},{"gateFlows",Kind::gateFlows}};
+constexpr Field gateFlowFields[]={{.name="periodId",.kind=Kind::text,.required=true},{.name="from",.kind=Kind::text,.required=true},
+    {.name="to",.kind=Kind::text,.required=true},{.name="vehiclesPerHour",.kind=Kind::number,.required=true},
+    {.name="compositionId",.kind=Kind::text,.required=true,.unless="modeId"},{.name="modeId",.kind=Kind::text,.rejectBefore=modeVersion}};
+constexpr Field zoneFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"polygon",Kind::pairs,true},{"attributes",Kind::numberMap,true}};
+constexpr Field zoneLinkConnectorFields[]={{"id",Kind::text,true},{"zoneId",Kind::text,true},{"linkId",Kind::text,true},
+    {"direction",Kind::zoneDirection,true},{"share",Kind::number,true}};
+// D389: the street keys were roadId/roadDirection from 57 and are renamed at 59.
+constexpr Field zoneStreetConnectorFields[]={{"id",Kind::text,true},{"zoneId",Kind::text,true},
+    {"roadId",Kind::segmentId,true,0,streetZoneConnectorVersion,false,streetSegmentKeyVersion},
+    {"roadDirection",Kind::travelDirection,true,0,streetZoneConnectorVersion,false,streetSegmentKeyVersion},
+    {"streetSegmentId",Kind::segmentId,true,0,streetSegmentKeyVersion},{"streetSegmentDirection",Kind::travelDirection,true,0,streetSegmentKeyVersion},
+    {"direction",Kind::zoneDirection,true},{"share",Kind::number,true}};
+// S1.1/S1.2 (D559): periodId and modeId from 49 replace the times and compositionId; generatedBy (M10.4 E2) from 70.
+constexpr Field odMatrixFields[]={{.name="id",.kind=Kind::text,.required=true},{.name="zoneIds",.kind=Kind::texts,.required=true},
+    {.name="cells",.kind=Kind::numberMatrix,.required=true},{.name="modeId",.kind=Kind::text,.rejectBefore=modeVersion},
+    {.name="compositionId",.kind=Kind::text,.required=true,.unless="modeId"},{.name="periodId",.kind=Kind::text,.rejectBefore=modeVersion},
+    {.name="startTime",.kind=Kind::number,.required=true,.unless="periodId"},{.name="endTime",.kind=Kind::number,.required=true,.unless="periodId"},
+    {.name="generatedBy",.kind=Kind::generatedBy,.rejectBefore=generatedMatrixVersion}};
+constexpr Field parkingLotFields[]={{"id",Kind::text,true},{"zoneId",Kind::text,true},{"capacity",Kind::unsignedCount,true},
+    {"initialOccupancy",Kind::unsignedCount,true},{"initialCompositionId",Kind::text,true},{"gateServiceTime",Kind::number,true},
+    {"dwell",Kind::pairs,true}};
+using B=DriverBehaviour;
+const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B::maxDecelerationCooperativeBraking,0,false},
+    {"amberDeceleration",&B::amberDeceleration,amberVersion,false},
+    {"curveLateralAcceleration",&B::curveLateralAcceleration,curveLateralVersion,true},
+    {"kerbLaneBias",&B::kerbLaneBias,kerbBiasVersion,true},{"commitmentDeceleration",&B::commitmentDeceleration,commitmentVersion,true},
+    {"mandatoryDecelerationOwn",&B::mandatoryDecelerationOwn,mandatoryVersion,true},
+    {"mandatoryDecelerationTrailingVehicle",&B::mandatoryDecelerationTrailingVehicle,mandatoryVersion,true},
+    {"stopDwellTime",&B::stopDwellTime,stopDwellVersion,true},{"driverFactorSpread",&B::driverFactorSpread,driverFactorSpreadVersion,true},
+    {"redRunningShare",&B::redRunningShare,redRunningVersion,true},{"redRunningTime",&B::redRunningTime,redRunningVersion,true}};
+std::vector<Field> behaviourRow(bool w74) {
+    const int notThis=w74?1:0,notOther=w74?0:1;
+    std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},
+        {"model",w74?Kind::w74Model:Kind::behaviourModel,true,0,behaviourVersion}};
+    for(const auto* key:prototypeRequired)row.push_back({key,Kind::number,!w74,0,0,false,notThis});
+    for(const auto* key:prototypeOptional)row.push_back({key,Kind::number,false,0,0,false,notThis});
+    for(const auto& key:w74ParameterKeys())row.push_back({key.name,Kind::number,w74,0,0,false,notOther});
+    for(const auto& key:sharedOptional)row.push_back({key.name,Kind::number,false,0,key.floor});
+    for(const auto& key:perceptionParameterKeys())row.push_back({key.name,key.integer?Kind::integerToken:Kind::number,false,0,perceptionVersion});
+    for(const auto& key:lateralParameterKeys())row.push_back({key.name,Kind::number,false,0,lateralVersion});
+    return row;
+}
 }
 std::span<const Field> fields(Object object) {
     switch(object) {
@@ -145,12 +242,53 @@ std::span<const Field> fields(Object object) {
     case Object::routingRoute:return routingRouteFields;
     case Object::routingInterval:return routingIntervalFields;
     case Object::routingTypeRule:return routingTypeRuleFields;
+    case Object::composition:return compositionFields;
+    case Object::compositionShare:return compositionShareFields;
+    case Object::compositionInterval:return compositionIntervalFields;
+    case Object::mode:return modeFields;
+    case Object::vehicleType:return vehicleTypeFields;
+    case Object::speedRange:return speedRangeFields;
+    case Object::speedPoint:return speedPointFields;
+    case Object::axles:return axleFields;
+    case Object::pcu:return pcuFields;
+    case Object::behaviour:{static const auto row=behaviourRow(false);return row;}
+    case Object::w74Behaviour:{static const auto row=behaviourRow(true);return row;}
+    case Object::vehicleClass:return vehicleClassFields;
+    case Object::linkBehaviourType:return linkBehaviourTypeFields;
+    case Object::behaviourOverride:return behaviourOverrideFields;
+    case Object::rootFeatures:return rootFeatureFields;
+    case Object::zone:return zoneFields;
+    case Object::zoneLinkConnector:return zoneLinkConnectorFields;
+    case Object::zoneStreetConnector:return zoneStreetConnectorFields;
+    case Object::odMatrix:return odMatrixFields;
+    case Object::parkingLot:return parkingLotFields;
+    case Object::studyPeriod:return studyPeriodFields;
+    case Object::studyArea:return studyAreaFields;
+    case Object::gateFlow:return gateFlowFields;
+    case Object::map:return mapFields;
+    case Object::mapReference:return mapReferenceFields;
+    case Object::macroRun:return macroRunFields;
+    case Object::macroSettings:return macroSettingsFields;
     }
     return {};
 }
+std::span<const BehaviourNumber> behaviourOptionalNumbers() {return sharedOptional;}
+bool behaviourKey(std::string_view key) {
+    const auto row=fields(Object::behaviour); // lists both models' keys, the other's as rejected
+    return std::any_of(row.begin(),row.end(),[&](const auto& f){return key==f.name;});
+}
 bool allowsAdditionalFields(Object object,int version) {
     if(object==Object::signalController || object==Object::signalGroup || object==Object::routingDecision ||
-       object==Object::routingRoute || object==Object::routingTypeRule)return false;
+       object==Object::routingRoute || object==Object::routingTypeRule || object==Object::composition ||
+       object==Object::compositionShare || object==Object::compositionInterval || object==Object::mode ||
+       object==Object::axles || object==Object::pcu || object==Object::vehicleClass ||
+       object==Object::linkBehaviourType || object==Object::behaviourOverride || object==Object::zone ||
+       object==Object::zoneLinkConnector || object==Object::zoneStreetConnector || object==Object::odMatrix ||
+       object==Object::parkingLot || object==Object::studyPeriod || object==Object::studyArea || object==Object::gateFlow ||
+       object==Object::map || object==Object::mapReference || object==Object::macroRun || object==Object::macroSettings)return false;
+    if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
+    // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
+    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
@@ -165,6 +303,19 @@ void knownFields(const Json& j,Object object,const std::string& path,int version
         }))
             throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",path+"."+key}});
     }
+}
+bool exactFields(const Json& j,Object object,int version) {
+    if(!j.is_object())return false;
+    std::size_t expected=0;
+    for(const auto& f:fields(object)) {
+        if(!activeField(f,version) || (f.unless && j.contains(f.unless)))continue;
+        if(j.contains(f.name))++expected;else if(f.required)return false;
+    }
+    return j.size()==expected;
+}
+bool knownKey(std::string_view key,Object object,int version) {
+    const auto list=fields(object);
+    return std::any_of(list.begin(),list.end(),[&](const auto& f){return key==f.name && activeField(f,version);});
 }
 bool readCondition(const Json& j,Object object,const char* name) {
     for(const auto& field:fields(object))if(std::string_view(name)==field.name)
@@ -181,7 +332,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     if(found==list.end())throw std::logic_error("Unknown network codec field");
     const char* expected=nullptr;
     switch(found->kind) {
-    case Kind::text:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
+    case Kind::text:case Kind::behaviourModel:case Kind::w74Model:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
     case Kind::boolean:if(!v.is_boolean())expected="Expected true or false: ";break;
     case Kind::number:if(!v.is_number())expected="Expected number: ";break;
     case Kind::level:
@@ -197,10 +348,21 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::queueCounters:case Kind::measurementLines:case Kind::travelTimeSections:
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
+    case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:case Kind::modes:
+    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::behaviours:
+    case Kind::vehicleClasses:case Kind::linkBehaviourTypes:case Kind::behaviourOverrides:
         if(!v.is_array())expected="Expected array: ";
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:
-    case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:case Kind::sectionLine:break;
+    case Kind::speedRange:case Kind::axles:case Kind::kerbLanes:case Kind::pcu:case Kind::integerToken:
+    case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:case Kind::sectionLine:
+    // D566: zone_codec.cpp keeps its own EDIT_ZONE_INVALID refusal for these.
+    case Kind::zones:case Kind::zoneConnectors:case Kind::odMatrices:case Kind::parkingLots:case Kind::pairs:case Kind::numberMap:
+    case Kind::zoneDirection:case Kind::travelDirection:case Kind::segmentId:case Kind::unsignedCount:case Kind::generatedBy:
+    case Kind::studyPeriods:case Kind::studyArea:case Kind::nodeIds:case Kind::flowSource:case Kind::gateFlows:
+    case Kind::map:case Kind::mapReference:case Kind::providerId:case Kind::opacity:case Kind::utmCrs:case Kind::longitude:
+    case Kind::latitude:case Kind::worldAnchor:case Kind::rotation:
+    case Kind::macroRuns:case Kind::macroSettings:case Kind::targetGap:case Kind::iterationCap:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

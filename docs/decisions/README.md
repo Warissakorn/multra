@@ -6,7 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Desktop automation and AI control | D350, D349, D348, D347, D346, D345, D344, D336, D335 |
+| Desktop automation and AI control | D569, D568, D567, D566, D565, D564, D563, D562, D561, D560, D559, D558, D350, D349, D348, D347, D346, D345, D344, D336, D335 |
 | Product scope, stack, naming and owner gates | D557, D556, D555, D554, D553, D552, D551, D550, D549, D548, D547, D546, D545, D544, D543, D542, D541, D540, D539, D538, D537, D536, D535, D534, D533, D532, D531, D530, D529, D528, D527, D516, D505, D378, D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Macro assignment (S2, M10.1) and four-step (M10.2) | D485, D484, D483, D482, D481, D480, D479, D478, D477, D476, D475, D474, D473, D472, D471, D470, D469, D468, D277, D276, D275, D274, D273, D272, D271 |
 | Meso engine (M11) | D293, D292, D291, D158 |
@@ -69,3 +69,23 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 - [D466](RECORD.md#d466) — signal head boxes past the stop line on one straight arm, a dark casing on run vehicles (contrast rule kept in wireframe).
 - [D467](RECORD.md#d467) — review fixes: high-DPI shadow, one palette parser, poles tested off the road; dark casings and the head's hit place kept.
 - [D468](RECORD.md#d468), [D469](RECORD.md#d469), [D470](RECORD.md#d470), [D471](RECORD.md#d471), [D472](RECORD.md#d472), [D473](RECORD.md#d473), [D474](RECORD.md#d474), [D475](RECORD.md#d475), [D476](RECORD.md#d476), [D477](RECORD.md#d477), [D478](RECORD.md#d478), [D479](RECORD.md#d479), [D480](RECORD.md#d480), [D481](RECORD.md#d481), [D482](RECORD.md#d482), [D483](RECORD.md#d483), [D484](RECORD.md#d484), [D485](RECORD.md#d485) — M10.2 trip generation contract (rate sets as data, category and regression methods, attractions balanced to productions, unit carried); owner answers 1a–8a; G0 read Ortúzar Ch. 4, fixture Example 4.1, not 4.5; G1 engine, run, outputs and CLI; G2 owned sets (schema 66), zone attributes, Trip generation page; M10.3 distribution contract after reading Ortúzar Ch. 5; answers 1a–9a and D1 engine, skim, run, outputs and CLI; D2 owned deterrence sets and cost matrices (schema 67), dialogs, Trip distribution page; D3 singly constrained contract and implementation; M10.4 mode choice contract after reading Ortúzar §5.4.4 and Ch. 6–7; E1 engine, period factors (schema 69), run, outputs and CLI; E2 owned sets, Mode choice page, Write OD matrices (schema 70); nested logit contract and N1, nests at schema 71 with a Nests dialog; destination-constrained purposes (schema 72); the procedure sequence contract and P1 (schema 73, `--procedure`) and P2 (dialog and page); [D486](RECORD.md#d486), the decision record split every 200 IDs.
+
+[D558](RECORD.md#d558) — owned composition, type-share and interval rows join the composed project schema from the reader's own field metadata; closed at every version, no read gate.
+
+[D559](RECORD.md#d559) — owned modes join the composed schema: `false` below 49, a closed three-text row from it; `parseMode` keeps its bare catalog code.
+
+[D560](RECORD.md#d560) — owned vehicle types join the composed schema: row open below 21 and closed from it, closed axles/pcu, open speed range, curve/kerbLanes/pcu gated at 40/42/49.
+
+[D561](RECORD.md#d561) — the behaviour reader inventoried before code: model tag, per-model rows, closure from 21, ten floors; slices B1–B3.
+
+[D562](RECORD.md#d562) — owner item 49: desiredSpeed bounds report MULTRA's field sentences; desiredSpeed and curve points close with the vehicle-type row from 21.
+
+[D563](RECORD.md#d563) — behaviour slice B1: model tag and per-model rows generated from core's key lists; parseBehaviourLibrary's closure asks the same table.
+
+[D564](RECORD.md#d564) — behaviour slice B2: rows closed from 21, ten floors as shared constants, readOptionals reads the schema's table.
+
+[D565](RECORD.md#d565) — vehicle classes and link behaviour types join the composed schema; their key checks use the same tables and requireKnownFields is removed.
+[D566](RECORD.md#d566) — the root zone layer (zones, zone connectors, OD matrices, parking lots) joins the composed schema; the zone codec reads its key lists from the same tables.
+[D567](RECORD.md#d567) — root study periods, definition.clockStart and the study area join the composed schema; their codecs share exactFields with the zone codec.
+[D568](RECORD.md#d568) — the root map joins the composed schema with the codec's own ranges; the CRS-anchor agreement stays with the codec.
+[D569](RECORD.md#d569) — definition.macroSettings and the root macroRuns join the composed schema; their readers check keys with knownKey.

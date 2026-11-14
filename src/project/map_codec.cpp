@@ -1,4 +1,5 @@
 #include "map_settings.hpp"
+#include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 #include <cmath>
 #include <stdexcept>
@@ -14,9 +15,9 @@ int crsNumber(const std::string& crs) {
     }
     return value;
 }
-void keys(const Json& j,std::initializer_list<const char*> expected) {
-    if (!j.is_object() || j.size()!=expected.size()) throw std::invalid_argument("EDIT_MAP_INVALID");
-    for (const auto* key:expected) if (!j.contains(key)) throw std::invalid_argument("EDIT_MAP_INVALID");
+// D568: the key lists are the schema's (network_fields.cpp); the only refusal stays the bare code.
+void keys(const Json& j,networkCodec::Object object,int schema) {
+    if (!networkCodec::exactFields(j,object,schema)) throw std::invalid_argument("EDIT_MAP_INVALID");
 }
 }
 std::string utmCrs(double longitude,double latitude) {
@@ -48,10 +49,10 @@ Json mapSettingsJson(const MapSettings& m) {
 }
 std::optional<MapSettings> parseMapSettings(const Json& j,int schema) {
     if (!j.contains("map")) return {};
-    if (schema<29) throw std::invalid_argument("UNSUPPORTED_FIELD: map");
+    if (schema<networkCodec::mapVersion) throw std::invalid_argument("UNSUPPORTED_FIELD: map");
     try {
-        const auto& m=j.at("map");keys(m,{"providerId","opacity","reference"});const auto& r=m.at("reference");
-        keys(r,{"projectedCrs","anchorLongitude","anchorLatitude","anchorWorldX","anchorWorldY","rotationDegrees"});
+        const auto& m=j.at("map");keys(m,networkCodec::Object::map,schema);const auto& r=m.at("reference");
+        keys(r,networkCodec::Object::mapReference,schema);
         if (!m.at("providerId").is_string() || !m.at("opacity").is_number() || !r.at("projectedCrs").is_string())
             throw std::invalid_argument("EDIT_MAP_INVALID");
         for (const auto* key:{"anchorLongitude","anchorLatitude","anchorWorldX","anchorWorldY","rotationDegrees"})
