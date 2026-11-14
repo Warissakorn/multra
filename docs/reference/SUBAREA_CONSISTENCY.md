@@ -226,3 +226,27 @@ shows and exports the report without editing the document.
 | SC8 | The page | It sits under Cross-level; Run on R1's corridor with seeds `42-43` fills the table equal to `consistencyReport` cell for cell; the CSV starts with the marker; the run adds no History step |
 | SC9 | Refusal and stale | Without a study area Run is off and a forced run puts `CONSISTENCY_NO_STUDY_AREA` in the note; an edit after a run marks it stale |
 | SC10 | Cancel | Cancel before the first seed ends cancelled with an empty table and nothing to export |
+
+## 14. R2 as implemented (D554)
+
+- **Code:**
+  - `src/shell/consistency_panel.*`, wired as D552's page in `editor_results.cpp` and `editor_run.cpp`;
+  - the Cross-level level in `results_levels.cpp`;
+  - the en and th keys;
+  - the `cancelled` hook on `consistencyReport`.
+- **The edit in SC9** ticks node B into the study area from the Nodes table: one Undo step.
+- **SC9 checks the refusal's path, not its text.** The first offscreen capture switched the
+  language to Thai, and the English text check then failed, which showed the dependence.
+- **Pins updated** for the new level and tab, recorded here:
+  - `workspace-ui`: 13 → 14 inner tabs;
+  - `results-tabs-ui`: 4 → 5 levels.
+- **Layout.** Offscreen captures at 1440×900, en and th, viewed for layout only. The seeds field
+  stretched across the bar, so it is now capped at 160 px. The 19 columns scroll horizontally.
+- **Open finding O2,** seen in the capture.
+  - An entry gate's Macro value is the fed flow from gate-started trips only (§4). Its Meso and
+    Micro values count every vehicle entering the gate's Link.
+  - Where an inside zone's connector stands on that Link, as on the corridor's west leg, the row
+    compares 0 with 600 (GEH 34.6). The Link row next to it agrees (600 / 600).
+  - Changing §4's gate rule (for example, counting the zone's trips on its gate, or leaving such
+    gates out) is the owner's choice. It is not changed here.
+- **Rows:** SC8–SC10 pass in `consistency-ui`.

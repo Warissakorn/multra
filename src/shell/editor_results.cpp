@@ -21,6 +21,7 @@
 #include "mode_choice_panel.hpp"
 #include "procedure_panel.hpp"
 #include "dynamic_assignment_panel.hpp"
+#include "consistency_panel.hpp"
 #include "../project/macro_output.hpp"
 #include "../project/meso_output.hpp"
 #include "../project/batch_output.hpp"
@@ -183,6 +184,10 @@ void EditorWindow::buildResults() {
         [this](const char* name,std::function<void(ProjectDocument&)> change){return execute(name,change);},
         {{},[this](const QString& name){return QFileDialog::getSaveFileName(this,text("editorDynamicSave"),name,"JSON (*.json)");}},[this]{refreshRun();}});
     resultPages_.emplace("editorResultsTabDynamic",dynamic);resultsTabs_->addTab(dynamic,{});
+    // SUBAREA_CONSISTENCY §13 (D554): the same context and the side files; its run never changes the document.
+    auto* consistency=new ConsistencyPanel(resultsTabs_,{[this]()->const ProjectDocument&{return history_.document();},
+        [this]{return history_.generation();},data_,[this](const char* key){return text(key);},{},{},[this]{refreshRun();}},[this]{return studyAreaSources();});
+    resultPages_.emplace("editorResultsTabConsistency",consistency);resultsTabs_->addTab(consistency,{});
     // The text column takes the room: the reasons, and the route a clamped vehicle was on.
     for(auto [table,column]:{std::pair{dischargeTable_,7},std::pair{clampTable_,3}}){
         table->horizontalHeader()->setSectionResizeMode(0,QHeaderView::ResizeToContents);
@@ -208,6 +213,7 @@ void EditorWindow::translateResults() {
     static_cast<ModeChoicePanel*>(resultPages_.at("editorResultsTabModeChoice"))->translate();
     static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->translate();
     static_cast<DynamicAssignmentPanel*>(resultPages_.at("editorResultsTabDynamic"))->translate();
+    static_cast<ConsistencyPanel*>(resultPages_.at("editorResultsTabConsistency"))->translate();
     lotTable_->setHorizontalHeaderLabels({text("editorLotColumn"),text("editorLotCapacity"),text("editorLotOccupancyMean"),
         text("editorLotOccupancyPeak"),text("editorLotOccupancyEnd"),text("editorLotAdmitted"),text("editorLotDeparted"),
         text("editorLotWaitMean"),text("editorLotWaitMax"),text("editorLotWaitedOverTick")});
@@ -228,6 +234,7 @@ void EditorWindow::refreshResults() {
         if(history_.document().zones.parkingLots.empty())withoutData.insert("editorResultsTabLots");
         if(history_.document().network.nodes.empty())withoutData.insert("editorResultsTabNodes");
         if(!history_.document().definition||history_.document().definition->routingDecisions.empty())withoutData.insert("editorResultsTabDynamic"); // D552
+        if(const auto& a=history_.document().zones.studyArea;a.nodes.empty()||a.flowSource=="meso")withoutData.insert("editorResultsTabConsistency"); // D554
         applyResultsLevel(resultsTabs_,resultPages_,withoutData);
     }
     if(!resultsPage_->isVisible())return;
@@ -239,6 +246,7 @@ void EditorWindow::refreshResults() {
     static_cast<ModeChoicePanel*>(resultPages_.at("editorResultsTabModeChoice"))->refresh();
     static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->refresh();
     static_cast<DynamicAssignmentPanel*>(resultPages_.at("editorResultsTabDynamic"))->refresh();
+    static_cast<ConsistencyPanel*>(resultPages_.at("editorResultsTabConsistency"))->refresh();
     refreshBatch(); // M5.6/M5.8b: a running or finished batch or comparison takes the single run's place
     if(batchShown())return;
     if(!movementTable_->isVisible())return;
@@ -350,6 +358,8 @@ std::string EditorWindow::resultsCsv() const {
         return static_cast<ProcedurePanel*>(resultPages_.at("editorResultsTabProcedure"))->csv();
     if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabDynamic"))
         return static_cast<DynamicAssignmentPanel*>(resultPages_.at("editorResultsTabDynamic"))->csv();
+    if(resultsTabs_&&resultsTabs_->currentWidget()==resultPages_.at("editorResultsTabConsistency"))
+        return static_cast<ConsistencyPanel*>(resultPages_.at("editorResultsTabConsistency"))->csv(); // D554
     if(macroTabShown()){ // S2.4: the Macro tab exports its own CSV, the CLI's --macro --csv
         if(const auto* r=macroResult())return markedCsv(macroCsv(*r),exportMarking(history_.document(),{},macroStale())); // S5.5b
         throw std::runtime_error("EDIT_CSV_UNFINISHED");

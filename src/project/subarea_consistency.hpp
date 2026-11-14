@@ -41,11 +41,14 @@ struct ConsistencyReport {
     double clockStart{}, duration{};
     std::vector<ConsistencyPeriod> periods;
     std::vector<ValidationIssue> advisories;
+    bool cancelled{}; // R2 (§13): `cancelled` fired; no periods
 };
 // §4: per study period wholly inside the run, every entry gate, exit gate and kept Link. `project` is
-// the file name written into the provenance. Refused as runMesoArea, and by the Micro compile.
+// the file name written into the provenance. Refused as runMesoArea, and by the Micro compile. R2 (§13):
+// `cancelled`, when given, is polled before Meso and before each seed; true returns a cancelled report.
 ConsistencyReport consistencyReport(const ProjectDocument&, const std::filesystem::path& dataDirectory,
-                                    const StudyAreaSources&, const std::vector<std::uint32_t>& seeds, const std::string& project);
+                                    const StudyAreaSources&, const std::vector<std::uint32_t>& seeds, const std::string& project,
+                                    const std::function<bool()>& cancelled = {});
 // Micro's volumes (veh/h) for one seed of a compiled run, one map per window [from, to) of run time:
 // Link id -> vehicles entering it, exitGateName(link) -> arrivals on a route ending on it. Exposed for SC5.
 std::vector<std::map<std::string, double>> microVolumes(const RunSnapshot&, std::uint32_t seed,

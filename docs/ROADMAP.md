@@ -391,7 +391,7 @@ Offline install, native file dialogs, no server required.
 Design, decisions and slices: [`plans/MULTI_LEVEL_MODELLING.md`](plans/MULTI_LEVEL_MODELLING.md).
 One authoring network and one demand compile to three views; each engine imports nothing; every
 result of every level carries the not-yet-validated marker until that level's M6 benchmark
-passes (Micro's may close before M10 and M11, D505). M8 is code complete (gate open); M10 and M11 are in progress, M9 open, M12 R1 done; each slice begins with its
+passes (Micro's may close before M10 and M11, D505). M8 is code complete (gate open); M10 and M11 are in progress, M9 open, M12 R1–R2 done; each slice begins with its
 contract and acceptance rows. **Equal weight (D378):** open level work follows the study chain, M10.2–M10.4,
 M9, M11.5 and the M11 gate, then M12 ([PROBLEM](PROBLEM.md) §3); hybrid meso–micro is not booked (B26).
 **Amended 2026-10-15 ([D175](decisions/RECORD-D001-D199.md#d175), [workflow](plans/MULTI_LEVEL_WORKFLOW.md)):**
@@ -445,7 +445,7 @@ tolerance; same inputs give the same bytes; non-convergence is flagged.
 
 ### M12 — Multi-resolution subarea workflow
 
-**Open; contract and R1 (CLI report) done ([SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), D553); R2 page waits.** S5's cut run in M11 and Micro with a cross-level
+**Open; R1 CLI report and R2 Cross-level page done ([SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), D553, D554); the owner's look waits.** S5's cut run in M11 and Micro with a cross-level
 consistency report. **Done when:** one cut runs at both finer levels with recorded provenance and a reported volume comparison.
 
 ### M13 — Analytical junction capacity (HCM 7, D370)

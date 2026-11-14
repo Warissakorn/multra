@@ -71,3 +71,10 @@ target_precompile_headers(multra-dynamic-assignment-ui-tests REUSE_FROM ${MULTRA
 add_test(NAME dynamic-assignment-ui COMMAND multra-dynamic-assignment-ui-tests "${PROJECT_SOURCE_DIR}/data")
 set_tests_properties(dynamic-assignment-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 300)
 add_dependencies(check multra-dynamic-assignment-ui-tests)
+# M12 R2 (SUBAREA_CONSISTENCY §13, D554): the Cross-level Consistency page, rows SC8-SC10.
+add_executable(multra-consistency-ui-tests ${PROJECT_SOURCE_DIR}/tests/consistency_ui_tests.cpp)
+target_link_libraries(multra-consistency-ui-tests PRIVATE multra_shell Qt6::Test multra_options)
+target_compile_definitions(multra-consistency-ui-tests PRIVATE MULTRA_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
+add_test(NAME consistency-ui COMMAND multra-consistency-ui-tests "${PROJECT_SOURCE_DIR}/data")
+set_tests_properties(consistency-ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 300)
+add_dependencies(check multra-consistency-ui-tests)

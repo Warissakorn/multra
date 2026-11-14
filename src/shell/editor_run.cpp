@@ -12,6 +12,7 @@
 #include "mode_choice_panel.hpp"
 #include "procedure_panel.hpp"
 #include "dynamic_assignment_panel.hpp"
+#include "consistency_panel.hpp"
 #include "automation_error.hpp"
 #include <QUuid>
 #include <QJsonArray>
@@ -276,8 +277,10 @@ void EditorWindow::refreshRun(){
     auto* ps=psPage==resultPages_.end()?nullptr:static_cast<ProcedurePanel*>(psPage->second);if(ps)ps->refresh();
     const auto daPage=resultPages_.find("editorResultsTabDynamic"); // D552
     auto* da=daPage==resultPages_.end()?nullptr:static_cast<DynamicAssignmentPanel*>(daPage->second);if(da)da->refresh();
+    const auto scPage=resultPages_.find("editorResultsTabConsistency"); // D554
+    auto* sc=scPage==resultPages_.end()?nullptr:static_cast<ConsistencyPanel*>(scPage->second);if(sc)sc->refresh();
     const bool exportable=panel&&resultsTabs_->currentWidget()==panel?panel->exportable():trips&&resultsTabs_->currentWidget()==trips?trips->exportable()
-        :dist&&resultsTabs_->currentWidget()==dist?dist->exportable():mc&&resultsTabs_->currentWidget()==mc?mc->exportable():ps&&resultsTabs_->currentWidget()==ps?ps->exportable():da&&resultsTabs_->currentWidget()==da?da->exportable():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
+        :dist&&resultsTabs_->currentWidget()==dist?dist->exportable():mc&&resultsTabs_->currentWidget()==mc?mc->exportable():ps&&resultsTabs_->currentWidget()==ps?ps->exportable():da&&resultsTabs_->currentWidget()==da?da->exportable():sc&&resultsTabs_->currentWidget()==sc?sc->exportable():macroTabShown()?macroResult()!=nullptr:mesoTabShown()?mesoResult()!=nullptr
         :runFinished()||batch_.has_value()||comparison_.has_value();
     for(const char* key:{"editorExportResults","editorCopyResults"})
         if(const auto e=actions_.find(key);e!=actions_.end())e->second->setEnabled(exportable);

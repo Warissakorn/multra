@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
         require(inner->tabText(inner->indexOf(test::tabPage(inner,discharge))) == QString::fromUtf8("การระบายคิว"), "Discharge tab not translated");
         // D497: Results shows one level's tabs at a time, chosen in the picker.
         auto* level = item<QComboBox>(w, "editorResultsLevel");
-        require(level->count() == 4 && level->currentIndex() == 0, "Results does not open on Micro of four levels");
+        require(level->count() == 5 && level->currentIndex() == 0, "Results does not open on Micro of five levels"); // D554: Cross-level
         const auto shownTabs = [&] { int n = 0; for (int i = 0; i < inner->count(); ++i) n += inner->isTabVisible(i); return n; };
         auto* macroPage = test::tabPage(inner, item<QWidget>(w, "editorMacroToolbar"));
         auto* mesoPage = test::tabPage(inner, item<QWidget>(w, "editorMesoToolbar"));

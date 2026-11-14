@@ -18,7 +18,8 @@ const std::vector<std::pair<const char*, std::vector<const char*>>> levels{
     {"editorSeamMeso", {"editorResultsTabMeso"}},
     {"editorSeamMacro", {"editorResultsTabTripGeneration", "editorResultsTabTripDistribution", "editorResultsTabModeChoice",
                          "editorResultsTabMacro", "editorResultsTabProcedure"}},
-    {"editorResultsLevelNode", {"editorResultsTabNodeAnalysis"}}};
+    {"editorResultsLevelNode", {"editorResultsTabNodeAnalysis"}},
+    {"editorResultsLevelCrossLevel", {"editorResultsTabConsistency"}}}; // D554
 std::string keyOf(const ResultPages& pages, const QWidget* page) {
     for (const auto& [key, widget] : pages) if (widget == page) return key;
     return {};

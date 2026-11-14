@@ -93,9 +93,11 @@ std::vector<std::map<std::string, double>> microVolumes(const RunSnapshot& s, st
     return out;
 }
 ConsistencyReport consistencyReport(const ProjectDocument& d, const std::filesystem::path& data, const StudyAreaSources& sources,
-                                    const std::vector<std::uint32_t>& seeds, const std::string& project) {
+                                    const std::vector<std::uint32_t>& seeds, const std::string& project,
+                                    const std::function<bool()>& cancelled) {
     requireArea(d);
     ConsistencyReport r;
+    const auto stop = [&] { if (cancelled && cancelled()) { r.cancelled = true; r.periods.clear(); return true; } return false; };
     r.project = project; r.flowSource = d.zones.studyArea.flowSource; r.seeds = seeds;
     r.projectSha256 = projectSha256(d);
     r.clockStart = d.definition ? d.definition->clockStart : 0;
@@ -106,6 +108,7 @@ ConsistencyReport consistencyReport(const ProjectDocument& d, const std::filesys
     const auto snapshot = compileDocument(d, data, nullptr, &sources);
     if (snapshot.studyArea) r.provenance = *snapshot.studyArea;
     r.marking = exportMarking(d, snapshot.studyArea);
+    if (stop()) return r;
     const auto meso = runMesoArea(d, data, &sources);
     r.mesoSettings = meso.settings;
     r.advisories = meso.advisories;
@@ -121,7 +124,10 @@ ConsistencyReport consistencyReport(const ProjectDocument& d, const std::filesys
     }
     // Micro, every seed in the order given.
     std::vector<std::vector<std::map<std::string, double>>> micro; // [seed][period]
-    for (const auto seed : seeds) micro.push_back(microVolumes(snapshot, seed, windows));
+    for (const auto seed : seeds) {
+        if (stop()) return r;
+        micro.push_back(microVolumes(snapshot, seed, windows));
+    }
     // Meso: each kept Link's first Meso link, and the exit gates' commodities.
     std::map<std::string, std::size_t> first;
     for (std::size_t l = 0; l < meso.graph.links.size(); ++l) {

@@ -5,6 +5,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — M12 R2: the Cross-level Consistency page (D554)
+
+- **D554** (owner: "ทำงานถัดไป", then both recommended options): amendment first (SUBAREA_CONSISTENCY §13, SC8–SC10), then `ConsistencyPanel` under a new *Cross-level* Results level (seeds, Run/Cancel on a worker via a `cancelled` hook on `consistencyReport`, the 19-column table, CSV through Export). `consistency-ui` passes; pins `workspace-ui` (14 tabs) and `results-tabs-ui` (5 levels) updated. The capture showed open finding O2 (§14). Owner check: C18. Verified on Linux: `check` 353/353.
+
 ## 2026-11-14 — M12 contract and R1: the subarea workflow and consistency report (D553)
 
 - **D553** (owner: "ช่วยตัดสินใจ", then "ทำต่อตามแนะนำ"; every recommended option): [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), rows SC1–SC7, before code. Meso runs opt-in on the study area's run-time copy (the same cut Micro runs on; `"meso"` as the source is `MESO_AREA_SOURCE_SELF`); per study period, every gate and kept Link gets Macro, Meso and Micro (multi-seed `Estimate`) veh/h with Δ, % and GEH, reported only. R1 is the CLI `--consistency-report`, R2 a Results page. Open: O1, TAG M3.1's GEH paragraph (the publisher's host was not reachable).
