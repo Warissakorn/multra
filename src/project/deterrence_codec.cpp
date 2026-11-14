@@ -1,6 +1,7 @@
 #include "deterrence_codec.hpp"
 #include "input_manifest.hpp"
 #include "../core/validate.hpp"
+#include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cmath>
@@ -10,9 +11,11 @@ namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
 bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
-bool onlyKeys(const Json& j, std::initializer_list<const char*> allowed) {
+// D571: the same key tables close these rows in the composed schema.
+// This reader has no file version; constraint uses its widest active version (72).
+bool onlyKeys(const Json& j, networkCodec::Object row) {
     for (const auto& [key, value] : j.items())
-        if (std::none_of(allowed.begin(), allowed.end(), [&](const char* a) { return key == a; })) return false;
+        if (!networkCodec::knownKey(key, row, networkCodec::destinationConstraintVersion)) return false;
     return true;
 }
 bool isString(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
@@ -22,7 +25,7 @@ void bad(Issues& issues, const std::string& path) { issues.push_back({"INVALID_D
 DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool requireCitation) {
     Issues issues;
     DeterrenceSet set;
-    if (!j.is_object() || !onlyKeys(j, {"id", "name", "source", "function", "costUnit", "purposes"}))
+    if (!j.is_object() || !onlyKeys(j, networkCodec::Object::deterrenceSet))
         throw ValidationError({{"INVALID_DETERRENCE_SET", path}});
     if (!isString(j, "id") || blank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
     else set.id = j.at("id").get<std::string>();
@@ -30,7 +33,7 @@ DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool re
     else set.name = j.at("name").get<std::string>();
     if (!isString(j, "function") || j.at("function").get<std::string>() != "exponential") bad(issues, path + ".function");
     if (!isString(j, "costUnit") || j.at("costUnit").get<std::string>() != "min") bad(issues, path + ".costUnit");
-    if (!j.contains("source") || !j.at("source").is_object() || !onlyKeys(j.at("source"), {"citation", "table"})) bad(issues, path + ".source");
+    if (!j.contains("source") || !j.at("source").is_object() || !onlyKeys(j.at("source"), networkCodec::Object::tripRateSource)) bad(issues, path + ".source");
     else {
         const auto& s = j.at("source");
         if (s.contains("citation") && !s.at("citation").is_string()) bad(issues, path + ".source.citation");
@@ -46,7 +49,7 @@ DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool re
         for (std::size_t k = 0; k < items.size(); ++k) {
             const auto at = path + ".purposes[" + std::to_string(k) + "]";
             const auto& item = items[k];
-            if (!item.is_object() || !onlyKeys(item, {"id", "beta", "intrazonalShare", "constraint"})) { bad(issues, at); continue; }
+            if (!item.is_object() || !onlyKeys(item, networkCodec::Object::deterrencePurpose)) { bad(issues, at); continue; }
             DeterrencePurpose p;
             if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
             else if (p.id = item.at("id").get<std::string>(); !ids.insert(p.id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});

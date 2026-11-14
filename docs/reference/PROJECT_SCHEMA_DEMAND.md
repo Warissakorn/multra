@@ -431,3 +431,38 @@ required citation.
 | TR1 | On the unchanged reader: the base parses from 66; the 66 floor even null; `INVALID_TRIP_RATE_SET` for null, `[]`, a number row, an unknown key at the set, source, purpose, category and term, a side with the other method's key, a negative rate and an unknown method; `DUPLICATE_ID` at `tripRateSets[1].id` |
 | TR2 | `tripRateSets` `false` below 66; from it the nonempty array, the closed rows with their required keys, one row for both sides, the `method` branch and `rate` ≥ 0 |
 | TR3 | Every case labelled refused is refused by `parseDocument`; the 1,559 labels, writer output (the two Ortúzar example sets), earlier labels and all 18 projects agree with the emitted schema (`jsonschema`, one-off) |
+
+## Owned deterrence-set and cost-matrix extension (D571)
+
+The composed CLI coverage adds `-deterrence-cost`; complete remains false. The root
+`deterrenceSets` and `costMatrices` ([TRIP_DISTRIBUTION §5–§6](TRIP_DISTRIBUTION.md),
+`deterrence_codec.cpp`, `cost_matrix_codec.cpp`) are refused below 67 when present, even null
+(`EDIT_UNSUPPORTED_FIELD` at the root key); the schema gives each `false`.
+
+- `deterrenceSets` is a nonempty array of closed sets requiring text `id` and `name`, a `source`,
+  `function: "exponential"`, `costUnit: "min"` and a nonempty `purposes` array. Its closed `source`
+  reuses D570's `tripRateSource` row: optional text `citation` and `table`.
+- Each closed purpose requires text `id` and numeric `beta` > 0 (`exclusiveMinimum: 0`). Optional
+  `intrazonalShare` is numeric with 0 ≤ share < 1. `constraint` is `false` below 68; from 68 an
+  enum of `double` and `origin`, adding `destination` from 72. The document's existing guards
+  keep `EDIT_UNSUPPORTED_FIELD` at `deterrenceSets[i].purposes[k].constraint` before row decoding.
+- `costMatrices` is a nonempty array of closed matrices requiring text `id` and `name`,
+  `unit: "min"`, a nonempty `zoneIds` array of text and a nonempty `rows` array of arrays whose
+  cells are numbers ≥ 0 or null. Optional `source` is closed with optional text `citation` only;
+  unlike a deterrence source it refuses `table`.
+
+Both readers now use `networkCodec::knownKey` against the same field tables. The deterrence
+reader has no file version, so key membership uses the widest active constraint version, 72;
+`document.cpp` retains its original version guards. Codes (`INVALID_DETERRENCE_SET`,
+`INVALID_COST_MATRIX`, `INVALID_ID`, `DUPLICATE_ID`), paths and check order are unchanged.
+Blank and unique ids, blank and unique zone ids, n×n matrix agreement and a catalog deterrence
+set's required citation stay with the codecs. Known zone references remain a run check.
+
+| Row | Check |
+|---|---|
+| DS1 | On the unchanged reader: the base parses from 67; both root floors even null, in their original order; constraint presence below 68 and destination below 72 precede row checks; allowed constraint values parse; unknown keys at set/source/purpose, beta 0, share 1 and duplicate set/purpose ids keep their codes and paths; simultaneous faults retain the complete issue order |
+| DS2 | `deterrenceSets` `false` below 67; nonempty arrays, closed rows and required keys, source shared with trip rates, function/unit consts, exclusive beta/share bounds and the versioned constraint enum |
+| DS3 | Every case labelled refused is refused by `parseDocument`; all 984 deterrence labels, 854 matrix labels, D570's 1,559 labels, three writer outputs (67, 68 and destination at 72, each with a null matrix cell) and all 18 TrafficSim projects under data/ and tests/ agree with the emitted schema (`jsonschema` 4.26.0, one-off: 3,418 labels, zero mismatches) |
+| CM1 | On the unchanged reader: the base and its null cell parse from 67; the 67 floor even null; null/empty lists, unknown keys before missing fields, source table or non-text citation, blank/duplicate zone ids, row-count/row-width faults, a negative cell and duplicate matrix ids retain their codes and paths; simultaneous faults retain the complete issue order |
+| CM2 | `costMatrices` `false` below 67; nonempty closed matrix rows, optional closed citation-only source, minute const, nonempty text zone ids and nonempty rows of arrays with nonnegative number-or-null cells; no uniqueItems or row-width constraint |
+| CM3 | Every case labelled refused is refused by `parseDocument`; all 854 matrix labels and the writer/project coverage in DS3 agree with the emitted schema, including codec-only n×n, blank-id and duplicate-id refusals labelled schema-accepted |

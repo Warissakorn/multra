@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — Owned deterrence sets and cost matrices in the schema (D571)
+
+- **Pick:** the owner explicitly selected NEXT's schema-67 slice on `claude/optimistic-bohr-lpfu98`; D570's diff was read first. Both roots have the same floor, so they stay one slice.
+- **D571:** `deterrenceSets` and `costMatrices` join the composed partial schema with closed rows, codec-owned constants and numeric bounds, and the existing constraint floors 68/72. Deterrence reuses the trip-rate source table; matrix source allows citation only. Both codecs use `knownKey`; codes, paths and order stay unchanged. Blank/unique ids and n×n agreement remain codec checks. DS1/CM1 and refusal cases passed first on unchanged readers (`project` 106/106), before tables or codec edits; DS2/CM2 followed.
+- **One-off `jsonschema` 4.26.0:** all 3,418 labels agree: deterrence 984, matrices 854, D570 1,559, three writer outputs (67, 68 and destination at 72, all with a null matrix cell), and every TrafficSim project under data/ and tests/ (18, independently enumerated). The temporary dump test and CMake registration were deleted.
+- **Verified on Linux (headless):** build and `check` 238/238; `project` 108/108, including six new tests. The initial Debug link exhausted the environment's disk; a local CMake cache linker flag `-Wl,--strip-debug` let the same headless preset fit, with no repository preset change. The desktop preset, `check_no_pch.py` and Windows were not run. NEXT briefs `periodFactors` 69 after owner review; no PR or merge.
+
 ## 2026-11-14 — Owned trip-rate sets in the schema (D570)
 
 - **Pick:** the owner said to continue as recommended ("ทำต่อตามแนะนำ"); D569's NEXT proposed `tripRateSets` first.
@@ -118,7 +125,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ## 2026-11-14 — O2: a gate counts the demand loaded onto its Link (D555)
 
 - **D555** (owner asked for a recommendation, then approved (b)): amendment first (SUBAREA_CONSISTENCY §15, SC11), then the fed-flow bookkeeping in `consistencyReport` adds each inside zone's flows by connector share to the gate on its connector's Link. SC11 passes first time: the corridor's west entry gate now reads Macro 600 = its Link row (GEH 0); shares 3 : 1 split 450 / 150. Verified on Linux: `check` 353/353.
-
-## 2026-11-14 — M12 R2: the Cross-level Consistency page (D554)
-
-- **D554** (owner: "ทำงานถัดไป", then both recommended options): amendment first (SUBAREA_CONSISTENCY §13, SC8–SC10), then `ConsistencyPanel` under a new *Cross-level* Results level (seeds, Run/Cancel on a worker via a `cancelled` hook on `consistencyReport`, the 19-column table, CSV through Export). `consistency-ui` passes; pins `workspace-ui` (14 tabs) and `results-tabs-ui` (5 levels) updated. The capture showed open finding O2 (§14). Owner check: C18. Verified on Linux: `check` 353/353.

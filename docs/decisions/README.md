@@ -6,7 +6,7 @@ and their evidence before reopening a choice. IDs remain stable even when record
 
 | Topic | Start with these decisions |
 |---|---|
-| Desktop automation and AI control | D570, D569, D568, D567, D566, D565, D564, D563, D562, D561, D560, D559, D558, D350, D349, D348, D347, D346, D345, D344, D336, D335 |
+| Desktop automation and AI control | D571, D570, D569, D568, D567, D566, D565, D564, D563, D562, D561, D560, D559, D558, D350, D349, D348, D347, D346, D345, D344, D336, D335 |
 | Product scope, stack, naming and owner gates | D557, D556, D555, D554, D553, D552, D551, D550, D549, D548, D547, D546, D545, D544, D543, D542, D541, D540, D539, D538, D537, D536, D535, D534, D533, D532, D531, D530, D529, D528, D527, D516, D505, D378, D290, D289, D288, D287, D286, D285, D284, D278, D270, D269, D268, D267, D266, D265, D264, D263, D262, D261, D260, D259, D201, D178, D177, D145, D175, D1–D17, D34, D38, D49, D51–D53 |
 | Macro assignment (S2, M10.1) and four-step (M10.2) | D485, D484, D483, D482, D481, D480, D479, D478, D477, D476, D475, D474, D473, D472, D471, D470, D469, D468, D277, D276, D275, D274, D273, D272, D271 |
 | Meso engine (M11) | D293, D292, D291, D158 |
@@ -90,3 +90,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D568](RECORD.md#d568) — the root map joins the composed schema with the codec's own ranges; the CRS-anchor agreement stays with the codec.
 [D569](RECORD.md#d569) — definition.macroSettings and the root macroRuns join the composed schema; their readers check keys with knownKey.
 [D570](RECORD.md#d570) — the root tripRateSets joins the composed schema; the trip-rate codec checks keys with knownKey.
+[D571](RECORD.md#d571) — owned deterrence sets and cost matrices join the composed schema, including constraint floors 68/72; both readers check the same key tables.

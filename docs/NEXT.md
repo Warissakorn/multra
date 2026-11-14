@@ -35,10 +35,11 @@ All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none o
 review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
 (random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
-**Review waiting (code, not a gate):** D570 on branch `claude/optimistic-bohr-lpfu98`, the
-`tripRateSets` schema rows (PROJECT_SCHEMA_DEMAND, TR1–TR3). Verified on Linux headless only; the
-desktop preset, `check_no_pch.py` and Windows CI were not run. Nothing is merged; an owner change
-request stays in D570 before the next slice starts.
+**Review waiting (code, not a gate):** D570 and D571 on branch `claude/optimistic-bohr-lpfu98`:
+`tripRateSets` (TR1–TR3), `deterrenceSets` and `costMatrices` (DS1–DS3/CM1–CM3), in
+PROJECT_SCHEMA_DEMAND. Verified on Linux headless only; the desktop preset, `check_no_pch.py` and
+Windows were not run. Nothing is merged. Stop for owner review; any change request stays in its
+slice before `periodFactors` starts.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
@@ -199,7 +200,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
   remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
-## AI automation follow-up (D344–D350, D558–D569)
+## AI automation follow-up (D344–D350, D558–D571)
 
 - An authoritative formal schema covering every optional/versioned field remains separate from D350
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
@@ -219,45 +220,47 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Done (D568, MP1–MP3):** the root `map`, with the codec's ranges; the root key table is `rootFeatures`.
 - **Done (D569, MR1–MR3):** `definition.macroSettings` and the root `macroRuns`.
 - **Done (D570, TR1–TR3):** the root `tripRateSets`; its codec checks keys with `knownKey`.
-- **Next slice, ready to start (`deterrenceSets` and `costMatrices`, schema 67).** Proposed by the
-  sessions, not the owner; the owner said to continue as recommended. Both land at 67, so one slice.
-  Copy D570 (commit "Owned trip-rate sets in the composed schema"): read its diff first.
-  1. **Inventory (read, change nothing):** `deterrence_codec.cpp` `parseDeterrenceSet` and
-     `cost_matrix_codec.cpp` `parseCostMatrix`; the floors in `document.cpp` `parseDocument`
-     (both keys `EDIT_UNSUPPORTED_FIELD` below 67; a purpose's `constraint` refused at its path below 68,
-     and its value `"destination"` below 72). Codes: `INVALID_DETERRENCE_SET`, `INVALID_COST_MATRIX`,
-     `INVALID_ID`, `DUPLICATE_ID`.
-  2. **Pins first (DS1/CM1)** in `tests/deterrence_schema_tests.cpp` + `_cases.hpp`, built and passing
-     on the unchanged readers, then the tables.
-  3. **Rows as read.** Deterrence set closed `{id, name, source, function, costUnit, purposes}`, all
-     required; `function` const `"exponential"`, `costUnit` const `"min"`; `source` closed `{citation?,
-     table?}` (the same row shape as `tripRateSource`: reuse it or add `deterrenceSource`, but one
-     table); `purposes` nonempty, closed `{id, beta, intrazonalShare?, constraint?}`, `beta` > 0
-     (`exclusiveMinimum` 0), `intrazonalShare` 0 ≤ x < 1, `constraint` `false` below 68, enum
-     `double`/`origin` from 68, plus `destination` from 72 (a version-dependent enum, as
-     `behaviourModel` does). Cost matrix closed `{id, name, source?, unit, zoneIds, rows}`; `source`
-     closed `{citation?}` only (not `table`); `unit` const `"min"`; `zoneIds` nonempty array of
-     strings; `rows` nonempty array of arrays of `number ≥ 0 | null`. Left to the codec: n×n agreement,
-     blank and unique zone ids, blank and unique ids.
-  4. **One key source:** replace both codecs' `onlyKeys({...})` with the field tables through
-     `networkCodec::knownKey` (D570's `onlyKeys(j, Object)` helper). The reader has no version: use
-     `constraint`'s widest active version (72) so the floor stays with `document.cpp`.
-  5. **Coverage string** gains `-deterrence-cost` in `network_schema.cpp` (twice: value and `$comment`),
-     `tests/network_schema_tests.cpp`, `tests/project_schema_cli.cmake`, `tools/project_schema.cpp`'s
-     help, `tools/README.md`, DESKTOP_AUTOMATION's schema sentence.
-  6. **One-off `jsonschema`** (not in `check`): add a temporary test that dumps `cases()` and a writer
-     document to the scratchpad when an environment variable is set, validate with Python's
-     `jsonschema` 4.x against `multra-project-schema`'s output, then delete the test. Include all
-     `TrafficSim` projects under `data/` and `tests/` (18 at D570). Every label must agree.
-  - **Pitfalls met in D570:** the test binary filters by group, not test name (`multra-tests project`);
-    a closed row with no required key still emits `"required": []`; moving a PROGRESS entry into
-    `docs/archive/` needs its relative links rewritten to `../reference/…` or `multra-check-docs` fails;
-    the headless preset is enough for these tests (about 15 min first build on 4 jobs).
-  - **Session end:** `cmake --build build/headless --target check` green; the next decision ID in RECORD (append) and
-    the decisions README; PROJECT_SCHEMA_DEMAND section with rows DS1–DS3/CM1–CM3; PROJECT_SCHEMA and
-    reference README lines; PROGRESS entry (oldest moved whole to the archive); this item rewritten.
-- **After it:** `periodFactors` 69, `modeChoiceSets` 70 (nests from 71), `procedures` 73 (feedback 75),
-  each its own slice by the same steps.
+- **Done (D571, DS1–DS3/CM1–CM3):** root `deterrenceSets` and `costMatrices` at 67, with
+  `constraint` from 68 and `destination` from 72; both readers use the shared key tables.
+- **Following slice (`periodFactors`, schema 69), after owner review of D570/D571.** The owner
+  selected the schema-67 slice only in this session; stop before starting this one. Copy D571's
+  pin-first method and read its diff first, then D567's `exactFields` pattern.
+  1. **Inventory (read, change nothing):** `period_factor_codec.cpp` `parsePeriodFactors`,
+     `periodFactorIssues`, and `document.cpp`'s pre-69 guard and validation call. A present key
+     below 69 is `EDIT_UNSUPPORTED_FIELD` at `periodFactors`, even null. Shape/share faults are
+     `PERIOD_FACTOR_INVALID`; unknown periods `UNKNOWN_PERIOD`; repeated pairs `DUPLICATE_ID`.
+  2. **Pins first (PF1):** write `tests/period_factor_schema_tests.cpp` and `_cases.hpp`, register
+     them in CMake, build and pass on the unchanged reader before touching tables or codec.
+     Pin parent-row errors for missing/extra keys, field errors and their order, numeric bounds,
+     the share-sum check, unknown periods and repeated pairs. Use a valid `studyPeriods` fixture.
+  3. **Rows as read:** root `periodFactors` is `false` below 69, then a nonempty array of closed
+     rows requiring text `purposeId` and `periodId`, and numeric `productionToAttraction` and
+     `attractionToProduction`, each in [0, 1]. Blank text, the sum ≤ 1, known periods and unique
+     purpose/period pairs stay with the codec; do not invent a JSON Schema arithmetic extension.
+  4. **One key source:** replace only the reader's `exact` shape expression with
+     `networkCodec::exactFields` on the shared required-field table at 69 (D567). Preserve
+     `PERIOD_FACTOR_INVALID` at the row, then text checks, share checks and sum check in order.
+     No writer, version-selection or file-byte change.
+  5. **Coverage:** add `-period-factors` to the value and update the `$comment` in
+     `network_schema.cpp`, its C++/CLI coverage pins, tool help, tools README and
+     DESKTOP_AUTOMATION's schema sentence. Keep `x-multra-complete:false`.
+  6. **One-off `jsonschema` 4.x (not in `check`):** a temporary environment-gated test dumps
+     `cases()`, writer output with valid periods and factors (include boundary shares), and every
+     TrafficSim project under `data/` and `tests/`. Check against `multra-project-schema`'s output;
+     every label must agree, including codec-only refusals labelled schema-accepted. Delete the
+     temporary test and CMake registration afterwards.
+  - **Pitfalls:** filter the test binary by group (`multra-tests project`), not test name; a
+    closed row with no required key still emits `required: []`; moved PROGRESS entries need
+    archive-relative links. The headless preset is enough; report desktop, no-PCH and Windows
+    checks honestly. D571's small environment needed a local linker-only `--strip-debug` cache
+    flag to fit the Debug executables; no repository preset changed.
+  - **Session end:** headless build and `cmake --build build/headless --target check` green;
+    append the next decision ID to RECORD and its index; PROJECT_SCHEMA_DEMAND PF1–PF3,
+    PROJECT_SCHEMA and reference README updated; PROGRESS entry with the oldest moved whole
+    to the archive and its links rewritten; rewrite this item; commit/push the same branch and
+    stop for owner review without a PR or merge.
+- **After it:** `modeChoiceSets` 70 (nests from 71), `procedures` 73 (feedback 75), each its own
+  slice by the same steps, on the owner's go.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.
