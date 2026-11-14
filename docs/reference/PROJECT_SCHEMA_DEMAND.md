@@ -283,3 +283,48 @@ stays with the library validators.
 | BC1 | On the unchanged reader: both gates refuse null at their paths below 21; the three unknown-key paths; `Expected text: name` and `: vehicleTypeIds`; `EDIT_CATALOG_READ` for a null catalog; `Missing field: id` |
 | BC2 | Both catalogs `false` below 21; from 21 closed rows with `id` required, `vehicleTypeIds` required on a class, `classId`/`behaviourId` on an override |
 | BC3 | Every case labelled refused is refused by `parseDocument`; the 3,040 labels, a writer round-trip and all 18 projects agree with the emitted schema (`jsonschema`, one-off) |
+
+## Zone-layer extension (D566)
+
+The composed CLI coverage adds `-zones`; complete remains false. The four root arrays `zones`,
+`zoneConnectors`, `odMatrices` and `parkingLots` sit in each version branch beside `network` and
+`definition` (`zone_codec.cpp`). Below 31 each is refused when present, even null
+(`UNSUPPORTED_FIELD: <key>`); the schema gives each `false`. From 31 a present value is a
+nonempty array (`minItems` 1); null, `[]` or another type is `EDIT_ZONE_INVALID`. Every row is
+closed, and every row refusal is the bare `EDIT_ZONE_INVALID` unless named below.
+
+- A zone requires text `id` and `name`, a `polygon` of `[x, y]` number pairs and an `attributes`
+  object of numbers.
+- A Link connector requires text `id`, `zoneId`, `linkId`, a `direction` of `origin` or
+  `destination`, and a number `share`. From 57 a connector carrying the street-segment id key is
+  the street row instead: `roadId` and `roadDirection` (57–58) or `streetSegmentId` and
+  `streetSegmentDirection` (59 on), a nonempty id and `forward` or `backward`, with the same
+  `id`, `zoneId`, `direction` and `share` (D389). The schema selects the row with `if required
+  [<id key>]`. The other version's names are `EDIT_UNSUPPORTED_FIELD` at
+  `zoneConnectors[i].<key>`, and `roadId`/`roadDirection` are refused so below 57.
+- An OD matrix requires text `id`, a `zoneIds` array of text and a `cells` array of number arrays.
+  It takes `compositionId` or, from 49, `modeId`; and `startTime` with `endTime` or, from 49,
+  `periodId`. Both or neither is `OD_TYPES_AMBIGUOUS` or `OD_PERIOD_AMBIGUOUS` at `odMatrices[i]`,
+  checked before the keys. `modeId` and `periodId` below 49 are `EDIT_UNSUPPORTED_FIELD` at their
+  paths (`rejectModesBefore49`, `rejectStudyPeriodsBefore49`). An optional `generatedBy` from 70 is
+  only `"mode-choice"` (`OD_GENERATED_INVALID`); below 70 it is `EDIT_UNSUPPORTED_FIELD`.
+- A parking lot requires text `id`, `zoneId` and `initialCompositionId`, unsigned-integer tokens
+  `capacity` and `initialOccupancy` (at most 4,294,967,295), a number `gateServiceTime` and a `dwell`
+  of `[minutes, cumulative]` pairs.
+
+The either-or keys use a field attribute, `unless`: such a field is required unless the named
+alternative is present, and refused when it is. The schema writes it as `if required [modeId] then
+compositionId false else compositionId required` (a `oneOf` of required lists would accept
+`periodId` with only `startTime`). Below the alternative's floor the field is plainly required. The
+codec's `exactKeys` reads the same tables: an inactive or excluded key may not appear, a required
+one must. The two ambiguity checks and the `generatedBy` checks keep their own codes and order.
+
+Not in the schema: a `5.0` count (a native unsigned token), the model checks of
+`zoneLayerIssues` (simple polygons, known references, square cells, the dwell curve, unique ids),
+and the root `studyPeriods` and `studyArea`, which have their own codecs.
+
+| Row | Check |
+|---|---|
+| ZL1 | On the unchanged reader: both bases parse (Link connectors from 31, street connectors from 57); the 31 gate even null; `EDIT_ZONE_INVALID` for null, `[]` and an unknown key; the two ambiguity codes before an unknown key; `modeId`/`periodId` below 49, `generatedBy` below 70, `OD_GENERATED_INVALID`; `roadId`/`roadDirection` below 57 and the rename on each side of 59; an empty street id; a signed `capacity` token |
+| ZL2 | The four keys `false` below 31 and nonempty arrays from it; the connector branch from 57 with the version's id key; closed rows; the matrix's required list and conditions from 49; `generatedBy` `false` below 70; the lot's unsigned-token marker |
+| ZL3 | Every case labelled refused is refused by `parseDocument`; the 9,668 labels, writer output (a period and mode matrix, a generated matrix, the street fixture at 57, 58 and 59) and all 18 projects, 8 with zones, agree with the emitted schema (`jsonschema`, one-off) |

@@ -19,17 +19,6 @@ const Json& section(const Json& value, const char* name) {
     return value.at(name);
 }
 namespace {
-// Schema 7 is implemented incrementally. Never accept a target-spec field and then silently
-// discard it on save (or imply its simulation behavior exists). Legacy readers stay additive.
-void knownFields(const Json& value,std::initializer_list<const char*> keys,
-                 const std::string& path,int version) {
-    if(version<7 || !value.is_object())return;
-    for(const auto& [key,unused]:value.items()) {
-        (void)unused;
-        if(std::none_of(keys.begin(),keys.end(),[&](const char* k){return key==k;}))
-            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD",path+"."+key}});
-    }
-}
 // Every accessor goes through this: reaching .at() on a null or a non-object is how an
 // nlohmann type_error escapes to the user instead of a sentence naming the missing field.
 const Json& member(const Json& value, const char* name) {

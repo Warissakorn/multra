@@ -18,17 +18,23 @@ constexpr const char* kConnectors = "zoneConnectors";
 constexpr const char* kMatrices = "odMatrices";
 constexpr const char* kLots = "parkingLots";
 [[noreturn]] void invalid() { throw std::invalid_argument("EDIT_ZONE_INVALID"); }
-void exactKeys(const Json& j, const std::vector<const char*>& keys) {
-    if (!j.is_object() || j.size() != keys.size()) invalid();
-    for (const auto* key : keys) if (!j.contains(key)) invalid();
+// D566: the key lists are the schema's (network_fields.cpp); every row is closed and the only refusal is the bare code.
+void exactKeys(const Json& j, networkCodec::Object object, int schema) {
+    if (!j.is_object()) invalid();
+    std::size_t expected = 0;
+    for (const auto& f : networkCodec::fields(object)) {
+        if (!networkCodec::activeField(f, schema) || (f.unless && j.contains(f.unless))) continue;
+        if (j.contains(f.name)) ++expected; else if (f.required) invalid();
+    }
+    if (j.size() != expected) invalid();
 }
 std::string text(const Json& j, const char* key) { if (!j.at(key).is_string()) invalid(); return j.at(key).get<std::string>(); }
 double number(const Json& j) { if (!j.is_number()) invalid(); return j.get<double>(); }
 const Json& array(const Json& j) { if (!j.is_array()) invalid(); return j; }
 const char* directionName(ZoneDirection d) { return d == ZoneDirection::origin ? "origin" : "destination"; }
 
-Zone parseZone(const Json& j) {
-    exactKeys(j, {"id", "name", "polygon", "attributes"});
+Zone parseZone(const Json& j, int schema) {
+    exactKeys(j, networkCodec::Object::zone, schema);
     Zone z{text(j, "id"), text(j, "name"), {}, {}};
     for (const auto& p : array(j.at("polygon"))) {
         if (!p.is_array() || p.size() != 2) invalid();
@@ -41,8 +47,7 @@ Zone parseZone(const Json& j) {
 ZoneConnector parseConnector(const Json& j, int schema) {
     const auto idKey = networkCodec::streetSegmentIdKey(schema), directionKey = networkCodec::streetSegmentDirectionKey(schema);
     const bool road = j.is_object() && j.contains(idKey);
-    if (road) exactKeys(j, {"id", "zoneId", idKey, directionKey, "direction", "share"});
-    else exactKeys(j, {"id", "zoneId", "linkId", "direction", "share"});
+    exactKeys(j, road ? networkCodec::Object::zoneStreetConnector : networkCodec::Object::zoneLinkConnector, schema);
     const auto direction = text(j, "direction");
     if (direction != "origin" && direction != "destination") invalid();
     ZoneConnector c{text(j, "id"), text(j, "zoneId"), road ? "" : text(j, "linkId"),
@@ -62,16 +67,13 @@ OdMatrix parseMatrix(const Json& j, const std::string& path, int schema) {
     // S1.2 (§5, §6): a composition or a mode, never both and never neither.
     if (j.is_object() && j.contains("modeId") == j.contains("compositionId")) throw ValidationError({{"OD_TYPES_AMBIGUOUS", path}});
     const bool period = j.contains("periodId"), mode = j.contains("modeId");
-    std::vector<const char*> keys{"id", "zoneIds", "cells", mode ? "modeId" : "compositionId"};
-    if (period) keys.push_back("periodId"); else { keys.push_back("startTime"); keys.push_back("endTime"); }
     // M10.4 E2 (D479): the generated marker, from schema 70, only "mode-choice".
     if (j.is_object() && j.contains("generatedBy")) {
-        if (schema < 70) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + ".generatedBy"}});
-        if (!j.at("generatedBy").is_string() || j.at("generatedBy").get<std::string>() != "mode-choice")
+        if (schema < networkCodec::generatedMatrixVersion) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + ".generatedBy"}});
+        if (!j.at("generatedBy").is_string() || j.at("generatedBy").get<std::string>() != networkCodec::kGeneratedByModeChoice)
             throw ValidationError({{"OD_GENERATED_INVALID", path + ".generatedBy"}});
-        keys.push_back("generatedBy");
     }
-    exactKeys(j, keys);
+    exactKeys(j, networkCodec::Object::odMatrix, schema);
     OdMatrix m;
     if (j.contains("generatedBy")) m.generatedBy = j.at("generatedBy").get<std::string>();
     m.id = text(j, "id");
@@ -88,8 +90,8 @@ std::uint32_t count(const Json& j) {
     if (!j.is_number_unsigned() || j.get<std::uint64_t>() > 0xffffffffULL) invalid();
     return static_cast<std::uint32_t>(j.get<std::uint64_t>());
 }
-ParkingLot parseLot(const Json& j) {
-    exactKeys(j, {"id", "zoneId", "capacity", "initialOccupancy", "initialCompositionId", "gateServiceTime", "dwell"});
+ParkingLot parseLot(const Json& j, int schema) {
+    exactKeys(j, networkCodec::Object::parkingLot, schema);
     ParkingLot lot{text(j, "id"), text(j, "zoneId"), count(j.at("capacity")), count(j.at("initialOccupancy")),
                    text(j, "initialCompositionId"), number(j.at("gateServiceTime")), {}};
     for (const auto& p : array(j.at("dwell"))) {
@@ -100,7 +102,7 @@ ParkingLot parseLot(const Json& j) {
 }
 template<class T, class F> void parseArray(const Json& document, const char* key, int schema, std::vector<T>& out, F parse) {
     if (!document.contains(key)) return;
-    if (schema < 31) throw std::invalid_argument(std::string("UNSUPPORTED_FIELD: ") + key);
+    if (schema < networkCodec::zoneLayerVersion) throw std::invalid_argument(std::string("UNSUPPORTED_FIELD: ") + key);
     const auto& values = document.at(key);
     if (!values.is_array() || values.empty()) invalid(); // never written empty
     try { for (const auto& value : values) out.push_back(parse(value)); }
@@ -152,12 +154,12 @@ void addZoneLayerJson(const ZoneLayer& layer, Json& document) {
 }
 ZoneLayer parseZoneLayer(const Json& document, int schema) {
     ZoneLayer layer;
-    if (schema < 57 && document.contains(kConnectors) && document.at(kConnectors).is_array())
+    if (schema < networkCodec::streetZoneConnectorVersion && document.contains(kConnectors) && document.at(kConnectors).is_array())
         for (std::size_t i = 0; i < document.at(kConnectors).size(); ++i)
             for (const auto* key : {"roadId", "roadDirection"})
                 if (document.at(kConnectors)[i].contains(key))
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "zoneConnectors[" + std::to_string(i) + "]." + key}});
-    parseArray(document, kZones, schema, layer.zones, parseZone);
+    parseArray(document, kZones, schema, layer.zones, [&](const Json& j) { return parseZone(j, schema); });
     // D389: the other version's keys are refused by name rather than as an unknown shape.
     if (document.contains(kConnectors) && document.at(kConnectors).is_array())
         for (std::size_t i = 0; i < document.at(kConnectors).size(); ++i)
@@ -169,7 +171,7 @@ ZoneLayer parseZoneLayer(const Json& document, int schema) {
     std::size_t matrix = 0;
     parseArray(document, kMatrices, schema, layer.odMatrices,
                [&](const Json& j) { return parseMatrix(j, "odMatrices[" + std::to_string(matrix++) + "]", schema); });
-    parseArray(document, kLots, schema, layer.parkingLots, parseLot);
+    parseArray(document, kLots, schema, layer.parkingLots, [&](const Json& j) { return parseLot(j, schema); });
     return layer;
 }
 bool usesStreetSegmentZoneConnectors(const ZoneLayer& layer) {

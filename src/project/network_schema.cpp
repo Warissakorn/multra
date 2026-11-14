@@ -4,6 +4,7 @@
 #include "document.hpp"
 #include "document_envelope.hpp"
 #include <nlohmann/json.hpp>
+#include <algorithm>
 #include <map>
 
 namespace multra {
@@ -58,6 +59,23 @@ class NetworkSchema {
         case Kind::vehicleClasses:rule={{"type","array"},{"items",reference(Object::vehicleClass,version)}};break;
         case Kind::linkBehaviourTypes:rule={{"type","array"},{"items",reference(Object::linkBehaviourType,version)}};break;
         case Kind::behaviourOverrides:rule={{"type","array"},{"items",reference(Object::behaviourOverride,version)}};break;
+        case Kind::zones:rule={{"type","array"},{"minItems",1},{"items",reference(Object::zone,version)}};break;
+        case Kind::zoneConnectors: { // D566: a street-segment key selects the street row from 57
+            Json items=reference(Object::zoneLinkConnector,version);
+            if(version>=streetZoneConnectorVersion)items={{"if",{{"required",Json::array({streetSegmentIdKey(version)})}}},
+                {"then",reference(Object::zoneStreetConnector,version)},{"else",items}};
+            rule={{"type","array"},{"minItems",1},{"items",items}};break;
+        }
+        case Kind::odMatrices:rule={{"type","array"},{"minItems",1},{"items",reference(Object::odMatrix,version)}};break;
+        case Kind::parkingLots:rule={{"type","array"},{"minItems",1},{"items",reference(Object::parkingLot,version)}};break;
+        case Kind::pairs:rule={{"type","array"},{"items",{{"type","array"},{"minItems",2},{"maxItems",2},{"items",{{"type","number"}}}}}};break;
+        case Kind::numberMap:rule={{"type","object"},{"additionalProperties",{{"type","number"}}}};break;
+        case Kind::zoneDirection:rule={{"type","string"},{"enum",Json::array({"origin","destination"})}};break;
+        case Kind::travelDirection:rule={{"type","string"},{"enum",Json::array({"forward","backward"})}};break;
+        case Kind::segmentId:rule={{"type","string"},{"minLength",1}};break;
+        case Kind::unsignedCount:
+            rule={{"type","integer"},{"minimum",0},{"maximum",0xffffffffULL},{"x-multra-nativeType","unsigned-integer-token"}};break;
+        case Kind::generatedBy:rule={{"type","string"},{"const",kGeneratedByModeChoice}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -116,6 +134,16 @@ class NetworkSchema {
                     {"properties",{{field.whenNonNull,{{"not",{{"type","null"}}}}}}}}},
                     {"then",{{"required",Json::array({field.name})},{"properties",{{field.name,properties.at(field.name)}}}}}});
                 properties[field.name]=Json::object(); // An inactive field is ignored by the codec.
+            }
+            if(field.unless) { // D566: required unless the alternative is present, refused when it is
+                const auto list=fields(object);
+                const auto alternative=std::find_if(list.begin(),list.end(),[&](const auto& f){return std::string_view(field.unless)==f.name;});
+                if(alternative==list.end())throw std::logic_error("Unknown alternative field");
+                if(activeField(*alternative,version)) {
+                    conditions.push_back({{"if",{{"required",Json::array({field.unless})}}},
+                        {"then",{{"properties",{{field.name,false}}}}},{"else",{{"required",Json::array({field.name})}}}});
+                    continue;
+                }
             }
             if(field.required)required.push_back(field.name);
         }
@@ -202,6 +230,12 @@ public:
                 case Object::vehicleClass:return "vehicleClass";
                 case Object::linkBehaviourType:return "linkBehaviourType";
                 case Object::behaviourOverride:return "behaviourOverride";
+                case Object::zoneLayer:return "zoneLayer";
+                case Object::zone:return "zone";
+                case Object::zoneLinkConnector:return "zoneLinkConnector";
+                case Object::zoneStreetConnector:return "zoneStreetConnector";
+                case Object::odMatrix:return "odMatrix";
+                case Object::parkingLot:return "parkingLot";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -213,16 +247,19 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);
             const auto definition=reference(Object::definition,version);
-            const auto key=ref.dump()+definition.dump();
+            // D566: the root zone layer sits beside network and definition (false below 31).
+            Json properties=objectSchema(Object::zoneLayer,version).at("properties");
+            properties["network"]=ref;properties["definition"]=definition;
+            const auto key=properties.dump();
             auto [it,inserted]=indices.emplace(key,groups.size());
             if(inserted)groups.push_back({{"if",{{"properties",{{"schemaVersion",{{"enum",Json::array()}}}}}}},
-                {"then",{{"properties",{{"network",ref},{"definition",definition}}}}}});
+                {"then",{{"properties",std::move(properties)}}}});
             groups[it->second]["if"]["properties"]["schemaVersion"]["enum"].push_back(version);
         }
         result["$defs"]=std::move(definitions_);result["allOf"]=std::move(groups);

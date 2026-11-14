@@ -188,7 +188,8 @@ key check in `parseBehaviourLibrary` uses the same table, and the curve/kerbLane
 (`speed_curve.cpp`) reads the bounds through the same metadata, and from 21 `desiredSpeed` and its
 curve points are checked against it too (D562). The behaviour rows (D563) are generated from
 core's W74, perception and lateral key lists; `behaviourKey` is `parseBehaviourLibrary`'s closure. Vehicle classes and link behaviour types
-(D565) check their keys against the same tables.
+(D565) check their keys against the same tables. `zone_codec.cpp`'s `exactKeys` reads the zone-layer
+rows (D566), whose either-or keys use the field attribute `unless`.
 
 ## Tests
 

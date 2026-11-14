@@ -2,6 +2,14 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-13 — M9 dynamic assignment contract (D549)
+
+- **D549** (owner: "ทำงานถัดไป", chose the M9 contract, then every recommended option): [DYNAMIC_ASSIGNMENT](../reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9, before code. MSA (Ortúzar Eq. 10.23) over routing-decision cells, cost from the decision to arrival, δ (Eq. 10.22) stopping, a separate `MultraRouteCosts` file and `--route-costs`.
+- **Hand values:** Example 10.6's MSA trace (book p. 371) computed exactly; every row equals the printed table (row 7 printed rounded), reaching Example 11.1's 600 / 1400 at 22 min at n = 10 with δ = 0.
+- **A1:** `src/project/dynamic_assignment.*` (`iterateMsa` behind a cost provider, `allOrNothing`, `msaStep`, `msaDelta`); group `dynassign` passes DA1–DA3 against that table to 1e-9.
+- **A2:** amendments recorded before code (§11: unplaced decisions only, placed ones refused until A2b; cost = departure to arrival; free-flow fill by authored route length over the mean desired speed); measurement, the `MultraRouteCosts` codec and `--route-costs`; group `dynassignrun` passes DA4–DA6 and DA9.
+- **A3:** fixture (§13) fixed before running; the first run showed the 1 : 1 start already inside the gap (δ 0.027) and the 5 % cost criterion inconsistent with δ, so §13.1 amends both openly (start 19 : 1; δ alone). `runDynamicAssignment`, `--dynamic-assignment`, `fixture::twoRoute()`; δ 0.810 → 0.0108, converged at n = 2 with 0.475 / 0.525 at 70.2 / 68.7 s. Group `dynassignloop` passes DA7–DA8; two CLI runs `cmp`-identical.
+
 ## 2026-11-13 — Logsum composite cost into distribution, G/D/MS/A (D548)
 
 - **D548** (owner: "ทำงานถัดไป", chose logsum feedback, then every recommended option): contract first ([MODE_CHOICE_LOGSUM](../reference/MODE_CHOICE_LOGSUM.md), Ortúzar §6.5.2), hand values before code (Example 6.3's C_B = 49.2298; a one-origin, two-destination table).

@@ -3,7 +3,7 @@
 This is the codec ownership and version map for an editor-project schema (D355), with
 generated partial envelope/background (D356), Network/Link/Lane (D357),
 Connector/attachment-reference (D358), SignalHead (D359), signal control (D360),
-right-of-way (D361), measurement (D362), base demand (D363), routing-decision (D364) and owned-composition (D558) owned-mode (D559) and owned-vehicle-type (D560) behaviour (D563, D564) and vehicle-class/link-behaviour-type contracts (D565;
+right-of-way (D361), measurement (D362), base demand (D363), routing-decision (D364) and owned-composition (D558) owned-mode (D559) and owned-vehicle-type (D560) behaviour (D563, D564) and vehicle-class/link-behaviour-type (D565) and root zone-layer contracts (D566;
 the demand ones are in [PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md)). It describes
 implemented readers/writers, rather than inferring a contract from one document. It is
 **not a complete JSON Schema**, a new validator, or a change to file

@@ -148,6 +148,27 @@ constexpr Field vehicleClassFields[]={{"id",Kind::text,true},{"name",Kind::text}
 constexpr Field linkBehaviourTypeFields[]={{"id",Kind::text,true},{"name",Kind::text},{"defaultBehaviourId",Kind::text},
     {"overrides",Kind::behaviourOverrides}};
 constexpr Field behaviourOverrideFields[]={{"classId",Kind::text,true},{"behaviourId",Kind::text,true}};
+// D566 (PROJECT_SCHEMA_DEMAND, zone layer): the root zone layer and its closed rows (zone_codec.cpp's key lists).
+constexpr Field zoneLayerFields[]={{"zones",Kind::zones,false,0,zoneLayerVersion},{"zoneConnectors",Kind::zoneConnectors,false,0,zoneLayerVersion},
+    {"odMatrices",Kind::odMatrices,false,0,zoneLayerVersion},{"parkingLots",Kind::parkingLots,false,0,zoneLayerVersion}};
+constexpr Field zoneFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"polygon",Kind::pairs,true},{"attributes",Kind::numberMap,true}};
+constexpr Field zoneLinkConnectorFields[]={{"id",Kind::text,true},{"zoneId",Kind::text,true},{"linkId",Kind::text,true},
+    {"direction",Kind::zoneDirection,true},{"share",Kind::number,true}};
+// D389: the street keys were roadId/roadDirection from 57 and are renamed at 59.
+constexpr Field zoneStreetConnectorFields[]={{"id",Kind::text,true},{"zoneId",Kind::text,true},
+    {"roadId",Kind::segmentId,true,0,streetZoneConnectorVersion,false,streetSegmentKeyVersion},
+    {"roadDirection",Kind::travelDirection,true,0,streetZoneConnectorVersion,false,streetSegmentKeyVersion},
+    {"streetSegmentId",Kind::segmentId,true,0,streetSegmentKeyVersion},{"streetSegmentDirection",Kind::travelDirection,true,0,streetSegmentKeyVersion},
+    {"direction",Kind::zoneDirection,true},{"share",Kind::number,true}};
+// S1.1/S1.2 (D559): periodId and modeId from 49 replace the times and compositionId; generatedBy (M10.4 E2) from 70.
+constexpr Field odMatrixFields[]={{.name="id",.kind=Kind::text,.required=true},{.name="zoneIds",.kind=Kind::texts,.required=true},
+    {.name="cells",.kind=Kind::numberMatrix,.required=true},{.name="modeId",.kind=Kind::text,.rejectBefore=modeVersion},
+    {.name="compositionId",.kind=Kind::text,.required=true,.unless="modeId"},{.name="periodId",.kind=Kind::text,.rejectBefore=modeVersion},
+    {.name="startTime",.kind=Kind::number,.required=true,.unless="periodId"},{.name="endTime",.kind=Kind::number,.required=true,.unless="periodId"},
+    {.name="generatedBy",.kind=Kind::generatedBy,.rejectBefore=generatedMatrixVersion}};
+constexpr Field parkingLotFields[]={{"id",Kind::text,true},{"zoneId",Kind::text,true},{"capacity",Kind::unsignedCount,true},
+    {"initialOccupancy",Kind::unsignedCount,true},{"initialCompositionId",Kind::text,true},{"gateServiceTime",Kind::number,true},
+    {"dwell",Kind::pairs,true}};
 using B=DriverBehaviour;
 const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B::maxDecelerationCooperativeBraking,0,false},
     {"amberDeceleration",&B::amberDeceleration,amberVersion,false},
@@ -217,6 +238,12 @@ std::span<const Field> fields(Object object) {
     case Object::vehicleClass:return vehicleClassFields;
     case Object::linkBehaviourType:return linkBehaviourTypeFields;
     case Object::behaviourOverride:return behaviourOverrideFields;
+    case Object::zoneLayer:return zoneLayerFields;
+    case Object::zone:return zoneFields;
+    case Object::zoneLinkConnector:return zoneLinkConnectorFields;
+    case Object::zoneStreetConnector:return zoneStreetConnectorFields;
+    case Object::odMatrix:return odMatrixFields;
+    case Object::parkingLot:return parkingLotFields;
     }
     return {};
 }
@@ -230,7 +257,10 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::routingRoute || object==Object::routingTypeRule || object==Object::composition ||
        object==Object::compositionShare || object==Object::compositionInterval || object==Object::mode ||
        object==Object::axles || object==Object::pcu || object==Object::vehicleClass ||
-       object==Object::linkBehaviourType || object==Object::behaviourOverride)return false;
+       object==Object::linkBehaviourType || object==Object::behaviourOverride || object==Object::zone ||
+       object==Object::zoneLinkConnector || object==Object::zoneStreetConnector || object==Object::odMatrix ||
+       object==Object::parkingLot)return false;
+    if(object==Object::zoneLayer)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
     if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
@@ -286,7 +316,10 @@ const Json& value(const Json& j,Object object,const char* name) {
         break;
     case Kind::unchecked:case Kind::reference:case Kind::generated:
     case Kind::speedRange:case Kind::axles:case Kind::kerbLanes:case Kind::pcu:case Kind::integerToken:
-    case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:case Kind::sectionLine:break;
+    case Kind::rightOfWay:case Kind::controlPoint:case Kind::controlPath:case Kind::conflictSide:case Kind::sectionLine:
+    // D566: zone_codec.cpp keeps its own EDIT_ZONE_INVALID refusal for these.
+    case Kind::zones:case Kind::zoneConnectors:case Kind::odMatrices:case Kind::parkingLots:case Kind::pairs:case Kind::numberMap:
+    case Kind::zoneDirection:case Kind::travelDirection:case Kind::segmentId:case Kind::unsignedCount:case Kind::generatedBy:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

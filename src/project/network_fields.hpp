@@ -10,18 +10,25 @@ namespace multra::networkCodec {
 enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
-    vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride };
+    vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
+    zoneLayer,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
     routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix,
     compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu,
-    behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides };
+    behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
+    zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
     const char* whenNonNull{};
+    // D566: required unless this key is present, and refused when it is.
+    const char* unless{};
 };
+inline bool activeField(const Field& f,int version) {
+    return version>=f.knownFrom && version>=f.rejectBefore && !(f.rejectFrom && version>=f.rejectFrom);
+}
 inline constexpr int strictVersion=7,behaviourVersion=21,linkTypeVersion=50,streetSegmentVersion=53,streetSegmentKeyVersion=59,linkSpeedVersion=60;
 // D389: schema 59 renamed the Road keys; a file below it keeps its own names, which reads and paths use.
 inline const char* streetSegmentsKey(int version) {return version<streetSegmentKeyVersion?"roads":"streetSegments";}
@@ -41,6 +48,9 @@ inline constexpr int amberVersion=28,perceptionVersion=32,lateralVersion=33,curv
 // INVALID_BEHAVIOUR_PARAMETER (readOptionals); the others the field sentences.
 struct BehaviourNumber {const char* name;std::optional<double> DriverBehaviour::* member;int floor;bool parameter;};
 std::span<const BehaviourNumber> behaviourOptionalNumbers();
+// D566: the root zone layer is refused below 31, even null; street-segment connectors from 57; generatedBy from 70.
+inline constexpr int zoneLayerVersion=31,streetZoneConnectorVersion=57,generatedMatrixVersion=70;
+inline constexpr const char* kGeneratedByModeChoice="mode-choice";
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

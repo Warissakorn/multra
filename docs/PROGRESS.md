@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-14 — The root zone layer in the schema (D566)
+
+- **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D565's NEXT proposed the zone layer.
+- **D566:** `zones`, `zoneConnectors`, `odMatrices` and `parkingLots` join each version branch beside `network`/`definition`: `false` below 31, nonempty arrays of closed rows from it. A connector picks the street row from 57 by its id key (`roadId` 57–58, `streetSegmentId` from 59); a matrix's either-or keys use a new field attribute `unless` (`if required [modeId] then compositionId false else required`, the same for `periodId` and the times); `generatedBy` from 70; lot counts are unsigned tokens. `zone_codec.cpp`'s `exactKeys` now reads the same tables; the ambiguity and `generatedBy` codes keep their order. Pins (ZL1) passed on the unchanged reader first. D565's unused `knownFields` helper in `parse.cpp` is removed.
+- **One-off `jsonschema`:** 9,668 labels, writer output (period, mode and generated matrices; the street fixture at 57, 58 and 59) and all 18 projects (8 with zones) agree.
+- **Verified on Linux:** desktop build; `check` 353/353 (`multra-tests` 1662/1662, group `project` 90/90); `check_no_pch.py` on the changed units 5/5. Windows not run (no CI run on a branch push).
+
 ## 2026-11-14 — Vehicle classes and link behaviour types in the schema (D565)
 
 - **Pick:** the owner asked for the next work ("ทำงานถัดไป"); D564's NEXT proposed these catalogs.
@@ -105,11 +112,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **D550** (owner: "ทำงานถัดไปตามแนะนำ" after asking what M11.5 is, then every recommended option): [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md), rows MA1–MA8, before code. Free-flow times read from the compiled fixture graph (t_s 55.356464, t_l 109.904888 s); deterministic-queueing equilibrium x* = 0.590914; an analytic MSA reference stops at n = 11 for gap 0.01.
 - **S1:** `src/project/meso_assignment.*` (cohort integral, `measureMesoDecisionCosts`), `DaLevel` through `runDynamicAssignment`, the file's `level` and `--dynamic-assignment --meso` / `--route-costs --meso`. Group `mesoassign` passes MA1–MA8 first time; converged at n = 6 with short share 0.5833 (x* 0.5909), costs 107.49 / 109.905 s. Two CLI runs `cmp`-identical.
-
-## 2026-11-13 — M9 dynamic assignment contract (D549)
-
-- **D549** (owner: "ทำงานถัดไป", chose the M9 contract, then every recommended option): [DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9, before code. MSA (Ortúzar Eq. 10.23) over routing-decision cells, cost from the decision to arrival, δ (Eq. 10.22) stopping, a separate `MultraRouteCosts` file and `--route-costs`.
-- **Hand values:** Example 10.6's MSA trace (book p. 371) computed exactly; every row equals the printed table (row 7 printed rounded), reaching Example 11.1's 600 / 1400 at 22 min at n = 10 with δ = 0.
-- **A1:** `src/project/dynamic_assignment.*` (`iterateMsa` behind a cost provider, `allOrNothing`, `msaStep`, `msaDelta`); group `dynassign` passes DA1–DA3 against that table to 1e-9.
-- **A2:** amendments recorded before code (§11: unplaced decisions only, placed ones refused until A2b; cost = departure to arrival; free-flow fill by authored route length over the mean desired speed); measurement, the `MultraRouteCosts` codec and `--route-costs`; group `dynassignrun` passes DA4–DA6 and DA9.
-- **A3:** fixture (§13) fixed before running; the first run showed the 1 : 1 start already inside the gap (δ 0.027) and the 5 % cost criterion inconsistent with δ, so §13.1 amends both openly (start 19 : 1; δ alone). `runDynamicAssignment`, `--dynamic-assignment`, `fixture::twoRoute()`; δ 0.810 → 0.0108, converged at n = 2 with 0.475 / 0.525 at 70.2 / 68.7 s. Group `dynassignloop` passes DA7–DA8; two CLI runs `cmp`-identical.
