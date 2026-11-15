@@ -7,8 +7,10 @@ int main(int argc,char** argv) {
     if(argc==2 && std::string_view(argv[1])=="--help") {
         std::cout<<"Usage: multra-project-schema [--help]\n"
             "Print a partial draft-2020-12 project schema as UTF-8 JSON.\n"
-            "Covers envelope/background, mapped network/control/measurement fields and base routes/vehicle inputs/routing decisions/owned compositions, modes, vehicle types, behaviours, vehicle classes, link behaviour types, the root zone layer, study periods, the study area, map settings, and Macro settings and runs.\n"
-            "Nested fields, native integer tokens and UTF-8 byte limits still require the project codec.\n";
+            "Covers envelope/background, mapped network/control/measurement fields and base routes/vehicle inputs/routing decisions/owned compositions, modes, vehicle types, behaviours, vehicle classes, link behaviour types, the root zone layer, study periods, the study area, map settings, Macro settings and runs, owned trip-rate and deterrence sets, cost matrices, period factors, and mode-choice sets with nests and logsum.\n"
+            "The codec still owns what the schema cannot state: ids that are blank or repeated, references between rows\n"
+            "(nest members, known periods and zones), n-by-n matrices, sums and shared coefficients (share sums,\n"
+            "the logsum agreement), native integer tokens and UTF-8 byte limits.\n";
         return 0;
     }
     if(argc!=1) {std::cerr<<"Usage: multra-project-schema [--help]\n";return 2;}

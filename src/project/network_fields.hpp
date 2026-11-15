@@ -11,7 +11,9 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
     vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
-    rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings };
+    rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings,
+    tripRateSet,citedSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor,
+    modeChoiceSet,modeChoicePurpose,modeChoiceAlternative,modeChoiceNest };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
@@ -19,15 +21,21 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu,
     behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
     zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy,
-    studyPeriods,studyArea,nodeIds,flowSource,gateFlows,
+    studyPeriods,studyArea,nonemptyTexts,flowSource,gateFlows,
     map,mapReference,providerId,opacity,utmCrs,longitude,latitude,worldAnchor,rotation,
-    macroRuns,macroSettings,targetGap,iterationCap };
+    macroRuns,macroSettings,targetGap,iterationCap,
+    tripRateSets,citedSource,tripRatePurposes,tripRateSide,tripRateCategories,tripRateTerms,crossMethod,regressionMethod,rate,
+    deterrenceSets,deterrencePurposes,exponentialFunction,minuteUnit,deterrenceBeta,intrazonalShare,deterrenceConstraint,
+    costMatrices,costMatrixSource,costRows,periodFactors,periodShare,
+    modeChoiceSets,modeChoicePurposes,modeChoiceAlternatives,modeChoiceNests,modeCoefficient,modeOccupancy,modeNestPhi,logsumCost };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
     const char* whenNonNull{};
     // D566: required unless this key is present, and refused when it is.
     const char* unless{};
+    // D574: one of the row's fields marked so must be present (an inclusive "at least one").
+    bool atLeastOne{};
 };
 inline bool activeField(const Field& f,int version) {
     return version>=f.knownFrom && version>=f.rejectBefore && !(f.rejectFrom && version>=f.rejectFrom);
@@ -60,6 +68,15 @@ inline constexpr int studyAreaVersion=55;
 inline constexpr int mapVersion=29;
 // D569: definition.macroSettings (S2.3) from 51 and the root macroRuns from 56; neither row has versioned keys.
 inline constexpr int macroSettingsVersion=51,macroRunVersion=56;
+// D570: the root tripRateSets (M10.2 G2) is refused below 66; no row has a versioned key.
+inline constexpr int tripRateVersion=66;
+inline constexpr const char* kCrossClassification="crossClassification",*kRegression="regression";
+// D571: owned deterrence sets and cost matrices from 67; constraint from 68, destination from 72.
+inline constexpr int distributionVersion=67,constraintVersion=68,destinationConstraintVersion=72;
+// D572: the root periodFactors is refused below 69, even null.
+inline constexpr int periodFactorVersion=69;
+// D573: owned mode-choice sets from 70, nests from 71 and distributionCost from 76.
+inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}
@@ -76,6 +93,11 @@ void knownFields(const Json&,Object,const std::string& path,int version);
 bool exactFields(const Json&,Object,int version);
 // D569: whether a key is one of the row's active fields at this version.
 bool knownKey(std::string_view key,Object,int version);
+// D574: every key of an object is one of the row's fields at the latest schema. For readers with
+// no file version (the owned Macro sets and their catalogs): document.cpp keeps each key's floor.
+bool onlyKnownKeys(const Json&,Object);
+// D574: whether the object holds one of the row's `atLeastOne` fields (true when the row marks none).
+bool hasAtLeastOne(const Json&,Object);
 const Json& value(const Json&,Object,const char* name);
 bool readCondition(const Json&,Object,const char* name);
 // Link-only decoder: leaves linkType/streetSegmentId to their existing document read stages.

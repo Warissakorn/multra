@@ -104,7 +104,7 @@ int documentSchemaVersion(const ProjectDocument& d) {
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint==std::optional<std::string>("destination");});});
     const bool logsum=std::any_of(d.modeChoiceSets.begin(),d.modeChoiceSets.end(),[](const auto& s){
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.distributionCost.has_value();});});
-    return logsum ? 76 : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? 72 : nested ? 71 : !d.modeChoiceSets.empty() || generated ? 70 : !d.periodFactors.empty() ? 69 : constrained ? 68 : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? 67 : !d.tripRateSets.empty() ? 66 : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    return logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -282,25 +282,25 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < networkCodec::studyAreaVersion) rejectStudyAreaBefore55(j); // S5.2a
     if (version < networkCodec::macroRunVersion && j.contains("macroRuns")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "macroRuns"}});
     d.macroRuns = parseMacroRunDefinitions(j);
-    if (version < 66 && j.contains("tripRateSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "tripRateSets"}});
+    if (version < networkCodec::tripRateVersion && j.contains("tripRateSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "tripRateSets"}});
     d.tripRateSets = parseOwnedTripRateSets(j);
     for (const auto* key : {"deterrenceSets", "costMatrices"})
-        if (version < 67 && j.contains(key)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", key}});
-    if (version < 72 && j.contains("deterrenceSets") && j.at("deterrenceSets").is_array()) // D3 (D476): 68; D4 "destination" (D482): 72
+        if (version < networkCodec::distributionVersion && j.contains(key)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", key}});
+    if (version < networkCodec::destinationConstraintVersion && j.contains("deterrenceSets") && j.at("deterrenceSets").is_array()) // D3 (D476): 68; D4 "destination" (D482): 72
         for (std::size_t i = 0; i < j.at("deterrenceSets").size(); ++i) {
             const auto& set = j.at("deterrenceSets")[i];
             if (!set.is_object() || !set.contains("purposes") || !set.at("purposes").is_array()) continue;
             for (std::size_t k = 0; k < set.at("purposes").size(); ++k)
                 if (const auto& purpose = set.at("purposes")[k]; purpose.is_object() && purpose.contains("constraint") &&
-                    (version < 68 || purpose.at("constraint") == "destination"))
+                    (version < networkCodec::constraintVersion || purpose.at("constraint") == "destination"))
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "deterrenceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].constraint"}});
         }
     d.deterrenceSets = parseOwnedDeterrenceSets(j);
     d.costMatrices = parseOwnedCostMatrices(j);
-    if (version < 69 && j.contains("periodFactors")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "periodFactors"}});
+    if (version < networkCodec::periodFactorVersion && j.contains("periodFactors")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "periodFactors"}});
     d.periodFactors = parsePeriodFactors(j); // M10.4 E1
-    if (version < 70 && j.contains("modeChoiceSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets"}});
-    if (version < 71 && j.contains("modeChoiceSets") && j.at("modeChoiceSets").is_array()) // M10.4 N1 (D481)
+    if (version < networkCodec::modeChoiceVersion && j.contains("modeChoiceSets")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets"}});
+    if (version < networkCodec::modeNestVersion && j.contains("modeChoiceSets") && j.at("modeChoiceSets").is_array()) // M10.4 N1 (D481)
         for (std::size_t i = 0; i < j.at("modeChoiceSets").size(); ++i) {
             const auto& set = j.at("modeChoiceSets")[i];
             if (!set.is_object() || !set.contains("purposes") || !set.at("purposes").is_array()) continue;
@@ -308,7 +308,7 @@ ProjectDocument parseDocument(const Json& j) {
                 if (set.at("purposes")[k].is_object() && set.at("purposes")[k].contains("nests"))
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].nests"}});
         }
-    if (version < 76 && j.contains("modeChoiceSets") && j.at("modeChoiceSets").is_array()) // D548 (MODE_CHOICE_LOGSUM §2)
+    if (version < networkCodec::logsumVersion && j.contains("modeChoiceSets") && j.at("modeChoiceSets").is_array()) // D548 (MODE_CHOICE_LOGSUM §2)
         for (std::size_t i = 0; i < j.at("modeChoiceSets").size(); ++i) {
             const auto& set = j.at("modeChoiceSets")[i];
             if (!set.is_object() || !set.contains("purposes") || !set.at("purposes").is_array()) continue;

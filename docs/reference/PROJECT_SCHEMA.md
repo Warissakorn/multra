@@ -3,8 +3,9 @@
 This is the codec ownership and version map for an editor-project schema (D355), with
 generated partial envelope/background (D356), Network/Link/Lane (D357),
 Connector/attachment-reference (D358), SignalHead (D359), signal control (D360),
-right-of-way (D361), measurement (D362), base demand (D363), routing-decision (D364) and owned-composition (D558) owned-mode (D559) and owned-vehicle-type (D560) behaviour (D563, D564) and vehicle-class/link-behaviour-type (D565) root zone-layer (D566) study-period/study-area (D567) map (D568) and Macro settings/run contracts (D569;
-the demand ones are in [PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md)). It describes
+right-of-way (D361), measurement (D362), base demand (D363), routing-decision (D364) and owned-composition (D558) owned-mode (D559) and owned-vehicle-type (D560) behaviour (D563, D564) and vehicle-class/link-behaviour-type (D565) root zone-layer (D566) study-period/study-area (D567) map (D568) Macro settings/run (D569), owned trip-rate-set (D570), owned deterrence-set/cost-matrix (D571), period-factor (D572) and owned mode-choice-set contracts (D573;
+definition demand rows are in [PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md), optional feature
+rows in [PROJECT_SCHEMA_FEATURES](PROJECT_SCHEMA_FEATURES.md)). It describes
 implemented readers/writers, rather than inferring a contract from one document. It is
 **not a complete JSON Schema**, a new validator, or a change to file
 semantics. `parseDocument` and `validateDocument` remain authoritative. Desktop
@@ -416,10 +417,16 @@ algorithm, LOS threshold, delay definition, writer version rule or serialized ou
 Negative/out-of-bounds stations, reversed sections, empty or ambiguous measurement sources,
 reference resolution and runtime readiness remain the existing model/evaluation validators.
 
-## Demand extensions (D363, D364, D558)
+## Demand and root-feature extensions (D363–D573)
 
-Routes, VehicleInputs and intervals (D363), RoutingDecisions (D364) and owned compositions with
-their type-share and interval rows (D558) owned modes (D559) owned vehicle types (D560) and behaviours (D561, D563) are in [PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md).
+[PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md) documents Routes, VehicleInputs and intervals
+(D363), RoutingDecisions (D364), owned compositions with their type-share and interval rows
+(D558), owned modes (D559), owned vehicle types (D560), behaviours (D561, D563, D564) and vehicle
+classes and link behaviour types (D565). [PROJECT_SCHEMA_FEATURES](PROJECT_SCHEMA_FEATURES.md)
+documents the root zone layer (D566), study periods and the study area (D567), the map (D568),
+Macro settings and runs (D569), owned trip-rate sets (D570), deterrence sets and cost matrices
+(D571), period factors (D572) and mode-choice sets with nests and logsum (D573). Every slice's
+labelled cases are checked against the emitted schema by ctest `schema-labels` (D574).
 
 J7/D418 edits the existing schema-58 `Node.analysis` fields only. Snapshot provenance and
 analytical Results are session state, not new project fields or a schema step.

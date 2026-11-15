@@ -79,7 +79,7 @@ class NetworkSchema {
         case Kind::generatedBy:rule={{"type","string"},{"const",kGeneratedByModeChoice}};break;
         case Kind::studyPeriods:rule={{"type","array"},{"minItems",1},{"items",reference(Object::studyPeriod,version)}};break;
         case Kind::studyArea:rule=reference(Object::studyArea,version);break;
-        case Kind::nodeIds:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
+        case Kind::nonemptyTexts:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
         case Kind::flowSource:rule={{"type","string"},{"enum",Json::array({"typed","macro","meso"})}};break;
         case Kind::gateFlows:rule={{"type","array"},{"minItems",1},{"items",reference(Object::gateFlow,version)}};break;
         case Kind::map:rule=reference(Object::map,version);break;
@@ -95,6 +95,40 @@ class NetworkSchema {
         case Kind::macroSettings:rule=reference(Object::macroSettings,version);break;
         case Kind::targetGap:rule={{"type","number"},{"exclusiveMinimum",0},{"exclusiveMaximum",1}};break;
         case Kind::iterationCap:rule={{"type","integer"},{"minimum",1},{"maximum",100000},{"x-multra-nativeType","integer-token"}};break;
+        case Kind::tripRateSets:rule={{"type","array"},{"minItems",1},{"items",reference(Object::tripRateSet,version)}};break;
+        case Kind::citedSource:rule=reference(Object::citedSource,version);break;
+        case Kind::tripRatePurposes:rule={{"type","array"},{"minItems",1},{"items",reference(Object::tripRatePurpose,version)}};break;
+        case Kind::tripRateSide: // D570: `method` selects the row; any other method falls to the cross-classification row and its enum
+            rule={{"if",{{"required",Json::array({"method"})},{"properties",{{"method",{{"const",kRegression}}}}}}},
+                {"then",reference(Object::tripRateRegressionSide,version)},{"else",reference(Object::tripRateCrossSide,version)}};break;
+        case Kind::tripRateCategories:rule={{"type","array"},{"minItems",1},{"items",reference(Object::tripRateCategory,version)}};break;
+        case Kind::tripRateTerms:rule={{"type","array"},{"items",reference(Object::tripRateTerm,version)}};break;
+        case Kind::crossMethod:rule={{"type","string"},{"const",kCrossClassification}};break;
+        case Kind::regressionMethod:rule={{"type","string"},{"const",kRegression}};break;
+        case Kind::rate:rule={{"type","number"},{"minimum",0}};break;
+        case Kind::deterrenceSets:rule={{"type","array"},{"minItems",1},{"items",reference(Object::deterrenceSet,version)}};break;
+        case Kind::deterrencePurposes:rule={{"type","array"},{"minItems",1},{"items",reference(Object::deterrencePurpose,version)}};break;
+        case Kind::exponentialFunction:rule={{"type","string"},{"const","exponential"}};break;
+        case Kind::minuteUnit:rule={{"type","string"},{"const","min"}};break;
+        case Kind::deterrenceBeta:rule={{"type","number"},{"exclusiveMinimum",0}};break;
+        case Kind::intrazonalShare:rule={{"type","number"},{"minimum",0},{"exclusiveMaximum",1}};break;
+        case Kind::deterrenceConstraint:
+            rule={{"type","string"},{"enum",version<destinationConstraintVersion?Json::array({"double","origin"}):Json::array({"double","origin","destination"})}};break;
+        case Kind::costMatrices:rule={{"type","array"},{"minItems",1},{"items",reference(Object::costMatrix,version)}};break;
+        case Kind::costMatrixSource:rule=reference(Object::costMatrixSource,version);break;
+        case Kind::costRows:
+            rule={{"type","array"},{"minItems",1},{"items",{{"type","array"},
+                {"items",{{"type",Json::array({"number","null"})},{"minimum",0}}}}}};break;
+        case Kind::periodFactors:rule={{"type","array"},{"minItems",1},{"items",reference(Object::periodFactor,version)}};break;
+        case Kind::periodShare:rule={{"type","number"},{"minimum",0},{"maximum",1}};break;
+        case Kind::modeChoiceSets:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoiceSet,version)}};break;
+        case Kind::modeChoicePurposes:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoicePurpose,version)}};break;
+        case Kind::modeChoiceAlternatives:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoiceAlternative,version)}};break;
+        case Kind::modeChoiceNests:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoiceNest,version)}};break;
+        case Kind::modeCoefficient:rule={{"type","number"},{"maximum",0}};break;
+        case Kind::modeOccupancy:rule={{"type","number"},{"minimum",1}};break;
+        case Kind::modeNestPhi:rule={{"type","number"},{"exclusiveMinimum",0},{"maximum",1}};break;
+        case Kind::logsumCost:rule={{"type","string"},{"const","logsum"}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -189,6 +223,9 @@ class NetworkSchema {
             properties["connectorId"]["default"]=defaults.connectorId;
         }
         Json result={{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",allowsAdditionalFields(object,version)}};
+        Json atLeastOne=Json::array(); // D574: the row's `atLeastOne` fields, in table order; both may be present
+        for(const auto& f:fields(object))if(f.atLeastOne && activeField(f,version))atLeastOne.push_back({{"required",Json::array({f.name})}});
+        if(!atLeastOne.empty())result["anyOf"]=std::move(atLeastOne);
         // These legacy readers ignore non-object containers/references; semantic
         // path validity stays with the model. Required path fields still reject null.
         if(object==Object::rightOfWay || object==Object::controlPath || object==Object::measurementLine)result.erase("type");
@@ -262,6 +299,22 @@ public:
                 case Object::mapReference:return "mapReference";
                 case Object::macroRun:return "macroRun";
                 case Object::macroSettings:return "macroSettings";
+                case Object::tripRateSet:return "tripRateSet";
+                case Object::citedSource:return "citedSource";
+                case Object::tripRatePurpose:return "tripRatePurpose";
+                case Object::tripRateCrossSide:return "tripRateCrossSide";
+                case Object::tripRateRegressionSide:return "tripRateRegressionSide";
+                case Object::tripRateCategory:return "tripRateCategory";
+                case Object::tripRateTerm:return "tripRateTerm";
+                case Object::deterrenceSet:return "deterrenceSet";
+                case Object::deterrencePurpose:return "deterrencePurpose";
+                case Object::costMatrix:return "costMatrix";
+                case Object::costMatrixSource:return "costMatrixSource";
+                case Object::periodFactor:return "periodFactor";
+                case Object::modeChoiceSet:return "modeChoiceSet";
+                case Object::modeChoicePurpose:return "modeChoicePurpose";
+                case Object::modeChoiceAlternative:return "modeChoiceAlternative";
+                case Object::modeChoiceNest:return "modeChoiceNest";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -273,8 +326,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, and Macro settings and runs. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs-trip-rates-deterrence-cost-period-factors-mode-choice";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, Macro settings and runs, owned trip-rate and deterrence sets, cost matrices, period factors, and mode-choice sets with nests and logsum. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

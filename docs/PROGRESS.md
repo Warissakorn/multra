@@ -5,6 +5,44 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-15 — Code-review fixes to the schema slices (D574)
+
+- **Pick:** the owner ran `/code-review` on D570–D573 and asked for its recommendations ("แก้ไขตามแนะนำ").
+- **D574:** named floor constants in `document.cpp`; one `onlyKnownKeys` helper at `kLatestSchema` for the four Macro-set readers; the shared source row renamed `citedSource`; a Field attribute `atLeastOne` for the cost-source `anyOf`; three identical nonempty-text kinds merged; the refusal helpers in `tests/schema_refusal.hpp`; the `--help`, PROJECT_SCHEMA and tools README texts fixed.
+- **Label check in `check`:** ctest `schema-labels` validates 118,858 labelled cases from 22 slices and all 18 projects in about 50–70 s; a deliberately wrong `phi` rule made it fail (6 disagreements). The envelope slice's labels target `projectEnvelopeSchema()` and are excluded, not relabelled. Linux CI installs `python3-jsonschema`.
+- **Proof of no behaviour change:** the emitted schema is byte-identical to D573's except the `$defs` name `citedSource66`.
+- **Deferred:** one kind for every "nonempty array of Object" rule (finding 7), proposed in NEXT.
+- **Verified on Linux (headless):** `check` 240/240; the 16 changed units that use the PCH compile without it. Desktop preset and Windows not run; the CI change has not run on GitHub.
+
+## 2026-11-15 — Owned mode-choice sets in the schema and feature-doc split (D573)
+
+- **Pick:** the owner accepted D570–D572 and explicitly started modeChoiceSets on `claude/optimistic-bohr-lpfu98`; D571/D572's diffs were read first.
+- **D573:** root modeChoiceSets 70, nests 71 and logsum 76 join the composed schema ([MCS1–MCS3](reference/PROJECT_SCHEMA_FEATURES.md#owned-mode-choice-set-extension-d573)). Alternatives use inclusive anyOf: modeId, costMatrix or both. Only key membership moves through knownKey at 76; zero reference, blank/unique ids, nest ownership/membership and logsum coefficient rules stay with the codec, with codes/paths/issue order unchanged. Pins passed first on unchanged readers (project 114/114), before table/schema/codec edits; four new tests remain.
+- **Doc split:** whole extension sections D566–D572 moved from PROJECT_SCHEMA_DEMAND to PROJECT_SCHEMA_FEATURES before adding MCS1–MCS3. Both files are indexed and every moved-section link is rewritten, including decision-record links; prior decision reasoning is unchanged. The files are 286/242 lines.
+- **One-off jsonschema 4.26.0:** all 6,151 labels agree: 1,609 mode-choice cases, 4,501 D570–D572 cases, writer output at 70/71/76, all 18 TrafficSim projects under data/ and tests/ (independently enumerated), and 20 probes outside cases(). Probes: 9 both accept, 7 codec-only refusals, 4 both refuse. Schema-refused/codec-accepted is zero across all labels. Temporary tests/probes and CMake entries were deleted; removing nests/logsum restores the original MNL writer bytes.
+- **Verified on Linux (headless):** build and check 238/238; project 115/115. The existing linker-only -Wl,--strip-debug cache flag fits the local disk; repository presets are unchanged. Desktop preset, check_no_pch.py and Windows were not run. NEXT briefs procedures 73/feedback 75; stop for owner review, without a PR or merge.
+
+## 2026-11-15 — Period factors in the schema (D572)
+
+- **Pick:** the owner accepted D570/D571 and explicitly selected `periodFactors` at schema 69 on `claude/optimistic-bohr-lpfu98`; D571's diff and D567's exactFields pattern were read first.
+- **D572:** the root is false below 69, then a nonempty array of closed four-required-key rows, text ids and shares in [0, 1] ([PF1–PF3](reference/PROJECT_SCHEMA_FEATURES.md#period-factor-extension-d572)). Only the codec's exact-key expression changes, through `networkCodec::exactFields`; text/share/sum checks and UNKNOWN_PERIOD/DUPLICATE_ID retain their order. Blank text, sums, known periods and unique pairs remain codec checks. Writer, version selection and stored forms are unchanged. Pins and refusal cases passed first on the unchanged reader (project 110/110), before tables or codec edits.
+- **One-off jsonschema 4.26.0:** 4,540 labels agree: 1,104 PF cases, 3,397 D570/D571 cases, one writer output with 0/1 and exact-sum-one shares, all 18 TrafficSim projects under data/ and tests/ (independently enumerated), and 20 probes authored outside cases(). Probes: 13 both accept, 4 codec-only refusals (blank purpose, unknown period, duplicate pair, sum), 3 both refuse. Schema-refused/codec-accepted: zero across all labels. Temporary tests/probes and their CMake registration were deleted.
+- **Verified on Linux (headless):** build and check 238/238; project 111/111, including three new tests. The local linker-only `-Wl,--strip-debug` cache flag is retained for disk capacity; no repository preset change. The desktop preset, check_no_pch.py and Windows were not run. NEXT briefs modeChoiceSets 70/nests 71 (and its existing logsum floor 76), awaiting owner review; no PR or merge.
+
+## 2026-11-14 — Owned deterrence sets and cost matrices in the schema (D571)
+
+- **Pick:** the owner explicitly selected NEXT's schema-67 slice on `claude/optimistic-bohr-lpfu98`; D570's diff was read first. Both roots have the same floor, so they stay one slice.
+- **D571:** `deterrenceSets` and `costMatrices` join the composed partial schema with closed rows, codec-owned constants and numeric bounds, and the existing constraint floors 68/72. Deterrence reuses the trip-rate source table; matrix source allows citation only. Both codecs use `knownKey`; codes, paths and order stay unchanged. Blank/unique ids and n×n agreement remain codec checks. DS1/CM1 and refusal cases passed first on unchanged readers (`project` 106/106), before tables or codec edits; DS2/CM2 followed.
+- **One-off `jsonschema` 4.26.0:** all 3,418 labels agree: deterrence 984, matrices 854, D570 1,559, three writer outputs (67, 68 and destination at 72, all with a null matrix cell), and every TrafficSim project under data/ and tests/ (18, independently enumerated). The temporary dump test and CMake registration were deleted.
+- **Verified on Linux (headless):** build and `check` 238/238; `project` 108/108, including six new tests. The initial Debug link exhausted the environment's disk; a local CMake cache linker flag `-Wl,--strip-debug` let the same headless preset fit, with no repository preset change. The desktop preset, `check_no_pch.py` and Windows were not run. NEXT briefs `periodFactors` 69 after owner review; no PR or merge.
+
+## 2026-11-14 — Owned trip-rate sets in the schema (D570)
+
+- **Pick:** the owner said to continue as recommended ("ทำต่อตามแนะนำ"); D569's NEXT proposed `tripRateSets` first.
+- **D570:** the root `tripRateSets` is `false` below 66; from it a nonempty array of closed set rows, a closed `source`, closed purposes and, per side, a branch on `method` (`regression` row, else the cross-classification row with `method` a const); `rate` ≥ 0. `trip_rate_codec.cpp` checks keys with `knownKey` on the same tables; code, path and order unchanged. Pins (TR1) passed first.
+- **One-off `jsonschema`:** 1,559 labels, writer output with the two Ortúzar example sets, and all 18 projects agree.
+- **Verified on Linux (headless):** build; `check` 238/238 (`multra-tests` group `project` 102/102). The desktop preset and `check_no_pch.py` were not run; Windows not run.
+
 ## 2026-11-14 — Macro settings and runs in the schema (D569)
 
 - **Pick:** the owner asked to continue ("ทำต่อ"); D568's NEXT proposed `macroRuns`, whose rows embed the settings row `definition.macroSettings` uses.
@@ -99,24 +137,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Cause:** run 754 failed both Windows jobs (C2027 in the M6 run tools). Windows CI configures with `CMAKE_DISABLE_PRECOMPILE_HEADERS=ON`; on Linux the shared PCH supplied `<nlohmann/json.hpp>`, so `tools/m6_s1_summary.hpp` (Json used whole from line 138) compiled with only `json_fwd.hpp`. The last green Windows build was `main@fcfeb56`, 103 commits before.
 - **Fix (`bb2ac4f`):** the header includes `<nlohmann/json.hpp>`. Run 755 is green on all six jobs, Windows build and tests included.
 - **Guard:** `tools/check_no_pch.py` repeats the syntax pass without the PCH: 647 units, 0 failures, 8 m 52 s on 8 jobs; run by hand (NEXT standing facts).
-
-## 2026-11-14 — O1 read: TAG M3.1 §3.3.10 (D557)
-
-- **D557** (owner: "เข้า gov.uk และช่วยตรวจสอบ"): the environment gained `www.gov.uk` and `assets.publishing.service.gov.uk` (owner approved). TAG unit M3.1, May 2026, §3.3.10, p. 31: GEH = √((M − C)² / ((M + C)/2)), the report's formula; Table 2's GEH < 5 criterion is a validation guideline against counts and stays unapplied. The PDF stays out of the repository. Docs only.
-
-## 2026-11-14 — O1: the GEH source confirmed by the owner (D556)
-
-- **D556** (owner: "O1 ยืนยัน"): TAG unit M3.1 recorded as the GEH source on the owner's confirmation; a second fetch of gov.uk and its asset host failed (outside the session's network), so no paragraph or edition is cited. Docs only.
-
-## 2026-11-14 — O2: a gate counts the demand loaded onto its Link (D555)
-
-- **D555** (owner asked for a recommendation, then approved (b)): amendment first (SUBAREA_CONSISTENCY §15, SC11), then the fed-flow bookkeeping in `consistencyReport` adds each inside zone's flows by connector share to the gate on its connector's Link. SC11 passes first time: the corridor's west entry gate now reads Macro 600 = its Link row (GEH 0); shares 3 : 1 split 450 / 150. Verified on Linux: `check` 353/353.
-
-## 2026-11-14 — M12 R2: the Cross-level Consistency page (D554)
-
-- **D554** (owner: "ทำงานถัดไป", then both recommended options): amendment first (SUBAREA_CONSISTENCY §13, SC8–SC10), then `ConsistencyPanel` under a new *Cross-level* Results level (seeds, Run/Cancel on a worker via a `cancelled` hook on `consistencyReport`, the 19-column table, CSV through Export). `consistency-ui` passes; pins `workspace-ui` (14 tabs) and `results-tabs-ui` (5 levels) updated. The capture showed open finding O2 (§14). Owner check: C18. Verified on Linux: `check` 353/353.
-
-## 2026-11-14 — M12 contract and R1: the subarea workflow and consistency report (D553)
-
-- **D553** (owner: "ช่วยตัดสินใจ", then "ทำต่อตามแนะนำ"; every recommended option): [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), rows SC1–SC7, before code. Meso runs opt-in on the study area's run-time copy (the same cut Micro runs on; `"meso"` as the source is `MESO_AREA_SOURCE_SELF`); per study period, every gate and kept Link gets Macro, Meso and Micro (multi-seed `Estimate`) veh/h with Δ, % and GEH, reported only. R1 is the CLI `--consistency-report`, R2 a Results page. Open: O1, TAG M3.1's GEH paragraph (the publisher's host was not reachable).
-- **R1:** `src/project/subarea_consistency.*` (`runMesoArea`, `consistencyReport`, JSON/CSV), `tools/consistency_cli.*`, `estimate` made public. Groups `consistency` (SC1–SC6) and `cli-consistency` (SC7) pass first time. Corridor (area {A}, 600 veh/h): Macro 600, Meso 592.7 (bound 12.0), Micro 240 over seeds 42–43; Micro's west→east movement gives way and queues at the source, Meso ignores Node priority (SUBAREA_CONSISTENCY §12). Nothing tuned. Verified on Linux: `check` 352/352.

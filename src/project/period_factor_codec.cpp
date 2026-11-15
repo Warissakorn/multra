@@ -1,5 +1,6 @@
 #include "period_factor_codec.hpp"
 #include "document.hpp"
+#include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cmath>
@@ -18,8 +19,8 @@ std::vector<PeriodFactor> parsePeriodFactors(const Json& file) {
     for (std::size_t i = 0; i < list.size(); ++i) {
         const auto at = "periodFactors[" + std::to_string(i) + "]";
         const auto& item = list[i];
-        const bool exact = item.is_object() && item.size() == 4 && item.contains("purposeId") && item.contains("periodId") &&
-                           item.contains("productionToAttraction") && item.contains("attractionToProduction");
+        // D572: share the schema's required-key list; keep the row refusal before text and share checks.
+        const bool exact = networkCodec::exactFields(item, networkCodec::Object::periodFactor, networkCodec::periodFactorVersion);
         if (!exact) { issues.push_back({"PERIOD_FACTOR_INVALID", at}); continue; }
         PeriodFactor f;
         for (const auto* key : {"purposeId", "periodId"}) {

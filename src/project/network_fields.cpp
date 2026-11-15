@@ -1,4 +1,5 @@
 #include "network_fields.hpp"
+#include "latest_schema.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
@@ -150,14 +151,52 @@ constexpr Field vehicleClassFields[]={{"id",Kind::text,true},{"name",Kind::text}
 constexpr Field linkBehaviourTypeFields[]={{"id",Kind::text,true},{"name",Kind::text},{"defaultBehaviourId",Kind::text},
     {"overrides",Kind::behaviourOverrides}};
 constexpr Field behaviourOverrideFields[]={{"classId",Kind::text,true},{"behaviourId",Kind::text,true}};
-// D566-D568 (PROJECT_SCHEMA_DEMAND): the root feature keys (zone layer, studies, map) and the zone rows (zone_codec.cpp's key lists).
+// D566-D568 (PROJECT_SCHEMA_FEATURES): the root feature keys (zone layer, studies, map) and the zone rows (zone_codec.cpp's key lists).
 constexpr Field rootFeatureFields[]={{"zones",Kind::zones,false,0,zoneLayerVersion},{"zoneConnectors",Kind::zoneConnectors,false,0,zoneLayerVersion},
     {"odMatrices",Kind::odMatrices,false,0,zoneLayerVersion},{"parkingLots",Kind::parkingLots,false,0,zoneLayerVersion},
     {"studyPeriods",Kind::studyPeriods,false,0,modeVersion},{"studyArea",Kind::studyArea,false,0,studyAreaVersion},
-    {"map",Kind::map,false,0,mapVersion},{"macroRuns",Kind::macroRuns,false,0,macroRunVersion}};
+    {"map",Kind::map,false,0,mapVersion},{"macroRuns",Kind::macroRuns,false,0,macroRunVersion},
+    {"tripRateSets",Kind::tripRateSets,false,0,tripRateVersion},
+    {"deterrenceSets",Kind::deterrenceSets,false,0,distributionVersion},{"costMatrices",Kind::costMatrices,false,0,distributionVersion},
+    {"periodFactors",Kind::periodFactors,false,0,periodFactorVersion},
+    {"modeChoiceSets",Kind::modeChoiceSets,false,0,modeChoiceVersion}};
 // D569: macro_run_definition.cpp's run row and macro_settings.cpp's settings row (both closed).
 constexpr Field macroRunFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"period",Kind::text,true},{"settings",Kind::macroSettings,true}};
 constexpr Field macroSettingsFields[]={{"targetGap",Kind::targetGap,true},{"maxIterations",Kind::iterationCap,true}};
+// D570: trip_rate_codec.cpp's rows (all closed). A side is one of two rows chosen by `method`; the
+// codec's other rules (unique ids and attributes, nonblank text, nonempty categories) stay with it.
+constexpr Field tripRateSetFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::citedSource,true},
+    {"unit",Kind::text,true},{"purposes",Kind::tripRatePurposes,true}};
+// D574: the cited source shared by trip-rate, deterrence and mode-choice sets (a cost matrix's
+// source holds citation only). A key added here is legal in all three readers.
+constexpr Field citedSourceFields[]={{"citation",Kind::text},{"table",Kind::text}};
+constexpr Field tripRatePurposeFields[]={{"id",Kind::text,true},{"productions",Kind::tripRateSide,true},{"attractions",Kind::tripRateSide,true}};
+constexpr Field tripRateCrossFields[]={{"method",Kind::crossMethod,true},{"categories",Kind::tripRateCategories,true}};
+constexpr Field tripRateRegressionFields[]={{"method",Kind::regressionMethod,true},{"constant",Kind::number,true},{"terms",Kind::tripRateTerms,true}};
+constexpr Field tripRateCategoryFields[]={{"attribute",Kind::text,true},{"rate",Kind::rate,true}};
+constexpr Field tripRateTermFields[]={{"attribute",Kind::text,true},{"coefficient",Kind::number,true}};
+// D571: deterrence_codec.cpp and cost_matrix_codec.cpp's closed rows. Deterrence reuses the
+// trip-rate source row; a matrix source permits citation only. Blank/unique ids and n-by-n
+// agreement stay with the codecs. The document owns the constraint floors.
+constexpr Field deterrenceSetFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::citedSource,true},
+    {"function",Kind::exponentialFunction,true},{"costUnit",Kind::minuteUnit,true},{"purposes",Kind::deterrencePurposes,true}};
+constexpr Field deterrencePurposeFields[]={{"id",Kind::text,true},{"beta",Kind::deterrenceBeta,true},
+    {"intrazonalShare",Kind::intrazonalShare},{"constraint",Kind::deterrenceConstraint,false,0,constraintVersion}};
+constexpr Field costMatrixFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::costMatrixSource},
+    {"unit",Kind::minuteUnit,true},{"zoneIds",Kind::nonemptyTexts,true},{"rows",Kind::costRows,true}};
+constexpr Field costMatrixSourceFields[]={{"citation",Kind::text}};
+// D572: period_factor_codec.cpp's exact row; blank ids, the share sum, known periods and unique pairs stay with the codec.
+constexpr Field periodFactorFields[]={{"purposeId",Kind::text,true},{"periodId",Kind::text,true},
+    {"productionToAttraction",Kind::periodShare,true},{"attractionToProduction",Kind::periodShare,true}};
+// D573: mode_choice_codec.cpp's closed rows; source reuses citedSource. Semantic checks stay in the codec.
+constexpr Field modeChoiceSetFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::citedSource,true},
+    {"costUnit",Kind::minuteUnit,true},{"purposes",Kind::modeChoicePurposes,true}};
+constexpr Field modeChoicePurposeFields[]={{"id",Kind::text,true},{"alternatives",Kind::modeChoiceAlternatives,true},
+    {"nests",Kind::modeChoiceNests,false,0,modeNestVersion},{"distributionCost",Kind::logsumCost,false,0,logsumVersion}};
+constexpr Field modeChoiceAlternativeFields[]={{"id",Kind::text,true},{.name="modeId",.kind=Kind::text,.atLeastOne=true},
+    {.name="costMatrix",.kind=Kind::text,.atLeastOne=true},
+    {"constant",Kind::number,true},{"timeCoefficient",Kind::modeCoefficient,true},{"occupancy",Kind::modeOccupancy}};
+constexpr Field modeChoiceNestFields[]={{"id",Kind::text,true},{"phi",Kind::modeNestPhi,true},{"alternatives",Kind::nonemptyTexts,true}};
 // D568: map_codec.cpp's two closed objects; the CRS-anchor agreement stays with validateMapSettings.
 constexpr Field mapFields[]={{"providerId",Kind::providerId,true},{"opacity",Kind::opacity,true},{"reference",Kind::mapReference,true}};
 constexpr Field mapReferenceFields[]={{"projectedCrs",Kind::utmCrs,true},{"anchorLongitude",Kind::longitude,true},
@@ -165,7 +204,7 @@ constexpr Field mapReferenceFields[]={{"projectedCrs",Kind::utmCrs,true},{"ancho
     {"rotationDegrees",Kind::rotation,true}};
 // D567: S1.1 periods and the S5.2a study area with its typed gate flows (study_period_codec.cpp, study_area_codec.cpp).
 constexpr Field studyPeriodFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"start",Kind::number,true},{"end",Kind::number,true}};
-constexpr Field studyAreaFields[]={{"nodes",Kind::nodeIds,true},{"flowSource",Kind::flowSource,true},{"gateFlows",Kind::gateFlows}};
+constexpr Field studyAreaFields[]={{"nodes",Kind::nonemptyTexts,true},{"flowSource",Kind::flowSource,true},{"gateFlows",Kind::gateFlows}};
 constexpr Field gateFlowFields[]={{.name="periodId",.kind=Kind::text,.required=true},{.name="from",.kind=Kind::text,.required=true},
     {.name="to",.kind=Kind::text,.required=true},{.name="vehiclesPerHour",.kind=Kind::number,.required=true},
     {.name="compositionId",.kind=Kind::text,.required=true,.unless="modeId"},{.name="modeId",.kind=Kind::text,.rejectBefore=modeVersion}};
@@ -269,6 +308,22 @@ std::span<const Field> fields(Object object) {
     case Object::mapReference:return mapReferenceFields;
     case Object::macroRun:return macroRunFields;
     case Object::macroSettings:return macroSettingsFields;
+    case Object::tripRateSet:return tripRateSetFields;
+    case Object::citedSource:return citedSourceFields;
+    case Object::tripRatePurpose:return tripRatePurposeFields;
+    case Object::tripRateCrossSide:return tripRateCrossFields;
+    case Object::tripRateRegressionSide:return tripRateRegressionFields;
+    case Object::tripRateCategory:return tripRateCategoryFields;
+    case Object::tripRateTerm:return tripRateTermFields;
+    case Object::deterrenceSet:return deterrenceSetFields;
+    case Object::deterrencePurpose:return deterrencePurposeFields;
+    case Object::costMatrix:return costMatrixFields;
+    case Object::costMatrixSource:return costMatrixSourceFields;
+    case Object::periodFactor:return periodFactorFields;
+    case Object::modeChoiceSet:return modeChoiceSetFields;
+    case Object::modeChoicePurpose:return modeChoicePurposeFields;
+    case Object::modeChoiceAlternative:return modeChoiceAlternativeFields;
+    case Object::modeChoiceNest:return modeChoiceNestFields;
     }
     return {};
 }
@@ -285,7 +340,11 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::linkBehaviourType || object==Object::behaviourOverride || object==Object::zone ||
        object==Object::zoneLinkConnector || object==Object::zoneStreetConnector || object==Object::odMatrix ||
        object==Object::parkingLot || object==Object::studyPeriod || object==Object::studyArea || object==Object::gateFlow ||
-       object==Object::map || object==Object::mapReference || object==Object::macroRun || object==Object::macroSettings)return false;
+       object==Object::map || object==Object::mapReference || object==Object::macroRun || object==Object::macroSettings ||
+       object==Object::tripRateSet || object==Object::citedSource || object==Object::tripRatePurpose || object==Object::tripRateCrossSide ||
+       object==Object::tripRateRegressionSide || object==Object::tripRateCategory || object==Object::tripRateTerm || object==Object::deterrenceSet ||
+       object==Object::deterrencePurpose || object==Object::costMatrix || object==Object::costMatrixSource || object==Object::periodFactor ||
+       object==Object::modeChoiceSet || object==Object::modeChoicePurpose || object==Object::modeChoiceAlternative || object==Object::modeChoiceNest)return false;
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
     if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
@@ -316,6 +375,19 @@ bool exactFields(const Json& j,Object object,int version) {
 bool knownKey(std::string_view key,Object object,int version) {
     const auto list=fields(object);
     return std::any_of(list.begin(),list.end(),[&](const auto& f){return key==f.name && activeField(f,version);});
+}
+bool hasAtLeastOne(const Json& j,Object object) {
+    bool marked=false;
+    for(const auto& f:fields(object))
+        if(f.atLeastOne && activeField(f,kLatestSchema)) {marked=true;if(j.contains(f.name))return true;}
+    return !marked;
+}
+bool onlyKnownKeys(const Json& j,Object object) {
+    for(const auto& [key,unused]:j.items()) {
+        (void)unused;
+        if(!knownKey(key,object,kLatestSchema))return false;
+    }
+    return true;
 }
 bool readCondition(const Json& j,Object object,const char* name) {
     for(const auto& field:fields(object))if(std::string_view(name)==field.name)
@@ -359,10 +431,18 @@ const Json& value(const Json& j,Object object,const char* name) {
     // D566: zone_codec.cpp keeps its own EDIT_ZONE_INVALID refusal for these.
     case Kind::zones:case Kind::zoneConnectors:case Kind::odMatrices:case Kind::parkingLots:case Kind::pairs:case Kind::numberMap:
     case Kind::zoneDirection:case Kind::travelDirection:case Kind::segmentId:case Kind::unsignedCount:case Kind::generatedBy:
-    case Kind::studyPeriods:case Kind::studyArea:case Kind::nodeIds:case Kind::flowSource:case Kind::gateFlows:
+    case Kind::studyPeriods:case Kind::studyArea:case Kind::nonemptyTexts:case Kind::flowSource:case Kind::gateFlows:
     case Kind::map:case Kind::mapReference:case Kind::providerId:case Kind::opacity:case Kind::utmCrs:case Kind::longitude:
     case Kind::latitude:case Kind::worldAnchor:case Kind::rotation:
-    case Kind::macroRuns:case Kind::macroSettings:case Kind::targetGap:case Kind::iterationCap:break;
+    case Kind::macroRuns:case Kind::macroSettings:case Kind::targetGap:case Kind::iterationCap:
+    case Kind::tripRateSets:case Kind::citedSource:case Kind::tripRatePurposes:case Kind::tripRateSide:case Kind::tripRateCategories:
+    case Kind::tripRateTerms:case Kind::crossMethod:case Kind::regressionMethod:case Kind::rate:
+    case Kind::deterrenceSets:case Kind::deterrencePurposes:case Kind::exponentialFunction:case Kind::minuteUnit:
+    case Kind::deterrenceBeta:case Kind::intrazonalShare:case Kind::deterrenceConstraint:
+    case Kind::costMatrices:case Kind::costMatrixSource:case Kind::costRows:
+    case Kind::periodFactors:case Kind::periodShare:
+    case Kind::modeChoiceSets:case Kind::modeChoicePurposes:case Kind::modeChoiceAlternatives:case Kind::modeChoiceNests:
+    case Kind::modeCoefficient:case Kind::modeOccupancy:case Kind::modeNestPhi:case Kind::logsumCost:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

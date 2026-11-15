@@ -47,13 +47,13 @@ jobs:
           grep -h '^URIs\|^deb ' /etc/apt/sources.list.d/*.sources /etc/apt/sources.list 2>/dev/null || true
           apt="sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=15"
           $apt update
-          $apt install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev ccache lld
+          $apt install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev ccache lld python3-jsonschema # D574: ctest schema-labels
       - uses: actions/cache@v4
         with:
           path: .ccache
           key: ccache-${{ matrix.preset }}-${{ github.sha }}
           restore-keys: ccache-${{ matrix.preset }}-
-      - run: cmake --preset ${{ matrix.preset }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+      - run: cmake --preset ${{ matrix.preset }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DMULTRA_REQUIRE_SCHEMA_LABELS=ON
       - run: ccache -z
       - run: cmake --build --preset ${{ matrix.preset }} --parallel 4
       - run: ccache -s
