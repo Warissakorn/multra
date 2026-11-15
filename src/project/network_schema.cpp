@@ -122,6 +122,15 @@ class NetworkSchema {
                 {"items",{{"type",Json::array({"number","null"})},{"minimum",0}}}}}};break;
         case Kind::periodFactors:rule={{"type","array"},{"minItems",1},{"items",reference(Object::periodFactor,version)}};break;
         case Kind::periodShare:rule={{"type","number"},{"minimum",0},{"maximum",1}};break;
+        case Kind::modeChoiceSets:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoiceSet,version)}};break;
+        case Kind::modeChoicePurposes:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoicePurpose,version)}};break;
+        case Kind::modeChoiceAlternatives:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoiceAlternative,version)}};break;
+        case Kind::modeChoiceNests:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoiceNest,version)}};break;
+        case Kind::modeChoiceMembers:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
+        case Kind::modeCoefficient:rule={{"type","number"},{"maximum",0}};break;
+        case Kind::modeOccupancy:rule={{"type","number"},{"minimum",1}};break;
+        case Kind::modeNestPhi:rule={{"type","number"},{"exclusiveMinimum",0},{"maximum",1}};break;
+        case Kind::logsumCost:rule={{"type","string"},{"const","logsum"}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -216,6 +225,8 @@ class NetworkSchema {
             properties["connectorId"]["default"]=defaults.connectorId;
         }
         Json result={{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",allowsAdditionalFields(object,version)}};
+        if(object==Object::modeChoiceAlternative) // D573: at least one cost source; both are allowed.
+            result["anyOf"]=Json::array({Json{{"required",Json::array({"modeId"})}},Json{{"required",Json::array({"costMatrix"})}}});
         // These legacy readers ignore non-object containers/references; semantic
         // path validity stays with the model. Required path fields still reject null.
         if(object==Object::rightOfWay || object==Object::controlPath || object==Object::measurementLine)result.erase("type");
@@ -301,6 +312,10 @@ public:
                 case Object::costMatrix:return "costMatrix";
                 case Object::costMatrixSource:return "costMatrixSource";
                 case Object::periodFactor:return "periodFactor";
+                case Object::modeChoiceSet:return "modeChoiceSet";
+                case Object::modeChoicePurpose:return "modeChoicePurpose";
+                case Object::modeChoiceAlternative:return "modeChoiceAlternative";
+                case Object::modeChoiceNest:return "modeChoiceNest";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -312,8 +327,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs-trip-rates-deterrence-cost-period-factors";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, Macro settings and runs, owned trip-rate and deterrence sets, cost matrices, and period factors. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs-trip-rates-deterrence-cost-period-factors-mode-choice";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, Macro settings and runs, owned trip-rate and deterrence sets, cost matrices, period factors, and mode-choice sets with nests and logsum. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

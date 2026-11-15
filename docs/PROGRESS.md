@@ -5,10 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-15 — Owned mode-choice sets in the schema and feature-doc split (D573)
+
+- **Pick:** the owner accepted D570–D572 and explicitly started modeChoiceSets on `claude/optimistic-bohr-lpfu98`; D571/D572's diffs were read first.
+- **D573:** root modeChoiceSets 70, nests 71 and logsum 76 join the composed schema ([MCS1–MCS3](reference/PROJECT_SCHEMA_FEATURES.md#owned-mode-choice-set-extension-d573)). Alternatives use inclusive anyOf: modeId, costMatrix or both. Only key membership moves through knownKey at 76; zero reference, blank/unique ids, nest ownership/membership and logsum coefficient rules stay with the codec, with codes/paths/issue order unchanged. Pins passed first on unchanged readers (project 114/114), before table/schema/codec edits; four new tests remain.
+- **Doc split:** whole extension sections D566–D572 moved from PROJECT_SCHEMA_DEMAND to PROJECT_SCHEMA_FEATURES before adding MCS1–MCS3. Both files are indexed and every moved-section link is rewritten, including decision-record links; prior decision reasoning is unchanged. The files are 286/242 lines.
+- **One-off jsonschema 4.26.0:** all 6,151 labels agree: 1,609 mode-choice cases, 4,501 D570–D572 cases, writer output at 70/71/76, all 18 TrafficSim projects under data/ and tests/ (independently enumerated), and 20 probes outside cases(). Probes: 9 both accept, 7 codec-only refusals, 4 both refuse. Schema-refused/codec-accepted is zero across all labels. Temporary tests/probes and CMake entries were deleted; removing nests/logsum restores the original MNL writer bytes.
+- **Verified on Linux (headless):** build and check 238/238; project 115/115. The existing linker-only -Wl,--strip-debug cache flag fits the local disk; repository presets are unchanged. Desktop preset, check_no_pch.py and Windows were not run. NEXT briefs procedures 73/feedback 75; stop for owner review, without a PR or merge.
+
 ## 2026-11-15 — Period factors in the schema (D572)
 
 - **Pick:** the owner accepted D570/D571 and explicitly selected `periodFactors` at schema 69 on `claude/optimistic-bohr-lpfu98`; D571's diff and D567's exactFields pattern were read first.
-- **D572:** the root is false below 69, then a nonempty array of closed four-required-key rows, text ids and shares in [0, 1] ([PF1–PF3](reference/PROJECT_SCHEMA_DEMAND.md#period-factor-extension-d572)). Only the codec's exact-key expression changes, through `networkCodec::exactFields`; text/share/sum checks and UNKNOWN_PERIOD/DUPLICATE_ID retain their order. Blank text, sums, known periods and unique pairs remain codec checks. Writer, version selection and stored forms are unchanged. Pins and refusal cases passed first on the unchanged reader (project 110/110), before tables or codec edits.
+- **D572:** the root is false below 69, then a nonempty array of closed four-required-key rows, text ids and shares in [0, 1] ([PF1–PF3](reference/PROJECT_SCHEMA_FEATURES.md#period-factor-extension-d572)). Only the codec's exact-key expression changes, through `networkCodec::exactFields`; text/share/sum checks and UNKNOWN_PERIOD/DUPLICATE_ID retain their order. Blank text, sums, known periods and unique pairs remain codec checks. Writer, version selection and stored forms are unchanged. Pins and refusal cases passed first on the unchanged reader (project 110/110), before tables or codec edits.
 - **One-off jsonschema 4.26.0:** 4,540 labels agree: 1,104 PF cases, 3,397 D570/D571 cases, one writer output with 0/1 and exact-sum-one shares, all 18 TrafficSim projects under data/ and tests/ (independently enumerated), and 20 probes authored outside cases(). Probes: 13 both accept, 4 codec-only refusals (blank purpose, unknown period, duplicate pair, sum), 3 both refuse. Schema-refused/codec-accepted: zero across all labels. Temporary tests/probes and their CMake registration were deleted.
 - **Verified on Linux (headless):** build and check 238/238; project 111/111, including three new tests. The local linker-only `-Wl,--strip-debug` cache flag is retained for disk capacity; no repository preset change. The desktop preset, check_no_pch.py and Windows were not run. NEXT briefs modeChoiceSets 70/nests 71 (and its existing logsum floor 76), awaiting owner review; no PR or merge.
 
@@ -124,7 +132,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ## 2026-11-14 — O1 read: TAG M3.1 §3.3.10 (D557)
 
 - **D557** (owner: "เข้า gov.uk และช่วยตรวจสอบ"): the environment gained `www.gov.uk` and `assets.publishing.service.gov.uk` (owner approved). TAG unit M3.1, May 2026, §3.3.10, p. 31: GEH = √((M − C)² / ((M + C)/2)), the report's formula; Table 2's GEH < 5 criterion is a validation guideline against counts and stays unapplied. The PDF stays out of the repository. Docs only.
-
-## 2026-11-14 — O1: the GEH source confirmed by the owner (D556)
-
-- **D556** (owner: "O1 ยืนยัน"): TAG unit M3.1 recorded as the GEH source on the owner's confirmation; a second fetch of gov.uk and its asset host failed (outside the session's network), so no paragraph or edition is cited. Docs only.

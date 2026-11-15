@@ -12,7 +12,8 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
     vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
     rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings,
-    tripRateSet,tripRateSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor };
+    tripRateSet,tripRateSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor,
+    modeChoiceSet,modeChoicePurpose,modeChoiceAlternative,modeChoiceNest };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
@@ -25,7 +26,8 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     macroRuns,macroSettings,targetGap,iterationCap,
     tripRateSets,tripRateSource,tripRatePurposes,tripRateSide,tripRateCategories,tripRateTerms,crossMethod,regressionMethod,rate,
     deterrenceSets,deterrencePurposes,exponentialFunction,minuteUnit,deterrenceBeta,intrazonalShare,deterrenceConstraint,
-    costMatrices,costMatrixSource,costZoneIds,costRows,periodFactors,periodShare };
+    costMatrices,costMatrixSource,costZoneIds,costRows,periodFactors,periodShare,
+    modeChoiceSets,modeChoicePurposes,modeChoiceAlternatives,modeChoiceNests,modeChoiceMembers,modeCoefficient,modeOccupancy,modeNestPhi,logsumCost };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -71,6 +73,8 @@ inline constexpr const char* kCrossClassification="crossClassification",*kRegres
 inline constexpr int distributionVersion=67,constraintVersion=68,destinationConstraintVersion=72;
 // D572: the root periodFactors is refused below 69, even null.
 inline constexpr int periodFactorVersion=69;
+// D573: owned mode-choice sets from 70, nests from 71 and distributionCost from 76.
+inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

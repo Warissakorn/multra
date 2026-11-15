@@ -150,14 +150,15 @@ constexpr Field vehicleClassFields[]={{"id",Kind::text,true},{"name",Kind::text}
 constexpr Field linkBehaviourTypeFields[]={{"id",Kind::text,true},{"name",Kind::text},{"defaultBehaviourId",Kind::text},
     {"overrides",Kind::behaviourOverrides}};
 constexpr Field behaviourOverrideFields[]={{"classId",Kind::text,true},{"behaviourId",Kind::text,true}};
-// D566-D568 (PROJECT_SCHEMA_DEMAND): the root feature keys (zone layer, studies, map) and the zone rows (zone_codec.cpp's key lists).
+// D566-D568 (PROJECT_SCHEMA_FEATURES): the root feature keys (zone layer, studies, map) and the zone rows (zone_codec.cpp's key lists).
 constexpr Field rootFeatureFields[]={{"zones",Kind::zones,false,0,zoneLayerVersion},{"zoneConnectors",Kind::zoneConnectors,false,0,zoneLayerVersion},
     {"odMatrices",Kind::odMatrices,false,0,zoneLayerVersion},{"parkingLots",Kind::parkingLots,false,0,zoneLayerVersion},
     {"studyPeriods",Kind::studyPeriods,false,0,modeVersion},{"studyArea",Kind::studyArea,false,0,studyAreaVersion},
     {"map",Kind::map,false,0,mapVersion},{"macroRuns",Kind::macroRuns,false,0,macroRunVersion},
     {"tripRateSets",Kind::tripRateSets,false,0,tripRateVersion},
     {"deterrenceSets",Kind::deterrenceSets,false,0,distributionVersion},{"costMatrices",Kind::costMatrices,false,0,distributionVersion},
-    {"periodFactors",Kind::periodFactors,false,0,periodFactorVersion}};
+    {"periodFactors",Kind::periodFactors,false,0,periodFactorVersion},
+    {"modeChoiceSets",Kind::modeChoiceSets,false,0,modeChoiceVersion}};
 // D569: macro_run_definition.cpp's run row and macro_settings.cpp's settings row (both closed).
 constexpr Field macroRunFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"period",Kind::text,true},{"settings",Kind::macroSettings,true}};
 constexpr Field macroSettingsFields[]={{"targetGap",Kind::targetGap,true},{"maxIterations",Kind::iterationCap,true}};
@@ -184,6 +185,14 @@ constexpr Field costMatrixSourceFields[]={{"citation",Kind::text}};
 // D572: period_factor_codec.cpp's exact row; blank ids, the share sum, known periods and unique pairs stay with the codec.
 constexpr Field periodFactorFields[]={{"purposeId",Kind::text,true},{"periodId",Kind::text,true},
     {"productionToAttraction",Kind::periodShare,true},{"attractionToProduction",Kind::periodShare,true}};
+// D573: mode_choice_codec.cpp's closed rows; source reuses tripRateSource. Semantic checks stay in the codec.
+constexpr Field modeChoiceSetFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::tripRateSource,true},
+    {"costUnit",Kind::minuteUnit,true},{"purposes",Kind::modeChoicePurposes,true}};
+constexpr Field modeChoicePurposeFields[]={{"id",Kind::text,true},{"alternatives",Kind::modeChoiceAlternatives,true},
+    {"nests",Kind::modeChoiceNests,false,0,modeNestVersion},{"distributionCost",Kind::logsumCost,false,0,logsumVersion}};
+constexpr Field modeChoiceAlternativeFields[]={{"id",Kind::text,true},{"modeId",Kind::text},{"costMatrix",Kind::text},
+    {"constant",Kind::number,true},{"timeCoefficient",Kind::modeCoefficient,true},{"occupancy",Kind::modeOccupancy}};
+constexpr Field modeChoiceNestFields[]={{"id",Kind::text,true},{"phi",Kind::modeNestPhi,true},{"alternatives",Kind::modeChoiceMembers,true}};
 // D568: map_codec.cpp's two closed objects; the CRS-anchor agreement stays with validateMapSettings.
 constexpr Field mapFields[]={{"providerId",Kind::providerId,true},{"opacity",Kind::opacity,true},{"reference",Kind::mapReference,true}};
 constexpr Field mapReferenceFields[]={{"projectedCrs",Kind::utmCrs,true},{"anchorLongitude",Kind::longitude,true},
@@ -307,6 +316,10 @@ std::span<const Field> fields(Object object) {
     case Object::costMatrix:return costMatrixFields;
     case Object::costMatrixSource:return costMatrixSourceFields;
     case Object::periodFactor:return periodFactorFields;
+    case Object::modeChoiceSet:return modeChoiceSetFields;
+    case Object::modeChoicePurpose:return modeChoicePurposeFields;
+    case Object::modeChoiceAlternative:return modeChoiceAlternativeFields;
+    case Object::modeChoiceNest:return modeChoiceNestFields;
     }
     return {};
 }
@@ -326,7 +339,8 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::map || object==Object::mapReference || object==Object::macroRun || object==Object::macroSettings ||
        object==Object::tripRateSet || object==Object::tripRateSource || object==Object::tripRatePurpose || object==Object::tripRateCrossSide ||
        object==Object::tripRateRegressionSide || object==Object::tripRateCategory || object==Object::tripRateTerm || object==Object::deterrenceSet ||
-       object==Object::deterrencePurpose || object==Object::costMatrix || object==Object::costMatrixSource || object==Object::periodFactor)return false;
+       object==Object::deterrencePurpose || object==Object::costMatrix || object==Object::costMatrixSource || object==Object::periodFactor ||
+       object==Object::modeChoiceSet || object==Object::modeChoicePurpose || object==Object::modeChoiceAlternative || object==Object::modeChoiceNest)return false;
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
     if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
@@ -409,7 +423,9 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::deterrenceSets:case Kind::deterrencePurposes:case Kind::exponentialFunction:case Kind::minuteUnit:
     case Kind::deterrenceBeta:case Kind::intrazonalShare:case Kind::deterrenceConstraint:
     case Kind::costMatrices:case Kind::costMatrixSource:case Kind::costZoneIds:case Kind::costRows:
-    case Kind::periodFactors:case Kind::periodShare:break;
+    case Kind::periodFactors:case Kind::periodShare:
+    case Kind::modeChoiceSets:case Kind::modeChoicePurposes:case Kind::modeChoiceAlternatives:case Kind::modeChoiceNests:
+    case Kind::modeChoiceMembers:case Kind::modeCoefficient:case Kind::modeOccupancy:case Kind::modeNestPhi:case Kind::logsumCost:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

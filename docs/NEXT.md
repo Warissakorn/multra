@@ -35,11 +35,11 @@ All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none o
 review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
 (random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
-**Review waiting (code, not a gate):** D572 on branch `claude/optimistic-bohr-lpfu98`, the
-`periodFactors` schema rows (PROJECT_SCHEMA_DEMAND, PF1–PF3). The owner accepted D570 and D571
-and explicitly started D572 on 2026-11-15. D572 is verified on Linux headless only; the desktop
-preset, `check_no_pch.py` and Windows were not run. Nothing is merged. Stop for owner review;
-any change request stays in D572 before `modeChoiceSets` starts.
+**Review waiting (code, not a gate):** D573 on branch `claude/optimistic-bohr-lpfu98`, the
+`modeChoiceSets`/nests/logsum schema rows ([PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md),
+MCS1–MCS3). The owner accepted D570–D572 and explicitly started D573 on 2026-11-15. D573 is
+verified on Linux headless only; the desktop preset, `check_no_pch.py` and Windows were not run.
+Nothing is merged. Stop for owner review; any change request stays in D573 before `procedures` starts.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
@@ -200,11 +200,12 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
   remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
-## AI automation follow-up (D344–D350, D558–D572)
+## AI automation follow-up (D344–D350, D558–D573)
 
 - An authoritative formal schema covering every optional/versioned field remains separate from D350
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
-  floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md).
+  floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); definition demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md);
+  optional feature rows: [PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md).
 - **Done:** owned `definition.compositions` with type-share and interval rows (D558, CS1–CS4), owned
   `definition.modes` (D559, MS1–MS4) and owned `definition.vehicleTypes` (D560, VT1–VT4).
 - **Item 49 answered (D562):** the speed bounds use `value()` sentences; `desiredSpeed` and curve
@@ -225,53 +226,58 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Done (D572, PF1–PF3):** root `periodFactors` at 69 uses a shared closed required-field
   table via `exactFields`; share bounds are structural, while blank text, sum ≤ 1, known periods
   and unique pairs retain their existing codec checks and order.
-- **Following slice (`modeChoiceSets`, schema 70, nests from 71), after owner review of D572.**
-  Stop before starting it; the owner selected `periodFactors` only this session. Read D571's
-  diff and D572's pins first; preserve the schema-76 logsum guard too when mapping this reader.
-  1. **Inventory (read, change nothing):** `mode_choice_codec.cpp` (`parseModeChoiceSet`,
-     `alternative`, `nests`, owned lists/issues) and `document.cpp`'s guards: root key refused
-     below 70, purpose `nests` below 71 and `distributionCost` below 76, even null, each at its
-     path (`EDIT_UNSUPPORTED_FIELD`). Read MODE_CHOICE §6, NESTED_LOGIT and MODE_CHOICE_LOGSUM.
-     Other codes: `MODE_CHOICE_INVALID_SET`, `INVALID_ID`, `DUPLICATE_ID`.
-  2. **Pins first (MCS1):** write `tests/mode_choice_schema_tests.cpp` and `_cases.hpp`, register
-     in CMake, build and pass on unchanged readers before changing tables or codec. Pin all
-     version paths, closed-row errors, missing/types/bounds, presence of either cost source,
-     a zero reference constant, nests/membership, logsum coefficient agreement and issue order.
-  3. **Rows as read:** root `modeChoiceSets` is `false` below 70, then a nonempty array of closed
-     `{id, name, source, costUnit, purposes}`, all required; text id/name, costUnit const `min`;
-     reuse `tripRateSource` for closed `{citation?, table?}`. Purposes are nonempty closed
-     `{id, alternatives, nests?, distributionCost?}` with required text id and nonempty alternatives.
-     An alternative is closed `{id, modeId?, costMatrix?, constant, timeCoefficient, occupancy?}`:
-     text ids, numeric constant, timeCoefficient ≤ 0, occupancy ≥ 1 when present. At least one
-     of modeId/costMatrix must be present (both allowed: an inclusive anyOf, not `unless`).
-     Nests are `false` below 71, then a nonempty array of closed `{id, phi, alternatives}` with
-     text id, 0 < phi ≤ 1 and a nonempty text-member array. distributionCost is `false` below 76,
-     then const `logsum`. Blank/unique ids, nest membership/uniqueness, a zero reference constant,
-     shared strictly negative logsum coefficients and catalog citation stay with the codec.
-  4. **One key source:** replace only `onlyKeys({...})` with `knownKey` against the field tables,
-     using 76 (the reader has no file version), so the document keeps the presence guards.
-     Preserve requiredness/type checks, parent/field errors and the zero/nest/logsum order.
-     Do not change writer bytes, save floors, catalog resolution or run semantics.
-  5. **Coverage:** add `-mode-choice` to the coverage value and update `$comment`, C++/CLI pins,
-     tool help, tools README and DESKTOP_AUTOMATION's schema sentence; keep complete false.
-  6. **One-off `jsonschema` 4.x (not in `check`):** environment-gated temporary tests dump the
-     cases, writer output (MNL at 70, nests at 71, logsum at 76), and every TrafficSim project
-     under data/ and tests/. Every label must agree with CLI schema output. Add about 20
-     independent probes outside cases(); schema-refused/codec-accepted must be empty, while
-     explicitly labelled codec-only refusals may pass the schema. Delete temporary tests and
-     CMake entries afterwards.
-  - **Pitfalls:** filter the binary by group (`multra-tests project`); closed optional-only rows
-    emit `required: []`; parseDocument itself calls validateDocument at its end. Rewritten
-    archive links must be relative to docs/archive/. PROJECT_SCHEMA_DEMAND is 489 lines at D572:
-    split along extension sections and update references/indexes before exceeding 500 lines.
-    Headless is sufficient; report desktop/no-PCH/Windows honestly. The small local environment
-    uses the linker-only `-Wl,--strip-debug` cache flag; no repository preset changed.
-  - **Session end:** headless build and `cmake --build build/headless --target check` green;
-    append the next decision ID to RECORD and its index; PROJECT_SCHEMA_DEMAND MCS1–MCS3,
-    PROJECT_SCHEMA and reference README updated; PROGRESS entry with the oldest moved whole
-    to the archive and its links rewritten; rewrite this brief, commit/push the same branch
-    and stop for owner review without a PR or merge.
-- **After it:** `procedures` 73 (feedback 75), its own slice on the owner's go.
+- **Done (D573, MCS1–MCS3):** root modeChoiceSets 70, nests 71 and logsum 76 use shared
+  closed key tables through knownKey at 76; alternative cost sources use an inclusive anyOf.
+  Feature extensions D566–D573 are in PROJECT_SCHEMA_FEATURES after the whole-section split.
+- **Following slice (`procedures`, schema 73, feedback from 75), after owner review of D573.**
+  Stop before starting it; the owner selected modeChoiceSets only this session. Read D571–D573's
+  diffs and copy the pins-first/knownKey pattern. Contracts: PROCEDURE_SEQUENCE §2 and
+  PROCEDURE_FEEDBACK §2; inventory the implemented reader rather than inferring from the writer.
+  1. **Inventory (read, change nothing):** procedure_codec.cpp's parseProcedures, step,
+     feedback, feedbackIssues and procedureIssues; document.cpp's guards and save selection.
+     Root procedures is refused below 73 at its path, even null. Feedback's pre-75 guard runs
+     AFTER parseProcedures: malformed feedback can fail INVALID_PROCEDURE before the guard;
+     valid feedback below 75 gives EDIT_UNSUPPORTED_FIELD at procedures[i].feedback. Keep this
+     order. Other codes are INVALID_ID and DUPLICATE_ID. Inspect kKinds/procedureStepKindName.
+  2. **Pins first (PRS1):** tests/procedure_schema_tests.cpp and _cases.hpp, registered in CMake,
+     built/passing on unchanged readers before metadata/schema/codec edits. Pin kind/type/key
+     paths, active checked before keys, missing ids, assignment's exclusive presence, feedback
+     methods/bounds/native integer tokens and complete issue order, including post-parse guards.
+  3. **Rows as read:** root false below 73, then a nonempty array of closed rows requiring text
+     id/name and nonempty steps; feedback false below 75. Steps are four closed rows tagged by
+     required kind; reuse the existing kind formatter for tag strings. Optional active is boolean
+     (true is accepted even though only false is written). Generation requires text rateSet;
+     distribution requires text deterrenceSet, with optional text skimMode/costMatrix; modeChoice
+     requires text modeChoiceSet, with optional nonempty text periods; assignment needs exactly
+     one of text period or macroRun (exclusive presence, unlike D573's inclusive sources).
+     Feedback is closed {method, weight?, maxIterations, tolerance}: method msa or constantWeight;
+     constantWeight requires numeric weight in [0, 1), msa forbids weight; maxIterations is a
+     native integer token in [2, 1000], tolerance numeric ≥ 0. Blank/unique ids remain codec
+     checks; dependency/known-reference/run rules remain with the existing run. No step-order
+     restriction or uniqueness inferred from example procedures.
+  4. **One key source:** replace only onlyKeys lists with shared field tables through knownKey
+     at 75 (reader has no version). Keep kind-before-active, active-before-keys, field order,
+     int64 conversion/clamping, feedbackIssues and the document's post-parse feedback guard.
+     Do not change writer bytes, save floors, step formatting, catalogs or runs.
+  5. **Coverage:** add -procedures to the value and update $comment, C++/CLI pins, help, tools
+     README and DESKTOP_AUTOMATION's sentence; keep x-multra-complete false.
+  6. **One-off jsonschema 4.x (not in check):** temporary environment-gated tests dump cases,
+     writer output at 73 (all step kinds, both assignment forms, active false) and 75 (MSA and
+     constantWeight, numeric boundaries), every TrafficSim project under data/ and tests/, and
+     about 20 independent probes outside cases(). Every schema label must agree; native-token
+     floats such as 2.0 may be labelled schema-accepted/codec-refused. Schema-refused/codec-accepted
+     must be empty. Delete all temporary tests and CMake entries afterwards.
+  - **Pitfalls:** filter by group (multra-tests project), not test name; optional-only closed rows
+    emit required: []; parseDocument calls validateDocument. The feedback floor is post-parse;
+    do not move it earlier. Use PROJECT_SCHEMA_FEATURES for the new section and fix moved-section
+    links if splitting again. Keep every file ≤500 lines; network_fields.cpp is 433 at D573.
+    Headless is sufficient; report desktop/no-PCH/Windows honestly. The local linker-only
+    -Wl,--strip-debug cache flag fits the small disk; repository presets remain unchanged.
+  - **Session end:** headless build and cmake --build build/headless --target check green;
+    append the next decision ID and index entry; PROJECT_SCHEMA_FEATURES PRS1–PRS3,
+    PROJECT_SCHEMA/reference README updated; PROGRESS entry with the oldest moved whole to
+    archive and its links rewritten; rewrite this brief and Review waiting; commit/push the
+    same branch, without PR or merge, then stop for owner review.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.

@@ -1,5 +1,6 @@
 #include "mode_choice_codec.hpp"
 #include "input_manifest.hpp"
+#include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cmath>
@@ -9,9 +10,10 @@ namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
 bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
-bool onlyKeys(const Json& j, std::initializer_list<const char*> allowed) {
+// D573: shared key tables; use 76 because this reader has no file version. Document guards stay in document.cpp.
+bool onlyKeys(const Json& j, networkCodec::Object row) {
     for (const auto& [key, value] : j.items())
-        if (std::none_of(allowed.begin(), allowed.end(), [&](const char* a) { return key == a; })) return false;
+        if (!networkCodec::knownKey(key, row, networkCodec::logsumVersion)) return false;
     return true;
 }
 bool isString(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
@@ -24,7 +26,7 @@ std::optional<std::string> optionalId(const Json& j, const char* key, const std:
 }
 ModeAlternative alternative(const Json& item, const std::string& at, Issues& issues) {
     ModeAlternative a;
-    if (!item.is_object() || !onlyKeys(item, {"id", "modeId", "costMatrix", "constant", "timeCoefficient", "occupancy"})) { bad(issues, at); return a; }
+    if (!item.is_object() || !onlyKeys(item, networkCodec::Object::modeChoiceAlternative)) { bad(issues, at); return a; }
     if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
     else a.id = item.at("id").get<std::string>();
     a.modeId = optionalId(item, "modeId", at, issues);
@@ -47,7 +49,7 @@ std::vector<ModeChoiceNest> nests(const Json& list, const std::string& at, const
     for (std::size_t n = 0; n < list.size(); ++n) {
         const auto where = at + "[" + std::to_string(n) + "]";
         const auto& item = list[n];
-        if (!item.is_object() || !onlyKeys(item, {"id", "phi", "alternatives"})) { bad(issues, where); continue; }
+        if (!item.is_object() || !onlyKeys(item, networkCodec::Object::modeChoiceNest)) { bad(issues, where); continue; }
         ModeChoiceNest nest;
         if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", where + ".id"});
         else if (nest.id = item.at("id").get<std::string>(); !ids.insert(nest.id).second) issues.push_back({"DUPLICATE_ID", where + ".id"});
@@ -71,13 +73,13 @@ std::vector<ModeChoiceNest> nests(const Json& list, const std::string& at, const
 ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool requireCitation) {
     Issues issues;
     ModeChoiceSet set;
-    if (!j.is_object() || !onlyKeys(j, {"id", "name", "source", "costUnit", "purposes"})) throw ValidationError({{"MODE_CHOICE_INVALID_SET", path}});
+    if (!j.is_object() || !onlyKeys(j, networkCodec::Object::modeChoiceSet)) throw ValidationError({{"MODE_CHOICE_INVALID_SET", path}});
     if (!isString(j, "id") || blank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
     else set.id = j.at("id").get<std::string>();
     if (!isString(j, "name")) bad(issues, path + ".name");
     else set.name = j.at("name").get<std::string>();
     if (!isString(j, "costUnit") || j.at("costUnit").get<std::string>() != "min") bad(issues, path + ".costUnit");
-    if (!j.contains("source") || !j.at("source").is_object() || !onlyKeys(j.at("source"), {"citation", "table"})) bad(issues, path + ".source");
+    if (!j.contains("source") || !j.at("source").is_object() || !onlyKeys(j.at("source"), networkCodec::Object::tripRateSource)) bad(issues, path + ".source");
     else {
         const auto& s = j.at("source");
         if (s.contains("citation") && !s.at("citation").is_string()) bad(issues, path + ".source.citation");
@@ -93,7 +95,7 @@ ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool re
         for (std::size_t p = 0; p < items.size(); ++p) {
             const auto at = path + ".purposes[" + std::to_string(p) + "]";
             const auto& item = items[p];
-            if (!item.is_object() || !onlyKeys(item, {"id", "alternatives", "nests", "distributionCost"})) { bad(issues, at); continue; }
+            if (!item.is_object() || !onlyKeys(item, networkCodec::Object::modeChoicePurpose)) { bad(issues, at); continue; }
             ModeChoicePurpose purpose;
             if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
             else if (purpose.id = item.at("id").get<std::string>(); !ids.insert(purpose.id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
