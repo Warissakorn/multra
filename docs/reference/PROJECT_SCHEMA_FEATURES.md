@@ -143,7 +143,7 @@ The composed CLI coverage adds `-trip-rates`; complete remains false. The root `
 - Every refusal is `INVALID_TRIP_RATE_SET` at the row or key's path; an id is `INVALID_ID` or
   `DUPLICATE_ID`.
 
-The reader asks `networkCodec::knownKey` against the same tables. Left to the codec: blank ids,
+The reader asks `networkCodec::knownKey` against the same tables (D574: now `onlyKnownKeys` at the latest schema). Left to the codec: blank ids,
 attributes and purpose ids, unique ids per list and unique attributes per side, and a catalog file's
 required citation.
 
@@ -172,8 +172,9 @@ The composed CLI coverage adds `-deterrence-cost`; complete remains false. The r
   cells are numbers ≥ 0 or null. Optional `source` is closed with optional text `citation` only;
   unlike a deterrence source it refuses `table`.
 
-Both readers now use `networkCodec::knownKey` against the same field tables. The deterrence
-reader has no file version, so key membership uses the widest active constraint version, 72;
+Both readers now use `networkCodec::knownKey` against the same field tables (D574: now
+`onlyKnownKeys` at the latest schema). The deterrence reader has no file version, so key
+membership used the widest active constraint version, 72;
 `document.cpp` retains its original version guards. Codes (`INVALID_DETERRENCE_SET`,
 `INVALID_COST_MATRIX`, `INVALID_ID`, `DUPLICATE_ID`), paths and check order are unchanged.
 Blank and unique ids, blank and unique zone ids, n×n matrix agreement and a catalog deterrence
@@ -226,8 +227,9 @@ The composed CLI coverage adds `-mode-choice`; complete remains false. Root `mod
 - Nests ([NESTED_LOGIT §3](NESTED_LOGIT.md)) are a nonempty array of closed rows requiring text
   `id`, numeric `phi` with 0 < phi ≤ 1, and a nonempty text array `alternatives`.
 
-Only key membership moves to the shared tables through `knownKey` at 76: the reader has no
-file version. Codes (`MODE_CHOICE_INVALID_SET`, `INVALID_ID`, `DUPLICATE_ID`), paths and issue
+Only key membership moves to the shared tables through `knownKey` at 76 (D574: now
+`onlyKnownKeys` at the latest schema, with the cost-source rule as the Field attribute
+`atLeastOne`): the reader has no file version. Codes (`MODE_CHOICE_INVALID_SET`, `INVALID_ID`, `DUPLICATE_ID`), paths and issue
 order stay unchanged, including the zero-reference check before nests and logsum after nests.
 Blank and unique ids, a zero reference constant, nest members naming their purpose's own
 alternatives, a member occurring at most once across nests, and one shared strictly negative

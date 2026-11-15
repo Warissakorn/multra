@@ -53,7 +53,7 @@ jobs:
           path: .ccache
           key: ccache-${{ matrix.preset }}-${{ github.sha }}
           restore-keys: ccache-${{ matrix.preset }}-
-      - run: cmake --preset ${{ matrix.preset }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+      - run: cmake --preset ${{ matrix.preset }} -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DMULTRA_REQUIRE_SCHEMA_LABELS=ON
       - run: ccache -z
       - run: cmake --build --preset ${{ matrix.preset }} --parallel 4
       - run: ccache -s
