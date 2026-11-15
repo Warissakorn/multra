@@ -417,11 +417,16 @@ algorithm, LOS threshold, delay definition, writer version rule or serialized ou
 Negative/out-of-bounds stations, reversed sections, empty or ambiguous measurement sources,
 reference resolution and runtime readiness remain the existing model/evaluation validators.
 
-## Demand extensions (D363, D364, D558)
+## Demand and root-feature extensions (D363–D573)
 
-Routes, VehicleInputs and intervals (D363), RoutingDecisions (D364) and owned compositions with
-their type-share and interval rows (D558), owned modes (D559), owned vehicle types (D560), behaviours (D561, D563), owned trip-rate sets (D570), owned deterrence sets/cost matrices (D571) and period factors (D572) are documented in [PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md)
-and [PROJECT_SCHEMA_FEATURES](PROJECT_SCHEMA_FEATURES.md); the latter also covers owned mode-choice sets, nests and logsum (D573).
+[PROJECT_SCHEMA_DEMAND](PROJECT_SCHEMA_DEMAND.md) documents Routes, VehicleInputs and intervals
+(D363), RoutingDecisions (D364), owned compositions with their type-share and interval rows
+(D558), owned modes (D559), owned vehicle types (D560), behaviours (D561, D563, D564) and vehicle
+classes and link behaviour types (D565). [PROJECT_SCHEMA_FEATURES](PROJECT_SCHEMA_FEATURES.md)
+documents the root zone layer (D566), study periods and the study area (D567), the map (D568),
+Macro settings and runs (D569), owned trip-rate sets (D570), deterrence sets and cost matrices
+(D571), period factors (D572) and mode-choice sets with nests and logsum (D573). Every slice's
+labelled cases are checked against the emitted schema by ctest `schema-labels` (D574).
 
 J7/D418 edits the existing schema-58 `Node.analysis` fields only. Snapshot provenance and
 analytical Results are session state, not new project fields or a schema step.

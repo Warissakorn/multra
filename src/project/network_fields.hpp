@@ -12,7 +12,7 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
     vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
     rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings,
-    tripRateSet,tripRateSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor,
+    tripRateSet,citedSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor,
     modeChoiceSet,modeChoicePurpose,modeChoiceAlternative,modeChoiceNest };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
@@ -21,19 +21,21 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu,
     behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
     zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy,
-    studyPeriods,studyArea,nodeIds,flowSource,gateFlows,
+    studyPeriods,studyArea,nonemptyTexts,flowSource,gateFlows,
     map,mapReference,providerId,opacity,utmCrs,longitude,latitude,worldAnchor,rotation,
     macroRuns,macroSettings,targetGap,iterationCap,
-    tripRateSets,tripRateSource,tripRatePurposes,tripRateSide,tripRateCategories,tripRateTerms,crossMethod,regressionMethod,rate,
+    tripRateSets,citedSource,tripRatePurposes,tripRateSide,tripRateCategories,tripRateTerms,crossMethod,regressionMethod,rate,
     deterrenceSets,deterrencePurposes,exponentialFunction,minuteUnit,deterrenceBeta,intrazonalShare,deterrenceConstraint,
-    costMatrices,costMatrixSource,costZoneIds,costRows,periodFactors,periodShare,
-    modeChoiceSets,modeChoicePurposes,modeChoiceAlternatives,modeChoiceNests,modeChoiceMembers,modeCoefficient,modeOccupancy,modeNestPhi,logsumCost };
+    costMatrices,costMatrixSource,costRows,periodFactors,periodShare,
+    modeChoiceSets,modeChoicePurposes,modeChoiceAlternatives,modeChoiceNests,modeCoefficient,modeOccupancy,modeNestPhi,logsumCost };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
     const char* whenNonNull{};
     // D566: required unless this key is present, and refused when it is.
     const char* unless{};
+    // D574: one of the row's fields marked so must be present (an inclusive "at least one").
+    bool atLeastOne{};
 };
 inline bool activeField(const Field& f,int version) {
     return version>=f.knownFrom && version>=f.rejectBefore && !(f.rejectFrom && version>=f.rejectFrom);
@@ -91,6 +93,11 @@ void knownFields(const Json&,Object,const std::string& path,int version);
 bool exactFields(const Json&,Object,int version);
 // D569: whether a key is one of the row's active fields at this version.
 bool knownKey(std::string_view key,Object,int version);
+// D574: every key of an object is one of the row's fields at the latest schema. For readers with
+// no file version (the owned Macro sets and their catalogs): document.cpp keeps each key's floor.
+bool onlyKnownKeys(const Json&,Object);
+// D574: whether the object holds one of the row's `atLeastOne` fields (true when the row marks none).
+bool hasAtLeastOne(const Json&,Object);
 const Json& value(const Json&,Object,const char* name);
 bool readCondition(const Json&,Object,const char* name);
 // Link-only decoder: leaves linkType/streetSegmentId to their existing document read stages.

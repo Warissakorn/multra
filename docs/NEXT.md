@@ -35,11 +35,12 @@ All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none o
 review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
 (random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
-**Review waiting (code, not a gate):** D573 on branch `claude/optimistic-bohr-lpfu98`, the
-`modeChoiceSets`/nests/logsum schema rows ([PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md),
-MCS1–MCS3). The owner accepted D570–D572 and explicitly started D573 on 2026-11-15. D573 is
-verified on Linux headless only; the desktop preset, `check_no_pch.py` and Windows were not run.
-Nothing is merged. Stop for owner review; any change request stays in D573 before `procedures` starts.
+**Review waiting (code, not a gate):** D570–D574 on branch `claude/optimistic-bohr-lpfu98`: the
+Macro-set schema rows ([PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md)) and D574,
+the code-review fixes to them (named floors, `onlyKnownKeys`, `citedSource`, `atLeastOne`, ctest
+`schema-labels` and `python3-jsonschema` on Linux CI). Verified on Linux headless (`check` 240/240)
+and the changed units without the PCH; the desktop preset and Windows were not run, and the CI
+change has not run on GitHub yet. Nothing is merged. Stop for owner review before `procedures`.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
@@ -229,9 +230,12 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Done (D573, MCS1–MCS3):** root modeChoiceSets 70, nests 71 and logsum 76 use shared
   closed key tables through knownKey at 76; alternative cost sources use an inclusive anyOf.
   Feature extensions D566–D573 are in PROJECT_SCHEMA_FEATURES after the whole-section split.
-- **Following slice (`procedures`, schema 73, feedback from 75), after owner review of D573.**
-  Stop before starting it; the owner selected modeChoiceSets only this session. Read D571–D573's
-  diffs and copy the pins-first/knownKey pattern. Contracts: PROCEDURE_SEQUENCE §2 and
+- **Following slice (`procedures`, schema 73, feedback from 75), after owner review of D573–D574.**
+  Stop before starting it. Read D571–D574's diffs and copy the pins-first pattern as D574 left it:
+  `networkCodec::onlyKnownKeys` for a reader with no version, named floor constants (add
+  `procedureVersion=73`, `feedbackVersion=75` and use them in `document.cpp`'s guards and save
+  chain), `tests/schema_refusal.hpp` for refusal pins, and the shared `citedSource` row if a source
+  appears. Contracts: PROCEDURE_SEQUENCE §2 and
   PROCEDURE_FEEDBACK §2; inventory the implemented reader rather than inferring from the writer.
   1. **Inventory (read, change nothing):** procedure_codec.cpp's parseProcedures, step,
      feedback, feedbackIssues and procedureIssues; document.cpp's guards and save selection.
@@ -255,18 +259,19 @@ order; none is started. **Ask** marks one the owner chooses before any code.
      native integer token in [2, 1000], tolerance numeric ≥ 0. Blank/unique ids remain codec
      checks; dependency/known-reference/run rules remain with the existing run. No step-order
      restriction or uniqueness inferred from example procedures.
-  4. **One key source:** replace only onlyKeys lists with shared field tables through knownKey
-     at 75 (reader has no version). Keep kind-before-active, active-before-keys, field order,
+  4. **One key source:** replace only onlyKeys lists with shared field tables through
+     `onlyKnownKeys` (reader has no version; it checks at kLatestSchema). Keep kind-before-active, active-before-keys, field order,
      int64 conversion/clamping, feedbackIssues and the document's post-parse feedback guard.
      Do not change writer bytes, save floors, step formatting, catalogs or runs.
   5. **Coverage:** add -procedures to the value and update $comment, C++/CLI pins, help, tools
      README and DESKTOP_AUTOMATION's sentence; keep x-multra-complete false.
-  6. **One-off jsonschema 4.x (not in check):** temporary environment-gated tests dump cases,
-     writer output at 73 (all step kinds, both assignment forms, active false) and 75 (MSA and
-     constantWeight, numeric boundaries), every TrafficSim project under data/ and tests/, and
-     about 20 independent probes outside cases(). Every schema label must agree; native-token
-     floats such as 2.0 may be labelled schema-accepted/codec-refused. Schema-refused/codec-accepted
-     must be empty. Delete all temporary tests and CMake entries afterwards.
+  6. **Labels in `check` (D574):** add the new cases namespace to
+     `tests/schema_labels_dump_tests.cpp`; ctest `schema-labels` then checks every label and every
+     shipped project against the emitted schema. Still by hand (temporary, then deleted): writer
+     output at 73 (all step kinds, both assignment forms, active false) and 75 (MSA and
+     constantWeight, numeric boundaries), and about 20 probes outside cases(). Native-token floats
+     such as 2.0 may be labelled schema-accepted/codec-refused; schema-refused/codec-accepted must
+     be empty.
   - **Pitfalls:** filter by group (multra-tests project), not test name; optional-only closed rows
     emit required: []; parseDocument calls validateDocument. The feedback floor is post-parse;
     do not move it earlier. Use PROJECT_SCHEMA_FEATURES for the new section and fix moved-section
@@ -278,6 +283,10 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     PROJECT_SCHEMA/reference README updated; PROGRESS entry with the oldest moved whole to
     archive and its links rewritten; rewrite this brief and Review waiting; commit/push the
     same branch, without PR or merge, then stop for owner review.
+- **Proposed, not booked (review finding 7, deferred by D574):** the per-row "nonempty array of
+  Object" kinds (`tripRateSets`, `deterrencePurposes`, `modeChoiceNests`, …; about 15 since D566)
+  could become one kind that reads its Object from the Field. It touches every slice's table and
+  rule switch, so it is its own slice, measured by the emitted schema staying byte-identical.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.

@@ -79,7 +79,7 @@ class NetworkSchema {
         case Kind::generatedBy:rule={{"type","string"},{"const",kGeneratedByModeChoice}};break;
         case Kind::studyPeriods:rule={{"type","array"},{"minItems",1},{"items",reference(Object::studyPeriod,version)}};break;
         case Kind::studyArea:rule=reference(Object::studyArea,version);break;
-        case Kind::nodeIds:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
+        case Kind::nonemptyTexts:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
         case Kind::flowSource:rule={{"type","string"},{"enum",Json::array({"typed","macro","meso"})}};break;
         case Kind::gateFlows:rule={{"type","array"},{"minItems",1},{"items",reference(Object::gateFlow,version)}};break;
         case Kind::map:rule=reference(Object::map,version);break;
@@ -96,7 +96,7 @@ class NetworkSchema {
         case Kind::targetGap:rule={{"type","number"},{"exclusiveMinimum",0},{"exclusiveMaximum",1}};break;
         case Kind::iterationCap:rule={{"type","integer"},{"minimum",1},{"maximum",100000},{"x-multra-nativeType","integer-token"}};break;
         case Kind::tripRateSets:rule={{"type","array"},{"minItems",1},{"items",reference(Object::tripRateSet,version)}};break;
-        case Kind::tripRateSource:rule=reference(Object::tripRateSource,version);break;
+        case Kind::citedSource:rule=reference(Object::citedSource,version);break;
         case Kind::tripRatePurposes:rule={{"type","array"},{"minItems",1},{"items",reference(Object::tripRatePurpose,version)}};break;
         case Kind::tripRateSide: // D570: `method` selects the row; any other method falls to the cross-classification row and its enum
             rule={{"if",{{"required",Json::array({"method"})},{"properties",{{"method",{{"const",kRegression}}}}}}},
@@ -116,7 +116,6 @@ class NetworkSchema {
             rule={{"type","string"},{"enum",version<destinationConstraintVersion?Json::array({"double","origin"}):Json::array({"double","origin","destination"})}};break;
         case Kind::costMatrices:rule={{"type","array"},{"minItems",1},{"items",reference(Object::costMatrix,version)}};break;
         case Kind::costMatrixSource:rule=reference(Object::costMatrixSource,version);break;
-        case Kind::costZoneIds:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
         case Kind::costRows:
             rule={{"type","array"},{"minItems",1},{"items",{{"type","array"},
                 {"items",{{"type",Json::array({"number","null"})},{"minimum",0}}}}}};break;
@@ -126,7 +125,6 @@ class NetworkSchema {
         case Kind::modeChoicePurposes:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoicePurpose,version)}};break;
         case Kind::modeChoiceAlternatives:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoiceAlternative,version)}};break;
         case Kind::modeChoiceNests:rule={{"type","array"},{"minItems",1},{"items",reference(Object::modeChoiceNest,version)}};break;
-        case Kind::modeChoiceMembers:rule={{"type","array"},{"minItems",1},{"items",{{"type","string"}}}};break;
         case Kind::modeCoefficient:rule={{"type","number"},{"maximum",0}};break;
         case Kind::modeOccupancy:rule={{"type","number"},{"minimum",1}};break;
         case Kind::modeNestPhi:rule={{"type","number"},{"exclusiveMinimum",0},{"maximum",1}};break;
@@ -225,8 +223,9 @@ class NetworkSchema {
             properties["connectorId"]["default"]=defaults.connectorId;
         }
         Json result={{"type","object"},{"properties",properties},{"required",required},{"additionalProperties",allowsAdditionalFields(object,version)}};
-        if(object==Object::modeChoiceAlternative) // D573: at least one cost source; both are allowed.
-            result["anyOf"]=Json::array({Json{{"required",Json::array({"modeId"})}},Json{{"required",Json::array({"costMatrix"})}}});
+        Json atLeastOne=Json::array(); // D574: the row's `atLeastOne` fields, in table order; both may be present
+        for(const auto& f:fields(object))if(f.atLeastOne && activeField(f,version))atLeastOne.push_back({{"required",Json::array({f.name})}});
+        if(!atLeastOne.empty())result["anyOf"]=std::move(atLeastOne);
         // These legacy readers ignore non-object containers/references; semantic
         // path validity stays with the model. Required path fields still reject null.
         if(object==Object::rightOfWay || object==Object::controlPath || object==Object::measurementLine)result.erase("type");
@@ -301,7 +300,7 @@ public:
                 case Object::macroRun:return "macroRun";
                 case Object::macroSettings:return "macroSettings";
                 case Object::tripRateSet:return "tripRateSet";
-                case Object::tripRateSource:return "tripRateSource";
+                case Object::citedSource:return "citedSource";
                 case Object::tripRatePurpose:return "tripRatePurpose";
                 case Object::tripRateCrossSide:return "tripRateCrossSide";
                 case Object::tripRateRegressionSide:return "tripRateRegressionSide";

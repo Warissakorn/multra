@@ -1,17 +1,12 @@
 #include "test.hpp"
+#include "schema_refusal.hpp"
 #include "macro_run_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 #include <functional>
 
 using namespace multra;
 namespace mr=macroRunCases;
-namespace {
-void refusedAt(const Json& document,const std::string& code,const std::string& path) {
-    try {(void)parseDocument(Json::parse(document.dump()));}
-    catch(const ValidationError& e) {CHECK(e.issues[0].code==code);CHECK(e.issues[0].path==path);return;}
-    throw std::runtime_error("Expected "+code+" at "+path);
-}
-}
+using schemaRefusal::refusedAt;
 TEST(project, macro_run_reader_keeps_its_floors_paths_and_codes) {
     for(int v=mr::settingsFrom;v<=kLatestSchema;++v) {
         const auto d=parseDocument(mr::minimal(v));CHECK(d.definition->macroSettings->maxIterations==200);

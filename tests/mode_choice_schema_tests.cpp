@@ -1,23 +1,13 @@
 #include "test.hpp"
+#include "schema_refusal.hpp"
 #include "mode_choice_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 
 using namespace multra;
 namespace mc=modeChoiceCases;
+using schemaRefusal::refusedWith;
+using schemaRefusal::Fault;
 namespace {
-using Fault=std::pair<std::string,std::string>;
-void refusedWith(const Json& j,const std::vector<Fault>& expected) {
-    CHECK(!expected.empty());
-    try {(void)parseDocument(Json::parse(j.dump()));}
-    catch(const ValidationError& e) {
-        CHECK(e.issues.size()==expected.size());
-        for(std::size_t i=0;i<expected.size();++i) {
-            CHECK(e.issues[i].code==expected[i].first);CHECK(e.issues[i].path==expected[i].second);
-        }
-        return;
-    }
-    throw std::runtime_error("Expected "+expected[0].first+" at "+expected[0].second);
-}
 constexpr auto bad="MODE_CHOICE_INVALID_SET";
 const std::string sp="modeChoiceSets[0]",pp=sp+".purposes[0]",ap=pp+".alternatives[1]",np=pp+".nests[0]";
 }

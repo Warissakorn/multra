@@ -162,7 +162,7 @@ The composed CLI coverage adds `-deterrence-cost`; complete remains false. The r
 
 - `deterrenceSets` is a nonempty array of closed sets requiring text `id` and `name`, a `source`,
   `function: "exponential"`, `costUnit: "min"` and a nonempty `purposes` array. Its closed `source`
-  reuses D570's `tripRateSource` row: optional text `citation` and `table`.
+  reuses the shared `citedSource` row (D570, renamed D574): optional text `citation` and `table`.
 - Each closed purpose requires text `id` and numeric `beta` > 0 (`exclusiveMinimum: 0`). Optional
   `intrazonalShare` is numeric with 0 ≤ share < 1. `constraint` is `false` below 68; from 68 an
   enum of `double` and `origin`, adding `destination` from 72. The document's existing guards
@@ -216,7 +216,7 @@ The composed CLI coverage adds `-mode-choice`; complete remains false. Root `mod
 (`EDIT_UNSUPPORTED_FIELD` at `modeChoiceSets`), then a nonempty array of closed set rows.
 
 - A set requires text `id` and `name`, `source`, `costUnit: "min"` and nonempty `purposes`.
-  Its closed source reuses `tripRateSource`: optional text `citation` and `table`.
+  Its closed source reuses the shared `citedSource` row: optional text `citation` and `table`.
 - A closed purpose requires text `id` and nonempty `alternatives`; optional `nests` is false
   below 71, and optional `distributionCost` is false below 76, then const `logsum`.
   The document retains its presence guards at each purpose's field path, even null.
@@ -240,3 +240,19 @@ remain outside the schema. Writer bytes, save floors, catalog resolution and run
 | MCS1 | On unchanged readers: MNL from 70, nests from 71, logsum from 76; presence guards even null, with nests before logsum and guards before row checks; closed set/source/purpose/alternative/nest rows; either cost source or both; missing/invalid sources, numeric bounds, zero reference, duplicate ids, nest membership and logsum semantic refusals; a complete 17-issue sequence preserves all codes/paths/order |
 | MCS2 | Root false below 70; closed rows and required keys, one shared source, nonempty lists and numeric bounds; inclusive anyOf rather than mutual exclusion; nests false below 71 and logsum false below 76; no blank/unique-id, zero-reference, membership or coefficient-agreement schema rule |
 | MCS3 | Labelled structural refusals fail parseDocument; jsonschema 4.26.0 agrees on all 6,151 labels: 1,609 mode-choice cases, 4,501 D570–D572 cases, writer output at 70/71/76, all 18 TrafficSim projects under data/ and tests/, and 20 independent probes. Probes: 9 both accept, 7 codec-only refusals, 4 both refuse; schema-refused/codec-accepted is zero across all labels. Temporary tests/entries deleted |
+
+## Review fixes (D574)
+
+A code review of D570–D573 changed how the rows above are kept, not what they accept. The emitted
+schema is byte-identical except that the shared `{citation, table}` row is named `citedSource`.
+
+- The trip-rate, deterrence, cost-matrix and mode-choice readers check keys through one helper,
+  `networkCodec::onlyKnownKeys`, at the latest schema; `document.cpp` keeps every floor and now
+  names it with the same constants the field tables use.
+- A Field attribute `atLeastOne` marks fields of which one must be present; the schema emits the
+  `anyOf` in table order and `mode_choice_codec.cpp` asks `hasAtLeastOne` at the same point as before.
+- ctest `schema-labels` (`tools/check_schema_labels.py`, registered when Python's `jsonschema` is
+  installed, not under sanitizers) checks every slice's labelled cases and every shipped project
+  against the emitted schema, so the schema half of the TR3, DS3/CM3, PF3 and MCS3 rows now runs
+  in `check`. The envelope slice is excluded: its labels are for `projectEnvelopeSchema()` alone.
+

@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-15 — Code-review fixes to the schema slices (D574)
+
+- **Pick:** the owner ran `/code-review` on D570–D573 and asked for its recommendations ("แก้ไขตามแนะนำ").
+- **D574:** named floor constants in `document.cpp`; one `onlyKnownKeys` helper at `kLatestSchema` for the four Macro-set readers; the shared source row renamed `citedSource`; a Field attribute `atLeastOne` for the cost-source `anyOf`; three identical nonempty-text kinds merged; the refusal helpers in `tests/schema_refusal.hpp`; the `--help`, PROJECT_SCHEMA and tools README texts fixed.
+- **Label check in `check`:** ctest `schema-labels` validates 118,858 labelled cases from 22 slices and all 18 projects in about 50–70 s; a deliberately wrong `phi` rule made it fail (6 disagreements). The envelope slice's labels target `projectEnvelopeSchema()` and are excluded, not relabelled. Linux CI installs `python3-jsonschema`.
+- **Proof of no behaviour change:** the emitted schema is byte-identical to D573's except the `$defs` name `citedSource66`.
+- **Deferred:** one kind for every "nonempty array of Object" rule (finding 7), proposed in NEXT.
+- **Verified on Linux (headless):** `check` 240/240; the 16 changed units that use the PCH compile without it. Desktop preset and Windows not run; the CI change has not run on GitHub.
+
 ## 2026-11-15 — Owned mode-choice sets in the schema and feature-doc split (D573)
 
 - **Pick:** the owner accepted D570–D572 and explicitly started modeChoiceSets on `claude/optimistic-bohr-lpfu98`; D571/D572's diffs were read first.
@@ -128,7 +137,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Cause:** run 754 failed both Windows jobs (C2027 in the M6 run tools). Windows CI configures with `CMAKE_DISABLE_PRECOMPILE_HEADERS=ON`; on Linux the shared PCH supplied `<nlohmann/json.hpp>`, so `tools/m6_s1_summary.hpp` (Json used whole from line 138) compiled with only `json_fwd.hpp`. The last green Windows build was `main@fcfeb56`, 103 commits before.
 - **Fix (`bb2ac4f`):** the header includes `<nlohmann/json.hpp>`. Run 755 is green on all six jobs, Windows build and tests included.
 - **Guard:** `tools/check_no_pch.py` repeats the syntax pass without the PCH: 647 units, 0 failures, 8 m 52 s on 8 jobs; run by hand (NEXT standing facts).
-
-## 2026-11-14 — O1 read: TAG M3.1 §3.3.10 (D557)
-
-- **D557** (owner: "เข้า gov.uk และช่วยตรวจสอบ"): the environment gained `www.gov.uk` and `assets.publishing.service.gov.uk` (owner approved). TAG unit M3.1, May 2026, §3.3.10, p. 31: GEH = √((M − C)² / ((M + C)/2)), the report's formula; Table 2's GEH < 5 criterion is a validation guideline against counts and stays unapplied. The PDF stays out of the repository. Docs only.

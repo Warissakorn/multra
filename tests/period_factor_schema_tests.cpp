@@ -1,24 +1,12 @@
 #include "test.hpp"
+#include "schema_refusal.hpp"
 #include "period_factor_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 
 using namespace multra;
 namespace pf=periodFactorCases;
-namespace {
-using Fault=std::pair<std::string,std::string>;
-void refusedWith(const Json& document,const std::vector<Fault>& expected) {
-    CHECK(!expected.empty());
-    try {(void)parseDocument(Json::parse(document.dump()));}
-    catch(const ValidationError& e) {
-        CHECK(e.issues.size()==expected.size());
-        for(std::size_t i=0;i<expected.size();++i) {
-            CHECK(e.issues[i].code==expected[i].first);CHECK(e.issues[i].path==expected[i].second);
-        }
-        return;
-    }
-    throw std::runtime_error("Expected "+expected[0].first+" at "+expected[0].second);
-}
-}
+using schemaRefusal::refusedWith;
+using schemaRefusal::Fault;
 TEST(project, period_factor_reader_keeps_its_floor_paths_codes_and_order) { // PF1
     for(int v=pf::from;v<=kLatestSchema;++v) {
         const auto d=parseDocument(pf::minimal(v));validateDocument(d);

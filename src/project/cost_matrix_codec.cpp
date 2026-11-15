@@ -9,19 +9,13 @@ namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
 bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
-// D571: the same key tables close these rows in the composed schema.
-bool onlyKeys(const Json& j, networkCodec::Object row) {
-    for (const auto& [key, value] : j.items())
-        if (!networkCodec::knownKey(key, row, networkCodec::distributionVersion)) return false;
-    return true;
-}
 bool isString(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
 void bad(Issues& issues, const std::string& path) { issues.push_back({"INVALID_COST_MATRIX", path}); }
 }
 CostMatrix parseCostMatrix(const Json& j, const std::string& path) {
     Issues issues;
     CostMatrix m;
-    if (!j.is_object() || !onlyKeys(j, networkCodec::Object::costMatrix)) throw ValidationError({{"INVALID_COST_MATRIX", path}});
+    if (!j.is_object() || !networkCodec::onlyKnownKeys(j, networkCodec::Object::costMatrix)) throw ValidationError({{"INVALID_COST_MATRIX", path}});
     if (!isString(j, "id") || blank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
     else m.id = j.at("id").get<std::string>();
     if (!isString(j, "name")) bad(issues, path + ".name");
@@ -29,7 +23,7 @@ CostMatrix parseCostMatrix(const Json& j, const std::string& path) {
     if (!isString(j, "unit") || j.at("unit").get<std::string>() != "min") bad(issues, path + ".unit");
     if (j.contains("source")) {
         const auto& s = j.at("source");
-        if (!s.is_object() || !onlyKeys(s, networkCodec::Object::costMatrixSource) || (s.contains("citation") && !s.at("citation").is_string())) bad(issues, path + ".source");
+        if (!s.is_object() || !networkCodec::onlyKnownKeys(s, networkCodec::Object::costMatrixSource) || (s.contains("citation") && !s.at("citation").is_string())) bad(issues, path + ".source");
         else if (s.contains("citation")) m.citation = s.at("citation").get<std::string>();
     }
     if (!j.contains("zoneIds") || !j.at("zoneIds").is_array() || j.at("zoneIds").empty()) bad(issues, path + ".zoneIds");

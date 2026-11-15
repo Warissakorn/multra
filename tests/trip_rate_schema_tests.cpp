@@ -1,16 +1,11 @@
 #include "test.hpp"
+#include "schema_refusal.hpp"
 #include "trip_rate_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 
 using namespace multra;
 namespace tr=tripRateCases;
-namespace {
-void refusedAt(const Json& document,const std::string& code,const std::string& path) {
-    try {(void)parseDocument(Json::parse(document.dump()));}
-    catch(const ValidationError& e) {CHECK(e.issues[0].code==code);CHECK(e.issues[0].path==path);return;}
-    throw std::runtime_error("Expected "+code+" at "+path);
-}
-}
+using schemaRefusal::refusedAt;
 TEST(project, trip_rate_reader_keeps_its_floor_paths_and_codes) { // TR1
     for(int v=tr::from;v<=kLatestSchema;++v) {
         const auto d=parseDocument(tr::minimal(v));CHECK(d.tripRateSets.size()==1u);

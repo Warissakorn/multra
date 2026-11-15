@@ -1,16 +1,11 @@
 #include "test.hpp"
+#include "schema_refusal.hpp"
 #include "deterrence_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 
 using namespace multra;
 namespace ds=deterrenceCases;
-namespace {
-void refusedAt(const Json& document,const std::string& code,const std::string& path) {
-    try {(void)parseDocument(Json::parse(document.dump()));}
-    catch(const ValidationError& e) {CHECK(e.issues[0].code==code);CHECK(e.issues[0].path==path);return;}
-    throw std::runtime_error("Expected "+code+" at "+path);
-}
-}
+using schemaRefusal::refusedAt;
 TEST(project, deterrence_reader_keeps_its_floors_paths_codes_and_order) { // DS1
     for(int v=ds::from;v<=kLatestSchema;++v) {
         auto j=ds::minimal(v);const auto d=parseDocument(j);

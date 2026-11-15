@@ -1,16 +1,11 @@
 #include "test.hpp"
+#include "schema_refusal.hpp"
 #include "cost_matrix_schema_cases.hpp"
 #include "../src/project/network_schema.hpp"
 
 using namespace multra;
 namespace cm=costMatrixCases;
-namespace {
-void refusedAt(const Json& document,const std::string& code,const std::string& path) {
-    try {(void)parseDocument(Json::parse(document.dump()));}
-    catch(const ValidationError& e) {CHECK(e.issues[0].code==code);CHECK(e.issues[0].path==path);return;}
-    throw std::runtime_error("Expected "+code+" at "+path);
-}
-}
+using schemaRefusal::refusedAt;
 TEST(project, cost_matrix_reader_keeps_its_floor_paths_codes_and_order) { // CM1
     for(int v=cm::from;v<=kLatestSchema;++v) {
         const auto d=parseDocument(cm::minimal(v));CHECK(d.costMatrices.size()==1u);
