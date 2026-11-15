@@ -466,3 +466,24 @@ set's required citation stay with the codecs. Known zone references remain a run
 | CM1 | On the unchanged reader: the base and its null cell parse from 67; the 67 floor even null; null/empty lists, unknown keys before missing fields, source table or non-text citation, blank/duplicate zone ids, row-count/row-width faults, a negative cell and duplicate matrix ids retain their codes and paths; simultaneous faults retain the complete issue order |
 | CM2 | `costMatrices` `false` below 67; nonempty closed matrix rows, optional closed citation-only source, minute const, nonempty text zone ids and nonempty rows of arrays with nonnegative number-or-null cells; no uniqueItems or row-width constraint |
 | CM3 | Every case labelled refused is refused by `parseDocument`; all 854 matrix labels and the writer/project coverage in DS3 agree with the emitted schema, including codec-only n×n, blank-id and duplicate-id refusals labelled schema-accepted |
+
+## Period-factor extension (D572)
+
+The composed CLI coverage adds `-period-factors`; complete remains false. Root `periodFactors`
+([MODE_CHOICE §5–§6](MODE_CHOICE.md), `period_factor_codec.cpp`) is `false` below 69, preserving
+`EDIT_UNSUPPORTED_FIELD` at `periodFactors` when present, even null. From 69 it is a nonempty
+array of closed rows requiring text `purposeId` and `periodId` and numeric
+`productionToAttraction` and `attractionToProduction`, each in [0, 1].
+
+The reader replaces only its exact-key expression with `networkCodec::exactFields`, using the
+shared four-required-field table at 69 (D567's pattern). `PERIOD_FACTOR_INVALID` stays at the row
+before text checks, then each share, then the sum check. Blank text, sum ≤ 1, known periods and
+unique purpose/period pairs remain codec checks. `parseDocument` calls `validateDocument` at its
+end: `periodFactorIssues` retains `UNKNOWN_PERIOD` before `DUPLICATE_ID` in list order. Purpose
+resolution remains a run check. Writer, feature-selected versions and serialized forms are unchanged.
+
+| Row | Check |
+|---|---|
+| PF1 | On the unchanged reader: valid periods/factors from 69; presence floor even null; non-array/empty lists, non-object rows, missing/extra/replaced keys at the row first; blank text, bad share types/ranges, valid 0/1 and exact-sum-one boundaries, sum > 1, complete text/share/sum issue order and UNKNOWN_PERIOD/DUPLICATE_ID order |
+| PF2 | Root false below 69, then a nonempty array of closed rows with all four keys required; plain strings and numbers in [0, 1], with no uniqueness, sum or reference-resolution schema rule |
+| PF3 | All labelled structural refusals fail parseDocument; jsonschema 4.26.0 agrees on all 4,540 labels (1,104 PF cases, D570/D571 regressions, writer with 0/1 and exact-sum-one shares, all 18 TrafficSim projects, 20 independent probes). Probes: 13 both accept, 4 codec-only refusals, 3 both refuse; schema-refused/codec-accepted is empty across all labels. Temporary tests/registration deleted |

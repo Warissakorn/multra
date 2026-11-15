@@ -156,7 +156,8 @@ constexpr Field rootFeatureFields[]={{"zones",Kind::zones,false,0,zoneLayerVersi
     {"studyPeriods",Kind::studyPeriods,false,0,modeVersion},{"studyArea",Kind::studyArea,false,0,studyAreaVersion},
     {"map",Kind::map,false,0,mapVersion},{"macroRuns",Kind::macroRuns,false,0,macroRunVersion},
     {"tripRateSets",Kind::tripRateSets,false,0,tripRateVersion},
-    {"deterrenceSets",Kind::deterrenceSets,false,0,distributionVersion},{"costMatrices",Kind::costMatrices,false,0,distributionVersion}};
+    {"deterrenceSets",Kind::deterrenceSets,false,0,distributionVersion},{"costMatrices",Kind::costMatrices,false,0,distributionVersion},
+    {"periodFactors",Kind::periodFactors,false,0,periodFactorVersion}};
 // D569: macro_run_definition.cpp's run row and macro_settings.cpp's settings row (both closed).
 constexpr Field macroRunFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"period",Kind::text,true},{"settings",Kind::macroSettings,true}};
 constexpr Field macroSettingsFields[]={{"targetGap",Kind::targetGap,true},{"maxIterations",Kind::iterationCap,true}};
@@ -180,6 +181,9 @@ constexpr Field deterrencePurposeFields[]={{"id",Kind::text,true},{"beta",Kind::
 constexpr Field costMatrixFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::costMatrixSource},
     {"unit",Kind::minuteUnit,true},{"zoneIds",Kind::costZoneIds,true},{"rows",Kind::costRows,true}};
 constexpr Field costMatrixSourceFields[]={{"citation",Kind::text}};
+// D572: period_factor_codec.cpp's exact row; blank ids, the share sum, known periods and unique pairs stay with the codec.
+constexpr Field periodFactorFields[]={{"purposeId",Kind::text,true},{"periodId",Kind::text,true},
+    {"productionToAttraction",Kind::periodShare,true},{"attractionToProduction",Kind::periodShare,true}};
 // D568: map_codec.cpp's two closed objects; the CRS-anchor agreement stays with validateMapSettings.
 constexpr Field mapFields[]={{"providerId",Kind::providerId,true},{"opacity",Kind::opacity,true},{"reference",Kind::mapReference,true}};
 constexpr Field mapReferenceFields[]={{"projectedCrs",Kind::utmCrs,true},{"anchorLongitude",Kind::longitude,true},
@@ -302,6 +306,7 @@ std::span<const Field> fields(Object object) {
     case Object::deterrencePurpose:return deterrencePurposeFields;
     case Object::costMatrix:return costMatrixFields;
     case Object::costMatrixSource:return costMatrixSourceFields;
+    case Object::periodFactor:return periodFactorFields;
     }
     return {};
 }
@@ -321,7 +326,7 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::map || object==Object::mapReference || object==Object::macroRun || object==Object::macroSettings ||
        object==Object::tripRateSet || object==Object::tripRateSource || object==Object::tripRatePurpose || object==Object::tripRateCrossSide ||
        object==Object::tripRateRegressionSide || object==Object::tripRateCategory || object==Object::tripRateTerm || object==Object::deterrenceSet ||
-       object==Object::deterrencePurpose || object==Object::costMatrix || object==Object::costMatrixSource)return false;
+       object==Object::deterrencePurpose || object==Object::costMatrix || object==Object::costMatrixSource || object==Object::periodFactor)return false;
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
     if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
@@ -403,7 +408,8 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::tripRateTerms:case Kind::crossMethod:case Kind::regressionMethod:case Kind::rate:
     case Kind::deterrenceSets:case Kind::deterrencePurposes:case Kind::exponentialFunction:case Kind::minuteUnit:
     case Kind::deterrenceBeta:case Kind::intrazonalShare:case Kind::deterrenceConstraint:
-    case Kind::costMatrices:case Kind::costMatrixSource:case Kind::costZoneIds:case Kind::costRows:break;
+    case Kind::costMatrices:case Kind::costMatrixSource:case Kind::costZoneIds:case Kind::costRows:
+    case Kind::periodFactors:case Kind::periodShare:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

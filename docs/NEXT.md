@@ -35,11 +35,11 @@ All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none o
 review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
 (random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
 
-**Review waiting (code, not a gate):** D570 and D571 on branch `claude/optimistic-bohr-lpfu98`:
-`tripRateSets` (TR1–TR3), `deterrenceSets` and `costMatrices` (DS1–DS3/CM1–CM3), in
-PROJECT_SCHEMA_DEMAND. Verified on Linux headless only; the desktop preset, `check_no_pch.py` and
-Windows were not run. Nothing is merged. Stop for owner review; any change request stays in its
-slice before `periodFactors` starts.
+**Review waiting (code, not a gate):** D572 on branch `claude/optimistic-bohr-lpfu98`, the
+`periodFactors` schema rows (PROJECT_SCHEMA_DEMAND, PF1–PF3). The owner accepted D570 and D571
+and explicitly started D572 on 2026-11-15. D572 is verified on Linux headless only; the desktop
+preset, `check_no_pch.py` and Windows were not run. Nothing is merged. Stop for owner review;
+any change request stays in D572 before `modeChoiceSets` starts.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
@@ -200,7 +200,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - Read [NETWORK_IMAGE](reference/NETWORK_IMAGE.md) before changing bounds or rendering. The
   remaining M1.23 formats/workflow/performance work still needs its own bounded slices.
 
-## AI automation follow-up (D344–D350, D558–D571)
+## AI automation follow-up (D344–D350, D558–D572)
 
 - An authoritative formal schema covering every optional/versioned field remains separate from D350
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
@@ -222,45 +222,56 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Done (D570, TR1–TR3):** the root `tripRateSets`; its codec checks keys with `knownKey`.
 - **Done (D571, DS1–DS3/CM1–CM3):** root `deterrenceSets` and `costMatrices` at 67, with
   `constraint` from 68 and `destination` from 72; both readers use the shared key tables.
-- **Following slice (`periodFactors`, schema 69), after owner review of D570/D571.** The owner
-  selected the schema-67 slice only in this session; stop before starting this one. Copy D571's
-  pin-first method and read its diff first, then D567's `exactFields` pattern.
-  1. **Inventory (read, change nothing):** `period_factor_codec.cpp` `parsePeriodFactors`,
-     `periodFactorIssues`, and `document.cpp`'s pre-69 guard and validation call. A present key
-     below 69 is `EDIT_UNSUPPORTED_FIELD` at `periodFactors`, even null. Shape/share faults are
-     `PERIOD_FACTOR_INVALID`; unknown periods `UNKNOWN_PERIOD`; repeated pairs `DUPLICATE_ID`.
-  2. **Pins first (PF1):** write `tests/period_factor_schema_tests.cpp` and `_cases.hpp`, register
-     them in CMake, build and pass on the unchanged reader before touching tables or codec.
-     Pin parent-row errors for missing/extra keys, field errors and their order, numeric bounds,
-     the share-sum check, unknown periods and repeated pairs. Use a valid `studyPeriods` fixture.
-  3. **Rows as read:** root `periodFactors` is `false` below 69, then a nonempty array of closed
-     rows requiring text `purposeId` and `periodId`, and numeric `productionToAttraction` and
-     `attractionToProduction`, each in [0, 1]. Blank text, the sum ≤ 1, known periods and unique
-     purpose/period pairs stay with the codec; do not invent a JSON Schema arithmetic extension.
-  4. **One key source:** replace only the reader's `exact` shape expression with
-     `networkCodec::exactFields` on the shared required-field table at 69 (D567). Preserve
-     `PERIOD_FACTOR_INVALID` at the row, then text checks, share checks and sum check in order.
-     No writer, version-selection or file-byte change.
-  5. **Coverage:** add `-period-factors` to the value and update the `$comment` in
-     `network_schema.cpp`, its C++/CLI coverage pins, tool help, tools README and
-     DESKTOP_AUTOMATION's schema sentence. Keep `x-multra-complete:false`.
-  6. **One-off `jsonschema` 4.x (not in `check`):** a temporary environment-gated test dumps
-     `cases()`, writer output with valid periods and factors (include boundary shares), and every
-     TrafficSim project under `data/` and `tests/`. Check against `multra-project-schema`'s output;
-     every label must agree, including codec-only refusals labelled schema-accepted. Delete the
-     temporary test and CMake registration afterwards.
-  - **Pitfalls:** filter the test binary by group (`multra-tests project`), not test name; a
-    closed row with no required key still emits `required: []`; moved PROGRESS entries need
-    archive-relative links. The headless preset is enough; report desktop, no-PCH and Windows
-    checks honestly. D571's small environment needed a local linker-only `--strip-debug` cache
-    flag to fit the Debug executables; no repository preset changed.
+- **Done (D572, PF1–PF3):** root `periodFactors` at 69 uses a shared closed required-field
+  table via `exactFields`; share bounds are structural, while blank text, sum ≤ 1, known periods
+  and unique pairs retain their existing codec checks and order.
+- **Following slice (`modeChoiceSets`, schema 70, nests from 71), after owner review of D572.**
+  Stop before starting it; the owner selected `periodFactors` only this session. Read D571's
+  diff and D572's pins first; preserve the schema-76 logsum guard too when mapping this reader.
+  1. **Inventory (read, change nothing):** `mode_choice_codec.cpp` (`parseModeChoiceSet`,
+     `alternative`, `nests`, owned lists/issues) and `document.cpp`'s guards: root key refused
+     below 70, purpose `nests` below 71 and `distributionCost` below 76, even null, each at its
+     path (`EDIT_UNSUPPORTED_FIELD`). Read MODE_CHOICE §6, NESTED_LOGIT and MODE_CHOICE_LOGSUM.
+     Other codes: `MODE_CHOICE_INVALID_SET`, `INVALID_ID`, `DUPLICATE_ID`.
+  2. **Pins first (MCS1):** write `tests/mode_choice_schema_tests.cpp` and `_cases.hpp`, register
+     in CMake, build and pass on unchanged readers before changing tables or codec. Pin all
+     version paths, closed-row errors, missing/types/bounds, presence of either cost source,
+     a zero reference constant, nests/membership, logsum coefficient agreement and issue order.
+  3. **Rows as read:** root `modeChoiceSets` is `false` below 70, then a nonempty array of closed
+     `{id, name, source, costUnit, purposes}`, all required; text id/name, costUnit const `min`;
+     reuse `tripRateSource` for closed `{citation?, table?}`. Purposes are nonempty closed
+     `{id, alternatives, nests?, distributionCost?}` with required text id and nonempty alternatives.
+     An alternative is closed `{id, modeId?, costMatrix?, constant, timeCoefficient, occupancy?}`:
+     text ids, numeric constant, timeCoefficient ≤ 0, occupancy ≥ 1 when present. At least one
+     of modeId/costMatrix must be present (both allowed: an inclusive anyOf, not `unless`).
+     Nests are `false` below 71, then a nonempty array of closed `{id, phi, alternatives}` with
+     text id, 0 < phi ≤ 1 and a nonempty text-member array. distributionCost is `false` below 76,
+     then const `logsum`. Blank/unique ids, nest membership/uniqueness, a zero reference constant,
+     shared strictly negative logsum coefficients and catalog citation stay with the codec.
+  4. **One key source:** replace only `onlyKeys({...})` with `knownKey` against the field tables,
+     using 76 (the reader has no file version), so the document keeps the presence guards.
+     Preserve requiredness/type checks, parent/field errors and the zero/nest/logsum order.
+     Do not change writer bytes, save floors, catalog resolution or run semantics.
+  5. **Coverage:** add `-mode-choice` to the coverage value and update `$comment`, C++/CLI pins,
+     tool help, tools README and DESKTOP_AUTOMATION's schema sentence; keep complete false.
+  6. **One-off `jsonschema` 4.x (not in `check`):** environment-gated temporary tests dump the
+     cases, writer output (MNL at 70, nests at 71, logsum at 76), and every TrafficSim project
+     under data/ and tests/. Every label must agree with CLI schema output. Add about 20
+     independent probes outside cases(); schema-refused/codec-accepted must be empty, while
+     explicitly labelled codec-only refusals may pass the schema. Delete temporary tests and
+     CMake entries afterwards.
+  - **Pitfalls:** filter the binary by group (`multra-tests project`); closed optional-only rows
+    emit `required: []`; parseDocument itself calls validateDocument at its end. Rewritten
+    archive links must be relative to docs/archive/. PROJECT_SCHEMA_DEMAND is 489 lines at D572:
+    split along extension sections and update references/indexes before exceeding 500 lines.
+    Headless is sufficient; report desktop/no-PCH/Windows honestly. The small local environment
+    uses the linker-only `-Wl,--strip-debug` cache flag; no repository preset changed.
   - **Session end:** headless build and `cmake --build build/headless --target check` green;
-    append the next decision ID to RECORD and its index; PROJECT_SCHEMA_DEMAND PF1–PF3,
+    append the next decision ID to RECORD and its index; PROJECT_SCHEMA_DEMAND MCS1–MCS3,
     PROJECT_SCHEMA and reference README updated; PROGRESS entry with the oldest moved whole
-    to the archive and its links rewritten; rewrite this item; commit/push the same branch and
-    stop for owner review without a PR or merge.
-- **After it:** `modeChoiceSets` 70 (nests from 71), `procedures` 73 (feedback 75), each its own
-  slice by the same steps, on the owner's go.
+    to the archive and its links rewritten; rewrite this brief, commit/push the same branch
+    and stop for owner review without a PR or merge.
+- **After it:** `procedures` 73 (feedback 75), its own slice on the owner's go.
 - Never promote sample-derived hints to an authoritative contract. Explicit batch/comparison/
   Macro/Meso identities/exports remain separate from single-run APIs; reuse existing validation,
   History and GUI run timer; no generic job/session subsystem is booked.

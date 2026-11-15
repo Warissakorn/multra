@@ -12,7 +12,7 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
     vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
     rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings,
-    tripRateSet,tripRateSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource };
+    tripRateSet,tripRateSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
@@ -25,7 +25,7 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     macroRuns,macroSettings,targetGap,iterationCap,
     tripRateSets,tripRateSource,tripRatePurposes,tripRateSide,tripRateCategories,tripRateTerms,crossMethod,regressionMethod,rate,
     deterrenceSets,deterrencePurposes,exponentialFunction,minuteUnit,deterrenceBeta,intrazonalShare,deterrenceConstraint,
-    costMatrices,costMatrixSource,costZoneIds,costRows };
+    costMatrices,costMatrixSource,costZoneIds,costRows,periodFactors,periodShare };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -69,6 +69,8 @@ inline constexpr int tripRateVersion=66;
 inline constexpr const char* kCrossClassification="crossClassification",*kRegression="regression";
 // D571: owned deterrence sets and cost matrices from 67; constraint from 68, destination from 72.
 inline constexpr int distributionVersion=67,constraintVersion=68,destinationConstraintVersion=72;
+// D572: the root periodFactors is refused below 69, even null.
+inline constexpr int periodFactorVersion=69;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

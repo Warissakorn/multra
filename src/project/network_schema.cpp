@@ -120,6 +120,8 @@ class NetworkSchema {
         case Kind::costRows:
             rule={{"type","array"},{"minItems",1},{"items",{{"type","array"},
                 {"items",{{"type",Json::array({"number","null"})},{"minimum",0}}}}}};break;
+        case Kind::periodFactors:rule={{"type","array"},{"minItems",1},{"items",reference(Object::periodFactor,version)}};break;
+        case Kind::periodShare:rule={{"type","number"},{"minimum",0},{"maximum",1}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -298,6 +300,7 @@ public:
                 case Object::deterrencePurpose:return "deterrencePurpose";
                 case Object::costMatrix:return "costMatrix";
                 case Object::costMatrixSource:return "costMatrixSource";
+                case Object::periodFactor:return "periodFactor";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -309,8 +312,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs-trip-rates-deterrence-cost";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, Macro settings and runs, owned trip-rate and deterrence sets, and cost matrices. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs-trip-rates-deterrence-cost-period-factors";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, Macro settings and runs, owned trip-rate and deterrence sets, cost matrices, and period factors. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-15 — Period factors in the schema (D572)
+
+- **Pick:** the owner accepted D570/D571 and explicitly selected `periodFactors` at schema 69 on `claude/optimistic-bohr-lpfu98`; D571's diff and D567's exactFields pattern were read first.
+- **D572:** the root is false below 69, then a nonempty array of closed four-required-key rows, text ids and shares in [0, 1] ([PF1–PF3](reference/PROJECT_SCHEMA_DEMAND.md#period-factor-extension-d572)). Only the codec's exact-key expression changes, through `networkCodec::exactFields`; text/share/sum checks and UNKNOWN_PERIOD/DUPLICATE_ID retain their order. Blank text, sums, known periods and unique pairs remain codec checks. Writer, version selection and stored forms are unchanged. Pins and refusal cases passed first on the unchanged reader (project 110/110), before tables or codec edits.
+- **One-off jsonschema 4.26.0:** 4,540 labels agree: 1,104 PF cases, 3,397 D570/D571 cases, one writer output with 0/1 and exact-sum-one shares, all 18 TrafficSim projects under data/ and tests/ (independently enumerated), and 20 probes authored outside cases(). Probes: 13 both accept, 4 codec-only refusals (blank purpose, unknown period, duplicate pair, sum), 3 both refuse. Schema-refused/codec-accepted: zero across all labels. Temporary tests/probes and their CMake registration were deleted.
+- **Verified on Linux (headless):** build and check 238/238; project 111/111, including three new tests. The local linker-only `-Wl,--strip-debug` cache flag is retained for disk capacity; no repository preset change. The desktop preset, check_no_pch.py and Windows were not run. NEXT briefs modeChoiceSets 70/nests 71 (and its existing logsum floor 76), awaiting owner review; no PR or merge.
+
 ## 2026-11-14 — Owned deterrence sets and cost matrices in the schema (D571)
 
 - **Pick:** the owner explicitly selected NEXT's schema-67 slice on `claude/optimistic-bohr-lpfu98`; D570's diff was read first. Both roots have the same floor, so they stay one slice.
@@ -121,7 +128,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 ## 2026-11-14 — O1: the GEH source confirmed by the owner (D556)
 
 - **D556** (owner: "O1 ยืนยัน"): TAG unit M3.1 recorded as the GEH source on the owner's confirmation; a second fetch of gov.uk and its asset host failed (outside the session's network), so no paragraph or edition is cited. Docs only.
-
-## 2026-11-14 — O2: a gate counts the demand loaded onto its Link (D555)
-
-- **D555** (owner asked for a recommendation, then approved (b)): amendment first (SUBAREA_CONSISTENCY §15, SC11), then the fed-flow bookkeeping in `consistencyReport` adds each inside zone's flows by connector share to the gate on its connector's Link. SC11 passes first time: the corridor's west entry gate now reads Macro 600 = its Link row (GEH 0); shares 3 : 1 split 450 / 150. Verified on Linux: `check` 353/353.
