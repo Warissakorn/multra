@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-17 — Counted study: Ratchadaphisek × Lat Phrao (D575)
+
+- **Pick:** the owner asked for an M2.6-style study of this junction. They counted it (16 movements, 15:00–16:00, four classes) but did not survey the signal timing. The count sheet is a claude.ai Sheet. The timing plan was designed from the counts (Webster, split phasing, 180 s), not surveyed.
+- **D575:** a new home `studies/` for counted studies: not installed, not a shipped example, not validated. `tools/count_study_network.hpp` builds on the M2.6 four-leg drawing from `counts.csv` (the Sheet's count tab) and `site.csv` (leg mapping and greens), with one `volumeFromCounts` input and one per-approach composition per leg. U-turns join the right turn because the drawing has no U-turn exit. `multra-count-study` writes the file, and test `countstudy` fails on drift.
+- **First run (seed 42, one run, not validated):** 4,422 completed, 302 active and 6,012 never entered of about 10,700 counted. Mean movement delay was 996 s, with one safety clamp. Two runs were byte-identical. The model gives every approach two lanes widening to three, while the site has more. Motorcycles (about half the count) do not filter, and the flyover is absent, so this is a model limit, not a count result.
+- **Verified on Linux (headless):** build and `check` 241/241, including `countstudy`. `CMakeLists.txt` is held at 500 lines. The desktop preset, check_no_pch.py and Windows were not run.
+
 ## 2026-11-15 — Code-review fixes to the schema slices (D574)
 
 - **Pick:** the owner ran `/code-review` on D570–D573 and asked for its recommendations ("แก้ไขตามแนะนำ").

@@ -29,6 +29,17 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Counted study Ratchadaphisek × Lat Phrao (D575) — built; owner's look
+
+- [studies/ratchada-latphrao](../studies/ratchada-latphrao/README.md) is built from the owner's counts.
+  Regenerate it with `multra-count-study` after any change to `counts.csv` or `site.csv`.
+- **Owner:** check the leg mapping (NW→West, SE→East, N→North, S→South) and the designed plan
+  (180 s split phasing; no timing was surveyed).
+- **Known gaps, ask before building:** the site's lane counts, the flyover, a U-turn exit and
+  motorcycle filtering. Seed 42 leaves 6,012 of about 10,700 counted vehicles unentered. That is a
+  model limit, not a count error.
+- Gates: none closed by this study. A3/B4 stay the owner's.
+
 ## Owner checks waiting from recent sessions
 
 All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI

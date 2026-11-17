@@ -1,0 +1,8 @@
+# Approach mapping and fixed-time plan for the Ratchadaphisek x Lat Phrao study.
+# Plan: Webster split phasing designed from the counts (no surveyed timing), one approach at a time,
+# 3 s amber + 1 s all-red between greens; from the count sheet's signal-design tab.
+cycle,180
+leg,รัชดา-S,South,0,22
+leg,ลาดพร้าว-SE,East,26,108
+leg,รัชดา-N,North,112,136
+leg,ลาดพร้าว-NW,West,140,176
