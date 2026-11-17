@@ -8,8 +8,10 @@
 //               Movement is left / through / right / U-turn (Thai labels ซ้าย ตรง ขวา กลับรถ). The
 //               drawing has no U-turn exit, so a U-turn count joins the right turn (same lane, same
 //               phase): approach totals stay as counted, the destination does not.
-//   site.csv    `cycle,<s>` and one `leg,<leg>,<West|East|South|North>,<green start>,<green end>`
-//               per approach, the green window in seconds of the cycle (amber 3 s follows).
+//   site.csv    `cycle,<s>`, one `leg,<leg>,<West|East|South|North>,<green start>,<green end>` per
+//               approach (the green window in seconds of the cycle; amber 3 s follows), and
+//               optionally `lanes,<leg>,<stop-line lanes>,<exit lanes>` per leg and `stopline,<m>`
+//               (metres from the centre, clear of the widest crossing leg). Missing: the four-leg's.
 //
 // Each approach gets one routeless input whose volume IS its routing decision's counts
 // (volumeFromCounts), and its own composition from its counted class shares. The four counted
@@ -55,32 +57,41 @@ inline constexpr std::array<const char*, 4> kCountedTypes{"motorcycle", "car", "
 inline ProjectDocument countStudy(const std::filesystem::path& data, const std::filesystem::path& countsCsv,
                                   const std::filesystem::path& siteCsv, const std::string& id) {
     using namespace count_study;
-    FourLegOptions options;
-    options.leftBypass = 6;  // the Thai left turn at all times, as in the M2.6 template
-    auto built = fourLegIntersection(options);
-    auto& d = built.document;
-    d.network.id = id;
-    for (const auto& route : built.routes) deleteRoute(d, route);  // cascades the fixture inputs
-
     const std::array<const char*, 4> approaches{"West", "East", "South", "North"};
     const auto approachIndex = [&](const std::string& name) {
         for (std::size_t k = 0; k < 4; ++k) if (name == approaches[k]) return k;
         throw std::invalid_argument("COUNT_STUDY_UNKNOWN_APPROACH: " + name);
     };
+    const auto site = readCsv(siteCsv);
     std::map<std::string, std::size_t> legOf;  // the site's leg name -> four-leg approach
     std::array<std::string, 4> legName;
+    for (const auto& row : site)
+        if (row.at(0) == "leg") { const auto k = approachIndex(row.at(2)); legOf[row.at(1)] = k; legName[k] = row.at(1); }
+    if (legOf.size() != 4) throw std::invalid_argument("COUNT_STUDY_NEEDS_FOUR_LEGS");
+    FourLegOptions options;
+    options.leftBypass = 6;  // the Thai left turn at all times, as in the M2.6 template
+    for (const auto& row : site) {
+        if (row.at(0) == "stopline") options.stopLine = std::stod(row.at(1));
+        if (row.at(0) != "lanes") continue;
+        const auto k = legOf.at(row.at(1));
+        options.approachLanes[k] = std::stoi(row.at(2)); options.exitLanes[k] = std::stoi(row.at(3));
+        if (options.approachLanes[k] < 2 || options.exitLanes[k] < 1) throw std::invalid_argument("COUNT_STUDY_LANES");
+    }
+    auto built = fourLegIntersection(options);
+    auto& d = built.document;
+    d.network.id = id;
+    for (const auto& route : built.routes) deleteRoute(d, route);  // cascades the fixture inputs
+
     auto controller = demand(d).signalControllers.at(0);
     controller.name = id + " fixed-time plan";
-    for (const auto& row : readCsv(siteCsv)) {
-        if (row.at(0) == "cycle") { controller.cycle = std::stod(row.at(1)); continue; }
+    for (const auto& row : site) {
+        if (row.at(0) == "cycle") controller.cycle = std::stod(row.at(1));
         if (row.at(0) != "leg") continue;
-        const auto k = approachIndex(row.at(2));
-        legOf[row.at(1)] = k; legName[k] = row.at(1);
-        controller.groups[k].name = row.at(1);
-        controller.groups[k].greenStart = std::stod(row.at(3));
-        controller.groups[k].greenEnd = std::stod(row.at(4));
+        auto& group = controller.groups[legOf.at(row.at(1))];
+        group.name = row.at(1);
+        group.greenStart = std::stod(row.at(3));
+        group.greenEnd = std::stod(row.at(4));
     }
-    if (legOf.size() != 4) throw std::invalid_argument("COUNT_STUDY_NEEDS_FOUR_LEGS");
     putSignalController(d, controller);
 
     // counts[approach][movement][interval], vehicles; classes[approach][type], vehicles.

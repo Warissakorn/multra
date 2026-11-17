@@ -35,9 +35,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   Regenerate it with `multra-count-study` after any change to `counts.csv` or `site.csv`.
 - **Owner:** check the leg mapping (NW→West, SE→East, N→North, S→South) and the designed plan
   (180 s split phasing; no timing was surveyed).
-- **Known gaps, ask before building:** the site's lane counts, the flyover, a U-turn exit and
-  motorcycle filtering. Seed 42 leaves 6,012 of about 10,700 counted vehicles unentered. That is a
-  model limit, not a count error.
+- **Lanes from the image are in (D576), and throughput fell** (4,422 → 4,014 completed; NW
+  through 477 → 224). Next: find why a queued 5-lane approach discharges less than a 3-lane one
+  (lane choice upstream of the pocket, then the 4→3 through merge, which a probe showed is minor).
+  Do it before adding a U-turn exit or the flyover. Motorcycles still take a full lane slot.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions

@@ -6,7 +6,7 @@ example (`data/projects/`), it is not installed, and no result from it is valida
 | File | What it holds |
 |---|---|
 | `counts.csv` | The owner's count, 4 approaches × 4 intervals of 15 min × left/through/right/U-turn, in motorcycle, car (with pickups and vans), bus and truck. The count sheet's count tab exported as CSV. |
-| `site.csv` | Which leg is which four-leg approach (NW→West, SE→East, S→South, N→North) and the fixed-time plan: 180 s cycle, split phasing, 3 s amber + 1 s all-red. The plan is a Webster design from the counts, not a surveyed timing. |
+| `site.csv` | Which leg is which four-leg approach (NW→West, SE→East, S→South, N→North). It also holds the lanes read from the aerial image (stop line / exit: N 3/3, S 4/3, NW 5/4, SE 3/3; not surveyed), the 20 m stop-line distance and the fixed-time plan: 180 s cycle, split phasing, 3 s amber + 1 s all-red. The plan is a Webster design from the counts with those lanes, not a surveyed timing. |
 | `ratchada-latphrao.traffic.json` | The project. Regenerate it, never edit it by hand. Test `countstudy` fails when it differs. |
 
 Regenerate from the repository root:
@@ -19,5 +19,5 @@ Regenerate from the repository root:
 
 - **The Ratchadaphisek flyover.** It is not drawn, and its traffic was not counted.
 - **U-turns.** The drawing has no U-turn exit, so a U-turn joins the right turn of its approach. It uses the same lane and phase, so approach totals stay as counted, but the destination does not.
-- **The real lane layout.** Every approach has the four-leg's two lanes widened to three at the stop line, with a right-turn pocket. The site's widths and lane counts differ.
+- **The real lane use.** Lane counts follow the image, but each approach keeps the four-leg's layout: the kerb lane also turns left, the innermost lane is the only right-turn lane, and the Link upstream has one lane fewer. NW's four through lanes merge into SE's three exit lanes inside the junction.
 - **Motorcycle filtering.** Motorcycles drive in lanes like cars. About half the counted vehicles are motorcycles, so queues and unserved demand will be larger than on site.

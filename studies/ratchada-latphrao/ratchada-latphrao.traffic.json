@@ -172,7 +172,7 @@
       {
         "compositionId": "ratchada-latphrao-West",
         "endTime": 3600.0,
-        "id": "input-102",
+        "id": "input-116",
         "linkId": "link-1",
         "routeId": "",
         "startTime": 0.0,
@@ -183,8 +183,8 @@
       {
         "compositionId": "ratchada-latphrao-East",
         "endTime": 3600.0,
-        "id": "input-104",
-        "linkId": "link-13",
+        "id": "input-118",
+        "linkId": "link-19",
         "routeId": "",
         "startTime": 0.0,
         "vehicleTypeId": "car",
@@ -194,8 +194,8 @@
       {
         "compositionId": "ratchada-latphrao-South",
         "endTime": 3600.0,
-        "id": "input-106",
-        "linkId": "link-25",
+        "id": "input-120",
+        "linkId": "link-32",
         "routeId": "",
         "startTime": 0.0,
         "vehicleTypeId": "car",
@@ -205,8 +205,8 @@
       {
         "compositionId": "ratchada-latphrao-North",
         "endTime": 3600.0,
-        "id": "input-108",
-        "linkId": "link-37",
+        "id": "input-122",
+        "linkId": "link-47",
         "routeId": "",
         "startTime": 0.0,
         "vehicleTypeId": "car",
@@ -217,7 +217,7 @@
     "routes": [],
     "routingDecisions": [
       {
-        "id": "decision-101",
+        "id": "decision-115",
         "intervals": [
           {
             "endTime": 900.0,
@@ -240,7 +240,7 @@
         "name": "ลาดพร้าว-NW turning counts",
         "routes": [
           {
-            "destinationLinkId": "link-20",
+            "destinationLinkId": "link-26",
             "intervalFlows": [
               375.0,
               370.0,
@@ -251,7 +251,7 @@
             "routeId": ""
           },
           {
-            "destinationLinkId": "link-44",
+            "destinationLinkId": "link-54",
             "intervalFlows": [
               156.0,
               149.0,
@@ -262,7 +262,7 @@
             "routeId": ""
           },
           {
-            "destinationLinkId": "link-32",
+            "destinationLinkId": "link-41",
             "intervalFlows": [
               170.0,
               146.0,
@@ -275,7 +275,7 @@
         ]
       },
       {
-        "id": "decision-103",
+        "id": "decision-117",
         "intervals": [
           {
             "endTime": 900.0,
@@ -294,11 +294,11 @@
             "startTime": 2700.0
           }
         ],
-        "linkId": "link-13",
+        "linkId": "link-19",
         "name": "ลาดพร้าว-SE turning counts",
         "routes": [
           {
-            "destinationLinkId": "link-8",
+            "destinationLinkId": "link-12",
             "intervalFlows": [
               490.0,
               681.0,
@@ -309,7 +309,7 @@
             "routeId": ""
           },
           {
-            "destinationLinkId": "link-32",
+            "destinationLinkId": "link-41",
             "intervalFlows": [
               106.0,
               103.0,
@@ -320,7 +320,7 @@
             "routeId": ""
           },
           {
-            "destinationLinkId": "link-44",
+            "destinationLinkId": "link-54",
             "intervalFlows": [
               288.0,
               228.0,
@@ -333,7 +333,7 @@
         ]
       },
       {
-        "id": "decision-105",
+        "id": "decision-119",
         "intervals": [
           {
             "endTime": 900.0,
@@ -352,11 +352,11 @@
             "startTime": 2700.0
           }
         ],
-        "linkId": "link-25",
+        "linkId": "link-32",
         "name": "รัชดา-S turning counts",
         "routes": [
           {
-            "destinationLinkId": "link-44",
+            "destinationLinkId": "link-54",
             "intervalFlows": [
               16.0,
               18.0,
@@ -367,7 +367,7 @@
             "routeId": ""
           },
           {
-            "destinationLinkId": "link-8",
+            "destinationLinkId": "link-12",
             "intervalFlows": [
               223.0,
               190.0,
@@ -378,7 +378,7 @@
             "routeId": ""
           },
           {
-            "destinationLinkId": "link-20",
+            "destinationLinkId": "link-26",
             "intervalFlows": [
               259.0,
               279.0,
@@ -391,7 +391,7 @@
         ]
       },
       {
-        "id": "decision-107",
+        "id": "decision-121",
         "intervals": [
           {
             "endTime": 900.0,
@@ -410,11 +410,11 @@
             "startTime": 2700.0
           }
         ],
-        "linkId": "link-37",
+        "linkId": "link-47",
         "name": "รัชดา-N turning counts",
         "routes": [
           {
-            "destinationLinkId": "link-32",
+            "destinationLinkId": "link-41",
             "intervalFlows": [
               27.0,
               39.0,
@@ -425,7 +425,7 @@
             "routeId": ""
           },
           {
-            "destinationLinkId": "link-20",
+            "destinationLinkId": "link-26",
             "intervalFlows": [
               409.0,
               594.0,
@@ -436,7 +436,7 @@
             "routeId": ""
           },
           {
-            "destinationLinkId": "link-8",
+            "destinationLinkId": "link-12",
             "intervalFlows": [
               163.0,
               256.0,
@@ -456,33 +456,33 @@
           {
             "amber": 3.0,
             "greenEnd": 176.0,
-            "greenStart": 140.0,
+            "greenStart": 145.0,
             "name": "ลาดพร้าว-NW",
             "number": 1
           },
           {
             "amber": 3.0,
-            "greenEnd": 108.0,
-            "greenStart": 26.0,
+            "greenEnd": 111.0,
+            "greenStart": 22.0,
             "name": "ลาดพร้าว-SE",
             "number": 2
           },
           {
             "amber": 3.0,
-            "greenEnd": 22.0,
+            "greenEnd": 18.0,
             "greenStart": 0.0,
             "name": "รัชดา-S",
             "number": 3
           },
           {
             "amber": 3.0,
-            "greenEnd": 136.0,
-            "greenStart": 112.0,
+            "greenEnd": 141.0,
+            "greenStart": 115.0,
             "name": "รัชดา-N",
             "number": 4
           }
         ],
-        "id": "controller-61",
+        "id": "controller-72",
         "name": "ratchada-latphrao fixed-time plan",
         "offset": 0.0
       }
@@ -632,45 +632,45 @@
           "laneId": "lane-2",
           "linkId": "link-1"
         },
-        "fromLaneCount": 2,
+        "fromLaneCount": 4,
         "geometry": [
           {
             "x": -80.0,
-            "y": 9.0
+            "y": 16.0
           },
           {
             "x": -75.0,
-            "y": 9.0
+            "y": 16.0
           },
           {
             "x": -70.0,
-            "y": 9.0
+            "y": 16.0
           },
           {
             "x": -65.0,
-            "y": 9.0
+            "y": 16.0
           },
           {
             "x": -60.0,
-            "y": 9.0
+            "y": 16.0
           }
         ],
-        "id": "connector-11",
+        "id": "connector-17",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
         "name": "West taper",
         "to": {
-          "laneId": "lane-5",
-          "linkId": "link-4"
+          "laneId": "lane-7",
+          "linkId": "link-6"
         },
-        "toLaneCount": 2
+        "toLaneCount": 4
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-3",
+          "laneId": "lane-5",
           "linkId": "link-1"
         },
         "fromLaneCount": 1,
@@ -696,23 +696,23 @@
             "y": 2.0
           }
         ],
-        "id": "connector-12",
+        "id": "connector-18",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
         "name": "West pocket entry",
         "to": {
-          "laneId": "lane-7",
-          "linkId": "link-4"
+          "laneId": "lane-11",
+          "linkId": "link-6"
         },
         "toLaneCount": 1
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-14",
-          "linkId": "link-13"
+          "laneId": "lane-20",
+          "linkId": "link-19"
         },
         "fromLaneCount": 2,
         "geometry": [
@@ -737,23 +737,23 @@
             "y": -9.0
           }
         ],
-        "id": "connector-23",
+        "id": "connector-30",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
         "name": "East taper",
         "to": {
-          "laneId": "lane-17",
-          "linkId": "link-16"
+          "laneId": "lane-23",
+          "linkId": "link-22"
         },
         "toLaneCount": 2
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-15",
-          "linkId": "link-13"
+          "laneId": "lane-21",
+          "linkId": "link-19"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -778,64 +778,64 @@
             "y": -2.0
           }
         ],
-        "id": "connector-24",
+        "id": "connector-31",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
         "name": "East pocket entry",
         "to": {
-          "laneId": "lane-19",
-          "linkId": "link-16"
+          "laneId": "lane-25",
+          "linkId": "link-22"
         },
         "toLaneCount": 1
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-26",
-          "linkId": "link-25"
+          "laneId": "lane-33",
+          "linkId": "link-32"
         },
-        "fromLaneCount": 2,
+        "fromLaneCount": 3,
         "geometry": [
           {
-            "x": -9.0,
+            "x": -12.5,
             "y": -80.0
           },
           {
-            "x": -9.0,
+            "x": -12.5,
             "y": -75.0
           },
           {
-            "x": -9.0,
+            "x": -12.5,
             "y": -70.0
           },
           {
-            "x": -9.0,
+            "x": -12.5,
             "y": -65.0
           },
           {
-            "x": -9.0,
+            "x": -12.5,
             "y": -60.0
           }
         ],
-        "id": "connector-35",
+        "id": "connector-45",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
         "name": "South taper",
         "to": {
-          "laneId": "lane-29",
-          "linkId": "link-28"
+          "laneId": "lane-37",
+          "linkId": "link-36"
         },
-        "toLaneCount": 2
+        "toLaneCount": 3
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-27",
-          "linkId": "link-25"
+          "laneId": "lane-35",
+          "linkId": "link-32"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -860,23 +860,23 @@
             "y": -60.0
           }
         ],
-        "id": "connector-36",
+        "id": "connector-46",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
         "name": "South pocket entry",
         "to": {
-          "laneId": "lane-31",
-          "linkId": "link-28"
+          "laneId": "lane-40",
+          "linkId": "link-36"
         },
         "toLaneCount": 1
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-38",
-          "linkId": "link-37"
+          "laneId": "lane-48",
+          "linkId": "link-47"
         },
         "fromLaneCount": 2,
         "geometry": [
@@ -901,23 +901,23 @@
             "y": 60.0
           }
         ],
-        "id": "connector-47",
+        "id": "connector-58",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
         "name": "North taper",
         "to": {
-          "laneId": "lane-41",
-          "linkId": "link-40"
+          "laneId": "lane-51",
+          "linkId": "link-50"
         },
         "toLaneCount": 2
       },
       {
         "displayType": "default",
         "from": {
-          "laneId": "lane-39",
-          "linkId": "link-37"
+          "laneId": "lane-49",
+          "linkId": "link-47"
         },
         "fromLaneCount": 1,
         "geometry": [
@@ -942,98 +942,15 @@
             "y": 60.0
           }
         ],
-        "id": "connector-48",
+        "id": "connector-59",
         "laneBlend": [],
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
         "name": "North pocket entry",
         "to": {
-          "laneId": "lane-43",
-          "linkId": "link-40"
-        },
-        "toLaneCount": 1
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-5",
-          "linkId": "link-4"
-        },
-        "fromLaneCount": 2,
-        "geometry": [
-          {
-            "x": -16.0,
-            "y": 9.0
-          },
-          {
-            "x": -7.973136923303295,
-            "y": 8.453125
-          },
-          {
-            "x": 0.0,
-            "y": 7.25
-          },
-          {
-            "x": 7.973136923303296,
-            "y": 6.046875
-          },
-          {
-            "x": 16.0,
-            "y": 5.5
-          }
-        ],
-        "id": "connector-49",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "West through",
-        "to": {
-          "laneId": "lane-21",
-          "linkId": "link-20"
-        },
-        "toLaneCount": 2
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-5",
-          "linkId": "link-4",
-          "station": 37.0
-        },
-        "fromLaneCount": 1,
-        "geometry": [
-          {
-            "x": -23.0,
-            "y": 9.0
-          },
-          {
-            "x": -17.51681209908305,
-            "y": 8.80527164528443
-          },
-          {
-            "x": -11.80661075474049,
-            "y": 9.064057720758479
-          },
-          {
-            "x": -7.318104033027684,
-            "y": 11.04081493585329
-          },
-          {
-            "x": -5.5,
-            "y": 16.0
-          }
-        ],
-        "id": "connector-50",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "West left",
-        "to": {
-          "laneId": "lane-45",
-          "linkId": "link-44"
+          "laneId": "lane-53",
+          "linkId": "link-50"
         },
         "toLaneCount": 1
       },
@@ -1041,401 +958,29 @@
         "displayType": "default",
         "from": {
           "laneId": "lane-7",
-          "linkId": "link-4"
+          "linkId": "link-6"
         },
-        "fromLaneCount": 1,
+        "fromLaneCount": 4,
         "geometry": [
           {
-            "x": -16.0,
-            "y": 2.0
-          },
-          {
-            "x": -8.993587680972414,
-            "y": 0.5854707730091956
-          },
-          {
-            "x": -3.272077938642145,
-            "y": -3.272077938642145
-          },
-          {
-            "x": 0.5854707730091957,
-            "y": -8.993587680972414
-          },
-          {
-            "x": 2.0,
-            "y": -16.0
-          }
-        ],
-        "id": "connector-51",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "West right",
-        "to": {
-          "laneId": "lane-34",
-          "linkId": "link-32"
-        },
-        "toLaneCount": 1
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-17",
-          "linkId": "link-16"
-        },
-        "fromLaneCount": 2,
-        "geometry": [
-          {
-            "x": 16.0,
-            "y": -9.0
-          },
-          {
-            "x": 7.973136923303295,
-            "y": -8.453125
-          },
-          {
-            "x": 0.0,
-            "y": -7.25
-          },
-          {
-            "x": -7.973136923303296,
-            "y": -6.046875
-          },
-          {
-            "x": -16.0,
-            "y": -5.5
-          }
-        ],
-        "id": "connector-52",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "East through",
-        "to": {
-          "laneId": "lane-9",
-          "linkId": "link-8"
-        },
-        "toLaneCount": 2
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-17",
-          "linkId": "link-16",
-          "station": 37.0
-        },
-        "fromLaneCount": 1,
-        "geometry": [
-          {
-            "x": 23.0,
-            "y": -9.0
-          },
-          {
-            "x": 17.51681209908305,
-            "y": -8.80527164528443
-          },
-          {
-            "x": 11.80661075474049,
-            "y": -9.064057720758479
-          },
-          {
-            "x": 7.318104033027684,
-            "y": -11.04081493585329
-          },
-          {
-            "x": 5.5,
-            "y": -16.0
-          }
-        ],
-        "id": "connector-53",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "East left",
-        "to": {
-          "laneId": "lane-33",
-          "linkId": "link-32"
-        },
-        "toLaneCount": 1
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-19",
-          "linkId": "link-16"
-        },
-        "fromLaneCount": 1,
-        "geometry": [
-          {
-            "x": 16.0,
-            "y": -2.0
-          },
-          {
-            "x": 8.993587680972414,
-            "y": -0.5854707730091956
-          },
-          {
-            "x": 3.272077938642145,
-            "y": 3.272077938642145
-          },
-          {
-            "x": -0.5854707730091957,
-            "y": 8.993587680972414
-          },
-          {
-            "x": -2.0,
-            "y": 16.0
-          }
-        ],
-        "id": "connector-54",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "East right",
-        "to": {
-          "laneId": "lane-46",
-          "linkId": "link-44"
-        },
-        "toLaneCount": 1
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-29",
-          "linkId": "link-28"
-        },
-        "fromLaneCount": 2,
-        "geometry": [
-          {
-            "x": -9.0,
-            "y": -16.0
-          },
-          {
-            "x": -8.453125,
-            "y": -7.973136923303295
-          },
-          {
-            "x": -7.25,
-            "y": 0.0
-          },
-          {
-            "x": -6.046875,
-            "y": 7.973136923303296
-          },
-          {
-            "x": -5.5,
-            "y": 16.0
-          }
-        ],
-        "id": "connector-55",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "South through",
-        "to": {
-          "laneId": "lane-45",
-          "linkId": "link-44"
-        },
-        "toLaneCount": 2
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-29",
-          "linkId": "link-28",
-          "station": 37.0
-        },
-        "fromLaneCount": 1,
-        "geometry": [
-          {
-            "x": -9.0,
-            "y": -23.0
-          },
-          {
-            "x": -8.80527164528443,
-            "y": -17.51681209908305
-          },
-          {
-            "x": -9.064057720758479,
-            "y": -11.80661075474049
-          },
-          {
-            "x": -11.04081493585329,
-            "y": -7.318104033027684
-          },
-          {
-            "x": -16.0,
-            "y": -5.5
-          }
-        ],
-        "id": "connector-56",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "South left",
-        "to": {
-          "laneId": "lane-9",
-          "linkId": "link-8"
-        },
-        "toLaneCount": 1
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-31",
-          "linkId": "link-28"
-        },
-        "fromLaneCount": 1,
-        "geometry": [
-          {
-            "x": -2.0,
-            "y": -16.0
-          },
-          {
-            "x": -0.5854707730091956,
-            "y": -8.993587680972414
-          },
-          {
-            "x": 3.272077938642145,
-            "y": -3.272077938642145
-          },
-          {
-            "x": 8.993587680972414,
-            "y": 0.5854707730091957
-          },
-          {
-            "x": 16.0,
-            "y": 2.0
-          }
-        ],
-        "id": "connector-57",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "South right",
-        "to": {
-          "laneId": "lane-22",
-          "linkId": "link-20"
-        },
-        "toLaneCount": 1
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-41",
-          "linkId": "link-40"
-        },
-        "fromLaneCount": 2,
-        "geometry": [
-          {
-            "x": 9.0,
+            "x": -20.0,
             "y": 16.0
           },
           {
-            "x": 8.453125,
-            "y": 7.973136923303295
+            "x": -9.914301850740626,
+            "y": 14.90625
           },
           {
-            "x": 7.25,
-            "y": 0.0
+            "x": -4.440892098500626e-16,
+            "y": 12.5
           },
           {
-            "x": 6.046875,
-            "y": -7.973136923303296
+            "x": 9.914301850740625,
+            "y": 10.09375
           },
           {
-            "x": 5.5,
-            "y": -16.0
-          }
-        ],
-        "id": "connector-58",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "North through",
-        "to": {
-          "laneId": "lane-33",
-          "linkId": "link-32"
-        },
-        "toLaneCount": 2
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-41",
-          "linkId": "link-40",
-          "station": 37.0
-        },
-        "fromLaneCount": 1,
-        "geometry": [
-          {
-            "x": 9.0,
-            "y": 23.0
-          },
-          {
-            "x": 8.80527164528443,
-            "y": 17.51681209908305
-          },
-          {
-            "x": 9.064057720758479,
-            "y": 11.80661075474049
-          },
-          {
-            "x": 11.04081493585329,
-            "y": 7.318104033027684
-          },
-          {
-            "x": 16.0,
-            "y": 5.5
-          }
-        ],
-        "id": "connector-59",
-        "laneBlend": [],
-        "laneMarkings": [],
-        "laneWidths": [],
-        "level": 0,
-        "name": "North left",
-        "to": {
-          "laneId": "lane-21",
-          "linkId": "link-20"
-        },
-        "toLaneCount": 1
-      },
-      {
-        "displayType": "default",
-        "from": {
-          "laneId": "lane-43",
-          "linkId": "link-40"
-        },
-        "fromLaneCount": 1,
-        "geometry": [
-          {
-            "x": 2.0,
-            "y": 16.0
-          },
-          {
-            "x": 0.5854707730091956,
-            "y": 8.993587680972414
-          },
-          {
-            "x": -3.272077938642145,
-            "y": 3.272077938642145
-          },
-          {
-            "x": -8.993587680972414,
-            "y": -0.5854707730091957
-          },
-          {
-            "x": -16.0,
-            "y": -2.0
+            "x": 20.0,
+            "y": 9.0
           }
         ],
         "id": "connector-60",
@@ -1443,10 +988,465 @@
         "laneMarkings": [],
         "laneWidths": [],
         "level": 0,
+        "name": "West through",
+        "to": {
+          "laneId": "lane-27",
+          "linkId": "link-26"
+        },
+        "toLaneCount": 3
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-7",
+          "linkId": "link-6",
+          "station": 33.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": -27.0,
+            "y": 16.0
+          },
+          {
+            "x": -21.563257658920957,
+            "y": 15.20448778039376
+          },
+          {
+            "x": -15.667340141263072,
+            "y": 14.211967414383361
+          },
+          {
+            "x": -10.937752552973652,
+            "y": 15.113463341181282
+          },
+          {
+            "x": -9.0,
+            "y": 20.0
+          }
+        ],
+        "id": "connector-61",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "West left",
+        "to": {
+          "laneId": "lane-55",
+          "linkId": "link-54"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-11",
+          "linkId": "link-6"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": -20.0,
+            "y": 2.0
+          },
+          {
+            "x": -11.43660716563295,
+            "y": 0.2711309447890171
+          },
+          {
+            "x": -4.443650813895955,
+            "y": -4.443650813895955
+          },
+          {
+            "x": 0.2711309447890171,
+            "y": -11.43660716563295
+          },
+          {
+            "x": 2.0,
+            "y": -20.0
+          }
+        ],
+        "id": "connector-62",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "West right",
+        "to": {
+          "laneId": "lane-44",
+          "linkId": "link-41"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-23",
+          "linkId": "link-22"
+        },
+        "fromLaneCount": 2,
+        "geometry": [
+          {
+            "x": 20.0,
+            "y": -9.0
+          },
+          {
+            "x": 9.97849419555026,
+            "y": -9.546875
+          },
+          {
+            "x": 4.440892098500626e-16,
+            "y": -10.75
+          },
+          {
+            "x": -9.97849419555026,
+            "y": -11.953125
+          },
+          {
+            "x": -20.0,
+            "y": -12.5
+          }
+        ],
+        "id": "connector-63",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "East through",
+        "to": {
+          "laneId": "lane-13",
+          "linkId": "link-12"
+        },
+        "toLaneCount": 2
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-23",
+          "linkId": "link-22",
+          "station": 33.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 27.0,
+            "y": -9.0
+          },
+          {
+            "x": 20.98616540432216,
+            "y": -9.418898934077141
+          },
+          {
+            "x": 15.154369248286365,
+            "y": -11.033730490872376
+          },
+          {
+            "x": 10.745388468107386,
+            "y": -14.381696802231424
+          },
+          {
+            "x": 9.0,
+            "y": -20.0
+          }
+        ],
+        "id": "connector-64",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "East left",
+        "to": {
+          "laneId": "lane-42",
+          "linkId": "link-41"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-25",
+          "linkId": "link-22"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 20.0,
+            "y": -2.0
+          },
+          {
+            "x": 11.43660716563295,
+            "y": -0.2711309447890171
+          },
+          {
+            "x": 4.443650813895955,
+            "y": 4.443650813895955
+          },
+          {
+            "x": -0.2711309447890171,
+            "y": 11.43660716563295
+          },
+          {
+            "x": -2.0,
+            "y": 20.0
+          }
+        ],
+        "id": "connector-65",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "East right",
+        "to": {
+          "laneId": "lane-57",
+          "linkId": "link-54"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-37",
+          "linkId": "link-36"
+        },
+        "fromLaneCount": 3,
+        "geometry": [
+          {
+            "x": -12.5,
+            "y": -20.0
+          },
+          {
+            "x": -11.953125,
+            "y": -9.97849419555026
+          },
+          {
+            "x": -10.75,
+            "y": -4.440892098500626e-16
+          },
+          {
+            "x": -9.546875,
+            "y": 9.97849419555026
+          },
+          {
+            "x": -9.0,
+            "y": 20.0
+          }
+        ],
+        "id": "connector-66",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "South through",
+        "to": {
+          "laneId": "lane-55",
+          "linkId": "link-54"
+        },
+        "toLaneCount": 3
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-37",
+          "linkId": "link-36",
+          "station": 33.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": -12.5,
+            "y": -27.0
+          },
+          {
+            "x": -12.623205297266209,
+            "y": -22.302792066678418
+          },
+          {
+            "x": -13.453547459376555,
+            "y": -17.588592948158592
+          },
+          {
+            "x": -15.682115891798624,
+            "y": -13.955097355559474
+          },
+          {
+            "x": -20.0,
+            "y": -12.5
+          }
+        ],
+        "id": "connector-67",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "South left",
+        "to": {
+          "laneId": "lane-13",
+          "linkId": "link-12"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-40",
+          "linkId": "link-36"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": -2.0,
+            "y": -20.0
+          },
+          {
+            "x": -0.2711309447890171,
+            "y": -11.43660716563295
+          },
+          {
+            "x": 4.443650813895955,
+            "y": -4.443650813895955
+          },
+          {
+            "x": 11.43660716563295,
+            "y": 0.2711309447890171
+          },
+          {
+            "x": 20.0,
+            "y": 2.0
+          }
+        ],
+        "id": "connector-68",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "South right",
+        "to": {
+          "laneId": "lane-29",
+          "linkId": "link-26"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-51",
+          "linkId": "link-50"
+        },
+        "fromLaneCount": 2,
+        "geometry": [
+          {
+            "x": 9.0,
+            "y": 20.0
+          },
+          {
+            "x": 9.0,
+            "y": 10.0
+          },
+          {
+            "x": 9.0,
+            "y": 0.0
+          },
+          {
+            "x": 9.0,
+            "y": -10.0
+          },
+          {
+            "x": 9.0,
+            "y": -20.0
+          }
+        ],
+        "id": "connector-69",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "North through",
+        "to": {
+          "laneId": "lane-42",
+          "linkId": "link-41"
+        },
+        "toLaneCount": 2
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-51",
+          "linkId": "link-50",
+          "station": 33.0
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 9.0,
+            "y": 27.0
+          },
+          {
+            "x": 9.418898934077141,
+            "y": 20.98616540432216
+          },
+          {
+            "x": 11.033730490872376,
+            "y": 15.154369248286365
+          },
+          {
+            "x": 14.381696802231424,
+            "y": 10.745388468107386
+          },
+          {
+            "x": 20.0,
+            "y": 9.0
+          }
+        ],
+        "id": "connector-70",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "North left",
+        "to": {
+          "laneId": "lane-27",
+          "linkId": "link-26"
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-53",
+          "linkId": "link-50"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 2.0,
+            "y": 20.0
+          },
+          {
+            "x": 0.2711309447890171,
+            "y": 11.43660716563295
+          },
+          {
+            "x": -4.443650813895955,
+            "y": 4.443650813895955
+          },
+          {
+            "x": -11.43660716563295,
+            "y": -0.2711309447890171
+          },
+          {
+            "x": -20.0,
+            "y": -2.0
+          }
+        ],
+        "id": "connector-71",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
         "name": "North right",
         "to": {
-          "laneId": "lane-10",
-          "linkId": "link-8"
+          "laneId": "lane-16",
+          "linkId": "link-12"
         },
         "toLaneCount": 1
       }
@@ -1460,11 +1460,11 @@
         "geometry": [
           {
             "x": -300.0,
-            "y": 7.25
+            "y": 10.75
           },
           {
             "x": -80.0,
-            "y": 7.25
+            "y": 10.75
           }
         ],
         "id": "link-1",
@@ -1477,6 +1477,14 @@
           {
             "id": "lane-3",
             "width": 3.5
+          },
+          {
+            "id": "lane-4",
+            "width": 3.5
+          },
+          {
+            "id": "lane-5",
+            "width": 3.5
           }
         ],
         "level": 0,
@@ -1488,26 +1496,34 @@
         "geometry": [
           {
             "x": -60.0,
-            "y": 5.5
+            "y": 9.0
           },
           {
-            "x": -16.0,
-            "y": 5.5
+            "x": -20.0,
+            "y": 9.0
           }
         ],
-        "id": "link-4",
+        "id": "link-6",
         "laneOffset": 0.0,
         "lanes": [
           {
-            "id": "lane-5",
-            "width": 3.5
-          },
-          {
-            "id": "lane-6",
-            "width": 3.5
-          },
-          {
             "id": "lane-7",
+            "width": 3.5
+          },
+          {
+            "id": "lane-8",
+            "width": 3.5
+          },
+          {
+            "id": "lane-9",
+            "width": 3.5
+          },
+          {
+            "id": "lane-10",
+            "width": 3.5
+          },
+          {
+            "id": "lane-11",
             "width": 3.5
           }
         ],
@@ -1519,23 +1535,31 @@
         "displayType": "default",
         "geometry": [
           {
-            "x": -16.0,
-            "y": -3.75
+            "x": -20.0,
+            "y": -7.25
           },
           {
             "x": -300.0,
-            "y": -3.75
+            "y": -7.25
           }
         ],
-        "id": "link-8",
+        "id": "link-12",
         "laneOffset": 0.0,
         "lanes": [
           {
-            "id": "lane-9",
+            "id": "lane-13",
             "width": 3.5
           },
           {
-            "id": "lane-10",
+            "id": "lane-14",
+            "width": 3.5
+          },
+          {
+            "id": "lane-15",
+            "width": 3.5
+          },
+          {
+            "id": "lane-16",
             "width": 3.5
           }
         ],
@@ -1555,15 +1579,15 @@
             "y": -7.25
           }
         ],
-        "id": "link-13",
+        "id": "link-19",
         "laneOffset": 0.0,
         "lanes": [
           {
-            "id": "lane-14",
+            "id": "lane-20",
             "width": 3.5
           },
           {
-            "id": "lane-15",
+            "id": "lane-21",
             "width": 3.5
           }
         ],
@@ -1579,23 +1603,23 @@
             "y": -5.5
           },
           {
-            "x": 16.0,
+            "x": 20.0,
             "y": -5.5
           }
         ],
-        "id": "link-16",
+        "id": "link-22",
         "laneOffset": 0.0,
         "lanes": [
           {
-            "id": "lane-17",
+            "id": "lane-23",
             "width": 3.5
           },
           {
-            "id": "lane-18",
+            "id": "lane-24",
             "width": 3.5
           },
           {
-            "id": "lane-19",
+            "id": "lane-25",
             "width": 3.5
           }
         ],
@@ -1607,23 +1631,27 @@
         "displayType": "default",
         "geometry": [
           {
-            "x": 16.0,
-            "y": 3.75
+            "x": 20.0,
+            "y": 5.5
           },
           {
             "x": 300.0,
-            "y": 3.75
+            "y": 5.5
           }
         ],
-        "id": "link-20",
+        "id": "link-26",
         "laneOffset": 0.0,
         "lanes": [
           {
-            "id": "lane-21",
+            "id": "lane-27",
             "width": 3.5
           },
           {
-            "id": "lane-22",
+            "id": "lane-28",
+            "width": 3.5
+          },
+          {
+            "id": "lane-29",
             "width": 3.5
           }
         ],
@@ -1635,72 +1663,12 @@
         "displayType": "default",
         "geometry": [
           {
-            "x": -7.25,
+            "x": -9.0,
             "y": -300.0
           },
           {
-            "x": -7.25,
+            "x": -9.0,
             "y": -80.0
-          }
-        ],
-        "id": "link-25",
-        "laneOffset": 0.0,
-        "lanes": [
-          {
-            "id": "lane-26",
-            "width": 3.5
-          },
-          {
-            "id": "lane-27",
-            "width": 3.5
-          }
-        ],
-        "level": 0,
-        "name": "South approach"
-      },
-      {
-        "boundaryMarkings": [],
-        "displayType": "default",
-        "geometry": [
-          {
-            "x": -5.5,
-            "y": -60.0
-          },
-          {
-            "x": -5.5,
-            "y": -16.0
-          }
-        ],
-        "id": "link-28",
-        "laneOffset": 0.0,
-        "lanes": [
-          {
-            "id": "lane-29",
-            "width": 3.5
-          },
-          {
-            "id": "lane-30",
-            "width": 3.5
-          },
-          {
-            "id": "lane-31",
-            "width": 3.5
-          }
-        ],
-        "level": 0,
-        "name": "South approach, right-turn pocket"
-      },
-      {
-        "boundaryMarkings": [],
-        "displayType": "default",
-        "geometry": [
-          {
-            "x": 3.75,
-            "y": -16.0
-          },
-          {
-            "x": 3.75,
-            "y": -300.0
           }
         ],
         "id": "link-32",
@@ -1712,6 +1680,78 @@
           },
           {
             "id": "lane-34",
+            "width": 3.5
+          },
+          {
+            "id": "lane-35",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "South approach"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": -7.25,
+            "y": -60.0
+          },
+          {
+            "x": -7.25,
+            "y": -20.0
+          }
+        ],
+        "id": "link-36",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-37",
+            "width": 3.5
+          },
+          {
+            "id": "lane-38",
+            "width": 3.5
+          },
+          {
+            "id": "lane-39",
+            "width": 3.5
+          },
+          {
+            "id": "lane-40",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "South approach, right-turn pocket"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 5.5,
+            "y": -20.0
+          },
+          {
+            "x": 5.5,
+            "y": -300.0
+          }
+        ],
+        "id": "link-41",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-42",
+            "width": 3.5
+          },
+          {
+            "id": "lane-43",
+            "width": 3.5
+          },
+          {
+            "id": "lane-44",
             "width": 3.5
           }
         ],
@@ -1731,15 +1771,15 @@
             "y": 80.0
           }
         ],
-        "id": "link-37",
+        "id": "link-47",
         "laneOffset": 0.0,
         "lanes": [
           {
-            "id": "lane-38",
+            "id": "lane-48",
             "width": 3.5
           },
           {
-            "id": "lane-39",
+            "id": "lane-49",
             "width": 3.5
           }
         ],
@@ -1756,22 +1796,22 @@
           },
           {
             "x": 5.5,
-            "y": 16.0
+            "y": 20.0
           }
         ],
-        "id": "link-40",
+        "id": "link-50",
         "laneOffset": 0.0,
         "lanes": [
           {
-            "id": "lane-41",
+            "id": "lane-51",
             "width": 3.5
           },
           {
-            "id": "lane-42",
+            "id": "lane-52",
             "width": 3.5
           },
           {
-            "id": "lane-43",
+            "id": "lane-53",
             "width": 3.5
           }
         ],
@@ -1783,23 +1823,27 @@
         "displayType": "default",
         "geometry": [
           {
-            "x": -3.75,
-            "y": 16.0
+            "x": -5.5,
+            "y": 20.0
           },
           {
-            "x": -3.75,
+            "x": -5.5,
             "y": 300.0
           }
         ],
-        "id": "link-44",
+        "id": "link-54",
         "laneOffset": 0.0,
         "lanes": [
           {
-            "id": "lane-45",
+            "id": "lane-55",
             "width": 3.5
           },
           {
-            "id": "lane-46",
+            "id": "lane-56",
+            "width": 3.5
+          },
+          {
+            "id": "lane-57",
             "width": 3.5
           }
         ],
@@ -1810,163 +1854,202 @@
     "signalHeads": [
       {
         "connectorId": "",
-        "controllerId": "controller-61",
+        "controllerId": "controller-72",
         "groupNumber": 1,
-        "id": "head-62",
-        "lane": {
-          "laneId": "lane-5",
-          "linkId": "link-4"
-        },
-        "name": "West signal, lane 1",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 1,
-        "id": "head-63",
-        "lane": {
-          "laneId": "lane-6",
-          "linkId": "link-4"
-        },
-        "name": "West signal, lane 2",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 1,
-        "id": "head-64",
-        "lane": {
-          "laneId": "lane-7",
-          "linkId": "link-4"
-        },
-        "name": "West signal, lane 3",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 2,
-        "id": "head-65",
-        "lane": {
-          "laneId": "lane-17",
-          "linkId": "link-16"
-        },
-        "name": "East signal, lane 1",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 2,
-        "id": "head-66",
-        "lane": {
-          "laneId": "lane-18",
-          "linkId": "link-16"
-        },
-        "name": "East signal, lane 2",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 2,
-        "id": "head-67",
-        "lane": {
-          "laneId": "lane-19",
-          "linkId": "link-16"
-        },
-        "name": "East signal, lane 3",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 3,
-        "id": "head-68",
-        "lane": {
-          "laneId": "lane-29",
-          "linkId": "link-28"
-        },
-        "name": "South signal, lane 1",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 3,
-        "id": "head-69",
-        "lane": {
-          "laneId": "lane-30",
-          "linkId": "link-28"
-        },
-        "name": "South signal, lane 2",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 3,
-        "id": "head-70",
-        "lane": {
-          "laneId": "lane-31",
-          "linkId": "link-28"
-        },
-        "name": "South signal, lane 3",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 4,
-        "id": "head-71",
-        "lane": {
-          "laneId": "lane-41",
-          "linkId": "link-40"
-        },
-        "name": "North signal, lane 1",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 4,
-        "id": "head-72",
-        "lane": {
-          "laneId": "lane-42",
-          "linkId": "link-40"
-        },
-        "name": "North signal, lane 2",
-        "position": 43.0,
-        "programId": ""
-      },
-      {
-        "connectorId": "",
-        "controllerId": "controller-61",
-        "groupNumber": 4,
         "id": "head-73",
         "lane": {
-          "laneId": "lane-43",
-          "linkId": "link-40"
+          "laneId": "lane-7",
+          "linkId": "link-6"
+        },
+        "name": "West signal, lane 1",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 1,
+        "id": "head-74",
+        "lane": {
+          "laneId": "lane-8",
+          "linkId": "link-6"
+        },
+        "name": "West signal, lane 2",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 1,
+        "id": "head-75",
+        "lane": {
+          "laneId": "lane-9",
+          "linkId": "link-6"
+        },
+        "name": "West signal, lane 3",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 1,
+        "id": "head-76",
+        "lane": {
+          "laneId": "lane-10",
+          "linkId": "link-6"
+        },
+        "name": "West signal, lane 4",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 1,
+        "id": "head-77",
+        "lane": {
+          "laneId": "lane-11",
+          "linkId": "link-6"
+        },
+        "name": "West signal, lane 5",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 2,
+        "id": "head-78",
+        "lane": {
+          "laneId": "lane-23",
+          "linkId": "link-22"
+        },
+        "name": "East signal, lane 1",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 2,
+        "id": "head-79",
+        "lane": {
+          "laneId": "lane-24",
+          "linkId": "link-22"
+        },
+        "name": "East signal, lane 2",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 2,
+        "id": "head-80",
+        "lane": {
+          "laneId": "lane-25",
+          "linkId": "link-22"
+        },
+        "name": "East signal, lane 3",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 3,
+        "id": "head-81",
+        "lane": {
+          "laneId": "lane-37",
+          "linkId": "link-36"
+        },
+        "name": "South signal, lane 1",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 3,
+        "id": "head-82",
+        "lane": {
+          "laneId": "lane-38",
+          "linkId": "link-36"
+        },
+        "name": "South signal, lane 2",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 3,
+        "id": "head-83",
+        "lane": {
+          "laneId": "lane-39",
+          "linkId": "link-36"
+        },
+        "name": "South signal, lane 3",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 3,
+        "id": "head-84",
+        "lane": {
+          "laneId": "lane-40",
+          "linkId": "link-36"
+        },
+        "name": "South signal, lane 4",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 4,
+        "id": "head-85",
+        "lane": {
+          "laneId": "lane-51",
+          "linkId": "link-50"
+        },
+        "name": "North signal, lane 1",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 4,
+        "id": "head-86",
+        "lane": {
+          "laneId": "lane-52",
+          "linkId": "link-50"
+        },
+        "name": "North signal, lane 2",
+        "position": 39.0,
+        "programId": ""
+      },
+      {
+        "connectorId": "",
+        "controllerId": "controller-72",
+        "groupNumber": 4,
+        "id": "head-87",
+        "lane": {
+          "laneId": "lane-53",
+          "linkId": "link-50"
         },
         "name": "North signal, lane 3",
-        "position": 43.0,
+        "position": 39.0,
         "programId": ""
       }
     ]
   },
-  "nextId": 109,
+  "nextId": 123,
   "revision": 0,
   "schemaVersion": 28
 }
