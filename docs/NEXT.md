@@ -36,9 +36,19 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 - **Owner:** check the leg mapping (NW→West, SE→East, N→North, S→South) and the designed plan
   (180 s split phasing; no timing was surveyed).
 - **Lanes from the image are in (D576), and throughput fell** (4,422 → 4,014 completed; NW
-  through 477 → 224). Next: find why a queued 5-lane approach discharges less than a 3-lane one
-  (lane choice upstream of the pocket, then the 4→3 through merge, which a probe showed is minor).
-  Do it before adding a U-turn exit or the flyover. Motorcycles still take a full lane slot.
+  through 477 → 224). **Cause found (seed 42):** a turning vehicle enters on any lane, because a
+  routeless input with a placed decision spreads each destination over every entry lane, and
+  `kerbLanes` does not apply there (LANE_PREFERENCE §3). A left-turner that has not reached the kerb
+  lane when the left connector leaves it (station 33 of the 40 m stop-line Link) can never turn. It
+  then stands at its lane's end for the rest of the run and blocks that lane: NW vehicle 848 from
+  874 s, S vehicle 58 from 40 s. More lanes means more lane changes to make, so more of these
+  blockages. Not the cause: the 4→3 through merge (a probe without it gave 282) or N's left flow
+  into the SE exit (removing it made NW worse).
+- **Ask the owner, then fix:** (a) study data: per-movement routes with `laneShares` on the lanes
+  each movement uses (left on the kerb lane, right on the pocket), counts still from `counts.csv`;
+  or (b) engine: a vehicle that passed its exit takes another path instead of waiting forever,
+  which changes every project's runs. Then look again at the right-turn pockets: N and S send
+  about 800–960 veh/h through one lane.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions
