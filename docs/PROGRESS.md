@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-17 — Purpose review; lane locks recorded and a draft contract (D578)
+
+- **Pick:** the owner asked whether the stuck vehicles matter for future development and for a review of the test's purpose, then asked for both to be recorded and a contract drafted.
+- **Purpose:** M2.6/M5.7 test whether the owner can build and report a study in the editor. Tuning a builder-made project's lanes and timing for throughput is not that test, and it is close to calibration (D544). The study stops being tuned and is kept as a failing case.
+- **D578:** lane locks are recorded as an engine defect: ROADMAP M3.2.11 (proposed), OWNER_SITTING B50 and draft [LANE_LOCKS](reference/LANE_LOCKS.md). The draft has the evidence (study: 82 waiting, longest 3,411 s; shipped projects at most 42 s), the four options (entry lane by destination, missed exit, zipper, removal) under fixed constraints (replay, M3 §4, accounting, byte-identical shipped files), a recommendation (A then B), rows LL1–LL8 and the owner's questions. Nothing is implemented.
+- **Verified:** docs checks only (`multra-check-docs`, file sizes). No code changed.
+
 ## 2026-11-17 — Study lanes from the owner's drawing, two right-turn lanes (D577)
 
 - **Pick:** the owner asked for a check of a junction drawing (D576's lanes were from the aerial image), then for items 1, 2 and 4: lanes from the drawing, more than one right-turn lane, and a redesigned plan. Item 3 (each movement entering on its own lanes) was not picked.

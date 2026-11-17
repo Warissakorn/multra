@@ -96,5 +96,6 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [DEMAND_CATALOGS.md](DEMAND_CATALOGS.md) | Project Demand catalogs — slice 5 |
 | [M3_CONTRACT.md](M3_CONTRACT.md) | M3 right-of-way contract |
 | [M3_8_CONTRACT.md](M3_8_CONTRACT.md) | M3.2.8 behaviour contract |
+| [LANE_LOCKS.md](LANE_LOCKS.md) | Draft (D578), not implemented: lane locks at dead ends, the evidence from the ratchada-latphrao study, options A–D, rows LL1–LL8 and the owner's questions (B50) |
 
 Return to [the task reading map](../README.md#read-by-task).

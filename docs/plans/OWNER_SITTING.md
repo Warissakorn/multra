@@ -171,6 +171,13 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     such a key (none in the repository); **(b3)** leave it open, as routes and inputs are (D363).
     *Session's recommendation:* (b2), since the repository has no such file and the row it sits in
     is already closed from 21. *Owner:* **"ทำต่อตามแนะนำ", 2026-11-14: (a) and (b2) (D562).**
+50. **Lane locks at dead ends** (listed 2026-11-17, D578, [LANE_LOCKS](../reference/LANE_LOCKS.md)).
+    A vehicle waiting for a lane change into a standing queue holds its lane for the rest of the
+    run (study ratchada-latphrao: 82 waiting, longest 3,411 s, 22 lanes blocked). Pick from §4:
+    **A** entry lane by destination (opt-in, compile only), **B** missed exit after a threshold
+    (engine, off by default), **C** zipper at a standing queue (with M3.4), **D** removal (against
+    M3 §4). Also §7's questions: A's key, B's threshold and reporting, and the order relative to A3.
+    *Session's recommendation:* A, then B off by default; not D. *Owner:*
 
 ## C–I — on the Windows machine
 

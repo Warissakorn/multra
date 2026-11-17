@@ -184,6 +184,7 @@ Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
 | M3.2.8a commitment (D69) · M3.2.8b mandatory lane change (D71) · M3.2.8c routing-decision changes (D93) and cooperative braking (D90) | Implemented |
 | M3.2.8c discretionary changes (D95) and hold (D101) | Implemented and **off** (D102); remainder moved to M3.4 |
 | M3.2.9a–h lane correspondence and Connector ends (D73–D80, D106, D107) | Implemented; **owner look of D80 pending** |
+| M3.2.11 lane locks at dead ends (D578): a wait into a standing queue holds the lane to the run's end (study ratchada-latphrao: 82 waiting, longest 3,411 s) | **Proposed**; draft [LANE_LOCKS](reference/LANE_LOCKS.md), options A–D, rows LL1–LL8; owner's pick B50 |
 
 ### M3.2.10 — Owner looks carved out of the sitting (D201)
 

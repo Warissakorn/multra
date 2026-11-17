@@ -29,27 +29,18 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## Counted study Ratchadaphisek × Lat Phrao (D575) — built; owner's look
+## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
-- [studies/ratchada-latphrao](../studies/ratchada-latphrao/README.md) is built from the owner's counts.
-  Regenerate it with `multra-count-study` after any change to `counts.csv` or `site.csv`.
-- **Owner:** check the leg mapping (NW→West, SE→East, N→North, S→South) and the designed plan
-  (180 s split phasing; no timing was surveyed).
-- **Lanes from the image are in (D576), and throughput fell** (4,422 → 4,014 completed; NW
-  through 477 → 224). **Cause found (seed 42):** a turning vehicle enters on any lane, because a
-  routeless input with a placed decision spreads each destination over every entry lane, and
-  `kerbLanes` does not apply there (LANE_PREFERENCE §3). A left-turner that has not reached the kerb
-  lane when the left connector leaves it (station 33 of the 40 m stop-line Link) can never turn. It
-  then stands at its lane's end for the rest of the run and blocks that lane: NW vehicle 848 from
-  874 s, S vehicle 58 from 40 s. More lanes means more lane changes to make, so more of these
-  blockages. Not the cause: the 4→3 through merge (a probe without it gave 282) or N's left flow
-  into the SE exit (removing it made NW worse).
-- **D577 (owner's items 1, 2, 4):** lanes from the owner's drawing, two right-turn lanes on N and S,
-  and a 155 s plan. Completed fell to 3,385, with 22 lanes blocked behind vehicles waiting at a lane
-  end for a lane change into a standing queue. **Next, the owner's call:** item 3, study data in
-  which each movement enters on its own lanes (per-movement routes with `laneShares`, counts
-  still from `counts.csv`), or the engine fix, where a vehicle past its exit takes another path.
-  Item 3 changes this study only; the engine fix changes every project's runs.
+- [studies/ratchada-latphrao](../studies/ratchada-latphrao/README.md): counts from the owner's sheet,
+  lanes and right-turn lanes from the owner's drawing (D577), a 155 s Webster plan. Regenerate with
+  `multra-count-study` after any change to `counts.csv` or `site.csv`.
+- **Purpose review (owner, 2026-11-17):** the study is not tuned further for throughput. That would
+  be calibration in all but name (D544), and the M2.6/M5.7 purpose is the owner building a study in
+  the editor and recording friction, which this builder-made project is not evidence of. It stays
+  as the failing case of the lane-lock defect.
+- **Lane locks (D578):** draft contract [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11,
+  OWNER_SITTING B50. **Stop: no engine or compile change until the owner picks options.** On a pick,
+  write the chosen rows failure-first (LL1 first: locate vehicle 848's dead end), then the slice.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions
