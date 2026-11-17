@@ -44,11 +44,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   874 s, S vehicle 58 from 40 s. More lanes means more lane changes to make, so more of these
   blockages. Not the cause: the 4→3 through merge (a probe without it gave 282) or N's left flow
   into the SE exit (removing it made NW worse).
-- **Ask the owner, then fix:** (a) study data: per-movement routes with `laneShares` on the lanes
-  each movement uses (left on the kerb lane, right on the pocket), counts still from `counts.csv`;
-  or (b) engine: a vehicle that passed its exit takes another path instead of waiting forever,
-  which changes every project's runs. Then look again at the right-turn pockets: N and S send
-  about 800–960 veh/h through one lane.
+- **D577 (owner's items 1, 2, 4):** lanes from the owner's drawing, two right-turn lanes on N and S,
+  and a 155 s plan. Completed fell to 3,385, with 22 lanes blocked behind vehicles waiting at a lane
+  end for a lane change into a standing queue. **Next, the owner's call:** item 3, study data in
+  which each movement enters on its own lanes (per-movement routes with `laneShares`, counts
+  still from `counts.csv`), or the engine fix, where a vehicle past its exit takes another path.
+  Item 3 changes this study only; the engine fix changes every project's runs.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions

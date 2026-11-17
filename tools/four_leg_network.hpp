@@ -31,11 +31,12 @@ struct FourLegOptions {
     // default -- leaves at the stop line, so the left turn waits for green. A positive value is
     // the Thai left turn at all times: the Connector leaves before the head and never sees it.
     double leftBypass = 0;
-    // Lanes per leg, West, East, South, North. `approachLanes` counts the stop line: the kerbside
-    // ones carry through (lane 0 also left), the innermost is the right-turn pocket, and the Link
-    // upstream of the taper has one fewer. `exitLanes` counts the leg's exit. The defaults are the
-    // fixture's 3 and 2. `stopLine` (metres from the centre) must clear the widest crossing leg.
-    std::array<int, 4> approachLanes{3, 3, 3, 3}, exitLanes{2, 2, 2, 2};
+    // Lanes per leg, West, East, South, North. `approachLanes` counts the stop line: the innermost
+    // `rightLanes` turn right, the rest carry through (lane 0 also left), and the Link upstream of
+    // the taper has one lane fewer; its innermost lane feeds the pocket. `exitLanes` counts the
+    // leg's exit; the right turns land on its innermost lanes. The defaults are the fixture's 3, 1
+    // and 2. `stopLine` (metres from the centre) must clear the widest crossing leg.
+    std::array<int, 4> approachLanes{3, 3, 3, 3}, rightLanes{1, 1, 1, 1}, exitLanes{2, 2, 2, 2};
     double stopLine = 16;
 };
 struct FourLeg {
@@ -88,8 +89,13 @@ inline FourLeg fourLegIntersection(const FourLegOptions& options = {}) {
     for (std::size_t k = 0; k < 4; ++k) {
         const auto& f = frames[k];
         const std::string name = names[k];
-        const int in = options.approachLanes[k], out = options.exitLanes[k];
-        upstream[k] = addLink(d, {at(f, far, upstreamCentre(in)), at(f, taperStart, upstreamCentre(in))}, in - 1, w);
+        const int in = options.approachLanes[k], out = options.exitLanes[k], turning = options.rightLanes[k];
+        // One right-turn lane: the upstream Link has one lane fewer and its inner lane also feeds
+        // the pocket. More: every stop-line lane has its own upstream lane, because a destination
+        // takes one lane chain from each entry lane and a lane split into two would leave one unused.
+        const int up = turning == 1 ? in - 1 : in;
+        const double upCentre = turning == 1 ? upstreamCentre(in) : pocketCentre(in);
+        upstream[k] = addLink(d, {at(f, far, upCentre), at(f, taperStart, upCentre)}, up, w);
         pocket[k] = addLink(d, {at(f, pocketStart, pocketCentre(in)), at(f, stopLine, pocketCentre(in))}, in, w);
         // The exit leaves along -u, so its own left normal is -n: the kerb lane stays outermost.
         exit[k] = addLink(d, {at(f, stopLine, exitCentre(out)), at(f, far, exitCentre(out))}, out, w);
@@ -98,10 +104,13 @@ inline FourLeg fourLegIntersection(const FourLegOptions& options = {}) {
         editableLink(d, exit[k]).name = name + " exit";
         // The taper: both through lanes carry on, and the inner one also feeds the pocket. With
         // no lane changing yet, this diverge is the only way a vehicle reaches the pocket lane.
+        const int carried = turning == 1 ? in - 1 : in - turning;
         taper[k] = addConnectorRange(d, {upstream[k], lane(d, upstream[k], 0)},
-                                     {pocket[k], lane(d, pocket[k], 0)}, in - 1, in - 1);
-        pocketEntry[k] = addConnector(d, {upstream[k], lane(d, upstream[k], in - 2)},
-                                      {pocket[k], lane(d, pocket[k], in - 1)});
+                                     {pocket[k], lane(d, pocket[k], 0)}, carried, carried);
+        pocketEntry[k] = turning == 1
+            ? addConnector(d, {upstream[k], lane(d, upstream[k], in - 2)}, {pocket[k], lane(d, pocket[k], in - 1)})
+            : addConnectorRange(d, {upstream[k], lane(d, upstream[k], in - turning)},
+                                {pocket[k], lane(d, pocket[k], in - turning)}, turning, turning);
         editableConnector(d, taper[k]).name = name + " taper";
         editableConnector(d, pocketEntry[k]).name = name + " pocket entry";
     }
@@ -118,15 +127,20 @@ inline FourLeg fourLegIntersection(const FourLegOptions& options = {}) {
             return LaneReference{exit[leg], lane(d, exit[leg], index), station};
         };
         // Every through lane gets a path; more through lanes than exit lanes merge into the exit.
-        const int ahead = options.approachLanes[k] - 1;
+        const int in = options.approachLanes[k];
+        const int turning = options.rightLanes[k];
+        const int ahead = in - turning, landing = options.exitLanes[right[k]];
+        if (turning < 1 || ahead < 1 || turning > landing) throw std::invalid_argument("FOUR_LEG_RIGHT_LANES");
         movement[k][0] = addConnectorRange(d, {pocket[k], lane(d, pocket[k], 0)}, to(through[k], 0, std::nullopt),
                                            ahead, std::min(ahead, options.exitLanes[through[k]]));
         std::optional<double> leftFrom;
         if (options.leftBypass > 0) leftFrom = pocketStart - stopLine - 1 - options.leftBypass;
         movement[k][1] = addConnector(d, {pocket[k], lane(d, pocket[k], 0), leftFrom},
                                       to(left[k], 0, arrival(options.leftArrival)));
-        movement[k][2] = addConnector(d, {pocket[k], lane(d, pocket[k], options.approachLanes[k] - 1)},
-                                      to(right[k], options.exitLanes[right[k]] - 1, arrival(options.rightArrival)));
+        movement[k][2] = turning == 1
+            ? addConnector(d, {pocket[k], lane(d, pocket[k], in - 1)}, to(right[k], landing - 1, arrival(options.rightArrival)))
+            : addConnectorRange(d, {pocket[k], lane(d, pocket[k], in - turning)},
+                                to(right[k], landing - turning, arrival(options.rightArrival)), turning, turning);
         editableConnector(d, movement[k][0]).name = name + " through";
         editableConnector(d, movement[k][1]).name = name + " left";
         editableConnector(d, movement[k][2]).name = name + " right";

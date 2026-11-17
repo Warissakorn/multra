@@ -10,7 +10,7 @@
 //               phase): approach totals stay as counted, the destination does not.
 //   site.csv    `cycle,<s>`, one `leg,<leg>,<West|East|South|North>,<green start>,<green end>` per
 //               approach (the green window in seconds of the cycle; amber 3 s follows), and
-//               optionally `lanes,<leg>,<stop-line lanes>,<exit lanes>` per leg and `stopline,<m>`
+//               optionally `lanes,<leg>,<stop-line lanes>,<exit lanes>[,<right-turn lanes>]` per leg and `stopline,<m>`
 //               (metres from the centre, clear of the widest crossing leg). Missing: the four-leg's.
 //
 // Each approach gets one routeless input whose volume IS its routing decision's counts
@@ -75,6 +75,7 @@ inline ProjectDocument countStudy(const std::filesystem::path& data, const std::
         if (row.at(0) != "lanes") continue;
         const auto k = legOf.at(row.at(1));
         options.approachLanes[k] = std::stoi(row.at(2)); options.exitLanes[k] = std::stoi(row.at(3));
+        if (row.size() > 4) options.rightLanes[k] = std::stoi(row[4]);
         if (options.approachLanes[k] < 2 || options.exitLanes[k] < 1) throw std::invalid_argument("COUNT_STUDY_LANES");
     }
     auto built = fourLegIntersection(options);
