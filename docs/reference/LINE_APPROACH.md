@@ -167,6 +167,6 @@ and met the cap at 0.67 m/s. The clamp stopped it in one tick (6.7 m/s², maximu
 
 | Row | Case | Asserts |
 |---|---|---|
-| BA179 | A car 0.08 m short of the standstill gap behind a standing car at 1 m/s | Switch off: it clamps (forcing). On: no clamp, the deceleration is `v²/(2·0.08)`; without `amberDeceleration` the tick is unchanged |
-| BA180 | 5 mm short at 0.17 m/s, where the 0.01 m guard under-brakes | Off: it clamps (forcing). On: it stops in braking mode with no clamp; at 1.5 m/s (beyond the maximum) it still clamps |
+| BA209 | A car 0.08 m short of the standstill gap behind a standing car at 1 m/s | Switch off: it clamps (forcing). On: no clamp, the deceleration is `v²/(2·0.08)`; without `amberDeceleration` the tick is unchanged |
+| BA210 | 5 mm short at 0.17 m/s, where the 0.01 m guard under-brakes | Off: it clamps (forcing). On: it stops in braking mode with no clamp; at 1.5 m/s (beyond the maximum) it still clamps |
 

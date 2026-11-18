@@ -26,7 +26,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Pick:** the owner asked for the fix proposed after the trace: "แก้ตามที่เสนอเลย".
 - **D583 (LINE_APPROACH §8):** `standingVehicleFloor` stops a vehicle braking behind a standing vehicle at the standstill gap; a remaining cap hit behind it within the type's maximum is braking (`stopAtLine`), not a clamp. Same scope as D258.
 - **Measured:** study, seed 42: clamps 1 → 0, completed 6,627. Every shipped project, seeds 42–51, and `multra-cli 42` identical except the build commit.
-- **Tests:** `stopfloor.ba179_…` and `stopfloor.ba180_…`, each forcing its clamp with the switch off.
+- **Tests:** `stopfloor.ba209_…` and `stopfloor.ba210_…` (first numbered BA179–BA180, which the weaving lab already held; renumbered the same day), each forcing its clamp with the switch off.
 - **Verified on Linux (headless):** `check` 241/241. The desktop preset and Windows were not run (no UI change).
 
 ## 2026-11-18 — The study's last clamp traced (no code change)
