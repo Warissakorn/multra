@@ -43,13 +43,6 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   `missedExitAfter`) were compiled but never opened.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
-## BA row ids — an older collision waits for the owner (D585)
-
-- Merge clamps' BA158–BA167 ([MERGE_CLAMPS](reference/MERGE_CLAMPS.md)) came first; D444 later used
-  BA158–BA162 again in [DRIVING_BEHAVIOUR](plans/DRIVING_BEHAVIOUR.md) §3 and `lanechangeduration`.
-  **Recommended:** renumber D444's five rows to the next free ids (BA211–BA215) in the plan, its
-  evidence and test names, then drop `known` in `tools/check_docs.cpp`.
-
 ## Owner checks waiting from recent sessions
 
 All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI

@@ -120,13 +120,13 @@ TEST(laneswap, a_full_route_vehicle_alongside_is_not_asked) { // D207, not a pai
     CHECK(routeOf(state, 1) == "A-stub");
 }
 
-// D446 (BA161): switched on, a pair whose rear one is just over a standstill distance behind the front
+// D446 (BA214): switched on, a pair whose rear one is just over a standstill distance behind the front
 // one's target place (lane-change-lab seed 49, vehicles 83 and 88). Both starts are accepted at low
 // speed, but D208 lets neither body over the line: the rear one is too close to accept the front one
 // as its leader. Before D446, D207 did not count it as a partner (beyond the standstill distance), so
 // nobody yielded and the two rode side by side to the dead end. Now the rear one yields while the
 // front one's change is under way.
-TEST(laneswap, switched_on_a_rear_partner_too_close_to_accept_yields) { // BA161
+TEST(laneswap, switched_on_a_rear_partner_too_close_to_accept_yields) { // BA214
     const auto r = swap(keys(0.5, 1.0)); // as the audit (lab seed 49)
     const double length = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].length;
     const double standstill = r.s.behaviours.front().standstillDistance;

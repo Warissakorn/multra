@@ -41,7 +41,7 @@ Scratch probes (not committed) traced both vehicles switched on (keys 0.5/1.0/1,
 
 | Row | Case | Before | After |
 |---|---|---|---|
-| BA161 | The `swap()` pair, switched on (keys 0.5/1.0). The rear one's front is `standstillDistance + 1` m behind the front one's target place; front 5 m/s, rear 4 m/s | Fails: neither crosses within 8 s (they cross at 14.7 s) | Both cross within 8 s, the front one first; no clamp, no 2D overlap, no braking harder than comfortable |
+| BA214 | The `swap()` pair, switched on (keys 0.5/1.0). The rear one's front is `standstillDistance + 1` m behind the front one's target place; front 5 m/s, rear 4 m/s | Fails: neither crosses within 8 s (they cross at 14.7 s) | Both cross within 8 s, the front one first; no clamp, no 2D overlap, no braking harder than comfortable |
 
 **Forcing, asserted first:** the gap is beyond the standstill distance, and both changes start on
 the first tick. A sweep of gap 2.2–3.5 m and speeds 3–10 m/s found the locking placements; most

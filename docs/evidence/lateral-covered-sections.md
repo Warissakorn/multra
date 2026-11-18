@@ -37,7 +37,7 @@ falls within it (to 1e-9 m). The clamp to the section's length stays for roundin
 
 | Row | Case | Before | After |
 |---|---|---|---|
-| BA160 | A two-lane road whose left lane is cut into sections at 150 m. A straddler stands at 100 m, over the line. A car stands with its rear at the start of the second section, both bodies toward the line | Fails: gap ≠ 50 (the second section was searched from its start) | Leader is the car at gap 50; no clamp over 1 s; the straddler moves off |
+| BA213 | A two-lane road whose left lane is cut into sections at 150 m. A straddler stands at 100 m, over the line. A car stands with its rear at the start of the second section, both bodies toward the line | Fails: gap ≠ 50 (the second section was searched from its start) | Leader is the car at gap 50; no clamp over 1 s; the straddler moves off |
 
 The forcing is asserted first: the second section neighbours the straddler's section, and the body
 casts a span on the first.

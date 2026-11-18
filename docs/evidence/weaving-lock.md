@@ -45,7 +45,7 @@ Scratch probes (not committed) printed every vehicle of one weave at given times
 | BA183 (`weavinglab`): 300 m weave alone, off, ×1.0, seed 42 | Fails: nothing arrives in the last minute | Still arriving; no removal, no overlap |
 
 - **Each rule is needed:** without (b), BA185 and BA183 fail; without (a), BA184 fails.
-- **D207's rows and BA161 are unchanged.** `ctest --preset headless`: **175/175** pass, and `check`
+- **D207's rows and BA214 are unchanged.** `ctest --preset headless`: **175/175** pass, and `check`
   passes.
 
 ## Product runs, seeds 42–51, `--threads 4`
@@ -176,7 +176,7 @@ outside its look-ahead. During the crossing 99 accelerated to 2.3 m/s, and it st
 | BA187 (`weavinglab`, on): the 150 m weave alone, ×0.6, seed 42 | Fails: nothing arrives after 218.6 s | Still arriving in the last minute; no removal, no overlap |
 
 - Without (c), BA187 fails; BA186 needed the waiting place.
-- BA183–BA185, D207's rows and BA161 still pass. `ctest --preset headless`: **175/175**, and
+- BA183–BA185, D207's rows and BA214 still pass. `ctest --preset headless`: **175/175**, and
   `check` passes.
 
 ### Product runs, seeds 42–51

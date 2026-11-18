@@ -29,7 +29,7 @@ conservative: a span that a correct filter ignores counts as alongside, and the 
 
 | Row | Case | Before | After |
 |---|---|---|---|
-| BA162 | Three lanes. The left lane is a stub onto the middle one, whose route joins a part on another carriageway at the window's end (300 m). A car on the right lane, alongside, leans 0.3 m into the middle lane's far edge. The changer stands at 299 m (control), then at 300 m | Control accepted; at 300 m refused (the copy counted as alongside) | Both accepted, target −3.5 |
+| BA215 | Three lanes. The left lane is a stub onto the middle one, whose route joins a part on another carriageway at the window's end (300 m). A car on the right lane, alongside, leans 0.3 m into the middle lane's far edge. The changer stands at 299 m (control), then at 300 m | Control accepted; at 300 m refused (the copy counted as alongside) | Both accepted, target −3.5 |
 
 **Forcing, asserted first:** the leaning car casts an `own = false` span on the middle lane, and the
 target route has its join at 300 m.

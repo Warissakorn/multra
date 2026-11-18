@@ -151,9 +151,8 @@ void checkProgress(const Documents& docs, std::vector<std::string>& errors) {
 }
 // A BA acceptance row id names one row, so its tests (`TEST(group, baNN_…)`) sit in one group. A row
 // whose own text asks every module to keep its keys absent is checked in each module's group.
-// `known` lists collisions found when this check was added (2026-11-18), until they are renumbered.
 void checkRowIds(const Documents& tests, std::vector<std::string>& errors) {
-    static const std::set<std::string> everyGroup{"ba30","ba39"}, known{"ba158","ba159","ba162"};
+    static const std::set<std::string> everyGroup{"ba30","ba39"};
     const std::regex test("TEST\\(\\s*([a-z0-9_]+)\\s*,\\s*(ba[0-9]+[a-z]?)_");
     std::map<std::string, std::set<std::string>> groups;
     for (const auto& [path,text]:tests) {
@@ -161,7 +160,7 @@ void checkRowIds(const Documents& tests, std::vector<std::string>& errors) {
         for (std::sregex_iterator it(text.begin(),text.end(),test),end; it!=end; ++it) groups[(*it)[2]].insert((*it)[1]);
     }
     for (const auto& [id,where]:groups) {
-        if (where.size()<2 || everyGroup.contains(id) || known.contains(id)) continue;
+        if (where.size()<2 || everyGroup.contains(id)) continue;
         std::string list; for (const auto& g:where) list+=(list.empty() ? "" : ", ")+g;
         auto upper=id; std::transform(upper.begin(),upper.end(),upper.begin(),[](unsigned char c){ return static_cast<char>(std::toupper(c)); });
         errors.push_back("tests: row "+upper+" names tests in more than one group ("+list+"); give the later row the next free id");
