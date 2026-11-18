@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-18 — The study's last clamp traced (no code change)
+
+- **Pick:** the owner asked for the cause of vehicle 3915's clamp.
+- **Cause:** D258's standing-obstacle floor (LINE_APPROACH §7) aims at the leader's rear, but behind a vehicle the hard cap is the standstill distance (2 m) short of it, so the floor almost never binds there. The prototype law alone under-brakes the last half metre behind standing 3913 (queued at a merge); 3915 meets the cap at 0.67 m/s.
+- **Measured with a temporary patch (reverted):** the floor aimed at `gap − standstill` behind a standing vehicle gives a constant 2.81 m/s² stop; one clamp stays, 1 mm late at 0.17 m/s (the 0.01 m guard). Shipped projects, seeds 42–51, and `multra-cli 42` unchanged. Details in NEXT.
+- **Verified:** probes only; no code changed.
+
 ## 2026-11-18 — Lane locks closed: the owner accepts the defaults (D582)
 
 - **Owner:** "ยอมรับค่าเริ่มต้นทั้ง 3 ข้อ ใช้ตามแนะนำ": `entryLanes` on the routing decision, no shipped `missedExitAfter`, a diverted trip's delay on the movement it arrives on and `diverted` on the counted one. ROADMAP M3.2.11 is done; LANE_LOCKS §7 is answered; OWNER_SITTING B50 is closed.
