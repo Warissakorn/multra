@@ -140,9 +140,39 @@ void checkFacts(const Documents& docs, const std::set<std::string>& files, int l
     for (std::sregex_iterator it(docs.at(index).begin(),docs.at(index).end(),row),end; it!=end; ++it)
         if (!files.contains(folder+(*it)[2].str())) errors.push_back(index+": lists a project that is not shipped: "+(*it)[2].str());
 }
-std::vector<std::string> check(const Documents& docs, const std::set<std::string>& files, int latestSchema=0) {
+// The live PROGRESS log keeps about ten entries (AGENTS); past twelve, the oldest move whole to the archive.
+void checkProgress(const Documents& docs, std::vector<std::string>& errors) {
+    const auto found=docs.find("docs/PROGRESS.md");
+    if (found==docs.end()) return;
+    const auto body="\n"+prose(found->second);
+    std::size_t entries=0;
+    for (auto at=body.find("\n## "); at!=std::string::npos; at=body.find("\n## ",at+1)) ++entries;
+    if (entries>12) errors.push_back("docs/PROGRESS.md: "+std::to_string(entries)+" entries; keep about ten and move the oldest whole to docs/archive/");
+}
+// A BA acceptance row id names one row, so its tests (`TEST(group, baNN_…)`) sit in one group. A row
+// whose own text asks every module to keep its keys absent is checked in each module's group.
+// `known` lists collisions found when this check was added (2026-11-18), until they are renumbered.
+void checkRowIds(const Documents& tests, std::vector<std::string>& errors) {
+    static const std::set<std::string> everyGroup{"ba30","ba39"}, known{"ba158","ba159","ba162"};
+    const std::regex test("TEST\\(\\s*([a-z0-9_]+)\\s*,\\s*(ba[0-9]+[a-z]?)_");
+    std::map<std::string, std::set<std::string>> groups;
+    for (const auto& [path,text]:tests) {
+        (void)path;
+        for (std::sregex_iterator it(text.begin(),text.end(),test),end; it!=end; ++it) groups[(*it)[2]].insert((*it)[1]);
+    }
+    for (const auto& [id,where]:groups) {
+        if (where.size()<2 || everyGroup.contains(id) || known.contains(id)) continue;
+        std::string list; for (const auto& g:where) list+=(list.empty() ? "" : ", ")+g;
+        auto upper=id; std::transform(upper.begin(),upper.end(),upper.begin(),[](unsigned char c){ return static_cast<char>(std::toupper(c)); });
+        errors.push_back("tests: row "+upper+" names tests in more than one group ("+list+"); give the later row the next free id");
+    }
+}
+std::vector<std::string> check(const Documents& docs, const std::set<std::string>& files, int latestSchema=0,
+                               const Documents& tests={}) {
     std::vector<std::string> errors;
     checkFacts(docs,files,latestSchema,errors);
+    checkProgress(docs,errors);
+    checkRowIds(tests,errors);
     // One parse per target document: RECORD.md alone is the target of ~330 anchored links.
     std::map<std::string, std::set<std::string>> anchorsOf;
     for (const auto& [path,text]:docs) {
@@ -231,6 +261,17 @@ int selfTest() {
     if (check(docs,files).size()!=1) return 1; // b shipped, not listed
     docs["data/projects/README.md"]+="| `b.traffic.json` | two |\n";
     if (!check(docs,files).empty()) return 1;
+    // The live log's size, and one group per BA row id.
+    docs["docs/README.md"]="[Progress](PROGRESS.md)\n"; files.insert("docs/PROGRESS.md");
+    docs["docs/PROGRESS.md"]="# PROGRESS\n"; for (int i=0;i<12;++i) docs["docs/PROGRESS.md"]+="## entry\n";
+    if (!check(docs,files).empty()) return 1;
+    docs["docs/PROGRESS.md"]+="## thirteenth\n```\n## fenced, not an entry\n```\n";
+    if (check(docs,files).size()!=1) return 1;
+    docs["docs/PROGRESS.md"]="";
+    Documents tests{{"tests/a.cpp","TEST(weave, ba7_a) {}\nTEST(weave, ba7_b) {}\nTEST(codec, ba30_x) {}\nTEST(span, ba30_y) {}\n"}};
+    if (!check(docs,files,0,tests).empty()) return 1; // one group per row; BA30 is every module's
+    tests["tests/b.cpp"]="TEST(stopfloor, ba7_c) {}\n";
+    if (check(docs,files,0,tests).size()!=1) return 1;
     std::cout << "Documentation positive/negative fixtures passed\n"; return 0;
 }
 }
@@ -253,8 +294,13 @@ int main(int argc,char** argv) {
     if (!std::regex_search(schemaSource,latest,std::regex("kLatestSchema\\s*=\\s*([0-9]+)"))) {
         std::cerr << "Cannot read kLatestSchema from src/project/latest_schema.hpp\n"; return 2;
     }
-    const auto errors=check(docs,files,std::stoi(latest[1]));
+    Documents tests;
+    if (fs::is_directory(root/"tests"))
+        for (const auto& entry:fs::recursive_directory_iterator(root/"tests"))
+            if (entry.is_regular_file() && entry.path().extension()==".cpp")
+                tests.emplace(entry.path().lexically_relative(root).generic_string(),read(entry.path()));
+    const auto errors=check(docs,files,std::stoi(latest[1]),tests);
     for (const auto& error:errors) std::cerr << error << '\n';
-    if (errors.empty()) std::cout << "Documentation links, anchors, maintained indexes, module maps and stated facts passed\n";
+    if (errors.empty()) std::cout << "Documentation links, anchors, maintained indexes, module maps, stated facts, PROGRESS size and BA row ids passed\n";
     return errors.empty() ? 0 : 1;
 }

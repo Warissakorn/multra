@@ -112,7 +112,8 @@ below, whose reasoning is D7. The ones that get broken by accident:
   work instead of the code (D31).
 - **Update `docs/PROGRESS.md` before committing** — what changed and the reasoning behind any
   non-obvious decision, in a short entry; keep about ten entries and move older ones whole to the
-  archive. Record new decision IDs and reasoning once in `docs/decisions/RECORD.md`. **What is
+  archive (`multra-check-docs` fails past twelve, D585). A new BA row takes the next free id;
+  tests named for it stay in one group. Record new decision IDs and reasoning once in `docs/decisions/RECORD.md`. **What is
   next goes in `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do.
 - **Append to `docs/decisions/RECORD.md`, never read it whole** (D400 onward, ≈53k tokens by D584; D1–D199
   and D200–D399 are frozen in `RECORD-D001-D199.md` and `RECORD-D200-D399.md`, D486): add the row
