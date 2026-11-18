@@ -29,6 +29,16 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## M3.2.7d attempt 1 failed at step 1 (2026-11-18) — M3.2.4e comes before attempt 2
+
+- The owner found the merge waiting lines inside the lane being joined ([OWNER_SITTING](plans/OWNER_SITTING.md)
+  A2, with the measured positions). The fix is M3.2.4e (ROADMAP): its own admission contract and
+  failure-first clearance rows ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)) before the D50/D59
+  solver changes, then regenerate the fixture and its archived sweep metadata deliberately.
+- **Ask, before attempt 2:** the owner asked to test only what needs the owner. Proposed: keep steps 1
+  (look), 3–4 (gap/headway, Stop/Yield, engineer's plausibility) and the verdict; steps 2 and 6–7 are
+  covered by `rightofway` round-trip and same-seed replay tests. Changing §3 needs the owner's yes and a D-row.
+
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
 - [studies/ratchada-latphrao](../studies/ratchada-latphrao/README.md): counts from the owner's sheet,

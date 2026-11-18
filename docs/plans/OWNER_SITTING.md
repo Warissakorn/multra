@@ -25,7 +25,17 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 2. **M3.2.7d T-junction exercise** (listed 2026-09-26). Fill the sheet in
    [M3_ACCEPTANCE](M3_ACCEPTANCE.md) §3 on `data/projects/t-junction-priority.traffic.json`. Does
    minor-road delay respond to gap time as an engineer expects? It is what M3.2 closes on (R7).
-   *Owner:*
+   *Owner:* 2026-11-18, attempt 1, step 1 only (verbatim): "พบว่า conflict area แสดงถูกต้อง แต่เส้นหยุดผิดตำแหน่ง
+   link ทิศมุ่งตะวันตก ควรตั้งเส้นหยุดไว้ทางทิศตะวันออกของ conflict area และเส้นหยุดของ conflict area บน
+   connector ควรอยู่ก่อนเข้า Link". **Fail at step 1, kept** (§3: fixes are separate attempts).
+   *Session note (measured in the file, no verdict):* lanes are 3.5 m with a 1 m median. The merge waiting
+   lines sit at the D50/D59 one-metre admission strip at each Connector's end, not before the displayed
+   (D115) overlap: `wait-14` (left turn) at (−19.0, 2.1) and `wait-18` (right turn) at (19.0, −2.3) are on
+   the major lanes' centre lines, so the minor vehicle waits inside the lane it joins; the major lines
+   `wait-13` (westbound, x = −19) and `wait-17` (eastbound, x = 19) are at the strip, downstream of where the
+   turn first overlaps the lane (about x = ∓6). The crossing's lines `wait-9` (y = −5.7, before the
+   eastbound edge at −4.0) and `wait-10` (x = −13.8, upstream of the area) are before their area. This is
+   the planned M3.2.4e gap (M3_CONTRACT: D50/D59 extents and waiting positions unchanged by M3.2.4d).
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
