@@ -12,6 +12,8 @@
 //               approach (the green window in seconds of the cycle; amber 3 s follows), and
 //               optionally `lanes,<leg>,<stop-line lanes>,<exit lanes>[,<right-turn lanes>]` per leg and `stopline,<m>`
 //               (metres from the centre, clear of the widest crossing leg). Missing: the four-leg's.
+//               `entrylanes,serving` puts each movement on the entry lanes that serve it (D580,
+//               LANE_LOCKS option A); absent, every movement spreads over every lane (M3.2.8b).
 //
 // Each approach gets one routeless input whose volume IS its routing decision's counts
 // (volumeFromCounts), and its own composition from its counted class shares. The four counted
@@ -68,6 +70,8 @@ inline ProjectDocument countStudy(const std::filesystem::path& data, const std::
     for (const auto& row : site)
         if (row.at(0) == "leg") { const auto k = approachIndex(row.at(2)); legOf[row.at(1)] = k; legName[k] = row.at(1); }
     if (legOf.size() != 4) throw std::invalid_argument("COUNT_STUDY_NEEDS_FOUR_LEGS");
+    bool serving = false;
+    for (const auto& row : site) if (row.at(0) == "entrylanes") serving = row.at(1) == "serving";
     FourLegOptions options;
     options.leftBypass = 6;  // the Thai left turn at all times, as in the M2.6 template
     for (const auto& row : site) {
@@ -132,6 +136,7 @@ inline ProjectDocument countStudy(const std::filesystem::path& data, const std::
         const std::string name = approaches[k];
         const auto entry = named(name + " approach");
         RoutingDecision decision{"", legName[k] + " turning counts", {}, entry, slots};
+        if (serving) decision.entryLanes = "serving";
         const std::array<std::size_t, 3> to{through[k], left[k], right[k]};
         for (std::size_t m = 0; m < 3; ++m) {
             const auto& c = counts[k][m];

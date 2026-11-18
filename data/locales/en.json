@@ -751,6 +751,7 @@
   "editorInputCanvasPeriods": "%1 periods",
   "editorConflictGroupReadOnly": "Branching members are read-only.",
   "editorDecisionPositioned": "Choose routes when vehicles pass this line",
+  "editorDecisionServing": "Each movement enters on the lanes that serve it (no forced lane change on this Link)",
   "editorDecisionPositionLabel": "position (m)",
   "EDIT_ROUTING_LINK_OCCUPIED": "This Link already has a routing decision. Start on its line to add a route, or edit its position.",
   "EDIT_ROUTING_TARGETS_LOCKED": "Remove type rules before adding a route to this decision.",

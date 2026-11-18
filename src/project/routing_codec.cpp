@@ -25,6 +25,7 @@ std::vector<RoutingDecision> parseRoutingDecisions(const Json& definition) {
         RoutingDecision decision{field("id").get<std::string>(),present(x,"name")?field("name").get<std::string>():"",{}};
         if(present(x,"linkId"))decision.linkId=field("linkId").get<std::string>();
         if(present(x,"position"))decision.position=field("position").get<double>();
+        if(present(x,"entryLanes"))decision.entryLanes=field("entryLanes").get<std::string>(); // D580, schema 77
         for(const auto& r:field("routes")) {
             knownFields(r,Object::routingRoute,"routingDecision.routes",routingPositionVersion);
             const auto share=[&](const char* key)->const Json& {return value(r,Object::routingRoute,key);};

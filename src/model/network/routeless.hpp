@@ -16,6 +16,9 @@ struct PlacedDecision {
     struct Destination { std::vector<std::vector<std::string>> chains; double weight{}; };
     std::vector<Destination> destinations;
     std::optional<double> position;
+    // D580: on the entry Link, each destination's share goes to the lanes with a full chain to it
+    // only; stubs take a share only where no lane has one (LANE_LOCKS option A).
+    bool serving{};
 };
 // M3.2.8b/D93: a decision's destination is a family -- one chain per lane of the decision's Link,
 // and a lane that cannot reach it is a stub whose vehicles change lanes there. `name` is

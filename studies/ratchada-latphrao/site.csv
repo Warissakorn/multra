@@ -16,3 +16,4 @@ lanes,ลาดพร้าว-NW,5,3,1
 lanes,ลาดพร้าว-SE,3,3,1
 # Metres from the centre to every stop line: clear of the widest leg (5 lanes x 3.5 m + 0.25 m = 17.75 m).
 stopline,20
+entrylanes,serving

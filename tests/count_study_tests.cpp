@@ -12,6 +12,19 @@ ProjectDocument built() {
     const auto dir = test::root() / kDir;
     return fixture::countStudy(test::root() / "data", dir / "counts.csv", dir / "site.csv", "ratchada-latphrao");
 }
+// The study as it was before D580: the committed site without its `entrylanes` row, so every
+// movement spreads over every lane of its approach and stubs exist to test.
+ProjectDocument spread() {
+    const auto dir = test::root() / kDir;
+    const auto site = std::filesystem::temp_directory_path() / "multra-countstudy-spread-site.csv";
+    {
+        std::ifstream in(dir / "site.csv", std::ios::binary); std::ofstream out(site, std::ios::binary);
+        for (std::string line; std::getline(in, line);) if (line.rfind("entrylanes", 0) != 0) out << line << '\n';
+    }
+    auto d = fixture::countStudy(test::root() / "data", dir / "counts.csv", site, "ratchada-latphrao");
+    std::filesystem::remove(site);
+    return d;
+}
 bool same(const Json& a, const Json& b) { // numbers to 1e-9, as m26study: MSVC may round a last bit
     if (a.is_number() && b.is_number()) return std::abs(a.get<double>() - b.get<double>()) <= 1e-9;
     if (a.type() != b.type() || a.size() != b.size()) return false;
@@ -54,7 +67,7 @@ TEST(countstudy, a_left_turn_stub_is_held_before_its_turn_leaves) { // LANE_LOCK
     // stop line. Before D579 a left-turner on another lane was held at the end of its own lane,
     // where the only change left led to another stub, and stood there for the rest of the run.
     // Every stub that reaches West's stop-line Link must now be held at least those 6 m short of its end.
-    const auto d = built();
+    const auto d = spread();
     const auto scenario = compileDocument(d, test::root() / "data").scenario;
     std::string upstream;
     for (const auto& l : d.network.links) if (l.name == "West approach") upstream = l.id;
@@ -71,4 +84,28 @@ TEST(countstudy, a_left_turn_stub_is_held_before_its_turn_leaves) { // LANE_LOCK
         CHECK(dead.at <= total - 6 + 1e-6);
     }
     CHECK(stubs > 0);
+}
+TEST(countstudy, serving_entry_lanes_leave_no_stub_on_an_entry_link) { // LANE_LOCKS LL5, D580
+    // With `entrylanes,serving` every movement of every approach has a lane that reaches it from
+    // the entry Link, so no vehicle enters on a stub; the counted totals hold either way.
+    const auto d = built();
+    for (const auto& x : d.definition->routingDecisions) CHECK(x.entryLanes == "serving");
+    const auto with = compileDocument(d, test::root() / "data").scenario;
+    const auto without = compileDocument(spread(), test::root() / "data").scenario;
+    const auto entryStubs = [&](const Scenario& sc) {
+        std::size_t n = 0;
+        for (const auto& dead : sc.routeDeadEnds)
+            for (const auto& input : sc.inputs) if (input.routeId == dead.routeId) { ++n; break; }
+        return n;
+    };
+    CHECK(entryStubs(without) > 0);
+    CHECK(entryStubs(with) == 0);
+    const auto total = [](const Scenario& sc) {
+        double n = 0;
+        for (const auto& input : sc.inputs)
+            for (const auto& p : input.intervals) n += p.vehiclesPerHour * (p.endTime - p.startTime) / 3600;
+        return n;
+    };
+    test::near(total(with), total(without), 1e-6);
+    test::near(total(with), 2568 + 3616 + 1741 + 2744, 1e-6);
 }

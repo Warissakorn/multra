@@ -113,7 +113,8 @@ constexpr Field volumeIntervalFields[]={
 constexpr Field routingDecisionFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"linkId",Kind::text,false,0,0,true},
     {"routes",Kind::routingRoutes,true},{"intervals",Kind::routingIntervals,false,0,0,true},
-    {"typeRules",Kind::routingTypeRules},{"position",Kind::number,false,0,routingPositionVersion,true}};
+    {"typeRules",Kind::routingTypeRules},{"position",Kind::number,false,0,routingPositionVersion,true},
+    {"entryLanes",Kind::text,false,0,0,true}};
 constexpr Field routingRouteFields[]={
     {"routeId",Kind::text,true},{"relativeFlow",Kind::number,true},
     {"destinationLinkId",Kind::text,false,0,0,true},{"intervalFlows",Kind::numbers,false,0,0,true}};

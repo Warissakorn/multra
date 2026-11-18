@@ -751,6 +751,7 @@
   "editorInputCanvasPeriods": "%1 ช่วงเวลา",
   "editorConflictGroupReadOnly": "ส่วนแยกทางเป็นข้อมูลอ่านอย่างเดียว",
   "editorDecisionPositioned": "เลือกเส้นทางเมื่อรถผ่านเส้นนี้",
+  "editorDecisionServing": "รถแต่ละทิศทางเข้าเฉพาะช่องที่ไปทิศทางนั้นได้ (ไม่ต้องบังคับเปลี่ยนช่องบนลิงก์นี้)",
   "editorDecisionPositionLabel": "position (m)",
   "EDIT_ROUTING_LINK_OCCUPIED": "Link นี้มีจุดเลือกเส้นทางแล้ว คลิกเริ่มบนเส้นเดิมเพื่อเพิ่มเส้นทาง หรือแก้ตำแหน่งของจุดเดิม",
   "EDIT_ROUTING_TARGETS_LOCKED": "ลบกฎแยกประเภทรถก่อนเพิ่มเส้นทางในจุดนี้",

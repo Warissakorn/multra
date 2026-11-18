@@ -51,13 +51,16 @@ void EditorWindow::editDecision(const std::string& id) {
     placeRow->addRow(text("editorDecisionLinkLabel"),place);layout->addLayout(placeRow);
     auto* positioned=new QCheckBox(text("editorDecisionPositioned"),&dialog);positioned->setObjectName("editorDecisionPositioned");positioned->setChecked(value.position.has_value());
     auto* position=new QDoubleSpinBox(&dialog);position->setObjectName("editorDecisionPosition");position->setDecimals(3);position->setSuffix(" m");
+    // D580 (LANE_LOCKS option A): each destination enters on the lanes that serve it.
+    auto* serving=new QCheckBox(text("editorDecisionServing"),&dialog);serving->setObjectName("editorDecisionServing");serving->setChecked(value.entryLanes=="serving");
     const auto syncPosition=[&]{
         double length=0;for(const auto& l:network.links)if(l.id==place->currentData().toString().toStdString())length=polylineLength(l.geometry);
         positioned->setEnabled(length>0);position->setRange(0,std::max(0.,length-1e-6));position->setEnabled(length>0 && positioned->isChecked());
+        serving->setEnabled(length>0 && !positioned->isChecked());
     };
     connect(place,&QComboBox::currentIndexChanged,&dialog,[&]{syncPosition();});
     connect(positioned,&QCheckBox::toggled,&dialog,[&]{syncPosition();});syncPosition();setFormNumber(position,value.position.value_or(0));
-    placeRow->addRow(positioned);placeRow->addRow(text("editorDecisionPositionLabel"),position);
+    placeRow->addRow(positioned);placeRow->addRow(text("editorDecisionPositionLabel"),position);placeRow->addRow(serving);
     // M2.1.2: counted turning volumes per interval, pasted per row as they come off a count sheet,
     // over intervals of one length from a start time -- the M2.2 input dialog's convention.
     auto* start=new QDoubleSpinBox(&dialog);start->setObjectName("editorDecisionIntervalStart");
@@ -200,6 +203,7 @@ void EditorWindow::editDecision(const std::string& id) {
         candidate.name=name->text().trimmed().toStdString();
         candidate.linkId=place->currentData().toString().toStdString();
         candidate.position=positioned->isChecked() && !candidate.linkId.empty()?std::optional<double>{formNumber(position)}:std::nullopt;
+        candidate.entryLanes=serving->isChecked() && serving->isEnabled() && !candidate.position?"serving":"";
         const double from=formNumber(start),length=formNumber(minutes)*60;
         std::vector<std::pair<const Row*,QStringList>> typed;
         for(const auto& row:rows)if(row.field->isEnabled())
