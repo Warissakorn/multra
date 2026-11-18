@@ -5,12 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-18 — Docs context: PROGRESS back to ten entries; AGENTS' RECORD size (no code change)
+## 2026-11-18 — Docs context: PROGRESS and NEXT compacted; AGENTS' RECORD size
 
-- **Pick:** the owner ran the optimisation workflow on docs and AI context and chose items 1 and 3: "ทำข้อ 1 กับ 3 เลย".
+- **Pick:** the owner ran the optimisation workflow on docs and AI context and chose items 1 and 3 ("ทำข้อ 1 กับ 3 เลย"), then item 2 after a draft.
 - **PROGRESS:** 29 entries against AGENTS' "about ten"; the 19 oldest (D558–D575 and the Windows CI fix) moved verbatim to the top of [`PROGRESS-LOG-2026-11-14.md`](archive/PROGRESS-LOG-2026-11-14.md), its links rebased to `../`, and its index row updated. Estimated 8,600 → 3,100 tokens (docs_audit's character heuristic).
 - **AGENTS:** RECORD.md is ≈53k tokens by D584, not ≈28k.
-- **Item 2 (NEXT, ≈9,100 tokens, read every session):** a draft that drops "Done" history already in PROGRESS and RECORD waits for the owner; nothing in NEXT changed yet.
+- **Item 2 (owner: "ตามแนะนำ"):** NEXT 444 → 358 lines, ≈9,100 → ≈6,900 tokens: finished-slice history already in PROGRESS and RECORD moved verbatim to [`NEXT-state-2026-11-18.md`](archive/NEXT-state-2026-11-18.md) (links rebased; a check found no line lost). The M9 next-pick list was stale (A2b, A4 and M11.5 done) and went; D537's M6 ask is settled by D544 and went, D535's stays. The clamp line now states the measured count (seeds 42–51: M2.6 1, M6-S1 1, lane lab 0) and that D252's lab clamp is at seed 74.
+- **Found and fixed:** D583's rows reused BA179–BA180, held by the weaving lab since D449; renumbered BA209–BA210.
 - **Verified:** `multra-check-docs` and `multra-check-file-sizes` pass. No code change.
 
 ## 2026-11-18 — The step reuses insertion's snapshot when it is exact (D584)
