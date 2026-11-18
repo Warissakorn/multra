@@ -79,6 +79,7 @@ struct DriverBehaviour {
     std::optional<double> driverFactorSpread, redRunningShare, redRunningTime; // B-4 (DRIVER_FACTOR, D236): the factor's deviation; B-9 (RED_RUNNING, D238): a pair
     bool stopFloor{}; // runtime only, never in a file: set by createSimulation from clampRules.standingStopFloor and amberDeceleration (LINE_APPROACH §7, D258)
     bool standingTarget{}, stopArrival{}; // runtime only, off by default: the M6 sweep's engine levers D and E (M6_SWEEP §4, D546)
+    std::optional<double> missedExitAfter; // s at a dead end, then the vehicle gives up its turn (LANE_LOCKS B, D581); absent: never
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles { double wheelbase{}, frontOverhang{}, rearOverhang{}; bool operator==(const VehicleAxles&) const = default; };
@@ -289,6 +290,8 @@ struct ScenarioIndex {
     std::vector<std::vector<RoutePart>> feedersOfRoute; // D459: a joined route's feeding segments, before 0
     std::vector<double> deadEndOfRoute;
     std::vector<std::uint32_t> remainingOfRoute;
+    std::vector<std::uint64_t> missedExitTicks; // D581: per behaviour, ticks before a missed exit; 0 never
+    bool missedExits{};                         // some behaviour has one and some route a dead end
     // D95: the full-to-full spans, apart from `laneChangesOfRoute` (stub spans only), in target-slot
     // order. `discretionary` is set only when some span exists AND some behaviour has the threshold.
     bool discretionary{};
@@ -388,6 +391,7 @@ struct Vehicle : PendingVehicle {
     // B-6 (SPEED_DECISIONS §3-§4, §7, D223/D225): quantile kept once a decision or area is met (-1 before),
     // the piecewise free-flow time so far up to route distance freeFlowFrom, and the area speed (0: none).
     double desiredQuantile{-1}, freeFlowSoFar{}, freeFlowFrom{}, areaSpeed{};
+    std::uint64_t deadEndTicks{}; // D581: consecutive ticks waiting at its dead end; 0 unless missedExitAfter
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

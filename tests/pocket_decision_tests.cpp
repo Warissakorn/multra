@@ -107,3 +107,49 @@ TEST(pocketdecision, a_static_route_keeps_its_first_path_and_lane_change) {
         }
     CHECK(checked);
 }
+TEST(pocketdecision, serving_entry_lanes_put_each_destination_on_its_full_chains) { // LANE_LOCKS LL5
+    // Without the key each destination's share is spread over every lane of the entry Link, so a
+    // lane that cannot reach it enters on a stub and must change lanes. With "entryLanes":
+    // "serving" the share goes to the full chains only; the proportions still hold exactly.
+    for (const auto side : {DrivingSide::left, DrivingSide::right}) {
+        auto d = pocketed(side).d;
+        changeRunSettings(d, 240, 0.1);
+        const auto stubs = [&](const ProjectDocument& doc) {
+            std::size_t n = 0;
+            const auto placed = placedDecisions(doc.network, *doc.definition);
+            for (const auto& decision : doc.definition->routingDecisions) {
+                const auto walk = routelessChains(doc.network, decision.linkId, placed);
+                CHECK(walk.issues.empty() && walk.byDestination);
+                for (const auto& route : decision.routes) {
+                    double to = 0;
+                    for (const auto& c : walk.chains)
+                        if (!c.families.empty() && c.families.front().name == decision.id + ">" + route.destinationLinkId) {
+                            to += c.share; n += c.stub ? 1 : 0;
+                        }
+                    test::near(to, 1.0 / 3);
+                }
+            }
+            return n;
+        };
+        CHECK(stubs(d) > 0);
+        for (auto decision : d.definition->routingDecisions) { decision.entryLanes = "serving"; putRoutingDecision(d, decision); }
+        CHECK(stubs(d) == 0);
+        const auto saved = documentJson(d);
+        CHECK(saved.at("schemaVersion") == 77);
+        CHECK(documentJson(parseDocument(saved)) == saved);
+    }
+}
+TEST(pocketdecision, entry_lanes_is_refused_where_it_means_nothing) {
+    auto d = pocketed(DrivingSide::left).d;
+    changeRunSettings(d, 240, 0.1);
+    const auto with = [&](auto change) {
+        auto copy = d; auto decision = copy.definition->routingDecisions.at(0);
+        change(decision); putRoutingDecision(copy, decision); return copy;
+    };
+    validateDocument(with([](auto& x) { x.entryLanes = "serving"; }));
+    test::throws([&] { validateDocument(with([](auto& x) { x.entryLanes = "every"; })); }, "ROUTING_DECISION_ENTRY_LANES");
+    test::throws([&] { validateDocument(with([](auto& x) { x.entryLanes = "serving"; x.position = 10; })); }, "ROUTING_DECISION_ENTRY_LANES");
+    auto saved = documentJson(with([](auto& x) { x.entryLanes = "serving"; }));
+    saved["schemaVersion"] = 76;
+    test::throws([&] { parseDocument(saved); }, "entryLanes");
+}

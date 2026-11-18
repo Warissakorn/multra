@@ -95,6 +95,9 @@ struct RoutingDecision {
     std::vector<RoutingTypeRule> typeRules;
     // Metres on the Link reference polyline. Absent retains legacy scheduled-time routing.
     std::optional<double> position;
+    // D580 (LANE_LOCKS option A): "serving" puts each destination's share on the entry Link's
+    // lanes that reach it, never on a stub where a full chain exists. Empty: every lane (M3.2.8b).
+    std::string entryLanes;
     bool operator==(const RoutingDecision&) const = default;
 };
 // M2.1.2 (D45). An entry's relative flow at time t: its interval's flow inside an interval, the

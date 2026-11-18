@@ -1,3 +1,4 @@
+#include "missed_exit.hpp"
 #include "validate.hpp"
 #include "conflicts.hpp"
 #include "lanes.hpp"
@@ -284,6 +285,8 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
             spreadIssues(b, p, issues); // B-4 (D236)
             for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
+        for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
+            for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
             continue;
         }
@@ -301,6 +304,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
         spreadIssues(b, p, issues); // B-4 (D236)
         for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
+        for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every

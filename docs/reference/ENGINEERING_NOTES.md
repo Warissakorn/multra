@@ -88,6 +88,14 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
     compile ≈2 % (D140 shrank it). **Do not retry** reusing the source-candidate refs/spans as
     the main snapshot without a new measurement: only 5,242 of 36,000 ticks qualify (no arrival
     inserted, no route decision), worth ≈1–1.5 %. Batches gain far more from D152 (seeds in parallel).
+    **Done for the exact case (D584, 2026-11-18)** after a new measurement: on an oversaturated
+    network (Ratchada study, 3,666 pending) insertion builds the snapshot on 35,981 of 36,000 ticks.
+    Release headless, seed 42: study 35,057 → 32,756 M Ir (−6.6 %), wall 2.76 (2.74–2.80) →
+    2.55 (2.47–2.64) s; M2.6 3,907 → 3,845 M Ir (−1.6 %), wall in noise. Left on the study:
+    `publishMoves` 23 % (two `Vehicle` moves per vehicle-tick ≈2.7 %, under the 5 % bar),
+    `MovedEvent::segmentId` copies ≈3.7 % (event-interface decision), `observe` 8 %. Insertion still
+    builds the whole fleet's spans to test one entry gap: a local leader search at the source is the
+    structural lever there.
   - 2026-10-14 (D164), same build, M2.6 run 3,833.9 → 3,364.2 M Ir (−12.3 %; wall ≈0.41 s, noisy):
     signal events reuse `headColors`, queue lines walk only crossing routes (`observe` 713 → 404 M),
     `generateArrivals` checks due time first. Owner check: MSVC Release wall on P-cores. Left,

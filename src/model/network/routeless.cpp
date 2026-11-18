@@ -164,6 +164,9 @@ struct Walk {
                 if (!leg) leg = legFrom(family, start.lanes[k].id, true);
                 if (leg) s.legs.push_back({k, *leg});
             }
+            // D580: "serving" entry lanes -- where some lane reaches the destination, its stubs take nothing.
+            if (d->serving && std::any_of(s.legs.begin(), s.legs.end(), [](const Leg& l) { return !l.chain.stub; }))
+                std::erase_if(s.legs, [](const Leg& l) { return l.chain.stub; });
             if (!s.legs.empty() && destination.weight > 0) { sum += destination.weight; served.push_back(std::move(s)); }
             // D501: objects that connect while no lane path does. Named, never dropped in silence.
             else if (s.legs.empty() && destination.weight > 0 &&

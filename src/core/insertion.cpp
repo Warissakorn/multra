@@ -11,7 +11,7 @@
 
 namespace multra::detail {
 void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const ScenarioIndex& index,
-                    double startTime, double dt, std::vector<SimEvent>& events) {
+                    double startTime, double dt, std::vector<SimEvent>& events, Snapshot& snapshot) {
     const auto& scenario = *next.scenario;
     std::vector<PendingVehicle> candidates;
     for (const auto& input : next.inputs)
@@ -24,9 +24,9 @@ void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const Scenar
     // survives the source filter - most ticks have no arrival at all and must stay free.
     // Insertions append to both, reproducing exactly what a full rebuild over the grown vehicle
     // list would have produced.
-    std::vector<VehicleRefs> candidateRefs;
-    std::vector<OccupiedSpan> candidateSpans; SpanBuckets candidateBuckets;
-    bool spansBuilt = false;
+    auto& candidateRefs = snapshot.refs;
+    auto& candidateSpans = snapshot.spans; auto& candidateBuckets = snapshot.buckets;
+    bool& spansBuilt = snapshot.built;
     for (const auto& pending : candidates) {
         const auto& route = scenario.routes[pending.routeIndex];
         if (!attemptedSources.insert(route.segmentIds.front()).second) continue;

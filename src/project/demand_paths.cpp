@@ -76,7 +76,7 @@ std::vector<PlacedDecision> placedDecisions(const Network& network, const Connec
         if(decision.position)for(const auto& link:network.links)if(link.id==decision.linkId)
             if(!std::isfinite(*decision.position) || *decision.position<0 || *decision.position>=polylineLength(link.geometry))
                 report("INVALID_POSITION",path+".position");
-        PlacedDecision placed{decision.id, decision.linkId, path, {},decision.position};
+        PlacedDecision placed{decision.id, decision.linkId, path, {},decision.position,decision.entryLanes=="serving"};
         for (std::size_t j = 0; j < decision.routes.size(); ++j) {
             const auto& entry = decision.routes[j];
             const auto at = path + ".routes[" + std::to_string(j) + "]";

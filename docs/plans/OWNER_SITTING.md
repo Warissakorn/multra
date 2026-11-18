@@ -171,6 +171,19 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     such a key (none in the repository); **(b3)** leave it open, as routes and inputs are (D363).
     *Session's recommendation:* (b2), since the repository has no such file and the row it sits in
     is already closed from 21. *Owner:* **"ทำต่อตามแนะนำ", 2026-11-14: (a) and (b2) (D562).**
+50. **Lane locks at dead ends** (listed 2026-11-17, D578, [LANE_LOCKS](../reference/LANE_LOCKS.md)).
+    A vehicle waiting for a lane change into a standing queue holds its lane for the rest of the
+    run (study ratchada-latphrao: 82 waiting, longest 3,411 s, 22 lanes blocked). Pick from §4:
+    **A** entry lane by destination (opt-in, compile only), **B** missed exit after a threshold
+    (engine, off by default), **C** zipper at a standing queue (with M3.4), **D** removal (against
+    M3 §4). Also §7's questions: A's key, B's threshold and reporting, and the order relative to A3.
+    *Session's recommendation:* A, then B off by default; not D. *Owner:* **"ทำตามแนะนำ", 2026-11-18:
+    A, then B off by default; not D; C with M3.4.** LL1 ran first and found a span defect (D579).
+    A is done (D580), B too, off by default (D581). *Owner, 2026-11-18:* **"ยอมรับค่าเริ่มต้นทั้ง 3
+    ข้อ ใช้ตามแนะนำ": the key on the decision, no shipped threshold, diverted delay on the movement
+    driven and `diverted` on the counted one (D582). Closed.** Still to see in the editor (with item
+    C/E checks): the decision dialog's "enters on the lanes that serve it" checkbox and the
+    behaviour editor's `missedExitAfter` field.
 
 ## C–I — on the Windows machine
 

@@ -41,11 +41,11 @@ proposed in review was not needed: at the dead end, the span still holds the bod
 
 | Row | Case | Before | After |
 |---|---|---|---|
-| BA158 | A stub standing at its dead end, where the window ends at a join on the target route (a 50 m part on another carriageway) | Fails: target 0, no crossing | Target −3.5; crosses; target cleared |
-| BA159 | A target across a line no span covers, from the lane centre and from a centre on the line, standing past the window | Fails: the body covers the other lane | It never covers the other lane; `lateral ≥ −(1.75 − width/2)` |
+| BA211 | A stub standing at its dead end, where the window ends at a join on the target route (a 50 m part on another carriageway) | Fails: target 0, no crossing | Target −3.5; crosses; target cleared |
+| BA212 | A target across a line no span covers, from the lane centre and from a centre on the line, standing past the window | Fails: the body covers the other lane | It never covers the other lane; `lateral ≥ −(1.75 − width/2)` |
 | BA44 | Without a span, the target across the line | Pinned the centre on the line (D189) | Now pins the body's edge on the line (D444) |
 
-Each forcing is asserted first: BA158 checks the join at the window's end, and BA159 starts with the
+Each forcing is asserted first: BA211 checks the join at the window's end, and BA212 starts with the
 body past the window.
 
 `ctest --preset headless`: **174/174** pass, and `cmake --build build/headless --target check` passes.

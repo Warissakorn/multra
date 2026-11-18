@@ -44,7 +44,7 @@ std::map<std::uint64_t,DischargeMotion> dischargeMotions(
     std::map<std::uint64_t,bool> endPhase;
     for(const auto& e:state.events)std::visit([&](const auto& event) {
         using T=std::decay_t<decltype(event)>;
-        if constexpr(std::is_same_v<T,LaneChangeEvent>||std::is_same_v<T,RoutingEvent>) {
+        if constexpr(std::is_same_v<T,LaneChangeEvent>||std::is_same_v<T,RoutingEvent>||std::is_same_v<T,MissedExitEvent>) { // D581: as a positioned decision's
             auto& m=result[event.vehicleId];const auto from=slot(event.fromRouteId),to=slot(event.toRouteId);
             if(to==unknown) {m.ambiguous=true;return;}
             auto it=current.find(event.vehicleId);
@@ -69,6 +69,9 @@ std::map<std::uint64_t,DischargeMotion> dischargeMotions(
                 }
                 if(!mapped)m.ambiguous=true;
                 after.distance=m.ambiguous?0:mapped.value_or(0); // ambiguous target: conservatively upstream
+                m.start=after;
+            } else if constexpr(std::is_same_v<T,MissedExitEvent>) { // D581: same distance, at the tick's start
+                if(!near(event.time,state.time-s.timeStep)||endPhase[event.vehicleId])m.ambiguous=true;
                 m.start=after;
             } else {
                 const auto d=std::find_if(s.routeDecisions.begin(),s.routeDecisions.end(),[&](const auto& x) {

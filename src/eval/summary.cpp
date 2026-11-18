@@ -6,6 +6,7 @@ void SummaryAccumulator::add(const SimEvent& event) {
     if (std::holds_alternative<SafetyClampEvent>(event)) ++clamps_;
     if (std::holds_alternative<LaneChangeEvent>(event)) ++laneChanges_;
     if (std::holds_alternative<RedRunningEvent>(event)) ++redRunning_; // B-9 (D238)
+    if (std::holds_alternative<MissedExitEvent>(event)) ++diverted_; // D581
     if (const auto* arrived = std::get_if<ArrivedEvent>(&event)) {
         ++completed_;
         travel_ += arrived->travelTime;
@@ -13,7 +14,7 @@ void SummaryAccumulator::add(const SimEvent& event) {
     }
 }
 RunSummary SummaryAccumulator::summary() const {
-    RunSummary result{completed_, clamps_, {}, {}, laneChanges_, redRunning_};
+    RunSummary result{completed_, clamps_, {}, {}, laneChanges_, redRunning_, diverted_};
     if (completed_) {
         result.meanTravelTime = travel_ / static_cast<double>(completed_);
         result.meanDelay = delay_ / static_cast<double>(completed_);

@@ -1,0 +1,19 @@
+# Approach mapping, lanes and fixed-time plan for the Ratchadaphisek x Lat Phrao study.
+# Plan: Webster split phasing designed from the counts (no surveyed timing), one approach at a time,
+# 3 s amber + 1 s all-red between greens; from the count sheet's signal-design tab.
+cycle,155
+leg,รัชดา-S,South,0,16
+leg,ลาดพร้าว-SE,East,20,100
+leg,รัชดา-N,North,104,118
+leg,ลาดพร้าว-NW,West,122,151
+# Lanes measured on the owner's junction drawing (2026-11-17), not surveyed: stop-line lanes, exit
+# lanes, right-turn lanes (from the pavement arrows). At-grade only; the flyover is not drawn.
+# S's third lane is marked through-or-right; it is a right-turn lane here (S through is 67 veh/h).
+# N has two left-turn lanes on site; the drawing has one (lane 0), which also carries through.
+lanes,รัชดา-N,5,3,2
+lanes,รัชดา-S,4,3,2
+lanes,ลาดพร้าว-NW,5,3,1
+lanes,ลาดพร้าว-SE,3,3,1
+# Metres from the centre to every stop line: clear of the widest leg (5 lanes x 3.5 m + 0.25 m = 17.75 m).
+stopline,20
+entrylanes,serving

@@ -361,7 +361,7 @@ TEST(lanechangeduration, ba54_a_close_follower_on_the_target_lane_holds_the_move
     CHECK(byId(state, 2)->distance > byId(state, 1)->distance); // the car went by
 }
 
-// D444 (BA158): where the span window ends at a join on the target route, a changer standing at its
+// D444 (BA211): where the span window ends at a join on the target route, a changer standing at its
 // dead end still crosses. The target lane's section there is the one the span leads onto, not the
 // downstream part a front exactly at the join would otherwise be on (m2.6 seed 45, vehicle 613).
 namespace {
@@ -375,7 +375,7 @@ Stub joinedAtWindowEnd() {
     return r;
 }
 }
-TEST(lanechangeduration, ba158_a_changer_at_a_window_ending_at_a_join_crosses) { // BA158
+TEST(lanechangeduration, ba211_a_changer_at_a_window_ending_at_a_join_crosses) { // BA211
     auto r = joinedAtWindowEnd();
     CHECK(validateScenario(r.s).empty());
     auto state = place(r.s, {{r.left, 300, 0, 0}});
@@ -390,9 +390,9 @@ TEST(lanechangeduration, ba158_a_changer_at_a_window_ending_at_a_join_crosses) {
     CHECK(!byId(state, 1)->lateralTarget);
 }
 
-// D444 (BA159): a side it cannot cross holds the whole body in its lane. A target past such a line is
+// D444 (BA212): a side it cannot cross holds the whole body in its lane. A target past such a line is
 // clamped so the body stays inside, and a body already over it comes back (LATERAL §7).
-TEST(lanechangeduration, ba159_the_body_stays_inside_its_lane_on_a_side_it_cannot_cross) { // BA159
+TEST(lanechangeduration, ba212_the_body_stays_inside_its_lane_on_a_side_it_cannot_cross) { // BA212
     auto r = stub(keys(0, 0), 0, 200, 250);
     const double width = r.s.vehicleTypes[slot(r.s.vehicleTypes, "car")].width;
     for (const double start : {0.0, -1.75}) { // centred, then with its centre on the line
@@ -407,11 +407,11 @@ TEST(lanechangeduration, ba159_the_body_stays_inside_its_lane_on_a_side_it_canno
     }
 }
 
-// D448 (BA162): the start's target-lane filter reads the lane the span leads onto, as the target and the
+// D448 (BA215): the start's target-lane filter reads the lane the span leads onto, as the target and the
 // crossing do (D444). Three lanes; the left one a stub onto the middle one, whose route joins a part on
 // another carriageway at the window's end. A car on the right lane leans 0.3 m over into the middle
 // lane's far edge, alongside: its copy there does not overlap a changer centred on the middle lane.
-TEST(lanechangeduration, ba162_the_start_filter_at_a_window_ending_at_a_join_reads_the_target_lane) { // BA162
+TEST(lanechangeduration, ba215_the_start_filter_at_a_window_ending_at_a_join_reads_the_target_lane) { // BA215
     const auto starts = [](double at) {
         auto s = road(3, 3.5, keys(0, 0));
         const auto left = s.segments[laneSegment(s, 0)].id, middle = s.segments[laneSegment(s, 1)].id,

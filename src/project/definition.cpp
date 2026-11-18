@@ -100,6 +100,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             Json decision = {{"id",x.id},{"routes",routes}};
             if (!x.name.empty()) decision["name"] = x.name;
             if(x.position)decision["position"]=*x.position;
+            if(!x.entryLanes.empty())decision["entryLanes"]=x.entryLanes; // D580
             if (!x.linkId.empty()) decision["linkId"] = x.linkId; // M2.1.1
             if (!x.intervals.empty()) { // M2.1.2
                 decision["intervals"] = Json::array();
@@ -170,6 +171,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.driverFactorSpread) item["driverFactorSpread"] = *b.driverFactorSpread; // B-4 (D236)
             if (b.redRunningShare) item["redRunningShare"] = *b.redRunningShare; // B-9 (D238)
             if (b.redRunningTime) item["redRunningTime"] = *b.redRunningTime;
+            if (b.missedExitAfter) item["missedExitAfter"] = *b.missedExitAfter; // D581
         };
         for (const auto& b : d.behaviours) {
             if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model
@@ -265,6 +267,9 @@ std::vector<ValidationIssue> routingDecisionIssues(const AuthoringDefinition& d)
         }
         if(decision.position && (decision.linkId.empty() || !std::isfinite(*decision.position) || *decision.position<0))
             issues.push_back({"INVALID_POSITION",path+".position"});
+        // D580: only on the entry Link of a routeless input, and not with a position (which decides downstream).
+        if (!decision.entryLanes.empty() && (decision.entryLanes != "serving" || decision.linkId.empty() || decision.position))
+            issues.push_back({"ROUTING_DECISION_ENTRY_LANES", path + ".entryLanes"});
         if (decision.routes.empty()) { issues.push_back({"INVALID_SHARE", path}); continue; }
         // M2.1.1: one decision per Link, since a vehicle reaching it cannot follow two.
         if (!decision.linkId.empty())

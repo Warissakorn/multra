@@ -131,11 +131,11 @@ TEST(straddlerleader, perceived_leaders_include_the_covered_lane) { // BA55 with
     CHECK(std::abs(byId(state, 1)->speed - 5) < 0.5);
 }
 
-// D445 (BA160): a covered lane is searched only on the section the front is level with. The left lane
+// D445 (BA213): a covered lane is searched only on the section the front is level with. The left lane
 // is cut into two sections at 150 m; both neighbour the right lane's single section, but a straddler at
 // 100 m is level only with the first. A car standing at the start of the second is 50 m ahead, not 0
 // (m2.6 seed 42, vehicle 1133: 13 clamps behind a car 28 m ahead).
-TEST(straddlerleader, a_covered_lane_section_ahead_of_the_front_is_not_searched_from_its_start) { // BA160
+TEST(straddlerleader, a_covered_lane_section_ahead_of_the_front_is_not_searched_from_its_start) { // BA213
     auto s = road(2, 3.5, keys(0, 0));
     const auto left = laneSegment(s, 0), right = laneSegment(s, 1);
     const auto leftId = s.segments[left].id;

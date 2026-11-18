@@ -104,7 +104,9 @@ int documentSchemaVersion(const ProjectDocument& d) {
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.constraint==std::optional<std::string>("destination");});});
     const bool logsum=std::any_of(d.modeChoiceSets.begin(),d.modeChoiceSets.end(),[](const auto& s){
         return std::any_of(s.purposes.begin(),s.purposes.end(),[](const auto& p){return p.distributionCost.has_value();});});
-    return logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    const bool entryLanes=d.definition && std::any_of(d.definition->routingDecisions.begin(),d.definition->routingDecisions.end(),
+        [](const auto& x){return !x.entryLanes.empty();}); // D580
+    return ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -266,6 +268,9 @@ ProjectDocument parseDocument(const Json& j) {
     if(j.contains("schemaVersion") && j.at("schemaVersion")<networkCodec::routingPositionVersion && present(j,"definition") && present(j.at("definition"),"routingDecisions") && j.at("definition").at("routingDecisions").is_array())
         for(const auto& x:j.at("definition").at("routingDecisions"))
             if(x.contains("position"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.position");
+    if(j.contains("schemaVersion") && j.at("schemaVersion")<networkCodec::entryLanesVersion && present(j,"definition") && present(j.at("definition"),"routingDecisions") && j.at("definition").at("routingDecisions").is_array())
+        for(const auto& x:j.at("definition").at("routingDecisions")) // D580
+            if(x.is_object() && x.contains("entryLanes"))throw std::invalid_argument("UNSUPPORTED_FIELD: routingDecision.entryLanes");
     const int version = j.contains("schemaVersion") ? j.at("schemaVersion").get<int>() : 0;
     if (version < 61) rejectJunctionFieldsBefore61(j); // J3a: presence, even null, at its path
     if (version < 63) rejectTransitionFieldsBefore63(j);
@@ -341,6 +346,7 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < networkCodec::kerbLanesVersion) rejectKerbLanesBefore42(j);
     if (version < networkCodec::driverFactorSpreadVersion) rejectDriverFactorSpreadBefore43(j);
     if (version < networkCodec::redRunningVersion) rejectRedRunningBefore44(j);
+    if (version < networkCodec::missedExitVersion) rejectMissedExitBefore78(j); // D581
     if (version < 45) rejectClampRulesBefore45(j);
     if (version < 46) rejectJoinAnticipationBefore46(j);
     if (version < 47) rejectStandingStopFloorBefore47(j);
