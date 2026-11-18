@@ -38,12 +38,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   be calibration in all but name (D544), and the M2.6/M5.7 purpose is the owner building a study in
   the editor and recording friction, which this builder-made project is not evidence of. It stays
   as the failing case of the lane-lock defect.
-- **Lane locks (D578–D581):** [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11. LL1 (D579),
-  A (D580, `entryLanes: "serving"`, schema 77; the study uses it: no dead-end wait) and B (D581,
-  behaviour `missedExitAfter`, schema 78, off by default) are done. Open: the owner's §7 q2–q4
-  (key on the decision; B's threshold; how a diverted trip counts; defaults in D580/D581), the study's
-  one remaining clamp (vehicle 3915 on a Connector, no change of its own), and C with M3.4. The
-  M3.2.11 row can close when the owner accepts the defaults.
+- **Lane locks: done (D578–D582).** [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11 closed:
+  LL1 (D579), A (`entryLanes`, D580; the study uses it), B (`missedExitAfter`, off by default, D581),
+  the owner's defaults accepted (D582). C (zipper) goes with M3.4. Left from the study: one clamp
+  (vehicle 3915 on a Connector, no change of its own) is not explained, and the two new editor
+  fields were compiled but never opened.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions

@@ -5,6 +5,11 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-18 — Lane locks closed: the owner accepts the defaults (D582)
+
+- **Owner:** "ยอมรับค่าเริ่มต้นทั้ง 3 ข้อ ใช้ตามแนะนำ": `entryLanes` on the routing decision, no shipped `missedExitAfter`, a diverted trip's delay on the movement it arrives on and `diverted` on the counted one. ROADMAP M3.2.11 is done; LANE_LOCKS §7 is answered; OWNER_SITTING B50 is closed.
+- **Verified:** docs checks only. No code changed.
+
 ## 2026-11-18 — Option B: missed exit after a dead-end wait, schema 78 (D581)
 
 - **Pick:** "ทำต่อเลย" after A: B, off by default (B50). A probe first: all 24 stubs of the study's spread layout have a full route driving their exact segments, so a diverted vehicle keeps its route distance.

@@ -1,8 +1,9 @@
-# Lane locks at dead ends — draft contract (D578)
+# Lane locks at dead ends — contract (D578, closed D582)
 
 **Status: the owner chose A, then B off by default; not D (B50, 2026-11-18, "ทำตามแนะนำ").** LL1
 ran first and found a span defect, fixed as D579 (§2a). A is implemented as D580 (§2b), B as D581,
-off by default (§2c). Rule 4 applies: nothing here is validated.
+off by default (§2c). The owner accepted the defaults for §7 q2–q4 (2026-11-18, D582); C stays with
+M3.4. Rule 4 applies: nothing here is validated.
 
 ## 1. The defect
 
@@ -188,7 +189,7 @@ hides the cause behind a count, and the delay it removes is real delay on site.
 | LL7 | (B) `MissedExitEvent` replays byte for byte. The movement table's `diverted` matches the events | **done (D581):** replay in `lanechange.a_vehicle_held_past_…`; the table counts the events |
 | LL8 | (C) After a zipper hold, no clamp is added on the target lane (M2.6 and the lane lab, seeds 42–81) | new |
 
-## 7. Questions for the owner
+## 7. Questions for the owner (answered, D582)
 
 1. Which options, in which order: A, B, C or D (recommended: A then B)?
 2. For A: is a key on the routing decision right, or should the entry Link's lanes say which
@@ -198,3 +199,8 @@ hides the cause behind a count, and the delay it removes is real delay on site.
    `diverted`?
 5. Is this a new sub-milestone (proposed: ROADMAP M3.2.11, a row in the M3.2 table), and does it come before the study's
    rehearsal (A3)?
+
+**Answers (owner, 2026-11-18, "ยอมรับค่าเริ่มต้นทั้ง 3 ข้อ ใช้ตามแนะนำ"):** 1. A, then B off by
+default; not D; C with M3.4. 2. The key stays on the routing decision (`entryLanes`). 3. No shipped
+threshold: `missedExitAfter` is absent unless a project sets it. 4. A diverted trip's delay counts
+on the movement it arrives on, and `diverted` on the counted one. 5. M3.2.11, before A3.
