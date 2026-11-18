@@ -114,15 +114,63 @@ void appendLaneChanges(const Network& network, const RuntimeSections& table, con
         routes.push_back(lanes.stretchesOf(route.segments));
         from.push_back(Lanes::reaching(routes.back(), route.after));
     }
+    const auto begin = spans.size();
+    std::vector<std::pair<std::size_t, std::size_t>> pairs; // (stub, target) of each span appended
     for (std::size_t s = 0; s < family.size(); ++s) {
         if (!family[s].stub) continue;
-        const auto first = spans.size();
-        for (std::size_t t = 0; t < family.size(); ++t)
-            if (t != s) lanes.spansBetween(family[s].id, routes[s], from[s], family[t].id, routes[t], from[t], spans);
-        double deadEnd = -1;
-        for (auto k = first; k < spans.size(); ++k) deadEnd = std::max(deadEnd, spans[k].fromEnd);
-        deadEnds.push_back({family[s].id, deadEnd >= 0 ? deadEnd : lanes.lengthOf(family[s].segments)});
+        for (std::size_t t = 0; t < family.size(); ++t) {
+            if (t == s) continue;
+            const auto before = spans.size();
+            lanes.spansBetween(family[s].id, routes[s], from[s], family[t].id, routes[t], from[t], spans);
+            for (auto k = before; k < spans.size(); ++k) pairs.push_back({s, t});
+        }
     }
+    // D579 (LANE_LOCKS LL1): the dead end is the last metre from which a change still leads to a
+    // full chain. A span onto a stub counts only as far as that stub's own dead end, carried back
+    // across the span; a span that only leads to stubs which can no longer reach the movement no
+    // longer moves the dead end past the point of no return.
+    constexpr double none = -1;
+    std::vector<double> reach(family.size(), none);
+    for (bool moved = true; moved;) {
+        moved = false;
+        for (std::size_t k = 0; k < pairs.size(); ++k) {
+            const auto [s, t] = pairs[k];
+            const auto& span = spans[begin + k];
+            double end = span.fromEnd;
+            if (family[t].stub) {
+                if (reach[t] < span.toStart - 1e-9) continue;
+                const double length = span.toEnd - span.toStart;
+                const double at = length > 1e-12 ? span.fromStart + (std::min(reach[t], span.toEnd) - span.toStart) *
+                                                        (span.fromEnd - span.fromStart) / length
+                                                 : span.fromEnd;
+                end = std::min(end, at);
+            }
+            if (end > reach[s] + 1e-9) { reach[s] = end; moved = true; }
+        }
+    }
+    std::vector<double> deadEnd(family.size(), none);
+    for (std::size_t s = 0; s < family.size(); ++s) {
+        if (!family[s].stub) continue;
+        double any = none; // before D579: the end of any span, else the route's length
+        for (std::size_t k = 0; k < pairs.size(); ++k) if (pairs[k].first == s) any = std::max(any, spans[begin + k].fromEnd);
+        deadEnd[s] = reach[s] >= 0 ? reach[s] : any >= 0 ? any : lanes.lengthOf(family[s].segments);
+        deadEnds.push_back({family[s].id, deadEnd[s]});
+    }
+    // A span ends at its stub's dead end: past it no change is offered (cut proportionally on the
+    // target), and a span that starts there or later is dropped.
+    std::vector<LaneChangeSpan> kept(spans.begin(), spans.begin() + static_cast<std::ptrdiff_t>(begin));
+    for (std::size_t k = 0; k < pairs.size(); ++k) {
+        auto span = spans[begin + k];
+        const double end = deadEnd[pairs[k].first];
+        if (span.fromEnd > end + 1e-9) {
+            if (span.fromStart >= end - 1e-9) continue;
+            const double length = span.fromEnd - span.fromStart;
+            span.toEnd = span.toStart + (end - span.fromStart) * (span.toEnd - span.toStart) / length;
+            span.fromEnd = end;
+        }
+        kept.push_back(span);
+    }
+    spans = std::move(kept);
 }
 double joinedLeadIn(const Network& network, const RuntimeSections& table, const std::vector<FamilyRoute>& family, std::size_t joined) {
     Lanes lanes(network, table);

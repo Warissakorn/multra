@@ -177,7 +177,8 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     **A** entry lane by destination (opt-in, compile only), **B** missed exit after a threshold
     (engine, off by default), **C** zipper at a standing queue (with M3.4), **D** removal (against
     M3 §4). Also §7's questions: A's key, B's threshold and reporting, and the order relative to A3.
-    *Session's recommendation:* A, then B off by default; not D. *Owner:*
+    *Session's recommendation:* A, then B off by default; not D. *Owner:* **"ทำตามแนะนำ", 2026-11-18:
+    A, then B off by default; not D; C with M3.4.** LL1 ran first and found a span defect (D579).
 
 ## C–I — on the Windows machine
 

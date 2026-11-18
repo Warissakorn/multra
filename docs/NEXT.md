@@ -38,9 +38,13 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   be calibration in all but name (D544), and the M2.6/M5.7 purpose is the owner building a study in
   the editor and recording friction, which this builder-made project is not evidence of. It stays
   as the failing case of the lane-lock defect.
-- **Lane locks (D578):** draft contract [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11,
-  OWNER_SITTING B50. **Stop: no engine or compile change until the owner picks options.** On a pick,
-  write the chosen rows failure-first (LL1 first: locate vehicle 848's dead end), then the slice.
+- **Lane locks (D578, D579):** [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11. The owner
+  chose A, then B off by default (B50, 2026-11-18). LL1 is done: D579 fixed a dead end placed past
+  the point of no return. Study, seed 42: completed 3,385 → 4,698, longest wait 3,411 → 2,683 s,
+  clamps 1 → 6; shipped runs byte-identical. **Next: option A**, a routing decision's opt-in key
+  that puts each destination's share on its full chains only. That is a schema step (`entryLanes`),
+  rows LL3–LL5 and the input dialog. Then B. Look at the 6 clamps first: do they come from vehicles
+  now held at 273 m?
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions

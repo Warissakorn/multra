@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-18 — LL1: a dead end past the point of no return (D579)
+
+- **Pick:** the owner answered B50 with "ทำตามแนะนำ": A, then B off by default; not D. The contract's first row, LL1, ran first.
+- **Found:** a left-turn stub's dead end was the end of its own lane (280 m), not where the kerb lane's left Connector leaves (273 m). A span outward to another stub had carried it on. A vehicle past 273 m could only change to a stub that could no longer turn left, so it stood for good (vehicle 848).
+- **D579:** `appendLaneChanges` sets the dead end to the last metre from which a change still leads to a full chain. It uses a fixed point over the family's spans: a span onto a stub counts as far as that stub's own dead end, carried back. Spans are cut at the dead end. The engine is unchanged.
+- **Measured, seed 42:** study completed 3,385 → 4,698, never entered 6,754 → 5,503, waiting 36,267 → 19,600 s (longest 3,411 → 2,683), clamps 1 → 6. Every shipped project and `multra-cli 42` give byte-identical output. Test `countstudy.a_left_turn_stub_is_held_before_its_turn_leaves` fails without the fix.
+- **Verified on Linux (headless):** `check` 241/241. The desktop preset, check_no_pch.py and Windows were not run.
+
 ## 2026-11-17 — Purpose review; lane locks recorded and a draft contract (D578)
 
 - **Pick:** the owner asked whether the stuck vehicles matter for future development and for a review of the test's purpose, then asked for both to be recorded and a contract drafted.

@@ -1,8 +1,8 @@
 # Lane locks at dead ends — draft contract (D578)
 
-**Status: draft for the owner's choice (OWNER_SITTING B50). Nothing here is implemented.** No
-engine number, shipped file or schema changes until the owner picks an option and its rows are
-written failure-first. Rule 4 applies: nothing here is validated.
+**Status: the owner chose A, then B off by default; not D (B50, 2026-11-18, "ทำตามแนะนำ").** LL1
+ran first and found a span defect, fixed as D579 (§2a). A and B are not implemented yet. Rule 4
+applies: nothing here is validated.
 
 ## 1. The defect
 
@@ -45,6 +45,26 @@ change:
 
 As the lanes became more specific (D576, D577), completed trips fell: 4,422 → 4,014 → 3,385. Each
 single-movement lane adds forced changes.
+
+## 2a. LL1 result: a dead end past the point of no return (D579)
+
+On the D576 file, NW vehicle 848's route `path-6` (lane 2 of 5) had spans to the full left route
+(lane 1) up to **273 m**, where the left Connector leaves. Its dead end was nonetheless **280 m**,
+the end of its lane, because a span outward to `path-7` (a stub too) ran on to 280. A vehicle past
+273 m could only change to another stub that could no longer reach the left turn. It waited at 280 m
+for good. D579 makes the dead end the last metre from which a change still leads to a full chain,
+and cuts spans there ([M3_8_CONTRACT](M3_8_CONTRACT.md) §2). Test `countstudy.a_left_turn_stub_is_held_before_its_turn_leaves`
+fails without it.
+
+| Seed 42 | Before D579 (D577 file) | After D579 |
+|---|---|---|
+| Completed / active / never entered | 3,385 / 601 / 6,754 | 4,698 / 539 / 5,503 |
+| Vehicles waiting at a dead end / sum, s / longest, s | 82 / 36,267 / 3,411 | 187 / 19,600 / 2,683 |
+| Safety clamps | 1 | 6 |
+| Shipped projects and `multra-cli 42`, seed 42 | — | byte-identical |
+
+More vehicles wait, but for shorter times. Those that remain stand at the end of an upstream Link
+before a standing queue, which is option A's case.
 
 ## 3. What every option keeps
 
@@ -125,7 +145,7 @@ hides the cause behind a count, and the delay it removes is real delay on site.
 
 | Row | Check | Fails today? |
 |---|---|---|
-| LL1 | Locate the dead end of NW vehicle 848 (seed 42, D577 file): station, chain and target. If it lies past where its target chain leaves, the stub's span is wrong and is fixed first, as its own defect | to measure |
+| LL1 | Locate the dead end of NW vehicle 848 (seed 42, D576 file): station, chain and target. If it lies past where its target chain leaves, the stub's span is wrong and is fixed first, as its own defect | **done (D579):** 280 → 273 m; test `countstudy.a_left_turn_stub_is_held_before_its_turn_leaves` |
 | LL2 | ratchada-latphrao, seed 42: no dead-end wait longer than the chosen threshold (A: none at all on the entry Link; B: `missedExitAfter`) | yes: 3,411 s |
 | LL3 | Every shipped project, seeds 42–51: byte-identical results with the option absent | must pass |
 | LL4 | Accounting: completed + active + pending (+ diverted for B) equals vehicles generated, per input | must pass |

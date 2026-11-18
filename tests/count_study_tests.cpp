@@ -49,3 +49,26 @@ TEST(countstudy, each_approach_carries_exactly_the_counted_vehicles) {
     validateDocument(d);  // throws on an invalid document
     CHECK(runDiagnostics(d, test::root() / "data").empty());
 }
+TEST(countstudy, a_left_turn_stub_is_held_before_its_turn_leaves) { // LANE_LOCKS LL1, D579
+    // NW (West) has five stop-line lanes; the left Connector leaves the kerb lane 6 m before the
+    // stop line. Before D579 a left-turner on another lane was held at the end of its own lane,
+    // where the only change left led to another stub, and stood there for the rest of the run.
+    // Every stub that reaches West's stop-line Link must now be held at least those 6 m short of its end.
+    const auto d = built();
+    const auto scenario = compileDocument(d, test::root() / "data").scenario;
+    std::string upstream;
+    for (const auto& l : d.network.links) if (l.name == "West approach") upstream = l.id;
+    std::map<std::string, double> length;
+    for (const auto& s : scenario.segments) length[s.id] = s.length;
+    int stubs = 0;
+    for (const auto& dead : scenario.routeDeadEnds) {
+        if (dead.routeId.rfind("link:" + upstream + "/", 0) != 0) continue;
+        double total = 0;
+        for (const auto& route : scenario.routes)
+            if (route.id == dead.routeId) for (const auto& id : route.segmentIds) total += length[id];
+        if (total <= 230) continue; // a right-turn stub ends on the upstream Link itself, rightly at its end
+        ++stubs;
+        CHECK(dead.at <= total - 6 + 1e-6);
+    }
+    CHECK(stubs > 0);
+}

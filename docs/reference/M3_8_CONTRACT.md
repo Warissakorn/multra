@@ -112,6 +112,11 @@ every left-turner of an M2.6 approach appeared in the kerb lane at the network e
   Link is approximated.
 - **A dead end** is the stub's last span end: the last metre at which a change is still possible
   (the adjacent chain leaves the lane there, or the lane ends).
+  - **Since D579, a change that still leads to a full chain.** A span onto a full chain counts to its end. A span
+    onto another stub counts only as far as that stub's own dead end, carried back across the span,
+    and spans are cut at their stub's dead end. Before, a left-turner two lanes out was held at the
+    end of its own lane, past where the kerb lane's left Connector leaves. The only change left there
+    led to another stub, so it stood for the rest of the run ([LANE_LOCKS](LANE_LOCKS.md) LL1).
 - A stub is kept only when a run of neighbouring lanes, each with a chain, leads from it to a full
   chain on the entry Link. Every chain covers that Link from its start, so each step of the run
   is a change a vehicle can make there. Any other stub is not emitted, and its lane gets no share
