@@ -145,3 +145,28 @@ The owner took the recommendation on 2026-10-19: F1a, as a project switch that i
   - The pin is unchanged, and the reference rows pass 5/5.
   - Ir is +0.13 % (four-leg), +0.18 % (lane lab) and +0.13 % (M2.6).
 
+## 8. Behind a standing vehicle (D583)
+
+**The defect.** §7's floor stops a vehicle at `leader->gap`. For a line that is the hard cap. Behind
+a vehicle the hard cap is `standstillDistance` short of its rear, so the floor aimed 2 m too far
+and almost never bound. Found in the counted study (ratchada-latphrao, seed 42): motorcycle 3915,
+driver factor 0.41, braked at −3.5 down to −1.9 m/s² behind motorcycle 3913, standing at a merge,
+and met the cap at 0.67 m/s. The clamp stopped it in one tick (6.7 m/s², maximum 8).
+
+**The rule (owner, 2026-11-18, "แก้ตามที่เสนอเลย").** Same scope as §7 (`stopFloor`: the switch and
+`amberDeceleration`; prototype law only):
+- **Floor.** In the braking mode, behind the physical vehicle leader when it stands and is the
+  nearest obstacle, the acceleration is at most `−v² / (2 · max(0.01, gap − standstillDistance))`,
+  capped at the type's maximum (`standingVehicleFloor`).
+- **The final millimetres.** When the move still passes the cap and that cap is the standing
+  vehicle's, a stop within the type's maximum (`stopAtLine`) is braking, not a clamp, as at a
+  give-way line (GIVE_WAY_STOP §2). Beyond the maximum it still clamps.
+
+**Measured.** Study, seed 42: clamps 1 → 0, completed 6,627 unchanged. Every shipped project, seeds
+42–51, and `multra-cli 42`: identical except the build commit.
+
+| Row | Case | Asserts |
+|---|---|---|
+| BA179 | A car 0.08 m short of the standstill gap behind a standing car at 1 m/s | Switch off: it clamps (forcing). On: no clamp, the deceleration is `v²/(2·0.08)`; without `amberDeceleration` the tick is unchanged |
+| BA180 | 5 mm short at 0.17 m/s, where the 0.01 m guard under-brakes | Off: it clamps (forcing). On: it stops in braking mode with no clamp; at 1.5 m/s (beyond the maximum) it still clamps |
+

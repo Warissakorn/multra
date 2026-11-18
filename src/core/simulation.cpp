@@ -290,6 +290,8 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0};
         }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
+        if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
+            standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
         if (yields) {
             // Both from the same previous state; the kept result's state is the one stored, and
@@ -328,7 +330,8 @@ SimState stepSimulation(SimState&& state, double dt) {
         move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false, following.w74};
         const double allowedDistance = tickCap(scenario, vehicles, refs, vehicle, parts, spans, buckets, &lateral, vehicleLeader, leaderCap, holdCap, giveWayLine, move.distance, dt); // MERGE_CLAMPS §2
         if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking; §2 Q (D251) at a signal head too, with amberDeceleration
-            if (const auto a = giveWayLine == allowedDistance || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
+            const bool standingBody = behaviour.stopFloor && !behaviour.w74 && vehicleLeader && vehicleLeader->speed == 0 && leaderCap == allowedDistance; // §8 (D583)
+            if (const auto a = giveWayLine == allowedDistance || standingBody || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
                 const auto stop = integrate(vehicle.speed, *a, dt); move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
             } else { move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
         }

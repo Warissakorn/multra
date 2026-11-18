@@ -11,6 +11,10 @@ FollowingResult followingAcceleration(double speed, double desiredSpeed, double 
 Motion integrate(double speed, double acceleration, double dt);
 // W74.md §6 (D138): what every consumer reads instead of a model's own fields.
 double standstillGap(const DriverBehaviour&);
+// LINE_APPROACH §8 (D583): D258's floor behind a standing VEHICLE. Its hard cap is the standstill
+// distance short of the vehicle's rear, so the floor stops there, not at the rear. `body` is the
+// physical vehicle leader; only with stopFloor, the prototype law's braking mode and `body` standing.
+void standingVehicleFloor(FollowingResult& result, double speed, const Leader& body, const VehicleType&, const DriverBehaviour&);
 double desiredGap(const DriverBehaviour&, double driverFactor, double speed);
 // The one dispatcher for every car-following evaluation, own motion and hypothetical alike: the
 // prototype above, or w74Acceleration with the driver's traits and the previous tick's state.

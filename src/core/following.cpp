@@ -49,6 +49,11 @@ FollowingResult followingAcceleration(double speed, double desiredSpeed, double 
     return {std::max(-type.maxDeceleration, acceleration), mode};
 }
 double standstillGap(const DriverBehaviour& b) { return b.w74 ? b.w74->ax : b.standstillDistance; }
+void standingVehicleFloor(FollowingResult& r, double speed, const Leader& body, const VehicleType& type, const DriverBehaviour& b) {
+    if (!b.stopFloor || b.w74 || r.mode != FollowingMode::braking || body.speed != 0 || speed <= 0) return;
+    const double room = std::max(0.01, body.gap - b.standstillDistance);
+    r.acceleration = std::max(-type.maxDeceleration, std::min(r.acceleration, -(speed * speed) / (2 * room)));
+}
 double desiredGap(const DriverBehaviour& b, double driverFactor, double speed) {
     if (b.w74) return b.w74->ax + (b.w74->bxAdd + b.w74->bxMult * driverFactor) * std::sqrt(std::max(speed, 0.1));
     return b.standstillDistance + (b.additiveSafetyDistance + b.multiplicativeSafetyDistance * driverFactor) *

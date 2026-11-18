@@ -42,15 +42,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   LL1 (D579), A (`entryLanes`, D580; the study uses it), B (`missedExitAfter`, off by default, D581),
   the owner's defaults accepted (D582). C (zipper) goes with M3.4. The two new editor fields were
   compiled but never opened.
-- **The study's one clamp, traced (2026-11-18, no code changed):** motorcycle 3915 (driver factor
-  0.41) closes on motorcycle 3913, standing at the merge into lane-26. The prototype law under-brakes
-  in the last half metre, and D258's floor (LINE_APPROACH §7) does not help behind a vehicle: it
-  stops at `leader->gap`, the leader's rear, while the hard cap is `standstillDistance` (2 m) short
-  of it. 3915 reaches the cap at 0.67 m/s and is stopped in one tick (6.7 m/s², maximum 8). A
-  temporary patch aiming the floor at `gap − standstill` behind a standing vehicle braked it at a
-  constant 2.81 m/s²; one clamp remained, 1 mm late at 0.17 m/s (the floor's 0.01 m guard). The
-  shipped projects (seeds 42–51) and `multra-cli 42` were unchanged by it. A fix needs `Leader` to
-  tell a vehicle from a line, and a LINE_APPROACH row; it waits for the owner.
+- **The study's last clamp: fixed (D583).** D258's floor now stops at the standstill gap behind a
+  standing vehicle, and a cap hit there within the maximum is braking (LINE_APPROACH §8). Study,
+  seed 42: no clamp. Shipped projects unchanged.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions
