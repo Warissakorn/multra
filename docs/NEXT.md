@@ -153,7 +153,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
   cause is keys or sloppiness, not size.
 - The engine's next lever is the per-tick containers (spans, refs, events), not single copies
-  ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)); measure with callgrind first.
+  ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)); measure with callgrind first. D584 reused
+  insertion's snapshot (oversaturated study −6.6 % Ir); what is left there is listed in the notes.
+  Owner check: MSVC Release wall time of the study.
 
 ## Canvas style — slices A–C done; stop for owner review
 

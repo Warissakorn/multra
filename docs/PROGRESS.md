@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-18 — The step reuses insertion's snapshot when it is exact (D584)
+
+- **Pick:** the owner ran the optimisation workflow and chose item 1: "ทำข้อ 1 เลย".
+- **D584:** `insertArrivals` hands its refs, spans and buckets to the step (`detail::Snapshot`, `tick.hpp`); the step takes them when no arrival was inserted, the survivors were already in id order, there is no parking lot and no source route decision was applied, and rebuilds otherwise.
+- **Measured (Release headless, GCC 13.3, seed 42):** study 35,057 → 32,756 M Ir (−6.6 %), wall 2.76 → 2.55 s (medians of 5); M2.6 3,907 → 3,845 M Ir (−1.6 %), wall in noise. Numbers in [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
+- **Same results:** a probe hashing every event (kind, time, vehicle, segment, position, speed, acceleration, route ids) matches before and after for every shipped project and the study at seeds 42 and 43; the study summary is identical.
+- **Verified on Linux (headless):** `check` 241/241. Windows not run (no UI change).
+
 ## 2026-11-18 — The floor behind a standing vehicle aims at the cap (D583)
 
 - **Pick:** the owner asked for the fix proposed after the trace: "แก้ตามที่เสนอเลย".

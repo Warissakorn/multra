@@ -1,5 +1,6 @@
 #pragma once
 #include "red_running.hpp"
+#include "routes.hpp"
 #include "types.hpp"
 #include <cstdint>
 #include <optional>
@@ -12,10 +13,13 @@ namespace multra::detail {
 struct Move { double distance{}, speed{}, acceleration{}; FollowingMode mode{}; bool clamped{}; std::optional<W74State> w74; };
 // A decision taken this tick by a driver with a reaction time, stored at publication.
 struct Reaction { std::size_t vehicle, ticks; FollowingResult action; };
+// The refs, spans and buckets insertion built over the survivors (D584). `built` is false on a tick
+// with no candidate; once one is inserted they cover the grown list in append order, not id order.
+struct Snapshot { std::vector<VehicleRefs> refs; std::vector<OccupiedSpan> spans; SpanBuckets buckets; bool built{}; };
 // Source insertion (D108): at most one queued arrival per source segment enters `vehicles`, appended
 // after the survivors in scheduled-time order, when its first step fits the leader's buffer.
 void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const ScenarioIndex& index,
-                    double startTime, double dt, std::vector<SimEvent>& events);
+                    double startTime, double dt, std::vector<SimEvent>& events, Snapshot& snapshot);
 // Phase 3: applies every move in vehicle order, emitting exactly the events one pass always emitted,
 // and rebuilds next.vehicles from the survivors. `vehicles` is consumed.
 void publishMoves(SimState& next, std::vector<Vehicle>& vehicles, const ScenarioIndex& index,

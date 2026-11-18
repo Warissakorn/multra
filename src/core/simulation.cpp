@@ -118,7 +118,8 @@ SimState stepSimulation(SimState&& state, double dt) {
     // Where the arrivals will start. The survivors kept the order last tick's rebuild wrote
     // them in, so everything before this point is already sorted by id.
     const std::size_t survivors = vehicles.size();
-    detail::insertArrivals(next, vehicles, index, startTime, dt, events); // insertion.cpp
+    detail::Snapshot snapshot; // what insertion built over the survivors, reused below when still exact
+    detail::insertArrivals(next, vehicles, index, startTime, dt, events, snapshot); // insertion.cpp
     // Two sorted runs, not an unsorted list: the survivors in id order, then this tick's
     // arrivals, which were appended in scheduled-time order. Sorting the short tail and merging
     // is linear where sorting the whole fleet again is not, and ids are unique, so the result is
@@ -128,21 +129,27 @@ SimState stepSimulation(SimState&& state, double dt) {
     const auto byId = [](const auto& a, const auto& b) { return a.id < b.id; };
     const auto arrivals = vehicles.begin() + static_cast<std::ptrdiff_t>(survivors);
     std::sort(arrivals, vehicles.end(), byId);
-    if (std::is_sorted(vehicles.begin(), arrivals, byId))
+    const bool ordered = std::is_sorted(vehicles.begin(), arrivals, byId);
+    if (ordered)
         std::inplace_merge(vehicles.begin(), arrivals, vehicles.end(), byId);
     else std::sort(vehicles.begin(), vehicles.end(), byId);
     // M8.4a: vehicles that have served a lot's gate enter it, from this snapshot, before anything moves.
     admitAtGates(next, vehicles, startTick, startTime);
     // A station at the source is recognized before the first lane-change/motion decision.
+    bool decided = false;
     if(!scenario.routeDecisions.empty())for(auto& vehicle:vehicles)
         while(const auto* decision=nextRouteDecision(scenario,vehicle)) {
             if(vehicle.distance<decision->at-1e-9)break;
             applyRouteDecision(scenario,vehicle,*decision,startTime,next.seed,next.randomState,events);
+            decided = true;
         }
-    // Resolved once per tick rather than roughly six times per vehicle.
-    auto refs = resolveRefs(scenario, vehicles, index);
-    auto spans = occupiedSpans(scenario, vehicles, index, refs); // Everyone sees the SAME pre-step state.
-    auto buckets = bucketSpans(spans, scenario.segments.size());
+    // Resolved once per tick rather than roughly six times per vehicle. D584: when insertion built
+    // them and nothing since touched the list (no arrival, no reorder, no gate, no source decision),
+    // they are exactly what a rebuild here would produce, so they are taken instead.
+    const bool reuse = snapshot.built && vehicles.size() == survivors && ordered && next.lots.empty() && !decided;
+    auto refs = reuse ? std::move(snapshot.refs) : resolveRefs(scenario, vehicles, index);
+    auto spans = reuse ? std::move(snapshot.spans) : occupiedSpans(scenario, vehicles, index, refs); // Everyone sees the SAME pre-step state.
+    auto buckets = reuse ? std::move(snapshot.buckets) : bucketSpans(spans, scenario.segments.size());
     // Mandatory lane changes (M3.2.8b), decided off that snapshot and applied before anything
     // moves; the rest of the tick then runs on the post-change snapshot, shared by every vehicle.
     // Free without a stub: the scenario then has no span at all.
