@@ -38,13 +38,14 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   be calibration in all but name (D544), and the M2.6/M5.7 purpose is the owner building a study in
   the editor and recording friction, which this builder-made project is not evidence of. It stays
   as the failing case of the lane-lock defect.
-- **Lane locks (D578, D579):** [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11. The owner
-  chose A, then B off by default (B50, 2026-11-18). LL1 is done: D579 fixed a dead end placed past
-  the point of no return. Study, seed 42: completed 3,385 → 4,698, longest wait 3,411 → 2,683 s,
-  clamps 1 → 6; shipped runs byte-identical. **Next: option A**, a routing decision's opt-in key
-  that puts each destination's share on its full chains only. That is a schema step (`entryLanes`),
-  rows LL3–LL5 and the input dialog. Then B. Look at the 6 clamps first: do they come from vehicles
-  now held at 273 m?
+- **Lane locks (D578–D580):** [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11. The owner
+  chose A, then B off by default (B50). LL1 is done (D579). **A is done (D580):** `entryLanes:
+  "serving"` on a routing decision, schema 77; the study uses it. Seed 42: completed 6,627, pending
+  3,666, no dead-end wait, 1 clamp (vehicle 3915 on a Connector, no change of its own: not yet
+  explained). **Next: B**, missed exit after a threshold, off by default (`MissedExitEvent`,
+  `diverted`; rows LL4, LL6, LL7). Owner: §7 q2 to q4 are still open (key on the decision was taken
+  as the default; B's threshold and how a diverted vehicle counts). The decision dialog's checkbox
+  was compiled only as far as noted in PROGRESS.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions

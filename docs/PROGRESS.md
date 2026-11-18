@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-18 — Option A: entry lanes by destination, schema 77 (D580)
+
+- **Pick:** the owner's order (B50): A after LL1. The 6 clamps were checked first: 3 come 0.3 s after the clamped vehicle's own lane change into a standing queue on the entry Link; 3 show no change of its own.
+- **D580:** a routing decision's `"entryLanes": "serving"` (schema 77) puts each destination's share on the entry Link's lanes with a full chain to it; stubs only where none has one. Compile only (`entryDecision`), refused with `position` or without `linkId`. Editor: a checkbox in the decision dialog (en/th). `multra-count-study` reads `entrylanes,serving` from `site.csv`, and the study uses it.
+- **Measured, seed 42 (study):** completed 4,698 → 6,627, active 539 → 428, pending 5,503 → 3,666; dead-end waits 187 / 19,600 s → 0; clamps 6 → 1 (vehicle 3915 on a Connector at 14 m, no lane change of its own: open). LL3: every shipped project, seeds 42–51, and `multra-cli 42` identical to the pre-change binary except the build commit.
+- **Tests:** `pocketdecision.serving_entry_lanes_put_each_destination_on_its_full_chains` (LL5, both driving sides), `pocketdecision.entry_lanes_is_refused_where_it_means_nothing`, `countstudy.serving_entry_lanes_leave_no_stub_on_an_entry_link`; LL1's test now runs on the study without the row.
+- **Owner question open:** LANE_LOCKS §7 q2 (key on the decision or on the Link's lanes) was not answered; the decision was taken as the default and is recorded in D580.
+
 ## 2026-11-18 — LL1: a dead end past the point of no return (D579)
 
 - **Pick:** the owner answered B50 with "ทำตามแนะนำ": A, then B off by default; not D. The contract's first row, LL1, ran first.

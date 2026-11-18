@@ -179,6 +179,10 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     M3 §4). Also §7's questions: A's key, B's threshold and reporting, and the order relative to A3.
     *Session's recommendation:* A, then B off by default; not D. *Owner:* **"ทำตามแนะนำ", 2026-11-18:
     A, then B off by default; not D; C with M3.4.** LL1 ran first and found a span defect (D579).
+    A is done (D580). **Still open:** §7 q2 (the key was put on the routing decision by default; the
+    Link's lanes would be the alternative), q3 (B's threshold) and q4 (does a diverted vehicle count in
+    its movement's delay). Check in the editor: the decision dialog's new "enters on the lanes that
+    serve it" checkbox.
 
 ## C–I — on the Windows machine
 

@@ -1,8 +1,8 @@
 # Lane locks at dead ends — draft contract (D578)
 
 **Status: the owner chose A, then B off by default; not D (B50, 2026-11-18, "ทำตามแนะนำ").** LL1
-ran first and found a span defect, fixed as D579 (§2a). A and B are not implemented yet. Rule 4
-applies: nothing here is validated.
+ran first and found a span defect, fixed as D579 (§2a). A is implemented as D580 (§2b). B is not
+implemented yet. Rule 4 applies: nothing here is validated.
 
 ## 1. The defect
 
@@ -65,6 +65,23 @@ fails without it.
 
 More vehicles wait, but for shorter times. Those that remain stand at the end of an upstream Link
 before a standing queue, which is option A's case.
+
+## 2b. Option A result (D580)
+
+A routing decision's `"entryLanes": "serving"` (schema 77) drops a destination's stub legs on the
+entry Link wherever it has a full one. The key sits on the decision, the default taken for §7
+question 2. The study sets it on all four decisions (`site.csv` row `entrylanes,serving`).
+
+| Seed 42 | After D579 | After D580 |
+|---|---|---|
+| Completed / active / pending | 4,698 / 539 / 5,503 | 6,627 / 428 / 3,666 |
+| Vehicles waiting at a dead end / sum, s / longest, s | 187 / 19,600 / 2,683 | 0 / 0 / 0 |
+| Safety clamps | 6 | 1 |
+| Shipped projects (seeds 42–51) and `multra-cli 42` | — | identical except the build commit |
+
+Of the six clamps after D579, three came 0.3 s after the clamped vehicle's own lane change into a
+standing queue on the entry Link; three showed no change of its own. The one left (vehicle 3915, on a
+Connector at 14 m, no lane change) is not explained yet.
 
 ## 3. What every option keeps
 
@@ -146,10 +163,10 @@ hides the cause behind a count, and the delay it removes is real delay on site.
 | Row | Check | Fails today? |
 |---|---|---|
 | LL1 | Locate the dead end of NW vehicle 848 (seed 42, D576 file): station, chain and target. If it lies past where its target chain leaves, the stub's span is wrong and is fixed first, as its own defect | **done (D579):** 280 → 273 m; test `countstudy.a_left_turn_stub_is_held_before_its_turn_leaves` |
-| LL2 | ratchada-latphrao, seed 42: no dead-end wait longer than the chosen threshold (A: none at all on the entry Link; B: `missedExitAfter`) | yes: 3,411 s |
-| LL3 | Every shipped project, seeds 42–51: byte-identical results with the option absent | must pass |
+| LL2 | ratchada-latphrao, seed 42: no dead-end wait longer than the chosen threshold (A: none at all on the entry Link; B: `missedExitAfter`) | **A done (D580):** 0 waits |
+| LL3 | Every shipped project, seeds 42–51: byte-identical results with the option absent | **passed for A (D580)** |
 | LL4 | Accounting: completed + active + pending (+ diverted for B) equals vehicles generated, per input | must pass |
-| LL5 | (A) With `entryLanes: "serving"`, each destination's per-lane input equals its share on full chains, with zero on stubs, wherever a full chain exists | new |
+| LL5 | (A) With `entryLanes: "serving"`, each destination's per-lane input equals its share on full chains, with zero on stubs, wherever a full chain exists | **done (D580):** `pocketdecision.serving_entry_lanes_…`, `countstudy.serving_entry_lanes_…` |
 | LL6 | (B) A vehicle whose lane has no onward full chain keeps waiting and is reported, never removed | new |
 | LL7 | (B) `MissedExitEvent` replays byte for byte. The movement table's `diverted` matches the events | new |
 | LL8 | (C) After a zipper hold, no clamp is added on the target lane (M2.6 and the lane lab, seeds 42–81) | new |

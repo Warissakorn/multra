@@ -113,6 +113,7 @@ TEST(pocketdecision, serving_entry_lanes_put_each_destination_on_its_full_chains
     // "serving" the share goes to the full chains only; the proportions still hold exactly.
     for (const auto side : {DrivingSide::left, DrivingSide::right}) {
         auto d = pocketed(side).d;
+        changeRunSettings(d, 240, 0.1);
         const auto stubs = [&](const ProjectDocument& doc) {
             std::size_t n = 0;
             const auto placed = placedDecisions(doc.network, *doc.definition);
@@ -139,7 +140,8 @@ TEST(pocketdecision, serving_entry_lanes_put_each_destination_on_its_full_chains
     }
 }
 TEST(pocketdecision, entry_lanes_is_refused_where_it_means_nothing) {
-    const auto d = pocketed(DrivingSide::left).d;
+    auto d = pocketed(DrivingSide::left).d;
+    changeRunSettings(d, 240, 0.1);
     const auto with = [&](auto change) {
         auto copy = d; auto decision = copy.definition->routingDecisions.at(0);
         change(decision); putRoutingDecision(copy, decision); return copy;

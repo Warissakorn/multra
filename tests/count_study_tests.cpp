@@ -102,8 +102,7 @@ TEST(countstudy, serving_entry_lanes_leave_no_stub_on_an_entry_link) { // LANE_L
     CHECK(entryStubs(with) == 0);
     const auto total = [](const Scenario& sc) {
         double n = 0;
-        for (const auto& input : sc.inputs)
-            for (const auto& p : input.intervals) n += p.vehiclesPerHour * (p.endTime - p.startTime) / 3600;
+        for (const auto& input : sc.inputs) n += input.vehiclesPerHour * (input.endTime - input.startTime) / 3600;
         return n;
     };
     test::near(total(with), total(without), 1e-6);

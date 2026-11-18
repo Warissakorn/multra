@@ -217,6 +217,7 @@
     "routes": [],
     "routingDecisions": [
       {
+        "entryLanes": "serving",
         "id": "decision-122",
         "intervals": [
           {
@@ -275,6 +276,7 @@
         ]
       },
       {
+        "entryLanes": "serving",
         "id": "decision-124",
         "intervals": [
           {
@@ -333,6 +335,7 @@
         ]
       },
       {
+        "entryLanes": "serving",
         "id": "decision-126",
         "intervals": [
           {
@@ -391,6 +394,7 @@
         ]
       },
       {
+        "entryLanes": "serving",
         "id": "decision-128",
         "intervals": [
           {
@@ -2097,5 +2101,5 @@
   },
   "nextId": 130,
   "revision": 0,
-  "schemaVersion": 28
+  "schemaVersion": 77
 }
