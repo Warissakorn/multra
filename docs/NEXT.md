@@ -45,7 +45,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   explained). **Next: B**, missed exit after a threshold, off by default (`MissedExitEvent`,
   `diverted`; rows LL4, LL6, LL7). Owner: §7 q2 to q4 are still open (key on the decision was taken
   as the default; B's threshold and how a diverted vehicle counts). The decision dialog's checkbox
-  was compiled only as far as noted in PROGRESS.
+  compiles (desktop preset) but was not opened.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions
