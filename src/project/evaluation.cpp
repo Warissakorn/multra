@@ -191,11 +191,13 @@ Json movementJson(const MovementReport& r) {
     j["measure"] = "simulated movement delay, not HCM control delay; one run";
     if (r.randomStreams == RandomStreams::perInput) j["randomStreams"] = randomStreamsName(r.randomStreams); // IS8: only then, so shared keeps its bytes
     j["movements"] = Json::array();
-    for (const auto& m : r.movements)
+    for (const auto& m : r.movements) {
         j["movements"].push_back({{"movement", m.name}, {"vehicles", m.vehicles},
                                   {"meanDelay", m.meanDelay ? Json(*m.meanDelay) : Json(nullptr)},
                                   {"meanTravelTime", m.meanTravelTime ? Json(*m.meanTravelTime) : Json(nullptr)},
                                   {"unfinished", m.unfinished}});
+        if (m.diverted) j["movements"].back()["diverted"] = *m.diverted; // D581: only with the key
+    }
     j["queues"] = Json::array();
     for (const auto& q : r.queues)
         j["queues"].push_back({{"approach", q.name}, {"meanLength", q.meanLength}, {"maxLength", q.maxLength}});
@@ -203,6 +205,7 @@ Json movementJson(const MovementReport& r) {
     j["pending"] = r.pending; j["active"] = r.active; j["safetyClamps"] = r.safetyClamps; j["time"] = r.time;
     j["laneChanges"] = r.laneChanges;
     if (r.redRunning) j["redRunning"] = *r.redRunning; // B-9 (D238): only with the keys
+    if (r.diverted) j["diverted"] = *r.diverted; // D581: only with the key
     j["evaluationPeriod"] = {{"warmup", r.warmup}, {"end", r.evaluationEnd}}; // M5.3
     if (r.cooldown) j["evaluationPeriod"]["cooldown"] = *r.cooldown; // M5.9: only with one
     if (!r.sections.empty()) { // M5.4: only with a section, so other projects keep their bytes
@@ -381,6 +384,7 @@ std::string movementCsv(const MovementReport& r) {
         << "\nevaluationPeriod_s," << csvNumber(r.warmup) << ',' << csvNumber(r.evaluationEnd) << '\n';
     if (r.cooldown) out << "cooldown_s," << csvNumber(*r.cooldown) << '\n'; // M5.9: only with one
     if (r.redRunning) out << "redRunning," << *r.redRunning << '\n'; // B-9 (D238)
+    if (r.diverted) out << "diverted," << *r.diverted << '\n'; // D581
     if (!r.lots.empty()) out << "parked," << r.parked << '\n'; // M8.5: closes the vehicle count
     return out.str();
 }

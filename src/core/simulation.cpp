@@ -1,3 +1,4 @@
+#include "missed_exit.hpp"
 #include "simulation.hpp"
 #include "conflicts.hpp"
 #include "detail.hpp"
@@ -150,7 +151,9 @@ SimState stepSimulation(SimState&& state, double dt) {
         for (const auto& change : changes) {
             applyLaneChange(scenario, vehicles[change.vehicle], change, startTick, startTime, events);
         }
-        if (!changes.empty()) {
+        // LANE_LOCKS option B (D581): a vehicle held too long at its dead end gives up its turn.
+        const bool diverted = index.missedExits && applyMissedExits(scenario, index, vehicles, refs, startTick, startTime, events);
+        if (!changes.empty() || diverted) {
             refs = resolveRefs(scenario, vehicles, index);
             spans = occupiedSpans(scenario, vehicles, index, refs);
             buckets = bucketSpans(spans, scenario.segments.size());

@@ -42,6 +42,9 @@ struct MovementRow {
     std::optional<double> meanDelay, meanTravelTime;
     std::uint64_t unfinished{}; // M5.3: active or pending on this movement when the report is taken
                                 // (M5.9: with a cool-down, only those released in the window)
+    // D581: vehicles counted on this movement that gave up its turn (MissedExitEvent in the period);
+    // only when a behaviour carries missedExitAfter. Their trips count on the movement they arrive on.
+    std::optional<std::uint64_t> diverted;
     bool operator==(const MovementRow&) const = default;
 };
 struct QueueRow {
@@ -57,6 +60,7 @@ struct MovementReport {
     double time{};
     std::uint64_t laneChanges{}; // M3.2.8b
     std::optional<std::uint64_t> redRunning; // B-9 (D238): only when a behaviour carries the keys
+    std::optional<std::uint64_t> diverted;   // D581: whole run, only when a behaviour carries missedExitAfter
     double warmup{}, evaluationEnd{}; // M5.3: the period the rows and queues describe
     std::optional<double> cooldown; // M5.9: the spec's, so output can say how the window was read
     std::vector<SectionRow> sections; // M5.4: one per authored section; empty without any
@@ -91,7 +95,7 @@ private:
     // and the slots that do cross it, ascending.
     struct BoundLine { std::size_t counter{}; std::vector<double> atRoute; std::vector<std::size_t> routes; };
     std::vector<BoundLine> lines_;
-    std::vector<std::uint64_t> count_;
+    std::vector<std::uint64_t> count_, diverted_;
     std::vector<double> delay_, travel_;
     std::uint64_t unassigned_{}, observed_{};
     std::vector<double> queueSum_, queueMax_;

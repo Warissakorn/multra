@@ -155,6 +155,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         QObject::connect(lateral, &QCheckBox::toggled, spin, &QWidget::setEnabled);
         lanes->addRow(key.name, spin); lateralKeys.push_back({&key, spin});
     }
+    shared.push_back(optional(lanePage, lanes, "missedExitAfter", &either.missedExitAfter)); // D581 (LANE_LOCKS option B)
     shared.push_back(optional(junctionPage, junctions, "commitmentDeceleration", &either.commitmentDeceleration)); // B-2 (D219)
     shared.push_back(optional(junctionPage, junctions, "stopDwellTime", &either.stopDwellTime)); // B-8 (D231)
     shared.push_back(optional(junctionPage, junctions, "redRunningShare", &either.redRunningShare)); // B-9 (D238)
@@ -168,6 +169,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         to.mandatoryDecelerationTrailingVehicle = either.mandatoryDecelerationTrailingVehicle;
         to.stopDwellTime = either.stopDwellTime; to.driverFactorSpread = either.driverFactorSpread;
         to.redRunningShare = either.redRunningShare; to.redRunningTime = either.redRunningTime;
+        to.missedExitAfter = either.missedExitAfter; // D581
         to.lateral = {};
         if (lateral->isChecked()) for (const auto& [key, spin] : lateralKeys) to.lateral.*key->member = spin->value();
     };

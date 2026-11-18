@@ -36,7 +36,7 @@ EvaluationSpec withNodes(EvaluationSpec spec) {
 }
 }
 MovementAccumulator::MovementAccumulator(EvaluationSpec spec)
-    : spec_(withNodes(std::move(spec))), count_(spec_.movementNames.size()),
+    : spec_(withNodes(std::move(spec))), count_(spec_.movementNames.size()), diverted_(spec_.movementNames.size()),
       delay_(spec_.movementNames.size()), travel_(spec_.movementNames.size()),
       queueSum_(spec_.counters.size()), queueMax_(spec_.counters.size()),
       sections_(spec_.sections, spec_.warmup, spec_.end, spec_.cooldown.has_value()),
@@ -72,6 +72,11 @@ void MovementAccumulator::observe(const SimState& state) {
     const auto inPeriod = [&](double time) { return time >= spec_.warmup - slack && (!spec_.end || time <= *spec_.end + slack); };
     for (const auto& event : state.events) {
         summary_.add(event);
+        if (const auto* missed = std::get_if<MissedExitEvent>(&event); missed && inPeriod(missed->time)) { // D581
+            for (std::size_t r = 0; r < s.routes.size(); ++r)
+                if (s.routes[r].id == missed->fromRouteId && movementOfSlot_[r] != npos) { ++diverted_[movementOfSlot_[r]]; break; }
+            continue;
+        }
         const auto* arrived = std::get_if<ArrivedEvent>(&event);
         if (!arrived) continue;
         // M5.9: with a cool-down a trip belongs to the window it was released in, whenever it ends.
@@ -179,6 +184,11 @@ MovementReport MovementAccumulator::report(const SimState& end) const {
     // B-9 (D238): only when a behaviour carries the keys, so other runs keep their bytes.
     if (end.scenario && std::any_of(end.scenario->behaviours.begin(), end.scenario->behaviours.end(),
                                     [](const auto& b) { return b.redRunningShare.has_value(); })) r.redRunning = summary.redRunning;
+    if (end.scenario && std::any_of(end.scenario->behaviours.begin(), end.scenario->behaviours.end(), // D581, likewise
+                                    [](const auto& b) { return b.missedExitAfter.has_value(); })) {
+        r.diverted = summary.diverted;
+        for (std::size_t m = 0; m < r.movements.size(); ++m) r.movements[m].diverted = diverted_[m];
+    }
     r.sections = sections_.report(); r.los = spec_.los;
     if (!spec_.nodes.empty()) {
         std::size_t turns = 0, legs = 0;

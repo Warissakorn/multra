@@ -276,6 +276,12 @@ void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
     index.laneChangesOfRoute.assign(s.routes.size(), {});
     index.deadEndOfRoute.assign(s.routes.size(), std::numeric_limits<double>::infinity());
     index.remainingOfRoute = laneChangesRemaining(s);
+    index.missedExitTicks.assign(s.behaviours.size(), 0); // D581
+    for (std::size_t b = 0; b < s.behaviours.size(); ++b)
+        if (const auto after = s.behaviours[b].missedExitAfter; after && s.timeStep > 0)
+            index.missedExitTicks[b] = std::max<std::uint64_t>(1, static_cast<std::uint64_t>(std::ceil(*after / s.timeStep - 1e-9)));
+    index.missedExits = !s.routeDeadEnds.empty() &&
+        std::any_of(index.missedExitTicks.begin(), index.missedExitTicks.end(), [](auto n) { return n > 0; });
     for (const auto& dead : s.routeDeadEnds)
         if (const auto r = slotOf(s, dead.routeId); r < s.routes.size()) index.deadEndOfRoute[r] = dead.at;
     index.discretionaryOfRoute.assign(s.routes.size(), {});

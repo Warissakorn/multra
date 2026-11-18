@@ -125,6 +125,20 @@ void rejectDriverFactorSpreadBefore43(const Json& j) {
         if (behaviours[i].is_object() && behaviours[i].contains("driverFactorSpread"))
             throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".driverFactorSpread"}});
 }
+// D581: schema 78 exactly when an owned behaviour carries missedExitAfter.
+bool ownsMissedExit(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.missedExitAfter.has_value(); });
+}
+void rejectMissedExitBefore78(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("missedExitAfter"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".missedExitAfter"}});
+}
 // B-8 (D231): schema 41 exactly when an owned behaviour carries stopDwellTime.
 bool ownsStopDwellBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&

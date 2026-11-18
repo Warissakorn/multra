@@ -235,7 +235,8 @@ const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B:
     {"mandatoryDecelerationOwn",&B::mandatoryDecelerationOwn,mandatoryVersion,true},
     {"mandatoryDecelerationTrailingVehicle",&B::mandatoryDecelerationTrailingVehicle,mandatoryVersion,true},
     {"stopDwellTime",&B::stopDwellTime,stopDwellVersion,true},{"driverFactorSpread",&B::driverFactorSpread,driverFactorSpreadVersion,true},
-    {"redRunningShare",&B::redRunningShare,redRunningVersion,true},{"redRunningTime",&B::redRunningTime,redRunningVersion,true}};
+    {"redRunningShare",&B::redRunningShare,redRunningVersion,true},{"redRunningTime",&B::redRunningTime,redRunningVersion,true},
+    {"missedExitAfter",&B::missedExitAfter,missedExitVersion,true}};
 std::vector<Field> behaviourRow(bool w74) {
     const int notThis=w74?1:0,notOther=w74?0:1;
     std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},

@@ -45,6 +45,13 @@ struct RoutingEvent {
 };
 struct RedRunningEvent { double time{}; std::uint64_t vehicleId{}; std::string headId; bool operator==(const RedRunningEvent&) const = default; }; // B-9 (D238)
 // New event alternatives append so every existing index stays stable.
+// LANE_LOCKS option B (D581): a vehicle that waited missedExitAfter at its stub's dead end took the
+// full route sharing its lane instead. Route distance is unchanged, as at a positioned decision.
+struct MissedExitEvent {
+    double time{}; std::uint64_t vehicleId{}; std::string fromRouteId, toRouteId;
+    bool operator==(const MissedExitEvent&) const = default;
+};
 using SimEvent = std::variant<SignalEvent, DepartedEvent, MovedEvent,
-                              SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent, RedRunningEvent>;
+                              SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent, RedRunningEvent,
+                              MissedExitEvent>;
 }

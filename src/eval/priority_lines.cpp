@@ -20,6 +20,7 @@ void PriorityLineAccumulator::observe(const SimState& state) {
     for (const auto& event : state.events) {
         if (const auto* d = std::get_if<DepartedEvent>(&event)) departed.insert(d->vehicleId);
         if (const auto* r = std::get_if<RoutingEvent>(&event)) remapped.insert(r->vehicleId);
+        if (const auto* x = std::get_if<MissedExitEvent>(&event)) remapped.insert(x->vehicleId); // D581
         if (const auto* c = std::get_if<LaneChangeEvent>(&event)) remapped.insert(c->vehicleId);
     }
     // Queued (Vissim's condition): standing short of the line, within maxGap of it or of the rear of

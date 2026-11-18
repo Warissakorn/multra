@@ -33,6 +33,8 @@ bool ownsDriverFactorSpread(const ProjectDocument&); // B-4 (D236): schema 43
 void rejectDriverFactorSpreadBefore43(const Json& document);
 bool ownsRedRunning(const ProjectDocument&); // B-9 (D238): schema 44
 void rejectRedRunningBefore44(const Json& document);
+bool ownsMissedExit(const ProjectDocument&); // D581 (LANE_LOCKS option B): schema 78
+void rejectMissedExitBefore78(const Json& document);
 bool ownsCommitmentBehaviour(const ProjectDocument&); // B-2 (D219): schema 36
 void rejectCommitmentBefore36(const Json& document);
 bool ownsKerbBehaviour(const ProjectDocument&);

@@ -51,6 +51,9 @@ Json eventJson(const SimEvent& event) {
                 j["kind"]="routing";j["decisionId"]=e.decisionId;j["fromRouteId"]=e.fromRouteId;j["toRouteId"]=e.toRouteId;
             }
             else if constexpr (std::is_same_v<T, RedRunningEvent>) { j["kind"] = "red-running"; j["headId"] = e.headId; } // B-9 (D238)
+            else if constexpr (std::is_same_v<T, MissedExitEvent>) { // D581
+                j["kind"] = "missed-exit"; j["fromRouteId"] = e.fromRouteId; j["toRouteId"] = e.toRouteId;
+            }
             else if constexpr (std::is_same_v<T, LaneChangeEvent>) {
                 j["kind"] = "lane-change"; j["fromRouteId"] = e.fromRouteId; j["toRouteId"] = e.toRouteId;
             } else {
