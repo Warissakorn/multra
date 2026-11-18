@@ -1,8 +1,8 @@
 # Lane locks at dead ends — draft contract (D578)
 
 **Status: the owner chose A, then B off by default; not D (B50, 2026-11-18, "ทำตามแนะนำ").** LL1
-ran first and found a span defect, fixed as D579 (§2a). A is implemented as D580 (§2b). B is not
-implemented yet. Rule 4 applies: nothing here is validated.
+ran first and found a span defect, fixed as D579 (§2a). A is implemented as D580 (§2b), B as D581,
+off by default (§2c). Rule 4 applies: nothing here is validated.
 
 ## 1. The defect
 
@@ -82,6 +82,23 @@ question 2. The study sets it on all four decisions (`site.csv` row `entrylanes,
 Of the six clamps after D579, three came 0.3 s after the clamped vehicle's own lane change into a
 standing queue on the entry Link; three showed no change of its own. The one left (vehicle 3915, on a
 Connector at 14 m, no lane change) is not explained yet.
+
+## 2c. Option B result (D581)
+
+A behaviour's `missedExitAfter` (schema 78, absent = never) moves a vehicle that has waited that
+long, in whole ticks, at its dead end onto the full route that drives exactly its segments so far.
+The tie-break is the full route sharing most of the stub's own segments, then the smallest route
+id. The wait restarts after a lane change, so the cap holds per dead end: a vehicle can wait at two
+in a row. The study keeps option A and carries no threshold. These figures are a probe on its spread
+layout (without `entrylanes`) with the key set on every behaviour:
+
+| Seed 42, spread layout | Key absent | 60 s | 120 s |
+|---|---|---|---|
+| Completed / active / pending | 4,698 / 539 / 5,503 | 5,182 / 541 / 5,017 | 4,944 / 538 / 5,258 |
+| Diverted | — | 165 | 53 |
+| Vehicles waiting at a dead end / sum, s | 187 / 19,600 | 345 / 16,002 | 261 / 17,960 |
+| Longest wait at one dead end, s | 2,683 | 59.9 | 119.9 |
+| Safety clamps | 6 | 2 | 2 |
 
 ## 3. What every option keeps
 
@@ -163,12 +180,12 @@ hides the cause behind a count, and the delay it removes is real delay on site.
 | Row | Check | Fails today? |
 |---|---|---|
 | LL1 | Locate the dead end of NW vehicle 848 (seed 42, D576 file): station, chain and target. If it lies past where its target chain leaves, the stub's span is wrong and is fixed first, as its own defect | **done (D579):** 280 → 273 m; test `countstudy.a_left_turn_stub_is_held_before_its_turn_leaves` |
-| LL2 | ratchada-latphrao, seed 42: no dead-end wait longer than the chosen threshold (A: none at all on the entry Link; B: `missedExitAfter`) | **A done (D580):** 0 waits |
-| LL3 | Every shipped project, seeds 42–51: byte-identical results with the option absent | **passed for A (D580)** |
-| LL4 | Accounting: completed + active + pending (+ diverted for B) equals vehicles generated, per input | must pass |
+| LL2 | ratchada-latphrao, seed 42: no dead-end wait longer than the chosen threshold (A: none at all on the entry Link; B: `missedExitAfter`) | **A (D580):** 0 waits; **B (D581, spread probe):** 59.9 s at 60, 119.9 s at 120, per dead end |
+| LL3 | Every shipped project, seeds 42–51: byte-identical results with the option absent | **passed for A (D580) and B (D581)** |
+| LL4 | Accounting: completed + active + pending equals vehicles generated, per input, with or without B; `diverted` equals the number of `MissedExitEvent`s and is not added (a diverted vehicle is completed or active) | **passed for B (D581):** test `lanechange.a_vehicle_held_past_missed_exit_after_…` (16 of 16 arrive) |
 | LL5 | (A) With `entryLanes: "serving"`, each destination's per-lane input equals its share on full chains, with zero on stubs, wherever a full chain exists | **done (D580):** `pocketdecision.serving_entry_lanes_…`, `countstudy.serving_entry_lanes_…` |
-| LL6 | (B) A vehicle whose lane has no onward full chain keeps waiting and is reported, never removed | new |
-| LL7 | (B) `MissedExitEvent` replays byte for byte. The movement table's `diverted` matches the events | new |
+| LL6 | (B) A vehicle whose lane has no onward full chain keeps waiting and is reported, never removed | **done (D581):** `lanechange.without_missed_exit_after_or_an_onward_route_…` |
+| LL7 | (B) `MissedExitEvent` replays byte for byte. The movement table's `diverted` matches the events | **done (D581):** replay in `lanechange.a_vehicle_held_past_…`; the table counts the events |
 | LL8 | (C) After a zipper hold, no clamp is added on the target lane (M2.6 and the lane lab, seeds 42–81) | new |
 
 ## 7. Questions for the owner

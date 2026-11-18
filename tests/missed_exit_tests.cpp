@@ -31,7 +31,7 @@ namespace {
 SimState blockedAt(std::optional<double> after, bool onward = true) {
     auto scenario = lanes();
     if (onward) {
-        scenario.segments[0].successors = {"outA"};
+        scenario.segments[0].next = {"outA"};
         scenario.segments.push_back({"outA", 50, {}});
         scenario.routes.push_back({"straightA", {"a", "outA"}});
     }

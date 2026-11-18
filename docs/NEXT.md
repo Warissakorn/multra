@@ -38,14 +38,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   be calibration in all but name (D544), and the M2.6/M5.7 purpose is the owner building a study in
   the editor and recording friction, which this builder-made project is not evidence of. It stays
   as the failing case of the lane-lock defect.
-- **Lane locks (D578–D580):** [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11. The owner
-  chose A, then B off by default (B50). LL1 is done (D579). **A is done (D580):** `entryLanes:
-  "serving"` on a routing decision, schema 77; the study uses it. Seed 42: completed 6,627, pending
-  3,666, no dead-end wait, 1 clamp (vehicle 3915 on a Connector, no change of its own: not yet
-  explained). **Next: B**, missed exit after a threshold, off by default (`MissedExitEvent`,
-  `diverted`; rows LL4, LL6, LL7). Owner: §7 q2 to q4 are still open (key on the decision was taken
-  as the default; B's threshold and how a diverted vehicle counts). The decision dialog's checkbox
-  compiles (desktop preset) but was not opened.
+- **Lane locks (D578–D581):** [LANE_LOCKS](reference/LANE_LOCKS.md), ROADMAP M3.2.11. LL1 (D579),
+  A (D580, `entryLanes: "serving"`, schema 77; the study uses it: no dead-end wait) and B (D581,
+  behaviour `missedExitAfter`, schema 78, off by default) are done. Open: the owner's §7 q2–q4
+  (key on the decision; B's threshold; how a diverted trip counts; defaults in D580/D581), the study's
+  one remaining clamp (vehicle 3915 on a Connector, no change of its own), and C with M3.4. The
+  M3.2.11 row can close when the owner accepts the defaults.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
 ## Owner checks waiting from recent sessions
