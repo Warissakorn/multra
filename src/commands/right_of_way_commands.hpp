@@ -39,6 +39,15 @@ std::vector<std::string> takeOverMerge(ProjectDocument&, const std::string& sect
 // The separate, named action that hands a merge back: removes every area covering two of its
 // incoming paths, their rules, and the waiting lines nothing else uses.
 void restoreAutomaticPriority(ProjectDocument&, const std::string& section);
+// M3.2.12 (STOP_LINES §4, SL5, D594): every stored waiting line the author did not make their own
+// goes, and the sides that named it wait at their derived lines. Kept: a line a Stop/Yield or a
+// queue counter names, and a dragged one -- more than 0.01 m from where the editor put it, the
+// derived position of the first area on its path that names it (or that area's entry, the D59
+// merge strip's line). Returns how many lines went.
+std::size_t deriveStopLines(ProjectDocument&);
+// The inverse: every derived side gets a stored line where it waits now, so the drawing can be
+// written for a reader older than schema 79. Runs as before (SL6). Returns how many lines it added.
+std::size_t storeDerivedLines(ProjectDocument&);
 
 // M3.2.4, the editor's gestures (src/commands/conflict_authoring.cpp). Each is one document change
 // the caller runs inside History::execute.

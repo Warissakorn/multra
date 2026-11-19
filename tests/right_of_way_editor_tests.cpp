@@ -31,22 +31,18 @@ TEST(rightofway_editor, crossing_areas_expand_to_every_crossing_lane_pair) {
     CHECK(h.execute("add", [&](ProjectDocument& d) { areas = addCrossingAreas(d, p.a, p.b, p.b, kDefaults); }));
     CHECK(areas.size() == 2); // both lanes of A cross B's one lane
     const auto& row = h.document().network.rightOfWay;
-    // One line per lane (D63): each of A's two lanes, and B's one lane shared by both areas.
-    CHECK(row.conflictAreas.size() == 2); CHECK(row.waitingLines.size() == 3); CHECK(row.priorityRules.size() == 2);
-    const auto station = [&](const std::string& id) {
-        return std::find_if(row.waitingLines.begin(), row.waitingLines.end(), [&](const auto& w) { return w.id == id; })->point.station; };
-    // The forcing: B meets the two areas at different stations, so per-area lines would differ.
-    CHECK(std::abs(row.conflictAreas[0].second.entryStation - row.conflictAreas[1].second.entryStation) > 1);
-    CHECK(row.conflictAreas[0].second.waitingLineId == row.conflictAreas[1].second.waitingLineId);
-    const double firstOnB = std::min(row.conflictAreas[0].second.entryStation, row.conflictAreas[1].second.entryStation);
-    test::near(station(row.conflictAreas[0].second.waitingLineId), firstOnB - 1, 1e-12); // before the FIRST area
-    CHECK(row.conflictAreas[0].first.waitingLineId != row.conflictAreas[1].first.waitingLineId);
+    // D594: every side waits at its derived line, 1 m before its own entry; nothing is stored. B's two
+    // areas are admitted together at the first (A15), as D63's one shared line did.
+    CHECK(row.conflictAreas.size() == 2); CHECK(row.waitingLines.empty()); CHECK(row.priorityRules.size() == 2);
+    const auto& n = h.document().network;
+    CHECK(std::abs(row.conflictAreas[0].second.entryStation - row.conflictAreas[1].second.entryStation) > 1); // the forcing
+    for (const auto& a : row.conflictAreas) test::near(waitingStation(n, a.second), a.second.entryStation - 1, 1e-9);
     for (const auto& a : row.conflictAreas) {
         CHECK(a.kind == ConflictKind::crossing);
         CHECK(a.priority == ConflictPriority::secondYields); // B, the second, gives way
         const auto o = surfaceOverlap(h.document().network, a.first.path, a.second.path);
         test::near(a.first.entryStation, o.first.from, 1e-12); test::near(a.second.exitStation, o.second.to, 1e-12);
-        test::near(station(a.first.waitingLineId), o.first.from - 1, 1e-12); // A's lanes each meet one area
+        test::near(waitingStation(n, a.first), o.first.from - 1, 1e-9); // A's lanes each meet one area
     }
     for (const auto& r : row.priorityRules) { test::near(r.gapTime, kDefaults.gapTime, 0); test::near(r.headway, kDefaults.headway, 0); }
     // What the gesture makes runs: nothing reported, one zone per area.
@@ -103,15 +99,23 @@ TEST(rightofway_editor, take_over_and_restore_are_named_actions_on_the_objects) 
 TEST(rightofway_editor, deleting_an_area_keeps_lines_other_areas_still_use) {
     auto t = threeWayMerge();
     takeOverMerge(t.d, mergeAt(t.d, 3), kDefaults);
+    storeDerivedLines(t.d); // the stored-line case (D594); one line per side, as a take-over wrote them
+    auto& areas = t.d.network.rightOfWay.conflictAreas;
+    for (auto& a : areas) for (auto* s : {&a.first, &a.second}) for (const auto& b : areas) for (const auto* x : {&b.first, &b.second})
+        if (x->path == s->path) s->waitingLineId = std::min(s->waitingLineId, x->waitingLineId);
+    std::erase_if(t.d.network.rightOfWay.waitingLines, [&](const auto& w) { return std::none_of(areas.begin(), areas.end(), [&](const auto& a) {
+        return a.first.waitingLineId == w.id || a.second.waitingLineId == w.id; }); });
     const auto before = t.d.network.rightOfWay.waitingLines.size();
     CHECK(before == 3); // the forcing: three areas share three lines
     removeConflictArea(t.d, t.d.network.rightOfWay.conflictAreas.front().id);
     CHECK(t.d.network.rightOfWay.conflictAreas.size() == 2);
     CHECK(t.d.network.rightOfWay.waitingLines.size() == 3); // every line still serves another area
     auto p = crossingLinks();
-    const auto id = addCrossingAreas(p.d, p.a, p.b, p.b, kDefaults).front();
-    removeConflictArea(p.d, id);
-    CHECK(p.d.network.rightOfWay.waitingLines.size() == 2); // its A-lane line went; B's shared line stays
+    addCrossingAreas(p.d, p.a, p.b, p.b, kDefaults);
+    setAreaControl(p.d, p.d.network.rightOfWay.conflictAreas.front().id, StopMode::stop); // B's sign covers both areas
+    const auto first = p.d.network.rightOfWay.conflictAreas.front().id; // a copy: the area goes
+    removeConflictArea(p.d, first);
+    CHECK(p.d.network.rightOfWay.waitingLines.size() == 1); // B's sign still serves the other area
     validateDocument(p.d);
 }
 TEST(rightofway_editor, the_drawn_area_and_line_are_where_the_runtime_puts_them) {
@@ -127,9 +131,8 @@ TEST(rightofway_editor, the_drawn_area_and_line_are_where_the_runtime_puts_them)
     const auto& linkA = p.d.network.links.front();
     const auto band = laneGeometry(linkA, linkA.lanes[1].id, p.d.network.drivingSide).front().y;
     test::near((minY + maxY) / 2, band, 1e-9); test::near(maxY - minY, 3.5, 1e-9);
-    const auto line = std::find_if(p.d.network.rightOfWay.waitingLines.begin(), p.d.network.rightOfWay.waitingLines.end(),
-                                   [&](const auto& w) { return w.id == a.second.waitingLineId; });
-    const auto bar = waitingLineBar(p.d.network, line->point);
+    // Where the side waits: its derived line (D594).
+    const auto bar = waitingLineBar(p.d.network, ControlPoint{a.second.path, waitingStation(p.d.network, a.second)});
     CHECK(bar.has_value());
     test::near(bar->first.y, minY - 1, 1e-9); test::near(bar->second.y, minY - 1, 1e-9); // 1 m short of entry
     CHECK(std::abs(std::abs(bar->first.x - bar->second.x) - 3.5) < 1e-9);
@@ -181,6 +184,7 @@ TEST(rightofway_editor, a_click_cycles_priority_through_three_states_in_one_step
 TEST(rightofway_editor, a_waiting_line_maps_its_authored_station_to_the_runtime_normal) {
     auto p = crossingLinks();
     addCrossingAreas(p.d, p.a, p.b, p.b, kDefaults);
+    storeDerivedLines(p.d); // a stored line's mapping (D594: new areas store none)
     // A Connector path too: a line on one is measured on the Connector's base polyline.
     const auto c = addLink(p.d, {{130, 0}, {200, 0}}, 1, 3.5);
     addConnector(p.d, {p.a, lane(p.d, p.a, 0)}, {c, lane(p.d, c)});

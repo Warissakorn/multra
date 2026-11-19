@@ -1,4 +1,5 @@
 #pragma once
+#include "../src/commands/right_of_way_commands.hpp"
 #include "demand_schema_cases.hpp"
 #include "study_area_fixture.hpp"
 
@@ -18,6 +19,7 @@ inline multra::Json area(int version) {
     using namespace multra;
     auto c=studyfix::corridor();auto d=c.d;setStudyAreaNodes(d,{c.a});
     d.zones.studyArea.gateFlows={{"p",entryGateName("x"),exitGateName("y"),"car-only","",120}};
+    storeDerivedLines(d); // relabelled below 79: F4's derived lines stored (D594)
     return test::atSchema(documentJson(d),version);
 }
 inline std::vector<Case> cases() {

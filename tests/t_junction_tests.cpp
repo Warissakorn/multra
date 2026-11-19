@@ -158,6 +158,7 @@ TEST(tjunction, the_archived_sweep_metadata_keeps_its_original_geometry) {
     CHECK(omitUnusedVehicleCatalogAdditions(test::root(),sweepFixture,archived,hashChanged));
     CHECK(hashChanged!=archived); // an original type's hash is never discarded/restored by this helper
     CHECK(omitUnusedVehicleCatalogAdditions(test::root(),sweepFixture,archived,current));
+    CHECK(sweep::restoreArchivedRouteIds(archived,current)); // D594: renumbered routes, same inputs
     CHECK(archived==current); // timing, volumes, catalogs, seeds and rules still agree
     // A changed catalog would be caught: the hash reads the file, not its name.
     CHECK(sweep::fnv1a(test::root() / "data/vehicle-types/car.json") != sweep::fnv1a(test::root() / "data/vehicle-types/heavy-vehicle.json"));

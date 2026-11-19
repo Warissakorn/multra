@@ -1,6 +1,7 @@
 #include "junction_fill_fixture.hpp"
 #include "reference/j3b/api.hpp"
 #include "../src/commands/network_commands.hpp"
+#include "../src/commands/right_of_way_commands.hpp"
 using namespace multra;
 using namespace junctionTest;
 namespace {
@@ -10,7 +11,8 @@ std::vector<FillOffer> kind(std::vector<FillOffer> offers,FillKind wanted) {
 void noJunctionFields(const ProjectDocument& d) {
     for(const auto& n:d.network.nodes)CHECK(!n.junction&&n.approachDirections.empty());
     for(const auto& l:d.network.links)CHECK(!l.generated);
-    CHECK(documentJson(d).at("schemaVersion")<=60);
+    auto older=d;storeDerivedLines(older); // D594: derived lines alone need 79
+    CHECK(documentJson(older).at("schemaVersion")<=60);
 }
 }
 TEST(junctionfill,jt7_legacy_f3_f4_documents_match_pre_j3b_source) {

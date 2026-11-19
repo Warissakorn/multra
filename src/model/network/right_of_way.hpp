@@ -71,6 +71,10 @@ std::vector<Point> controlPathPolyline(const Network&, const ControlPathRef&);
 // Physical distance/offset on the driving lane, adapted to stored authoring coordinates.
 double controlStationDistance(const Network&, const ControlPathRef&, double from, double to);
 double offsetControlStation(const Network&, const ControlPathRef&, double station, double metres);
+// M3.2.12 (STOP_LINES §3, D594): where a side waits -- its named line, or with none its derived line,
+// frontStopDistance short of its entry (clamped to the path's start).
+double derivedWaitingStation(const Network&, const ConflictSide&);
+double waitingStation(const Network&, const ConflictSide&);
 // M3.2.6c: the ControlPoint at a place on a Link lane, from a station along that lane's own
 // polyline (what nearestHeadSlot picks) -- mapped cross-section for cross-section onto the Link's
 // reference polyline, where a ControlPoint's station is measured. Empty when the lane is gone.
@@ -98,11 +102,10 @@ struct MergeSide { ControlPathRef path; double wait{}, entry{}, exit{}, start{};
 MergeSide mergeSide(const Network&, const RuntimeSections&, const std::string& segment);
 // M3.2.4e (docs/reference/MERGE_MOUTH.md R1, R3, R4): two incoming sides of one merge over their
 // measured overlap -- entry at the first overlapping station on the joining segment, exit at the
-// join -- or the D50/D59 strips when no overlap of positive area is measured. Each side's waiting
-// line stands kMergeLineSetback short of the earliest entry over its group (R2).
+// join -- or the D50/D59 strips when no overlap of positive area is measured. Its sides name no
+// line: each waits at its derived line (STOP_LINES, D594).
 struct MergePair { ConflictSide first, second; bool measured{}; };
 MergePair mergeMouth(const Network&, const MergeSide& first, const MergeSide& second, ConnectorSurfaceCache* = nullptr);
-inline constexpr double kMergeLineSetback = 1.0; // D50
 
 // M3.2.4c (D68): what the drawing implies where nobody has authored an area -- Vissim's automatic
 // conflict areas. Derived, never stored, so they need no lifecycle and a file never holds one.

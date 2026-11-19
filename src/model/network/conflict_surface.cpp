@@ -65,6 +65,14 @@ double offsetControlStation(const Network& n,const ControlPathRef& ref,double st
     const double at=std::clamp(metres(m,station)+offset,0.,length);
     return m.connector?connectorAuthoringStation(*m.connector,m.path,at):matchedStation(m.lane,m.reference,at);
 }
+double derivedWaitingStation(const Network& n,const ConflictSide& side) {
+    return offsetControlStation(n,side.path,side.entryStation,-n.rightOfWay.frontStopDistance);
+}
+double waitingStation(const Network& n,const ConflictSide& side) {
+    if(side.waitingLineId.empty())return derivedWaitingStation(n,side);
+    for(const auto& w:n.rightOfWay.waitingLines)if(w.id==side.waitingLineId)return w.point.station;
+    throw std::invalid_argument("UNKNOWN_WAITING_LINE");
+}
 
 std::optional<ConflictSurface> conflictSurface(const Network& n,const ControlPathRef& ref) { return conflictSurface(n,ref,nullptr); }
 }

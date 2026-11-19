@@ -15,10 +15,6 @@ bool hasArea(const ProjectDocument& d, const std::string& id) {
     const auto& areas = d.network.rightOfWay.conflictAreas;
     return std::any_of(areas.begin(), areas.end(), [&](const auto& a) { return a.id == id; });
 }
-double lineStation(const ProjectDocument& d, const std::string& id) {
-    for (const auto& w : d.network.rightOfWay.waitingLines) if (w.id == id) return w.point.station;
-    throw std::runtime_error("no line " + id);
-}
 const Link& linkOf(const ProjectDocument& d, const std::string& id) {
     for (const auto& l : d.network.links) if (l.id == id) return l;
     throw std::runtime_error("no link " + id);
@@ -61,8 +57,8 @@ TEST(conflict_follow, a_crossing_follows_a_link_moved_along_itself) {
     const auto& was = before.first.path.connectorId.empty() ? before.first : before.second;
     test::near(onLink.entryStation, was.entryStation - 5, 1e-6); // the reference now starts 5 m later
     // The line keeps its distance to the area it stands before.
-    test::near(onLink.entryStation - lineStation(h.document(), onLink.waitingLineId),
-               was.entryStation - lineStation(t.document, was.waitingLineId), 1e-6);
+    test::near(onLink.entryStation - waitingStation(h.document().network, onLink), // derived or stored (D594)
+               was.entryStation - waitingStation(t.document.network, was), 1e-6);
     CHECK(after.priority == before.priority && after.name == before.name);
 }
 TEST(conflict_follow, a_crossing_follows_a_link_moved_across_the_turn) {
@@ -96,6 +92,7 @@ TEST(conflict_follow, an_area_whose_overlap_is_gone_leaves_with_its_rule_control
     CHECK(std::none_of(row.priorityRules.begin(), row.priorityRules.end(), [&](const auto& r) { return r.conflictAreaId == a.id; }));
     for (const auto& c : row.stopControls) CHECK(std::find(c.conflictAreaIds.begin(), c.conflictAreaIds.end(), a.id) == c.conflictAreaIds.end());
     for (const auto* s : {&a.first, &a.second}) {
+        if (s->waitingLineId.empty()) continue; // a derived side has no line to keep (D594)
         const bool used = std::any_of(row.conflictAreas.begin(), row.conflictAreas.end(), [&](const auto& x) {
             return x.first.waitingLineId == s->waitingLineId || x.second.waitingLineId == s->waitingLineId; });
         const bool kept = std::any_of(row.waitingLines.begin(), row.waitingLines.end(), [&](const auto& w) { return w.id == s->waitingLineId; });

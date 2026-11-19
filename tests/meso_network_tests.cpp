@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <set>
+#include "../src/commands/right_of_way_commands.hpp"
 using namespace multra;
 namespace {
 std::filesystem::path data() { return test::root() / "data"; }
@@ -124,9 +125,10 @@ TEST(mesonetwork, me2_jam_density_settings_and_refusals) { // ME2
     const auto bare = typed("t-junction-priority.traffic.json", arterial(std::nullopt));
     CHECK(!bare.definition->linkTypes[0].jamDensity); // forcing
     CHECK(issueAt(mesoNetwork(bare, data()).issues, "MESO_JAM_DENSITY_MISSING", "definition.linkTypes[0].jamDensity"));
-    CHECK(reread(bare)["schemaVersion"] == 50);
+    { auto older = bare; storeDerivedLines(older); CHECK(reread(older)["schemaVersion"] == 50); } // D594: derived lines alone need 79
     // jamDensity and mesoSettings round-trip at 52 and are refused below it.
     auto d = typed("t-junction-priority.traffic.json");
+    storeDerivedLines(d); // D594: derived lines alone need 79
     demand(d).mesoSettings = MesoSettings{0.5, 60};
     const auto j = reread(d);
     CHECK(j["schemaVersion"] == 52);

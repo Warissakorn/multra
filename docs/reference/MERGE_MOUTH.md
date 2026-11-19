@@ -29,7 +29,7 @@ solver (M3.2.3c) is unchanged.
 | # | Rule |
 |---|---|
 | R1 | Each area's side covers the measured overlap of its pair (`conflictAreaGeometry`): entry at the first overlapping station and exit at the last, with a Link side's exit clipped to the join. Past the join the two streams share one lane and car-following separates them. |
-| R2 | Each side's waiting line is 1 m (D50's setback) short of the earliest entry over the areas of its group, and not before the start of a Connector. One line per side, as before. |
+| R2 | Each side's waiting line is 1 m (D50's setback) short of the earliest entry over the areas of its group, and not before the start of a Connector. One line per side, as before. *Superseded by D594: each side names no line and waits at its derived line, `frontStopDistance` short of its own entry ([STOP_LINES](STOP_LINES.md)).* |
 | R3 | When no overlap of positive area is measured for a pair, its sides keep the D50/D59 strip. No guessed polygon (M3_CONTRACT §1). |
 | R4 | A side stays on the segment that joins: an overlap beginning upstream of a section cut is clipped to the cut. Merge topology and group membership are read there unchanged. Not exercised by a row: the T-junction has no such cut. |
 | R5 | Derived merges (nobody took them over) stay on the M3.1 rule at the strip (D59): the four-leg and M2.6 numbers do not move. |

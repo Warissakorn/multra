@@ -100,6 +100,12 @@ int main(int argc, char** argv) {
         const auto b = addLink(d, {{100, -100}, {100, 100}}, 1, 3.5);
         const auto areas = addCrossingAreas(d, a, b, b, {3, 7}); // B gives way
         require(areas.size() == 2, "Fixture did not make two crossing areas");
+        storeDerivedLines(d); // the drag below moves a stored line (D594: new areas store none),
+        auto& stored = d.network.rightOfWay;          // one for B's lane, as D63 placed it
+        for (auto& x : stored.conflictAreas) if (x.second.path == stored.conflictAreas.front().second.path)
+            x.second.waitingLineId = stored.conflictAreas.front().second.waitingLineId;
+        std::erase_if(stored.waitingLines, [&](const auto& l) { return std::none_of(stored.conflictAreas.begin(), stored.conflictAreas.end(),
+            [&](const auto& x) { return x.first.waitingLineId == l.id || x.second.waitingLineId == l.id; }); });
         const auto file = temp.filePath("canvas.traffic.json"); write(file, d);
         EditorWindow w{std::filesystem::path(argv[1])}; w.show(); QTest::qWait(30);
         w.openFile(file);act(w,"editorWorkspaceTables")->trigger();QTest::qWait(30);QApplication::processEvents();

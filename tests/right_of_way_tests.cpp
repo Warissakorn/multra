@@ -25,7 +25,7 @@ TEST(rightofway, a02_taken_over_merge_round_trips_with_no_derived_state) {
     CHECK(areas.size() == 1);
     validateDocument(d);
     const auto file = documentJson(d);
-    CHECK(file["schemaVersion"] == 17);
+    CHECK(file["schemaVersion"] == 79); // D594: both sides wait at derived lines
     const auto back = parseDocument(Json::parse(file.dump()));
     CHECK(back.network.rightOfWay == d.network.rightOfWay);
     CHECK(documentJson(back) == file);
@@ -38,7 +38,7 @@ TEST(rightofway, a03_bad_controls_are_refused_and_change_nothing) {
     History h; h.reset(fixture::fourLegIntersection().document);
     const auto before = h.document();
     const auto area = [&] {
-        auto d = h.document(); takeOverMerge(d, mergeAt(d, 2), kDefaults); return d.network.rightOfWay;
+        auto d = h.document(); takeOverMerge(d, mergeAt(d, 2), kDefaults); storeDerivedLines(d); return d.network.rightOfWay; // stored lines (D594)
     }();
     CHECK(area.conflictAreas.size() == 1); // the forcing below starts from a well-formed control
     CHECK(rightOfWayStructuralIssues([&] { auto n = before.network; n.rightOfWay = area; return n; }()).empty());
@@ -176,7 +176,9 @@ TEST(rightofway, commands_are_one_undoable_step) {
     const auto after = h.document();
     CHECK(after.network.rightOfWay.conflictAreas.size() == 3);
     test::throws([&] { h.execute("again", [&](ProjectDocument& d) { takeOverMerge(d, section, kDefaults); }); }, "EDIT_ALREADY_EXPLICIT");
+    CHECK(after.network.rightOfWay.waitingLines.empty()); // D594: derived lines; a sign's line is referenced instead
     test::throws([&] { h.execute("line", [&](ProjectDocument& d) {
+        setAreaControl(d, d.network.rightOfWay.conflictAreas[0].id, StopMode::yield);
         deleteWaitingLine(d, d.network.rightOfWay.waitingLines[0].id); }); }, "EDIT_REFERENCED");
     CHECK(h.document() == after);
     h.undo(); CHECK(h.document() == before);
@@ -233,6 +235,7 @@ TEST(rightofway, the_resolver_never_throws_on_a_reference_it_cannot_locate) {
 TEST(rightofway, a_waiting_line_past_its_path_end_is_reported_not_clamped) {
     auto d = fixture::fourLegIntersection().document;
     takeOverMerge(d, mergeAt(d, 2), kDefaults);
+    storeDerivedLines(d); // a stored line (D594)
     CHECK(!has(resolve(d).issues, "CONFLICT_UNRESOLVED_PATH"));
     d.network.rightOfWay.waitingLines.front().point.station = 1e4;
     validateDocument(d);

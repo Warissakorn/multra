@@ -56,9 +56,9 @@ TEST(nodemembership, n7_the_t_junction_runs_its_major_links_through) { // N7
     CHECK(m.control == SectionControl::unsignalised);
     CHECK(m.conflictAreas.size() == 3);
     // Minor crosses eastbound: minor → westbound against the eastbound through movement.
-    CHECK(m.conflicts == std::vector<NodeConflict>({{"conflict-11", 3, 0, ConflictKind::crossing, ConflictPriority::firstYields},
-                                                    {"conflict-15", 3, 1, ConflictKind::merge, ConflictPriority::firstYields},
-                                                    {"conflict-19", 2, 0, ConflictKind::merge, ConflictPriority::firstYields}}));
+    CHECK(m.conflicts == std::vector<NodeConflict>({{"conflict-9", 3, 0, ConflictKind::crossing, ConflictPriority::firstYields},
+                                                    {"conflict-11", 3, 1, ConflictKind::merge, ConflictPriority::firstYields},
+                                                    {"conflict-13", 2, 0, ConflictKind::merge, ConflictPriority::firstYields}}));
 }
 TEST(nodemembership, n8_an_unconnected_overpass_is_ignored) { // N8
     auto d = shipped("four-leg-signalised.traffic.json");

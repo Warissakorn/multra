@@ -94,7 +94,8 @@ int main(int argc, char** argv) {
         // D590: areas and plain waiting lines are drawn under the Conflict area tool only.
         require(items(w, "conflict-area") == 0, "Conflict areas are drawn outside their tool");
         w.canvas()->setTool(EditorCanvas::Tool::conflict); w.canvas()->redraw(); QApplication::processEvents();
-        require(items(w, "conflict-area") == 4 && items(w, "waiting-line") == 3, "Individual lane-pair sides and waiting lines were not drawn");
+        // D594: new areas wait at derived lines, which store nothing and are not drawn (slice 3 shows them on hover).
+        require(items(w, "conflict-area") == 4 && items(w, "waiting-line") == 0, "Individual lane-pair sides were not drawn, or a derived line was");
         for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "conflict-area")
             require(i->toolTip().isEmpty() && !i->data(1).toString().isEmpty(), "A conflict area shows its internal key as a tooltip or lost its key");
         require(table->item(0, 6)->text() == "Runs", "A complete crossing did not report that it runs");

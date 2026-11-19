@@ -6,10 +6,6 @@ using namespace tjunction;
 // overlap of the two surfaces, and each side waits 1 m short of it.
 namespace {
 struct Mouth { ConflictSide minor, major; StationInterval minorSpan, majorSpan; double minorLine{}, majorLine{}; };
-double lineAt(const Network& n, const std::string& id) {
-    for (const auto& w : n.rightOfWay.waitingLines) if (w.id == id) return w.point.station;
-    throw std::runtime_error("no line " + id);
-}
 // The measured overlap on each side of one merge, independent of the extents the area stores.
 Mouth mouthOf(const fixture::TJunction& t, const std::string& area) {
     const auto& n = t.document.network;
@@ -25,7 +21,7 @@ Mouth mouthOf(const fixture::TJunction& t, const std::string& area) {
         if (g.first.empty() || g.second.empty()) throw std::runtime_error("no overlap measured");
         Mouth m{firstMinor ? a.first : a.second, firstMinor ? a.second : a.first,
                 span(firstMinor ? g.first : g.second), span(firstMinor ? g.second : g.first)};
-        m.minorLine = lineAt(n, m.minor.waitingLineId); m.majorLine = lineAt(n, m.major.waitingLineId);
+        m.minorLine = waitingStation(n, m.minor); m.majorLine = waitingStation(n, m.major); // D594: derived or named
         return m;
     }
     throw std::runtime_error("no area " + area);

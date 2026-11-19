@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-19 — STOP_LINES slices 1–2: derived waiting lines, schema 79 (D594)
+
+- **Owner:** "ทำ STOP_LINES ต่อได้เลย".
+- **D594:** a conflict side with an empty `waitingLineId` waits `rightOfWay.frontStopDistance` (default 1 m, (0, 10]) short of its entry (`derivedWaitingStation`); schema 79. Add crossing areas, an automatic crossing, Take over merge and junction fills store no line. Stop/Yield on a derived side places one sign line before the first such area of its path and names it on the ones after. `deriveStopLines` (SL5) and its inverse `storeDerivedLines`. No migration at load; [STOP_LINES](reference/STOP_LINES.md) §9 lists where it differs from the draft.
+- **Rows:** `stoplines` SL1–SL3, SL5, SL6 (stored and derived at the same places: equal zones, same seed-42 run), SL8. The T-junction regenerated: two sign lines (`wait-15`, `wait-17`) instead of six. Updated tests are listed in STOP_LINES §9.
+- **Not yet:** the Stop line tool, coverage as a derived rule, faint derived lines on hover (slice 3). A derived line is not drawn at all today.
+- **Verified on Linux (desktop preset, Debug):** full `ctest` 359/359; the 32 changed `.cpp` units build without the PCH. Windows not run.
+
 ## 2026-11-19 — Opaque conflict areas (D592); M3.2.4e merge admission over the mouth (D593)
 
 - **Owner (2026-11-19):** "ความทึบ 100%  และเริ่ม M3.2.4e ได้เลย".
@@ -72,12 +80,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - **Owner:** "ยอมรับค่าเริ่มต้นทั้ง 3 ข้อ ใช้ตามแนะนำ": `entryLanes` on the routing decision, no shipped `missedExitAfter`, a diverted trip's delay on the movement it arrives on and `diverted` on the counted one. ROADMAP M3.2.11 is done; LANE_LOCKS §7 is answered; OWNER_SITTING B50 is closed.
 - **Verified:** docs checks only. No code changed.
-
-## 2026-11-18 — Option B: missed exit after a dead-end wait, schema 78 (D581)
-
-- **Pick:** "ทำต่อเลย" after A: B, off by default (B50). A probe first: all 24 stubs of the study's spread layout have a full route driving their exact segments, so a diverted vehicle keeps its route distance.
-- **D581:** a behaviour's `missedExitAfter` (schema 78, (0, 3600] s). After that many whole ticks waiting at its dead end, the vehicle takes the full route sharing its lane (tie: most shared segments, then route id); none: it keeps waiting. `src/core/missed_exit.*`, `MissedExitEvent` appended to the event variant and handled by output (`missed-exit`), discharge passages and priority lines; `diverted` per run and per counted movement only with the key. Behaviour editor: a `missedExitAfter` field.
-- **Measured (probe, spread layout, seed 42):** 60 s: completed 4,698 → 5,182, diverted 165, longest wait per dead end 59.9 s, clamps 6 → 2; 120 s: 4,944, 53, 119.9 s. LL3: every shipped project, seeds 42–51, and `multra-cli 42` identical except the build commit. No threshold is set in the study or any shipped file.
-- **Tests:** `lanechange.a_vehicle_held_past_missed_exit_after_takes_the_full_route_on_its_lane` (50th waiting tick, replay, accounting), `lanechange.without_missed_exit_after_or_an_onward_route_the_vehicle_keeps_waiting` (key absent, LL6, gap before the threshold, range), `lanechange.missed_exit_after_round_trips_at_schema_78_and_reaches_the_run`.
-- **Verified on Linux:** headless `check` 241/241; `behaviour_editor.cpp` and `editor_decision.cpp` compile under the desktop preset. Neither dialog was opened; the full desktop build and Windows were not run.
-- **Owner questions open:** §7 q3 (threshold) and q4 (diverted delay); defaults recorded in D581. LL4 reworded: `diverted` is not added to the accounting sum.

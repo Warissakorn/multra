@@ -90,7 +90,7 @@ TEST(nodeevaluation, n14_a_free_flowing_turn_has_no_delay) { // N14
     const auto downstream = splitLink(d, "link-1", 100);
     putNode(d, box(-25, -18, 25, 8));
     auto& inputs = d.definition->inputs;
-    const auto through = std::find_if(inputs.begin(), inputs.end(), [](const auto& i) { return i.id == "input-28"; });
+    const auto through = std::find_if(inputs.begin(), inputs.end(), [](const auto& i) { return i.id == "input-24"; }); // the eastbound input (ids renumbered by D594)
     const auto kept = *through; inputs = {kept};
     inputs.front().vehiclesPerHour = 60; // one vehicle a minute: none meets another
     auto& routes = d.definition->routes;

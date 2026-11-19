@@ -71,7 +71,8 @@ constexpr Field programFields[]={
 constexpr Field phaseFields[]={{"duration",Kind::number,true},{"color",Kind::color,true}};
 constexpr Field rightOfWayFields[]={
     {"waitingLines",Kind::waitingLines,false,0,0,true},{"conflictAreas",Kind::conflictAreas,false,0,0,true},
-    {"priorityRules",Kind::priorityRules,false,0,0,true},{"stopControls",Kind::stopControls,false,15,0,true}};
+    {"priorityRules",Kind::priorityRules,false,0,0,true},{"stopControls",Kind::stopControls,false,15,0,true},
+    {"frontStopDistance",Kind::number,false,derivedLineVersion}};
 constexpr Field waitingLineFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"point",Kind::controlPoint,true},
     {"generated",Kind::generated,false,generatedVersion}};

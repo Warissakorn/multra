@@ -3,7 +3,7 @@
 #include "study_area_fixture.hpp"
 TEST(studyarea, sa1_byte_identity) { // SA1
     auto c = corridor();
-    CHECK(c.d.zones.studyArea.nodes.empty() && documentJson(c.d)["schemaVersion"] == 59); // forcing: the fixture's street segments make it 59 (D389)
+    CHECK(c.d.zones.studyArea.nodes.empty() && documentJson(c.d)["schemaVersion"] == 79); // forcing: street segments make it 59 (D389), F4's derived lines 79 (D594)
     CHECK(!documentJson(c.d).contains("studyArea"));
     const auto bytes = saved(c.d);
     CHECK(saved(parseDocument(Json::parse(bytes))) == bytes);
@@ -21,7 +21,7 @@ TEST(studyarea, sa2_codec) { // SA2
     setStudyAreaNodes(d, {c.a});
     d.zones.studyArea.gateFlows = {{"p", entryGateName("x"), exitGateName("y"), "car-only", "", 120}};
     const auto j = documentJson(d);
-    CHECK(j["schemaVersion"] == 59 && j["studyArea"]["nodes"] == Json::array({c.a}) && j["studyArea"]["flowSource"] == "typed");
+    CHECK(j["schemaVersion"] == 79 && j["studyArea"]["nodes"] == Json::array({c.a}) && j["studyArea"]["flowSource"] == "typed");
     CHECK(j["studyArea"]["gateFlows"][0]["compositionId"] == "car-only" && !j["studyArea"]["gateFlows"][0].contains("modeId"));
     CHECK(parseDocument(j).zones.studyArea == d.zones.studyArea);
     const auto bad = [&](auto edit) { auto x = d; edit(x); return refusal([&] { validateDocument(x); }); };

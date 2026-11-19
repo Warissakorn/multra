@@ -160,7 +160,7 @@ TEST(nodedetail, rs16_generated) { // RS16
     CHECK(plain.at("schemaVersion") == 59 && plain.dump().find("\"generated\"") == std::string::npos); // forcing: no generated object yet (59: street segments, D389)
     generateNodeDetail(d, node(d).id, catalogs(d));
     const auto j = documentJson(d);
-    CHECK(j.at("schemaVersion") == 59 && j.at("network").at("connectors")[0].at("generated") == true);
+    CHECK(j.at("schemaVersion") == 79 && j.at("network").at("connectors")[0].at("generated") == true); // 79: F4's areas wait at derived lines (D594)
     CHECK(parseDocument(j).network.connectors == d.network.connectors);
     auto older = j; older["schemaVersion"] = 53;
     test::throws([&] { parseDocument(older); }, "EDIT_UNSUPPORTED_FIELD");
@@ -316,7 +316,7 @@ TEST(nodedetail, rs16_signal_generated) { // RS16, S4.5c
     twoStages(d);
     generateNodeDetail(d, node(d).id, catalogs(d));
     const auto j = documentJson(d);
-    CHECK(j.at("schemaVersion") == 59 && j.at("network").at("signalHeads")[0].at("generated") == true); // forcing
+    CHECK(j.at("schemaVersion") == 79 && j.at("network").at("signalHeads")[0].at("generated") == true); // forcing; 79: derived lines (D594)
     CHECK(j.at("definition").at("signalControllers")[0].at("generated") == true);
     const auto back = parseDocument(j);
     CHECK(back.network.signalHeads == d.network.signalHeads && back.definition->signalControllers == d.definition->signalControllers);

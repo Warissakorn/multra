@@ -31,6 +31,9 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## M3.2.7d attempt 1 failed at step 1 (2026-11-18) — M3.2.4e comes before attempt 2
 
+- **2026-11-19, STOP_LINES:** slices 1–2 done (D594): derived lines, `frontStopDistance`, schema 79,
+  `deriveStopLines`; the T-junction stores only its sign lines. **Next: slice 3** (Stop line tool,
+  coverage of downstream areas, faint derived lines on hover: SL4, SL7) and the owner's attempt 2.
 - **2026-11-19, later:** owner: areas 100 % opaque (D592) and start M3.2.4e. Done: [MERGE_MOUTH](reference/MERGE_MOUTH.md)
   (D593), the T-junction regenerated with its merge lines 1 m short of the measured overlap. **Next: the owner's
   attempt 2 of M3.2.7d on Windows** (step 1 look); then STOP_LINES slice 1b (derived lines, `frontStopDistance`)

@@ -1,7 +1,8 @@
 # Stop lines: derived waiting positions and a Stop line tool (M3.2.12)
 
-Written 2026-11-19 (D591) as a draft for the owner's review. **Not implemented.** No gate closes
-with it, and rule 4 applies: nothing here is validated. It follows M3.2.4e (merge
+Written 2026-11-19 (D591) as a draft; the owner said go ("ทำ STOP_LINES ต่อได้เลย"). **Slices 1–2
+implemented (D594), slice 3 planned.** No gate closes with it, and rule 4 applies: nothing here is
+validated. It follows M3.2.4e (merge
 admission over the physical mouth) because both decide where a yielding vehicle stops.
 
 ## 1. The problem
@@ -85,4 +86,36 @@ to the type's maximum): its own contract, as LINE_APPROACH. Calibrated stop dist
 2. Schema step and migration, shipped projects regenerated (SL5).
 3. Stop line tool and coverage (SL4, SL7).
 
-**Owner:** review §2–§6 before slice 1 starts.
+## 9. As implemented (D594), and where it differs from the draft
+
+- **Done:** derived lines (`derivedWaitingStation`, `waitingStation`), `frontStopDistance`, schema 79,
+  `deriveStopLines` (the §4 rule) and the regenerated T-junction. Every command that creates an area
+  (Add crossing areas, an automatic crossing, Take over merge, junction fills) now stores no line.
+  Rows SL1–SL3, SL5, SL6 and SL8 pass (`stoplines`); SL1–SL2 were already met by D593, so they are
+  guards here. SL3 failed first in the sense that a stored line moved in the file on a reshape.
+- **An empty `waitingLineId`, not an absent key:** the field tables have no "required before N";
+  an empty id was already refused, so older readers still refuse a derived side.
+- **`frontStopDistance` lives in the project** (`rightOfWay`), not beside `gapTime`/`headway` in
+  `data/priority-rules`: that catalog is shared by every project and hashed into archived sweep
+  inputs, and the owner asked for one value per project.
+- **No migration at load:** `deriveStopLines` is a command. Loading an old file and silently moving
+  its lines would change its runs; the T-junction builder uses the new commands instead. Offering
+  the command in the editor belongs to slice 3.
+- **Setting Stop or Yield on a derived side** places a stop line before the first decided area on
+  that path that waits at a derived line, and names it on every such area from there on (§2's
+  coverage, written into the file as names). So a Stop halts a vehicle once, as D63's one line per
+  lane did. In the T-junction the crossing turn's sign now also covers its merge. Coverage as a
+  derived rule, the table column and SL4 are slice 3.
+- **`storeDerivedLines`** is the inverse of `deriveStopLines`: it stores every derived line where it
+  stands, for a reader older than 79 and for tests that pin another feature's schema floor.
+- **Fallout, each updated on purpose:** schema pins of documents with conflict areas (`rightofway`
+  a02, `stop_control_model`, `macronetwork`, `mesonetwork`, `nodeanalysis`, `nodedetail`,
+  `studyarea`, `junctionfill`) now expect 79 or store the lines first; line counts
+  (`rightofway_lifecycle`, `conflict_geometry`, `priority-ui`); rows that move, delete or drag a
+  stored line now store the lines first (`rightofway`, `rightofway_resolution`, `rightofway_editor`,
+  `priority-canvas`); D63's one-line-per-lane rows read the derived positions
+  (`automatic_conflict`, `conflict_follow`); the T-junction's ids shift (fewer
+  lines allocated), so `nodemembership` names `conflict-9/11/13` and the archived sweep metadata
+  restores the old route names when every input still matches (`restoreArchivedRouteIds`).
+- **Not yet:** the Stop line tool, coverage, faint derived lines on hover (SL4, SL7). A derived line
+  is simply not drawn today, under any tool.

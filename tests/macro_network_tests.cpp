@@ -13,6 +13,7 @@
 #include "../src/runner/batch.hpp"
 #include <filesystem>
 #include <fstream>
+#include "../src/commands/right_of_way_commands.hpp"
 using namespace multra;
 namespace {
 std::filesystem::path data() { return test::root() / "data"; }
@@ -70,7 +71,8 @@ ProjectDocument withPcu(ProjectDocument d) {
 TEST(macronetwork, ma1_micro_never_reads_a_link_type) { // MA1
     for (const char* p : {"four-leg-signalised.traffic.json", "t-junction-priority.traffic.json", "m2.6-study-template.traffic.json", "lane-change-lab.traffic.json", "weaving-lab.traffic.json", "lateral-lab.traffic.json"}) {
         const auto d = shipped(p);
-        CHECK(!usesLinkTypes(d) && reread(d)["schemaVersion"] < 50);
+        auto older = d; storeDerivedLines(older); // D594: derived lines alone need 79
+        CHECK(!usesLinkTypes(d) && reread(older)["schemaVersion"] < 50);
     }
     const auto plain = shipped("four-leg-signalised.traffic.json");
     auto marked = plain; typed(marked);

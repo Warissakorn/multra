@@ -12,32 +12,32 @@
     "inputs": [
       {
         "endTime": 900.0,
-        "id": "input-28",
-        "routeId": "route-24",
+        "id": "input-24",
+        "routeId": "route-20",
         "startTime": 0.0,
         "vehicleTypeId": "car",
         "vehiclesPerHour": 450.0
       },
       {
         "endTime": 900.0,
-        "id": "input-29",
-        "routeId": "route-25",
+        "id": "input-25",
+        "routeId": "route-21",
         "startTime": 0.0,
         "vehicleTypeId": "car",
         "vehiclesPerHour": 450.0
       },
       {
         "endTime": 900.0,
-        "id": "input-30",
-        "routeId": "route-26",
+        "id": "input-26",
+        "routeId": "route-22",
         "startTime": 0.0,
         "vehicleTypeId": "car",
         "vehiclesPerHour": 100.0
       },
       {
         "endTime": 900.0,
-        "id": "input-31",
-        "routeId": "route-27",
+        "id": "input-27",
+        "routeId": "route-23",
         "startTime": 0.0,
         "vehicleTypeId": "car",
         "vehiclesPerHour": 100.0
@@ -45,19 +45,19 @@
     ],
     "routes": [
       {
-        "id": "route-24",
+        "id": "route-20",
         "segmentIds": [
           "link-1"
         ]
       },
       {
-        "id": "route-25",
+        "id": "route-21",
         "segmentIds": [
           "link-3"
         ]
       },
       {
-        "id": "route-26",
+        "id": "route-22",
         "segmentIds": [
           "link-5",
           "connector-7",
@@ -65,7 +65,7 @@
         ]
       },
       {
-        "id": "route-27",
+        "id": "route-23",
         "segmentIds": [
           "link-5",
           "connector-8",
@@ -242,13 +242,13 @@
     ],
     "queueCounters": [
       {
-        "id": "counter-23",
+        "id": "counter-19",
         "lines": [
           {
-            "referenceId": "wait-9"
+            "referenceId": "wait-15"
           },
           {
-            "referenceId": "wait-18"
+            "referenceId": "wait-17"
           }
         ],
         "name": "Minor approach queue"
@@ -265,9 +265,9 @@
               "fromLaneId": "lane-6",
               "toLaneId": "lane-4"
             },
-            "waitingLineId": "wait-9"
+            "waitingLineId": "wait-15"
           },
-          "id": "conflict-11",
+          "id": "conflict-9",
           "kind": "crossing",
           "name": "Minor crosses eastbound",
           "priority": "firstYields",
@@ -278,7 +278,7 @@
               "laneId": "lane-2",
               "linkId": "link-1"
             },
-            "waitingLineId": "wait-10"
+            "waitingLineId": ""
           }
         },
         {
@@ -290,9 +290,9 @@
               "fromLaneId": "lane-6",
               "toLaneId": "lane-4"
             },
-            "waitingLineId": "wait-14"
+            "waitingLineId": "wait-15"
           },
-          "id": "conflict-15",
+          "id": "conflict-11",
           "kind": "merge",
           "name": "Minor joins westbound",
           "priority": "firstYields",
@@ -303,7 +303,7 @@
               "laneId": "lane-4",
               "linkId": "link-3"
             },
-            "waitingLineId": "wait-13"
+            "waitingLineId": ""
           }
         },
         {
@@ -315,9 +315,9 @@
               "fromLaneId": "lane-6",
               "toLaneId": "lane-2"
             },
-            "waitingLineId": "wait-18"
+            "waitingLineId": "wait-17"
           },
-          "id": "conflict-19",
+          "id": "conflict-13",
           "kind": "merge",
           "name": "Minor joins eastbound",
           "priority": "firstYields",
@@ -328,11 +328,18 @@
               "laneId": "lane-2",
               "linkId": "link-1"
             },
-            "waitingLineId": "wait-17"
+            "waitingLineId": ""
           }
         }
       ],
       "priorityRules": [
+        {
+          "conflictAreaId": "conflict-9",
+          "gapTime": 5.0,
+          "headway": 7.0,
+          "id": "rule-10",
+          "name": ""
+        },
         {
           "conflictAreaId": "conflict-11",
           "gapTime": 5.0,
@@ -341,43 +348,37 @@
           "name": ""
         },
         {
-          "conflictAreaId": "conflict-15",
+          "conflictAreaId": "conflict-13",
           "gapTime": 5.0,
           "headway": 7.0,
-          "id": "rule-16",
-          "name": ""
-        },
-        {
-          "conflictAreaId": "conflict-19",
-          "gapTime": 5.0,
-          "headway": 7.0,
-          "id": "rule-20",
+          "id": "rule-14",
           "name": ""
         }
       ],
       "stopControls": [
         {
           "conflictAreaIds": [
+            "conflict-9",
             "conflict-11"
           ],
-          "id": "stop-21",
+          "id": "stop-16",
           "mode": "yield",
           "name": "",
-          "waitingLineId": "wait-9"
+          "waitingLineId": "wait-15"
         },
         {
           "conflictAreaIds": [
-            "conflict-19"
+            "conflict-13"
           ],
-          "id": "stop-22",
+          "id": "stop-18",
           "mode": "yield",
           "name": "",
-          "waitingLineId": "wait-18"
+          "waitingLineId": "wait-17"
         }
       ],
       "waitingLines": [
         {
-          "id": "wait-9",
+          "id": "wait-15",
           "name": "",
           "point": {
             "path": {
@@ -389,52 +390,7 @@
           }
         },
         {
-          "id": "wait-10",
-          "name": "",
-          "point": {
-            "path": {
-              "laneId": "lane-2",
-              "linkId": "link-1"
-            },
-            "station": 136.23873476704452
-          }
-        },
-        {
-          "id": "wait-13",
-          "name": "",
-          "point": {
-            "path": {
-              "laneId": "lane-4",
-              "linkId": "link-3"
-            },
-            "station": 154.65018672233523
-          }
-        },
-        {
-          "id": "wait-14",
-          "name": "",
-          "point": {
-            "path": {
-              "connectorId": "connector-7",
-              "fromLaneId": "lane-6",
-              "toLaneId": "lane-4"
-            },
-            "station": 12.314884945252704
-          }
-        },
-        {
           "id": "wait-17",
-          "name": "",
-          "point": {
-            "path": {
-              "laneId": "lane-2",
-              "linkId": "link-1"
-            },
-            "station": 151.36185107916148
-          }
-        },
-        {
-          "id": "wait-18",
           "name": "",
           "point": {
             "path": {
@@ -449,7 +405,7 @@
     },
     "signalHeads": []
   },
-  "nextId": 32,
+  "nextId": 28,
   "revision": 0,
-  "schemaVersion": 17
+  "schemaVersion": 79
 }
