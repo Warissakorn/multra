@@ -97,7 +97,9 @@ TEST(weavinglab, ba206_a_joined_chain_takes_no_input_and_ordinary_routes_are_unc
     for (const auto& i : s.inputs) CHECK(!joined.count(i.routeId));
     // Every route of the three edge weaves, and of another shipped project, has no lead-in.
     std::ifstream f(test::root() / "data/projects/four-leg-signalised.traffic.json"); Json j; f >> j;
-    for (const auto& r : compileDocument(parseDocument(j), kData).scenario.routes) CHECK(r.leadIn == 0);
+    const auto shipped = compileDocument(parseDocument(j), kData).scenario;
+    CHECK(!shipped.routes.empty());
+    for (const auto& r : shipped.routes) CHECK(r.leadIn == 0);
 }
 TEST(weavinglab, ba207_a_trip_ending_on_a_joined_chain_counts_its_whole_path_free_flow) { // D459
     // Ramp -> mainline ends on a chain that starts on the weave (620 m of route), but its path from

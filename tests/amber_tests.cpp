@@ -109,17 +109,25 @@ TEST(amber, am6_owned_behaviours_carry_it_at_schema_28) {
 TEST(amber, am7_an_m0_scenario_keeps_amber_as_red) {
     const auto data = test::root() / "data";
     // Both readers of the frozen TS baselines' file kind resolve the catalog without it...
-    for (const auto& b : loadScenario(data / "scenarios/crossing.json", data).scenario.behaviours) CHECK(!b.amberDeceleration);
+    const auto loaded = loadScenario(data / "scenarios/crossing.json", data).scenario;
+    CHECK(!loaded.behaviours.empty());
+    for (const auto& b : loaded.behaviours) CHECK(!b.amberDeceleration);
     const auto m0 = parseDocument(crossingJson());
     CHECK(m0.definition->provenance.legacyAmber);
-    for (const auto& b : compileDocument(m0, data).scenario.behaviours) CHECK(!b.amberDeceleration);
+    const auto legacy = compileDocument(m0, data).scenario;
+    CHECK(!legacy.behaviours.empty());
+    for (const auto& b : legacy.behaviours) CHECK(!b.amberDeceleration);
     // ...while a project reading the same catalog decides at amber.
-    for (const auto& b : compileDocument(routed(), data).scenario.behaviours) CHECK(b.amberDeceleration);
+    const auto project = compileDocument(routed(), data).scenario;
+    CHECK(!project.behaviours.empty());
+    for (const auto& b : project.behaviours) CHECK(b.amberDeceleration);
     // Saved, the M0 file is a project: provenance is never written, and never compared, so the
     // round trip is exact while the reopened file takes the project rule.
     const auto saved = parseDocument(documentJson(m0));
     CHECK(!saved.definition->provenance.legacyAmber); CHECK(saved == m0);
-    for (const auto& b : compileDocument(saved, data).scenario.behaviours) CHECK(b.amberDeceleration);
+    const auto reopened = compileDocument(saved, data).scenario;
+    CHECK(!reopened.behaviours.empty());
+    for (const auto& b : reopened.behaviours) CHECK(b.amberDeceleration);
 }
 TEST(amber, owned_catalogs_reopen_at_every_schema_from_21) {
     // Regression (D147): an owned catalog without a library, in a file at schema 21 or later for
