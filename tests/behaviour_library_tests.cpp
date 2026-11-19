@@ -78,7 +78,7 @@ TEST(behaviourlibrary, older_schemas_and_unknown_keys_are_refused_not_dropped) {
     }
     auto override = j; override["definition"]["linkBehaviourTypes"][0]["overrides"][0]["lane"] = 1;
     test::throws([&] { parseDocument(override); }, "EDIT_UNSUPPORTED_FIELD");
-    for (const Json model : {Json("w99"), Json(nullptr)}) {
+    for (const Json& model : {Json("w99"), Json(nullptr)}) {
         auto future = j; future["definition"]["behaviours"][0]["model"] = model;
         test::throws([&] { parseDocument(future); }, "UNSUPPORTED_BEHAVIOUR_MODEL");
     }

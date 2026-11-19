@@ -88,8 +88,9 @@ int main(int argc,char** argv) {
         // D508: a held Ctrl+right press shows the bar where the release places it, and slides it.
         const auto press=[&](Point p){QTest::mousePress(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
         const auto release=[&](Point p){QTest::mouseRelease(canvas->viewport(),Qt::RightButton,Qt::ControlModifier,canvas->mapFromScene(p.x,p.y));QApplication::processEvents();};
-        const auto barX=[&](const char* kind){double x=-1;for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)
-            if(auto* line=dynamic_cast<QGraphicsLineItem*>(item))x=line->line().center().x();return x;};
+        const auto barX=[&](const char* kind){double x=-1;for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind) {
+            if(auto* line=dynamic_cast<QGraphicsLineItem*>(item))x=line->line().center().x();
+        } return x;};
         const auto itemOf=[&](const char* kind)->QGraphicsItem*{for(auto* item:canvas->scene()->items())if(item->data(0).toString()==kind)return item;return nullptr;};
         // D509: before the press, the green bar already shows where the origin would go.
         hover(canvas,{60,0});hover(canvas,{65,0});

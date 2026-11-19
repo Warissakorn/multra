@@ -19,6 +19,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   scan into `locate`. Bisecting every route cost the study +1.8 %, so the short-route scan stays.
 - **Item 3, reverted:** a leader search by rear order cut the study 7.6 % but cost M2.6 2.4 % and the
   benchmark 5.0 %; measurements in ENGINEERING_NOTES. No D-row: nothing changed.
+- **D599:** compiler warnings 44 → 0 (desktop Debug, GCC 13.3). 17 were GCC 13's `-Wdangling-reference` on
+  lookups that return into their container (each checked: none dangles), now off for GCC before 14 only; the rest
+  fixed in place (range-loop copies, misleading indentation, an unused parameter, two dead test helpers removed,
+  two shared test helpers `[[maybe_unused]]`, one sign comparison). No behaviour or assertion changed.
 - **NEXT cut to open items again (D319):** the day's done slices (M3.2.4e, STOP_LINES, line approach), the
   M9–M12 done narration and M13's if-changes checklist moved whole to
   [archive/NEXT-state-2026-11-19](archive/NEXT-state-2026-11-19.md); NEXT ≈7,666 → 6,378 tokens (−17 %, estimate

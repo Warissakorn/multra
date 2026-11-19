@@ -54,7 +54,7 @@ TEST(lane_correspondence, two_lanes_differ_by_one_on_each_side) {
 TEST(lane_correspondence, a_wider_request_is_narrowed_to_what_can_pair) {
     // M3.2.9d (D75): creating across more than a two-lane difference keeps the narrower end and
     // the wider end's first lane, and drops the lanes the rule cannot pair.
-    for(const auto [from,to,fitFrom,fitTo]:{std::tuple{2,5,2,4},{5,2,4,2},{1,4,1,3},{1,6,1,3}}) {
+    for(const auto& [from,to,fitFrom,fitTo]:{std::tuple{2,5,2,4},{5,2,4,2},{1,4,1,3},{1,6,1,3}}) {
         auto d=roads(DrivingSide::right);addConnectorRange(d,{"a","a1"},{"b","b1"},from,to);
         const auto& c=d.network.connectors.front();
         CHECK(c.fromLaneCount==fitFrom);CHECK(c.toLaneCount==fitTo);
@@ -93,7 +93,7 @@ TEST(lane_correspondence, a_side_only_means_something_for_a_one_lane_difference)
 TEST(lane_correspondence, the_kerb_default_is_the_proportional_pairing_for_one_lane) {
     // Schemas 1-16 paired lanes proportionally. For a one-lane difference that is exactly the
     // kerb-side rule, so no existing file changes its paths.
-    for(int m=1;m<=5;++m)for(const auto [from,to]:{std::pair{m,m+1},{m+1,m}}) {
+    for(int m=1;m<=5;++m)for(const auto& [from,to]:{std::pair{m,m+1},{m+1,m}}) {
         const auto pairs=connect(DrivingSide::right,from,to);
         const int count=std::max(from,to);
         for(int i=0;i<count;++i) {

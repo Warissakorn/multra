@@ -336,7 +336,7 @@ TEST(attachments, an_attachment_too_close_to_a_lane_end_still_blocks_run) {
     addConnector(near,{"a","a1",30},{"b","b1",0});
     const auto second=addConnector(near,{"a","a1",30.1},{"b","b2",0});
     CHECK(std::any_of(near.network.connectors.begin(),near.network.connectors.end(),
-                      [](const auto& c){return true;}));
+                      [](const auto&){return true;}));
     const auto blocked=connectorRuntimeIssues(near.network);
     CHECK(std::any_of(blocked.begin(),blocked.end(),[](const auto& i){return i.code=="UNSUPPORTED_CONNECTOR_POSITION";}));
     auto apart=roads(DrivingSide::left);apart.network.links[0].geometry={{0,0},{100,0}};

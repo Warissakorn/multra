@@ -139,7 +139,7 @@ QPainterPath EditorCanvas::laneHandlePath(const LaneHandle& h,double padding) co
     const double depth=canvasStyle::laneTabDepth/2/scale+padding;
     const Point tangent{-h.direction.y,h.direction.x};
     QPainterPath shape;bool first=true;
-    for(const auto [along,outward]:{std::pair{-length,-depth},std::pair{length,-depth},
+    for(const auto& [along,outward]:{std::pair{-length,-depth},std::pair{length,-depth},
                                    std::pair{length,depth},std::pair{-length,depth}}) {
         const QPointF p(h.position.x+tangent.x*along+h.direction.x*outward,
                         h.position.y+tangent.y*along+h.direction.y*outward);

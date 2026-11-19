@@ -91,7 +91,7 @@ ProjectDocument u0Junction(bool segments = true) {
         const auto right = addConnectorRange(d, {stop, lanes[2].id}, {out(-1), lane(-1, 1)}, 1, 1);
         for (const auto& [connector, group] : std::vector<std::pair<std::string, int>>{{t, through[k]}, {kerb, through[k]}, {right, far[k]}})
             putSignalHead(d, {"", {}, 0.5, "", connector, "", controller, group});
-        for (const auto [quarter, i] : std::vector<std::pair<int, std::size_t>>{{1, 0}, {0, 1}, {-1, 2}})
+        for (const auto& [quarter, i] : std::vector<std::pair<int, std::size_t>>{{1, 0}, {0, 1}, {-1, 2}})
             turns.push_back({stop, out(quarter), volumes[k][i], 5.});
     }
     Node node{"junction", "Main St & Side St", {{970, 970}, {1030, 970}, {1030, 1030}, {970, 1030}}, false};

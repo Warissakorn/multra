@@ -136,7 +136,7 @@ TEST(streetsegmentcrossings, rd14_overpass) { // RD14
 TEST(streetsegmentcrossings, rd15_merge_nodes) { // RD15
     // Four generated discs around a small ring merge into one hull, generated, in one step.
     ProjectDocument start;
-    for (const auto [x, y] : {std::pair{20.0, 0.0}, {0.0, 20.0}, {-20.0, 0.0}, {0.0, -20.0}}) {
+    for (const auto& [x, y] : {std::pair{20.0, 0.0}, {0.0, 20.0}, {-20.0, 0.0}, {0.0, -20.0}}) {
         std::vector<Point> disc;
         for (int k = 0; k < 8; ++k) disc.push_back({x + 5 * std::cos(k * std::numbers::pi / 4), y + 5 * std::sin(k * std::numbers::pi / 4)});
         putNode(start, {"", "", disc, true});
