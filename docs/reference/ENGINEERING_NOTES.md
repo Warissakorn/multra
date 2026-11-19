@@ -259,6 +259,12 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   14,578 M Ir (−2.0 %), below the 5 % worth a change; reverted. At 48 crossings allocation and string
   construction are ≈14 % of Ir, spread over the step's vectors (spans, refs, events), so one copy is
   not the lever; the per-tick containers would be.
+- **Optimisation pass of 2026-11-19 (D597–, GCC 13.3, Release `-g1`, seed 42):** baseline study
+  32,935 M Ir, M2.6 3,841 M, `48 900` 14,578 M. On the corridor the per-part scans dominated: the
+  Segment-entry scan in `publishMoves` 15.5 % (D597: −28.9 %) and `frontPart` 5.9 %. Not taken, measured:
+  the two `Vehicle` moves per vehicle-tick are 5.9 % inclusive on the study, so one move fewer is
+  ≈2.9 %, under the bar; insertion's own snapshot is now the step's (D584), so a local leader
+  search at the source would move that cost rather than remove it.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time

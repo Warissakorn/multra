@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-19 — Optimisation pass: measured, one item per commit (D597–)
+
+- **Owner:** "/optimize-program", all four dimensions, then "ทำตามแนะนำ" (items 1–6 in the recommended order).
+- **Baseline** (Linux GCC 13.3, Release `-g1` callgrind, seed 42): Ratchada study 32,935 M Ir, M2.6 3,841 M,
+  `multra-engine-benchmark 48 900` 14,578 M; desktop ctest 361/361; 44 compiler warnings.
+- **Same results:** a probe hashing every event (`eventJson`) of every shipped project that runs, the study and the
+  12-crossing benchmark corridor, seeds 42 and 43, matches the baseline after each engine item; CLI summaries byte-identical.
+- **D597:** `publishMoves` finds the joins crossed this tick by binary search over the ascending part starts
+  instead of reading every part of the route. Benchmark 14,578 → 10,363 M Ir (−28.9 %), study −0.6 %, M2.6 −0.9 %.
+
 ## 2026-11-19 — A held vehicle rests at its zone line: no crawl, no lurch (D596)
 
 - **Owner:** "ทำเรื่องรถคืบแล้วกระตุกที่เส้นต่อได้เลย".

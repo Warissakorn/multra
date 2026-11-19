@@ -5,6 +5,7 @@
 #include "routing.hpp"
 #include "speed_area.hpp"
 #include "speed_decision.hpp"
+#include <algorithm>
 #include <cmath>
 #include <utility>
 
@@ -41,9 +42,12 @@ void publishMoves(SimState& next, std::vector<Vehicle>& vehicles, const Scenario
             const auto& saved = decisions[reaction++];
             storeReactionAction(moved, saved.ticks, saved.action);
         } else moved.reactionHistory.clear();
-        for (std::size_t i = 1; i < oldParts.size(); ++i)
-            if (startDistance < oldParts[i].start && moved.distance >= oldParts[i].start)
-                events.emplace_back(SegmentEnteredEvent{time, moved.id, oldParts[i].segmentId});
+        // Part starts ascend, so the joins crossed this tick are one run: from the first start past
+        // startDistance while the new distance reaches it. A corridor route has dozens of parts.
+        for (auto part = std::upper_bound(oldParts.begin() + (oldParts.empty() ? 0 : 1), oldParts.end(), startDistance,
+                                          [](double at, const RoutePart& p) { return at < p.start; });
+             part != oldParts.end() && moved.distance >= part->start; ++part)
+            events.emplace_back(SegmentEnteredEvent{time, moved.id, part->segmentId});
         if (decision && moved.distance >= decision->at - 1e-9)
             applyRouteDecision(scenario, moved, *decision, time, next.seed, next.randomState, events);
         const auto& parts=index.parts[moved.routeIndex];
