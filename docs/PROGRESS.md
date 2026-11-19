@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-19 — Row dialogs open once (D587); no white Connector edge (D588)
+
+- **Owner, on Windows (M3.2.7d attempt 1):** Confirm and the close box of the Conflict area dialog each needed two clicks; a selected or hovered Connector still shows a white border; would 100 % opaque areas be better.
+- **D587:** a double-click emits `cellDoubleClicked` and `activated` together, and five tables (Conflict areas, Queue counters, Travel-time sections, Zones, OD) had a slot on each, so their dialog opened twice. `openRowOn` connects `activated` alone. New test `row-open-ui` (Conflict areas and Queue counters, double-click and Enter) failed with the old slots and passes.
+- **D588:** an emphasised Connector drops its plain solid outer edges as D460 did for Links; `canvas-layers` and `interaction` tests now expect none.
+- **Not changed:** conflict opacity waits for the owner (screenshots at 35 %, 75 % and 100 % sent; D435). The line approach and M3.2.4e stay in NEXT.
+
 ## 2026-11-18 — M3.2.7d attempt 1: step 1 fails on merge waiting lines
 
 - **Owner, on Windows:** conflict areas display correctly; the westbound stop line should be east of its area and the Connector's merge stop lines before the Link. Recorded verbatim in [OWNER_SITTING](plans/OWNER_SITTING.md) A2 and kept as a failure.
@@ -90,10 +97,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D577:** `FourLegOptions::rightLanes` (default 1). With two or more, every stop-line lane has its own upstream lane, because a destination takes one lane chain per entry lane: a lane split into two right lanes left the inner one empty (seen: 0 vehicles). Shipped files are byte-identical. The study is now N 5/3/2, S 4/3/2, NW 5/3/1, SE 3/3/1. Sheet redesign: Y 0.81, Webster cycle 155 s, greens S 0–16, SE 20–100, N 104–118, NW 122–151.
 - **Result, seed 42, one run, not validated:** worse again. Completed 4,014 → 3,385, never entered 6,241 → 6,754, clamps 1. Runs are byte-identical. A probe found 22 blocked lanes, each behind a vehicle waiting at a lane end for a lane change into a standing queue: at the end of the upstream Links, and at 38 of 40 m where left-turners missed the left connector. More single-movement lanes mean more forced changes. Item 3 is now the condition for any lane layout to work.
 - **Verified on Linux (headless):** `check` 241/241; the shipped four-leg and M2.6 files regenerate byte for byte. Desktop preset, check_no_pch.py and Windows not run.
-
-## 2026-11-17 — Study lanes from the image (D576)
-
-- **Pick:** the owner asked to match the lane counts first and answered "use the image" for each value.
-- **D576:** `FourLegOptions` gains lanes per leg (`approachLanes`, `exitLanes`) and `stopLine`. The defaults give the old drawing: the shipped four-leg and M2.6 files regenerate byte for byte. `site.csv` takes `lanes` and `stopline` rows. The study is now N 3/3, S 4/3, NW 5/4, SE 3/3 with the stop line at 20 m. The Sheet's design was recomputed with these lanes: Y 0.94 → 0.87, greens S 0–18, SE 22–111, N 115–141, NW 145–176.
-- **Result, seed 42, one run, not validated:** it got worse. Completed 4,422 → 4,014, active 302 → 464, never entered 6,012 → 6,241, mean delay 996 → 829 s, clamps 1 → 2; two runs byte-identical. NW through fell 477 → 224 with its queue nearly full (mean 243 of 283 m). A probe with a 4-lane SE exit (no 4→3 merge) gave only 282. The cause is open: lane choice on a queued multi-lane approach is the next suspect, and motorcycles still take a full lane slot.
-- **Verified on Linux (headless):** `check` 241/241; `fourleg` and `m26study` unchanged. Desktop preset, check_no_pch.py and Windows not run.

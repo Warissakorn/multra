@@ -36,13 +36,14 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   failure-first clearance rows ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)) before the D50/D59
   solver changes, then regenerate the fixture and its archived sweep metadata deliberately.
 - **Steps 3–4 (2026-11-19):** gap/headway response plausible; three findings with measurements in OWNER_SITTING A2:
-  - **Ask:** conflict washes too faint (D435 alpha 80/95 of 255). Shown: 180/200. Amending D435 needs the owner's yes.
+  - **Ask:** conflict washes too faint (D435 alpha 80/95 of 255). Shown: 180/200 and 255 (100 % hides the
+    road and the waiting lines under a band). Amending D435 needs the owner's choice.
   - **Line approach (engine, its own contract like LINE_APPROACH):** a held minor crawls ~20 s and stops 2–3 m
     short; release is 2.5 m/s² at once and re-blocking brakes it again. Options to measure: a kinematic stop
     at the line in `approaching`/`following` (scoped like F1a), zero standstill distance to a line, and a
     go-decision hysteresis. Measure before choosing (D254's pattern).
-  - **Double click:** not reproduced on Linux; needs the owner's exact steps on Windows (which button, how
-    the area was selected, floating dock or not, display scale).
+  - **Double click:** fixed by D587 (a row's dialog opened twice); the white Connector edge by D588. The
+    owner's look on Windows confirms both.
 - **Ask, before attempt 2:** the owner asked to test only what needs the owner. Proposed: keep steps 1
   (look), 3–4 (gap/headway, Stop/Yield, engineer's plausibility) and the verdict; steps 2 and 6–7 are
   covered by `rightofway` round-trip and same-seed replay tests. Changing §3 needs the owner's yes and a D-row.

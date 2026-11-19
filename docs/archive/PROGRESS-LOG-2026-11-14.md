@@ -2,6 +2,13 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-17 — Study lanes from the image (D576)
+
+- **Pick:** the owner asked to match the lane counts first and answered "use the image" for each value.
+- **D576:** `FourLegOptions` gains lanes per leg (`approachLanes`, `exitLanes`) and `stopLine`. The defaults give the old drawing: the shipped four-leg and M2.6 files regenerate byte for byte. `site.csv` takes `lanes` and `stopline` rows. The study is now N 3/3, S 4/3, NW 5/4, SE 3/3 with the stop line at 20 m. The Sheet's design was recomputed with these lanes: Y 0.94 → 0.87, greens S 0–18, SE 22–111, N 115–141, NW 145–176.
+- **Result, seed 42, one run, not validated:** it got worse. Completed 4,422 → 4,014, active 302 → 464, never entered 6,012 → 6,241, mean delay 996 → 829 s, clamps 1 → 2; two runs byte-identical. NW through fell 477 → 224 with its queue nearly full (mean 243 of 283 m). A probe with a 4-lane SE exit (no 4→3 merge) gave only 282. The cause is open: lane choice on a queued multi-lane approach is the next suspect, and motorcycles still take a full lane slot.
+- **Verified on Linux (headless):** `check` 241/241; `fourleg` and `m26study` unchanged. Desktop preset, check_no_pch.py and Windows not run.
+
 ## 2026-11-17 — Counted study: Ratchadaphisek × Lat Phrao (D575)
 
 - **Pick:** the owner asked for an M2.6-style study of this junction. They counted it (16 movements, 15:00–16:00, four classes) but did not survey the signal timing. The count sheet is a claude.ai Sheet. The timing plan was designed from the counts (Webster, split phasing, 180 s), not surveyed.

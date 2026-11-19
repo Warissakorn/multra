@@ -9,6 +9,12 @@
 
 class QAction;
 namespace multra {
+// D587: a double-click emits both cellDoubleClicked and activated, so a row opened on both opened its
+// dialog twice (the owner had to confirm it twice). activated alone is the one signal for both a
+// double-click and Enter (or a single click where the platform style opens on one).
+inline void openRowOn(QTableWidget* table, QObject* receiver, const std::function<void()>& open) {
+    QObject::connect(table, &QTableWidget::activated, receiver, [open](const QModelIndex&) { open(); });
+}
 // D521: the base of an object tab's panel. It keeps the context, the table and revision, and the
 // panel's own actions by key (registered with the window through the context), so a tab's code reads
 // as it did on the window: action(), text(), actions_.at(key).

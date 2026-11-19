@@ -306,7 +306,7 @@ void connectorEndTabs(EditorCanvas& c) {
                     "Connector outer edge does not use its contrasting boundary colour");
             ++outerEdges;
         }
-        require(outerEdges==2,"Connector does not draw both outer edges in its boundary colour");
+        require(outerEdges==0,"A selected Connector still paints its plain solid outer edges (D588)");
     }
     auto shortRoad=fixture();shortRoad.network.connectors.clear();
     shortRoad.network.links[0].geometry={{-9,0},{-2,0}};

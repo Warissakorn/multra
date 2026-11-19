@@ -49,6 +49,10 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    the two defects are the approach law and the per-tick gap test without hysteresis. The double click was
    not reproduced: one synthetic click acted on every Conflict areas button (cycle, Edit, Restore, Delete),
    after a canvas pick, a row click and a shown tooltip; each handler took 14–156 ms.
+   *Owner:* 2026-11-19, follow-up (verbatim): "สีทึบ 100% เลยดีหรือไม่ · ปุ่ม confirm, ปุ่ม กากบาท · การชี้หรือเลือก
+   connector ยังเห็นเส้นขอบสีขาวอยู่". *Session note:* the buttons were the Edit dialog's Confirm and close box; a
+   row double-click opened that dialog twice, fixed by D587. The white Connector edge is removed by D588.
+   Opacity waits for the owner's choice (screenshots at 35 %, 75 % and 100 % sent).
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any

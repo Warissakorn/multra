@@ -71,10 +71,7 @@ ConflictsPanel::ConflictsPanel(QWidget* parent, ObjectTabContext context, Confli
         const auto id = selected(); if (id.empty()) return;
         context_.execute("editorDeleteConflict", [&](auto& d) { removeConflictGroup(d, id); });
     }));
-    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
-        const auto id = selected(); if (!id.empty()) edit(id); });
-    connect(tab_.table, &QTableWidget::activated, this, [this](const QModelIndex&) { // Enter
-        const auto id = selected(); if (!id.empty()) edit(id); });
+    openRowOn(tab_.table, this, [this] { const auto id = selected(); if (!id.empty()) edit(id); }); // D587: double-click or Enter, once
     connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] {
         hooks_.highlight(selected()); context_.selectionChanged(); });
 }
