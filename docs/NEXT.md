@@ -31,6 +31,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## M3.2.7d attempt 1 failed at step 1 (2026-11-18) — M3.2.4e comes before attempt 2
 
+- **2026-11-19:** the owner chose derived stop positions and a Stop line tool; the draft is
+  [STOP_LINES](reference/STOP_LINES.md) (D591, rows SL1–SL8). **Owner reviews §2–§6, then slice 1 =
+  M3.2.4e + derived lines.** Done the same day: D587 (row dialogs once), D588 (no white Connector
+  edge), D589 (intermediate points: red border, rounding, Connect dialog), D590 (areas only under
+  their tool).
+
 - The owner found the merge waiting lines inside the lane being joined ([OWNER_SITTING](plans/OWNER_SITTING.md)
   A2, with the measured positions). The fix is M3.2.4e (ROADMAP): its own admission contract and
   failure-first clearance rows ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)) before the D50/D59

@@ -342,6 +342,9 @@ void EditorWindow::refresh(bool modelChanged) {
     if (canvas_->selection().size()>1)
         selectionInfo_->setText(text("editorSelectionCount").arg(canvas_->selection().size()));
     refreshConnector();refreshAppearance();refreshBehaviourInspector();
+    // D589: a spin box sets its own text with its editor's signals blocked, so a value the
+    // inspector puts in never reached the field's check; the owner saw a red border on a valid 3.
+    for(const auto& validate:validationRefresh_)validate();
     {const QSignalBlocker block(side_);side_->setCurrentIndex(history_.document().network.drivingSide==DrivingSide::left?0:1);}
     const auto& b=history_.document().background;
     bgX_->setValue(b.x);bgY_->setValue(b.y);bgScale_->setValue(b.metresPerPixel);bgAngle_->setValue(b.rotation);bgOpacity_->setValue(b.opacity);

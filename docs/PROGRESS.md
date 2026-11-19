@@ -5,6 +5,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-19 — Intermediate points (D589), areas under their tool (D590), STOP_LINES draft (D591)
+
+- **Owner (2026-11-19):** the Intermediate points field was always red and a higher count did not round the Connector; wanted the field in the Connect dialog (default 0, a suitable value chosen); conflict areas only under the Conflict area tool; "ตามแนะนำ" to derived stop positions and a Stop line tool.
+- **D589:** a spin box sets its own text with signals blocked, so the inspector's check never saw a value it put in (measured `validationState=invalid` at 3); the inspector now rechecks on refresh and a disabled field is never invalid. A Connector on its default curve is laid on the curve again at the new count (test `raising_the_count_on_a_default_connector_rounds_it`); a bent one keeps its line. The Connect dialog's field: 0 = automatic, the fewest points within 0.10 m of the curve.
+- **D590:** areas and plain waiting lines draw only under the Conflict area tool (lines also under Queue counter); Stop/Yield lines always.
+- **D591:** [STOP_LINES](reference/STOP_LINES.md), a draft for the owner; nothing switched on before M3.2.4e.
+
 ## 2026-11-19 — Row dialogs open once (D587); no white Connector edge (D588)
 
 - **Owner, on Windows (M3.2.7d attempt 1):** Confirm and the close box of the Conflict area dialog each needed two clicks; a selected or hovered Connector still shows a white border; would 100 % opaque areas be better.
@@ -89,11 +96,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Purpose:** M2.6/M5.7 test whether the owner can build and report a study in the editor. Tuning a builder-made project's lanes and timing for throughput is not that test, and it is close to calibration (D544). The study stops being tuned and is kept as a failing case.
 - **D578:** lane locks are recorded as an engine defect: ROADMAP M3.2.11 (proposed), OWNER_SITTING B50 and draft [LANE_LOCKS](reference/LANE_LOCKS.md). The draft has the evidence (study: 82 waiting, longest 3,411 s; shipped projects at most 42 s), the four options (entry lane by destination, missed exit, zipper, removal) under fixed constraints (replay, M3 §4, accounting, byte-identical shipped files), a recommendation (A then B), rows LL1–LL8 and the owner's questions. Nothing is implemented.
 - **Verified:** docs checks only (`multra-check-docs`, file sizes). No code changed.
-
-## 2026-11-17 — Study lanes from the owner's drawing, two right-turn lanes (D577)
-
-- **Pick:** the owner asked for a check of a junction drawing (D576's lanes were from the aerial image), then for items 1, 2 and 4: lanes from the drawing, more than one right-turn lane, and a redesigned plan. Item 3 (each movement entering on its own lanes) was not picked.
-- **Measured on the drawing** (pixel widths at 19.4 px a lane; arrows at low resolution): N 5/3 with two right lanes, S 4/3 with one right and one through-or-right lane, NW 5/3 with one right lane and a channelised left slip, SE 3/3. D576 had N 3 and NW exit 4.
-- **D577:** `FourLegOptions::rightLanes` (default 1). With two or more, every stop-line lane has its own upstream lane, because a destination takes one lane chain per entry lane: a lane split into two right lanes left the inner one empty (seen: 0 vehicles). Shipped files are byte-identical. The study is now N 5/3/2, S 4/3/2, NW 5/3/1, SE 3/3/1. Sheet redesign: Y 0.81, Webster cycle 155 s, greens S 0–16, SE 20–100, N 104–118, NW 122–151.
-- **Result, seed 42, one run, not validated:** worse again. Completed 4,014 → 3,385, never entered 6,241 → 6,754, clamps 1. Runs are byte-identical. A probe found 22 blocked lanes, each behind a vehicle waiting at a lane end for a lane change into a standing queue: at the end of the upstream Links, and at 38 of 40 m where left-turners missed the left connector. More single-movement lanes mean more forced changes. Item 3 is now the condition for any lane layout to work.
-- **Verified on Linux (headless):** `check` 241/241; the shipped four-leg and M2.6 files regenerate byte for byte. Desktop preset, check_no_pch.py and Windows not run.

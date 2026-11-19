@@ -88,6 +88,9 @@ int main(int argc,char** argv) {
         require(station(connector.from,true)>.5*sourceLength && station(connector.from,true)<.7*sourceLength,"Source snapped to endpoint");
         require(station(connector.to,false)>.3*targetLength && station(connector.to,false)<.5*targetLength,"Target snapped to endpoint");
         attached(w.history().document());
+        // D589: the dialog's Intermediate points start at 0, automatic: the fewest within 0.10 m of the curve.
+        require(connector.geometry.size()==static_cast<std::size_t>(suitableIntermediatePoints(w.history().document().network,connector.from,connector.to))+2,
+                "The Connect dialog did not lay the automatic count of intermediate points");
         // A connector end is a grip that rides its lane: dragging it re-attaches the connector
         // and the ribbon follows. Esc before the release leaves the attachment exactly as it was.
         const auto grip=[&](bool leading){

@@ -348,6 +348,7 @@
   "editorLaneSideLeft": "Left",
   "editorLaneSideRight": "Right",
   "editorConnectorPoints": "Intermediate points",
+  "editorConnectorPointsAuto": "Automatic",
   "editorConnectorPathInfo": "Vehicles follow the lane centre between the drawn boundaries. Editing intermediate points or lane widths updates vehicle paths and control positions.",
   "editorToLaneCount": "Target lane count (toLaneCount)",
   "editorLinkData": "Link Data",

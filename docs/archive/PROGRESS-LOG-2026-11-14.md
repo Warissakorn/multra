@@ -2,6 +2,14 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-17 — Study lanes from the owner's drawing, two right-turn lanes (D577)
+
+- **Pick:** the owner asked for a check of a junction drawing (D576's lanes were from the aerial image), then for items 1, 2 and 4: lanes from the drawing, more than one right-turn lane, and a redesigned plan. Item 3 (each movement entering on its own lanes) was not picked.
+- **Measured on the drawing** (pixel widths at 19.4 px a lane; arrows at low resolution): N 5/3 with two right lanes, S 4/3 with one right and one through-or-right lane, NW 5/3 with one right lane and a channelised left slip, SE 3/3. D576 had N 3 and NW exit 4.
+- **D577:** `FourLegOptions::rightLanes` (default 1). With two or more, every stop-line lane has its own upstream lane, because a destination takes one lane chain per entry lane: a lane split into two right lanes left the inner one empty (seen: 0 vehicles). Shipped files are byte-identical. The study is now N 5/3/2, S 4/3/2, NW 5/3/1, SE 3/3/1. Sheet redesign: Y 0.81, Webster cycle 155 s, greens S 0–16, SE 20–100, N 104–118, NW 122–151.
+- **Result, seed 42, one run, not validated:** worse again. Completed 4,014 → 3,385, never entered 6,241 → 6,754, clamps 1. Runs are byte-identical. A probe found 22 blocked lanes, each behind a vehicle waiting at a lane end for a lane change into a standing queue: at the end of the upstream Links, and at 38 of 40 m where left-turners missed the left connector. More single-movement lanes mean more forced changes. Item 3 is now the condition for any lane layout to work.
+- **Verified on Linux (headless):** `check` 241/241; the shipped four-leg and M2.6 files regenerate byte for byte. Desktop preset, check_no_pch.py and Windows not run.
+
 ## 2026-11-17 — Study lanes from the image (D576)
 
 - **Pick:** the owner asked to match the lane counts first and answered "use the image" for each value.

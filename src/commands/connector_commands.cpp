@@ -116,6 +116,16 @@ void resampleConnectorPoints(ProjectDocument& d, const std::string& id, int coun
     auto& c = editableConnector(d, id);
     const int current=static_cast<int>(c.geometry.size())-2;
     if(current==count)return;
+    // D589: a Connector still on its default curve is laid on that curve again at the new count, so
+    // more points make it rounder (the owner saw only extra points on the same straight legs). A
+    // shape the author bent keeps every point and the line through them, as below.
+    try {
+        const auto drawn=connectorCurve(d.network,c.from,c.to,current);
+        bool untouched=drawn.size()==c.geometry.size();
+        for(std::size_t i=0;untouched&&i<drawn.size();++i)
+            untouched=std::hypot(drawn[i].x-c.geometry[i].x,drawn[i].y-c.geometry[i].y)<1e-6;
+        if(untouched){c.geometry=connectorCurve(d.network,c.from,c.to,count);c.laneBlend.clear();return;}
+    } catch(const std::exception&) { /* No default curve for these ends: re-lay what is there. */ }
     auto geometry=c.geometry;
     if(count>current) {
         // Raising the count must not cost the author a corner. Split the longest leg each time

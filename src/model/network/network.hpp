@@ -312,6 +312,9 @@ double minimumCircumradius(const std::vector<Point>& polyline);
 inline constexpr int kDefaultIntermediatePoints=3;
 std::vector<Point> connectorCurve(const Network&, const LaneReference& from, const LaneReference& to,
                                   int intermediatePoints=kDefaultIntermediatePoints);
+// D589: the fewest intermediate points (0-40) whose polygon stays within `tolerance` metres of the
+// curve, read at 40 points; the creation dialog's "automatic" count.
+int suitableIntermediatePoints(const Network&, const LaneReference& from, const LaneReference& to, double tolerance=.1);
 // The travel directions a Connector's two ends leave and arrive on, which set its cubic equation's endpoint tangents.
 std::pair<Point,Point> connectorTangents(const Network&, const LaneReference& from, const LaneReference& to);
 

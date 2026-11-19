@@ -191,9 +191,13 @@ void EditorCanvas::drawConflicts() {
             item->setData(3,QString::fromStdString(id)); // lane-pair identity, independent of group selection
         }
     };
-    for(const auto& a:n.rightOfWay.conflictAreas)draw(a.id,a.kind,a.priority,a.first,a.second,false,
+    // D590 (owner): conflict areas and their plain waiting lines show only under the Conflict area
+    // tool (and the lines under the Queue counter tool, which snaps to them); a line carrying Stop or
+    // Yield is a sign the author placed, and always shows.
+    const bool conflictTool=tool_==Tool::conflict,lineTool=conflictTool||tool_==Tool::counter;
+    if(conflictTool)for(const auto& a:n.rightOfWay.conflictAreas)draw(a.id,a.kind,a.priority,a.first,a.second,false,
         a.kind==ConflictKind::crossing?ConflictGeometryKind::crossing:ConflictGeometryKind::merge);
-    if(tool_==Tool::conflict)for(const auto& a:automatic_)draw(a.key,a.kind,a.priority,a.first,a.second,true,a.geometryKind);
+    if(conflictTool)for(const auto& a:automatic_)draw(a.key,a.kind,a.priority,a.first,a.second,true,a.geometryKind);
     for (const auto& line : n.rightOfWay.waitingLines) {
         const int level = levelOf(n, line.point.path);
         if (!levelVisible(level)) continue;
@@ -207,6 +211,7 @@ void EditorCanvas::drawConflicts() {
         const auto control = std::find_if(n.rightOfWay.stopControls.begin(), n.rightOfWay.stopControls.end(),
                                           [&](const auto& c) { return c.waitingLineId == line.id; });
         const bool controlled = control != n.rightOfWay.stopControls.end();
+        if (!lineTool && !controlled) continue;
         const bool stop = controlled && control->mode == StopMode::stop;
         QPen pen(dragged ? canvasStyle::active() : line.id==hoverWaitingLine_ ? canvasStyle::hover() : stop ? canvasStyle::error() : canvasStyle::warning(), dragged || stop ? 3 : 2,
                  controlled ? Qt::SolidLine : Qt::DashLine);

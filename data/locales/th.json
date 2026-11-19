@@ -348,6 +348,7 @@
   "editorLaneSideLeft": "ซ้าย",
   "editorLaneSideRight": "ขวา",
   "editorConnectorPoints": "จุดกลาง (Intermediate points)",
+  "editorConnectorPointsAuto": "อัตโนมัติ",
   "editorConnectorPathInfo": "รถวิ่งตามเส้นกึ่งกลางช่องระหว่างขอบเลนที่แสดง การปรับจุดภายในหรือความกว้างเลนจะปรับเส้นทางรถและตำแหน่งควบคุมตามไปด้วย",
   "editorToLaneCount": "จำนวนเลนปลายทาง (toLaneCount)",
   "editorLinkData": "ข้อมูลลิงก์",

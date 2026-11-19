@@ -66,7 +66,8 @@ void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field
         hint->setWordWrap(true);hint->setProperty("validationState","invalid");hint->hide();form->addRow(QString(),hint);
         if(auto* edit=field->findChild<QLineEdit*>()) {
             const auto update=[this,spin,hint,field]{
-                const bool invalid=!spin->hasAcceptableInput();QString validRange;
+                // A disabled box (nothing selected) is not wrong; and only a change of state repolishes.
+                const bool invalid=spin->isEnabled()&&!spin->hasAcceptableInput();QString validRange;
                 if(auto* whole=qobject_cast<QSpinBox*>(spin))
                     validRange=text("editorValidRange").arg(whole->minimum()).arg(whole->maximum()).arg(whole->suffix());
                 else if(auto* decimal=qobject_cast<QDoubleSpinBox*>(spin)) {
@@ -76,7 +77,9 @@ void EditorWindow::label(QFormLayout* form,const std::string& key,QWidget* field
                 }
                 hint->setText(validRange);hint->setVisible(invalid);
                 field->setToolTip(validRange);field->setAccessibleDescription(validRange);
-                field->setProperty("validationState",invalid?QStringLiteral("invalid"):QStringLiteral("valid"));
+                const auto state=invalid?QStringLiteral("invalid"):QStringLiteral("valid");
+                if(field->property("validationState").toString()==state)return;
+                field->setProperty("validationState",state);
                 field->style()->unpolish(field);field->style()->polish(field);field->update();
             };
             QObject::connect(edit,&QLineEdit::textChanged,field,update);validationRefresh_.push_back(update);update();
