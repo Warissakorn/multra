@@ -17,6 +17,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D598:** `frontPart` bisects routes of more than 8 parts and keeps the scan for shorter ones. Benchmark
   10,363 → 9,786 M Ir (−5.6 %); study 32,730 → 32,889 M (+0.5 %) and M2.6 +0.5 %: GCC no longer inlines the
   scan into `locate`. Bisecting every route cost the study +1.8 %, so the short-route scan stays.
+- **Item 3, reverted:** a leader search by rear order cut the study 7.6 % but cost M2.6 2.4 % and the
+  benchmark 5.0 %; measurements in ENGINEERING_NOTES. No D-row: nothing changed.
 
 ## 2026-11-19 — A held vehicle rests at its zone line: no crawl, no lurch (D596)
 

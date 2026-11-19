@@ -265,6 +265,14 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   the two `Vehicle` moves per vehicle-tick are 5.9 % inclusive on the study, so one move fewer is
   ≈2.9 %, under the bar; insertion's own snapshot is now the step's (D584), so a local leader
   search at the source would move that cost rather than remove it.
+- **Leader search by rear, measured and reverted (2026-11-19):** `closestVehicle` is 15.7 % of the
+  study's Ir (queues of tens of vehicles per segment, each scanned by every follower). Tried: a second
+  per-bucket order by rear (ties by position), `lower_bound` past spans that cannot reach the front,
+  stop at the first that passes; long buckets only, out of line. Event hashes identical. Study
+  32,889 → 30,394 M Ir (−7.6 %), but M2.6 +2.4 % and the 48-crossing benchmark +5.0 % with a
+  threshold of 8, and −6.2 % / +2.3 % / +4.9 % at 24: the fixed cost per tick (the extra pass in
+  `bucketSpans`, the size branch in the inline scan) outweighs the saving where queues are short.
+  A version that keeps the order across ticks (vehicles rarely overtake in a lane) is the lever left.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time
