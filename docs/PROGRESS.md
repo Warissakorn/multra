@@ -19,6 +19,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   scan into `locate`. Bisecting every route cost the study +1.8 %, so the short-route scan stays.
 - **Item 3, reverted:** a leader search by rear order cut the study 7.6 % but cost M2.6 2.4 % and the
   benchmark 5.0 %; measurements in ENGINEERING_NOTES. No D-row: nothing changed.
+- **NEXT cut to open items again (D319):** the day's done slices (M3.2.4e, STOP_LINES, line approach), the
+  M9–M12 done narration and M13's if-changes checklist moved whole to
+  [archive/NEXT-state-2026-11-19](archive/NEXT-state-2026-11-19.md); NEXT ≈7,666 → 6,378 tokens (−17 %, estimate
+  by characters). Every open item, owner ask, command and D-id is kept.
 
 ## 2026-11-19 — A held vehicle rests at its zone line: no crawl, no lurch (D596)
 
