@@ -1,4 +1,5 @@
 #include "trip_rate_codec.hpp"
+#include "../core/text.hpp"
 #include "input_manifest.hpp"
 #include "network_fields.hpp"
 #include "../core/validate.hpp"
@@ -10,7 +11,6 @@
 namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 bool isString(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
 bool isNumber(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_number() && std::isfinite(j.at(key).get<double>()); }
 void bad(Issues& issues, const std::string& path) { issues.push_back({"INVALID_TRIP_RATE_SET", path}); }
@@ -21,7 +21,7 @@ TripRateSide parseSide(const Json& j, const std::string& path, Issues& issues) {
     const auto method = j.at("method").get<std::string>();
     std::set<std::string> attributes;
     const auto attribute = [&](const Json& item, const std::string& at) -> std::string {
-        if (!isString(item, "attribute") || blank(item.at("attribute").get<std::string>())) { bad(issues, at + ".attribute"); return {}; }
+        if (!isString(item, "attribute") || isBlank(item.at("attribute").get<std::string>())) { bad(issues, at + ".attribute"); return {}; }
         auto name = item.at("attribute").get<std::string>();
         if (!attributes.insert(name).second) bad(issues, at + ".attribute"); // one attribute once per side
         return name;
@@ -72,7 +72,7 @@ TripRateSet parseTripRateSet(const Json& j, const std::string& path, bool requir
     Issues issues;
     TripRateSet set;
     if (!j.is_object() || !networkCodec::onlyKnownKeys(j, networkCodec::Object::tripRateSet)) throw ValidationError({{"INVALID_TRIP_RATE_SET", path}});
-    if (!isString(j, "id") || blank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
+    if (!isString(j, "id") || isBlank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
     else set.id = j.at("id").get<std::string>();
     for (const auto* key : {"name", "unit"})
         if (!isString(j, key)) bad(issues, path + "." + key);
@@ -85,7 +85,7 @@ TripRateSet parseTripRateSet(const Json& j, const std::string& path, bool requir
         else if (s.contains("citation")) set.citation = s.at("citation").get<std::string>();
         if (s.contains("table") && !s.at("table").is_string()) bad(issues, path + ".source.table");
         else if (s.contains("table")) set.table = s.at("table").get<std::string>();
-        if (requireCitation && blank(set.citation)) bad(issues, path + ".source.citation");
+        if (requireCitation && isBlank(set.citation)) bad(issues, path + ".source.citation");
     }
     if (!j.contains("purposes") || !j.at("purposes").is_array() || j.at("purposes").empty()) bad(issues, path + ".purposes");
     else {
@@ -97,7 +97,7 @@ TripRateSet parseTripRateSet(const Json& j, const std::string& path, bool requir
             if (!item.is_object() || !networkCodec::onlyKnownKeys(item, networkCodec::Object::tripRatePurpose) || !item.contains("productions") ||
                 !item.contains("attractions")) { bad(issues, at); continue; }
             TripRatePurpose p;
-            if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
+            if (!isString(item, "id") || isBlank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
             else if (p.id = item.at("id").get<std::string>(); !ids.insert(p.id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
             p.productions = parseSide(item.at("productions"), at + ".productions", issues);
             p.attractions = parseSide(item.at("attractions"), at + ".attractions", issues);
@@ -140,7 +140,7 @@ std::vector<ValidationIssue> ownedTripRateSetIssues(const std::vector<TripRateSe
     std::set<std::string> ids;
     for (std::size_t k = 0; k < sets.size(); ++k) {
         const auto path = "tripRateSets[" + std::to_string(k) + "].id";
-        if (blank(sets[k].id)) issues.push_back({"INVALID_ID", path});
+        if (isBlank(sets[k].id)) issues.push_back({"INVALID_ID", path});
         else if (!ids.insert(sets[k].id).second) issues.push_back({"DUPLICATE_ID", path});
     }
     return issues;

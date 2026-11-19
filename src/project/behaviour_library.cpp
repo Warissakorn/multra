@@ -1,4 +1,5 @@
 #include "behaviour_library.hpp"
+#include "../core/text.hpp"
 #include "network_fields.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
@@ -13,7 +14,6 @@
 namespace multra {
 namespace {
 std::string at(const char* base, std::size_t i) { return std::string(base) + "[" + std::to_string(i) + "]"; }
-bool blank(const std::string& id) { return id.find_first_not_of(" \t\r\n") == std::string::npos; }
 const Json& list(const Json& object, const char* key) {
     if (!object.at(key).is_array()) throw std::invalid_argument("EDIT_CATALOG_READ");
     return object.at(key);
@@ -341,7 +341,7 @@ std::vector<ValidationIssue> behaviourLibraryIssues(const ProjectDocument& d) {
     std::set<std::string> members;
     for (std::size_t i = 0; i < def.vehicleClasses.size(); ++i) {
         const auto& c = def.vehicleClasses[i]; const auto path = at("vehicleClasses", i);
-        if (blank(c.id)) issues.push_back({"INVALID_ID", path + ".id"});
+        if (isBlank(c.id)) issues.push_back({"INVALID_ID", path + ".id"});
         else if (!classes.insert(c.id).second) issues.push_back({"DUPLICATE_ID", path + ".id"});
         for (std::size_t k = 0; k < c.vehicleTypeIds.size(); ++k) {
             const auto& type = c.vehicleTypeIds[k]; const auto where = path + at(".vehicleTypeIds", k);
@@ -351,7 +351,7 @@ std::vector<ValidationIssue> behaviourLibraryIssues(const ProjectDocument& d) {
     }
     for (std::size_t i = 0; i < def.linkBehaviourTypes.size(); ++i) {
         const auto& t = def.linkBehaviourTypes[i]; const auto path = at("linkBehaviourTypes", i);
-        if (blank(t.id)) issues.push_back({"INVALID_ID", path + ".id"});
+        if (isBlank(t.id)) issues.push_back({"INVALID_ID", path + ".id"});
         else if (!typeIds.insert(t.id).second) issues.push_back({"DUPLICATE_ID", path + ".id"});
         // A default is required on every behaviour type, used or not; there is no silent fallback.
         if (t.defaultBehaviourId.empty()) issues.push_back({"MISSING_DEFAULT_BEHAVIOUR", path + ".defaultBehaviourId"});

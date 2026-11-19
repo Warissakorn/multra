@@ -37,6 +37,7 @@ and then the step is unchanged to the bit.
 | `join_anticipation.*` | `indexJoins`, `joinEntries`, `anticipateJoin`: a second following law across a join, only with `clampRules.joinAnticipation` | [JOIN_ANTICIPATION](../../docs/reference/JOIN_ANTICIPATION.md) |
 | `perception.*` | Perception keys and ranges, the reaction-time action FIFO, `perceivedLeaders` | [PERCEPTION](../../docs/reference/PERCEPTION.md) |
 | `lateral_types.hpp` | `DrivingSide`, the compiled `SegmentCrossSection` | [LATERAL](../../docs/reference/LATERAL.md) |
+| `text.hpp` | `isBlank`: the one blank-id rule (empty or only spaces, tabs, line breaks) every validator and codec uses (D600) | [PROJECT_SCHEMA](../../docs/reference/PROJECT_SCHEMA.md) |
 | `lateral.*` | The lateral key table (one list for codec, validator and serializer), lateral spans and filters | [LATERAL §3, §9](../../docs/reference/LATERAL.md) |
 | `lateral_motion.*` | Lateral motion toward a `lateralTarget` after the longitudinal step, admitted in vehicle-id order without 2D overlap | [LATERAL §7](../../docs/reference/LATERAL.md) |
 | `speed_control.*` | Curve speed: the switch, key checks and `speedTarget` from `Segment::curvature` | [SPEED_CONTROL](../../docs/reference/SPEED_CONTROL.md) |

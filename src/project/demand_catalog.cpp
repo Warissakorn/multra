@@ -1,4 +1,5 @@
 #include "demand_catalog.hpp"
+#include "../core/text.hpp"
 #include <algorithm>
 #include <cmath>
 #include <set>
@@ -19,7 +20,7 @@ std::vector<ValidationIssue> ownedCatalogIssues(const AuthoringDefinition& d) {
         std::set<std::string> modes;
         for(std::size_t k=0;k<d.modes.size();++k) {
             const auto& m=d.modes[k];const auto path="definition.modes["+std::to_string(k)+"]";
-            if(m.id.find_first_not_of(" \t\r\n")==std::string::npos)issues.push_back({"INVALID_ID",path+".id"});
+            if(isBlank(m.id))issues.push_back({"INVALID_ID",path+".id"});
             else if(!modes.insert(m.id).second)issues.push_back({"DUPLICATE_ID",path+".id"});
             if(!d.externalCompositions && std::none_of(d.compositions.begin(),d.compositions.end(),[&](const auto& c){return c.id==m.compositionId;}))
                 issues.push_back({"MODE_COMPOSITION_UNKNOWN",path+".compositionId"});
@@ -29,7 +30,7 @@ std::vector<ValidationIssue> ownedCatalogIssues(const AuthoringDefinition& d) {
     std::set<std::string> ids;
     for(std::size_t k=0;k<d.compositions.size();++k) {
         const auto& c=d.compositions[k];const auto path="compositions["+std::to_string(k)+"]";
-        if(c.id.find_first_not_of(" \t\r\n")==std::string::npos)issues.push_back({"INVALID_ID",path+".id"});
+        if(isBlank(c.id))issues.push_back({"INVALID_ID",path+".id"});
         else if(!ids.insert(c.id).second)issues.push_back({"DUPLICATE_ID",path+".id"});
         const auto validateMembers=[&](const std::vector<CompositionShare>& members,const std::string& atPath) {
             std::set<std::string> types;double sum=0;bool valid=!members.empty();

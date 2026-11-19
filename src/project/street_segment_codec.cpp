@@ -1,4 +1,5 @@
 #include "street_segment_codec.hpp"
+#include "../core/text.hpp"
 #include "input_manifest.hpp"
 #include "network_fields.hpp"
 #include "zone_codec.hpp"
@@ -15,7 +16,6 @@ namespace {
 std::string text(const Json& j, const char* key) { if (!j.contains(key) || !j.at(key).is_string()) broken(); return j.at(key).get<std::string>(); }
 double number(const Json& j, const char* key) { if (!j.contains(key) || !j.at(key).is_number()) broken(); return j.at(key).get<double>(); }
 int whole(const Json& j, const char* key) { if (!j.contains(key) || !j.at(key).is_number_integer()) broken(); return j.at(key).get<int>(); }
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 std::vector<std::filesystem::path> files(const std::filesystem::path& directory) {
     std::vector<std::filesystem::path> result;
     if (!std::filesystem::is_directory(directory)) return result;
@@ -208,7 +208,7 @@ std::vector<ValidationIssue> crossSectionIssues(const std::vector<ResolvedCrossS
     const auto positive = [](double v) { return std::isfinite(v) && v > 0; };
     for (const auto& [t, path] : sections) {
         const auto bad = [&](const std::string& field) { issues.push_back({"INVALID_CROSS_SECTION", path + "." + field}); };
-        if (blank(t.id) || !ids.insert(t.id).second) bad("id");
+        if (isBlank(t.id) || !ids.insert(t.id).second) bad("id");
         if (t.directions != 1 && t.directions != 2) bad("directions");
         if (t.lanesForward < 1 || t.lanesForward > 12) bad("lanesForward");
         if (t.directions == 2 ? (t.lanesBackward < 1 || t.lanesBackward > 12) : t.lanesBackward != 0) bad("lanesBackward");
@@ -216,9 +216,9 @@ std::vector<ValidationIssue> crossSectionIssues(const std::vector<ResolvedCrossS
         const auto lanes = static_cast<std::size_t>(std::max(0, t.lanesForward) + (t.directions == 2 ? std::max(0, t.lanesBackward) : 0));
         if (!t.laneWidths.empty() && (t.laneWidths.size() != lanes || !std::all_of(t.laneWidths.begin(), t.laneWidths.end(), positive))) bad("laneWidths");
         if (!std::isfinite(t.median) || t.median < 0) bad("median");
-        if (blank(t.source)) bad("source");
+        if (isBlank(t.source)) bad("source");
         if (t.speedLimit && !positive(*t.speedLimit)) bad("speedLimit");
-        if (t.linkType && (blank(*t.linkType) || (linkTypeIds && std::find(linkTypeIds->begin(), linkTypeIds->end(), *t.linkType) == linkTypeIds->end())))
+        if (t.linkType && (isBlank(*t.linkType) || (linkTypeIds && std::find(linkTypeIds->begin(), linkTypeIds->end(), *t.linkType) == linkTypeIds->end())))
             bad("linkType");
     }
     return issues;

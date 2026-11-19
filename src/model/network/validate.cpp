@@ -1,4 +1,5 @@
 #include "network.hpp"
+#include "../../core/text.hpp"
 #include "connector_attachment.hpp"
 #include "right_of_way.hpp"
 #include "travel_time.hpp"
@@ -130,7 +131,7 @@ std::vector<ValidationIssue> validateNetwork(const Network& network) {
         }
         // A head shows a legacy program or a signal group (M2.7b), exactly one of them.
         if (!head.controllerId.empty()) { if (!head.programId.empty()) add("EDIT_HEAD_REFERENCE", p + ".programId"); }
-        else if (head.programId.find_first_not_of(" \t\r\n") == std::string::npos) add("INVALID_ID", p + ".programId");
+        else if (isBlank(head.programId)) add("INVALID_ID", p + ".programId");
         if (!std::isfinite(head.position) || head.position < 0 || (length>=0 && head.position > length))
             add("INVALID_POSITION", p + ".position");
     }

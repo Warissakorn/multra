@@ -23,6 +23,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   lookups that return into their container (each checked: none dangles), now off for GCC before 14 only; the rest
   fixed in place (range-loop copies, misleading indentation, an unused parameter, two dead test helpers removed,
   two shared test helpers `[[maybe_unused]]`, one sign comparison). No behaviour or assertion changed.
+- **D600:** one `isBlank` (`src/core/text.hpp`) replaces the blank-id rule written 24 times (12 identical
+  `blank()` helpers, 12 inline copies) in `core`, `model` and `project`.
 - **NEXT cut to open items again (D319):** the day's done slices (M3.2.4e, STOP_LINES, line approach), the
   M9–M12 done narration and M13's if-changes checklist moved whole to
   [archive/NEXT-state-2026-11-19](archive/NEXT-state-2026-11-19.md); NEXT ≈7,666 → 6,378 tokens (−17 %, estimate

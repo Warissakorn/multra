@@ -1,4 +1,5 @@
 #include "macro_run_definition.hpp"
+#include "../core/text.hpp"
 #include "document.hpp"
 #include "macro_settings.hpp"
 #include "network_fields.hpp"
@@ -8,7 +9,6 @@
 
 namespace multra {
 namespace {
-bool blank(const std::string& value) { return value.find_first_not_of(" \t\r\n") == std::string::npos; }
 [[noreturn]] void invalid(const std::string& path) { throw ValidationError({{"INVALID_MACRO_RUN", path}}); }
 [[noreturn]] void setting(const std::string& path) { throw ValidationError({{"INVALID_MACRO_SETTING", path}}); }
 std::string text(const Json& row, const char* key, const std::string& path) {
@@ -55,9 +55,9 @@ std::vector<ValidationIssue> macroRunDefinitionIssues(const ProjectDocument& d) 
     for (std::size_t i = 0; i < d.macroRuns.size(); ++i) {
         const auto& run = d.macroRuns[i];
         const auto path = "macroRuns[" + std::to_string(i) + "]";
-        if (blank(run.id)) issues.push_back({"INVALID_ID", path + ".id"});
+        if (isBlank(run.id)) issues.push_back({"INVALID_ID", path + ".id"});
         else if (!used.insert(run.id).second) issues.push_back({"DUPLICATE_ID", path + ".id"});
-        if (blank(run.period)) issues.push_back({"INVALID_MACRO_RUN", path + ".period"});
+        if (isBlank(run.period)) issues.push_back({"INVALID_MACRO_RUN", path + ".period"});
         for (auto issue : macroSettingsIssues(run.settings)) {
             issue.path = path + ".settings" + issue.path.substr(std::string("definition.macroSettings").size());
             issues.push_back(std::move(issue));

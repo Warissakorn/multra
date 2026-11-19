@@ -1,4 +1,5 @@
 #include "demand_paths.hpp"
+#include "../core/text.hpp"
 #include "document.hpp"
 #include "../core/w74.hpp"
 #include "../core/perception.hpp"
@@ -262,7 +263,7 @@ std::vector<ValidationIssue> routingDecisionIssues(const AuthoringDefinition& d)
         const auto& decision = d.routingDecisions[k];
         const auto path = "routingDecisions[" + std::to_string(k) + "]";
         if(decision.position) {
-            if(decision.id.find_first_not_of(" \t\r\n")==std::string::npos)issues.push_back({"INVALID_ID",path+".id"});
+            if(isBlank(decision.id))issues.push_back({"INVALID_ID",path+".id"});
             for(std::size_t e=0;e<k;++e)if(d.routingDecisions[e].id==decision.id)issues.push_back({"DUPLICATE_ID",path+".id"});
         }
         if(decision.position && (decision.linkId.empty() || !std::isfinite(*decision.position) || *decision.position<0))
