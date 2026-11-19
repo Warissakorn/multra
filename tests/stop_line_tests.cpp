@@ -106,7 +106,9 @@ TEST(stoplines, sl8_front_stop_distance_is_a_project_value_in_0_to_10_metres) {
     auto& d = t.document;
     const auto data = test::root() / "data";
     const auto wait = [&] {
-        for (const auto& z : compileDocument(d, data).scenario.conflictZones)
+        // Named, not iterated off a member of the temporary snapshot: the MSVC run found no zone.
+        const auto s = compileDocument(d, data).scenario;
+        for (const auto& z : s.conflictZones)
             if (z.id == "right-of-way/" + t.crossingMerge) return z.waitPosition;
         throw std::runtime_error("no zone");
     };
