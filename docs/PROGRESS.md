@@ -14,6 +14,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   12-crossing benchmark corridor, seeds 42 and 43, matches the baseline after each engine item; CLI summaries byte-identical.
 - **D597:** `publishMoves` finds the joins crossed this tick by binary search over the ascending part starts
   instead of reading every part of the route. Benchmark 14,578 → 10,363 M Ir (−28.9 %), study −0.6 %, M2.6 −0.9 %.
+- **D598:** `frontPart` bisects routes of more than 8 parts and keeps the scan for shorter ones. Benchmark
+  10,363 → 9,786 M Ir (−5.6 %); study 32,730 → 32,889 M (+0.5 %) and M2.6 +0.5 %: GCC no longer inlines the
+  scan into `locate`. Bisecting every route cost the study +1.8 %, so the short-route scan stays.
 
 ## 2026-11-19 — A held vehicle rests at its zone line: no crawl, no lurch (D596)
 

@@ -33,9 +33,21 @@ void appendSpans(std::vector<OccupiedSpan>& spans, const std::vector<RoutePart>&
             std::min(part->length, vehicle.distance - part->start), vehicle.speed, vehicle.acceleration});
 }
 }
+namespace {
+// A long route's front part by bisection, kept apart so the short-route scan below stays small
+// enough to inline into locate (D598).
+const RoutePart& bisectFrontPart(const std::vector<RoutePart>& parts, double distance) {
+    const auto part = std::partition_point(parts.begin(), parts.end(),
+                                           [distance](const RoutePart& p) { return !(distance < p.start + p.length); });
+    return part == parts.end() ? parts.back() : *part;
+}
+}
 const RoutePart& frontPart(const std::vector<RoutePart>& parts, double distance) {
     // Strictly less than: a front exactly at a join is on the downstream part. Past the end, the
-    // last part -- the sink rule. One loop for locate and behaviour selection, so they cannot differ.
+    // last part -- the sink rule. One comparison for locate and behaviour selection, so they cannot
+    // differ. Part ends ascend (contiguous parts of positive length), so a long route bisects with
+    // the same comparison; bisecting the two or three parts of a short route cost the study Ir (D598).
+    if (parts.size() > 8) [[unlikely]] return bisectFrontPart(parts, distance);
     for (const auto& part : parts)
         if (distance < part.start + part.length) return part;
     return parts.back();

@@ -261,7 +261,7 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   not the lever; the per-tick containers would be.
 - **Optimisation pass of 2026-11-19 (D597–, GCC 13.3, Release `-g1`, seed 42):** baseline study
   32,935 M Ir, M2.6 3,841 M, `48 900` 14,578 M. On the corridor the per-part scans dominated: the
-  Segment-entry scan in `publishMoves` 15.5 % (D597: −28.9 %) and `frontPart` 5.9 %. Not taken, measured:
+  Segment-entry scan in `publishMoves` 15.5 % (D597: −28.9 %) and `frontPart` 5.9 % (D598: −5.6 %, short routes +0.5 %). Not taken, measured:
   the two `Vehicle` moves per vehicle-tick are 5.9 % inclusive on the study, so one move fewer is
   ≈2.9 %, under the bar; insertion's own snapshot is now the step's (D584), so a local leader
   search at the source would move that cost rather than remove it.
