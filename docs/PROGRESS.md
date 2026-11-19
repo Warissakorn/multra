@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-19 — A held vehicle rests at its zone line: no crawl, no lurch (D596)
+
+- **Owner:** "ทำเรื่องรถคืบแล้วกระตุกที่เส้นต่อได้เลย".
+- **Measured first** ([LINE_APPROACH](reference/LINE_APPROACH.md) §9, T-junction seeds 42–51, env-switched patch, reverted): the crawl is the law's `√v` term in the desired gap and the 2 m is `standstillDistance`. Chosen: behind a conflict zone's hold the desired gap is 0. Crawl 194.7 → 13.8 s per seed, rest median 2.65 → 0 m, go-then-brake 15 → 0, clamps 0. The kinematic floor in every mode was measured and not taken (more go-then-brake).
+- **D596:** `Leader::zoneLine` on zone holds only; a vehicle resting at its line is not `committed`; a stop or residue ending at the line rests without a clamp. Signal heads, vehicles, derived rules and W74 unchanged; the four-leg and M2.6 pins pass unchanged.
+- **Rows:** new `zonelinerest` (LA1–LA4, failed with the flag off); BA146, BA119, BA121 and PL8 updated, reasons in LINE_APPROACH §9.
+- **Verified on Linux (desktop preset, Debug):** full `ctest` 361/361; changed units build without the PCH. Windows not run.
+
 ## 2026-11-19 — STOP_LINES slice 3: the Stop line tool (D595)
 
 - **Owner:** "ทำส่วนที่ 3 ต่อได้เลย".
@@ -75,10 +83,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Measured:** study, seed 42: clamps 1 → 0, completed 6,627. Every shipped project, seeds 42–51, and `multra-cli 42` identical except the build commit.
 - **Tests:** `stopfloor.ba209_…` and `stopfloor.ba210_…` (first numbered BA179–BA180, which the weaving lab already held; renumbered the same day), each forcing its clamp with the switch off.
 - **Verified on Linux (headless):** `check` 241/241. The desktop preset and Windows were not run (no UI change).
-
-## 2026-11-18 — The study's last clamp traced (no code change)
-
-- **Pick:** the owner asked for the cause of vehicle 3915's clamp.
-- **Cause:** D258's standing-obstacle floor (LINE_APPROACH §7) aims at the leader's rear, but behind a vehicle the hard cap is the standstill distance (2 m) short of it, so the floor almost never binds there. The prototype law alone under-brakes the last half metre behind standing 3913 (queued at a merge); 3915 meets the cap at 0.67 m/s.
-- **Measured with a temporary patch (reverted):** the floor aimed at `gap − standstill` behind a standing vehicle gives a constant 2.81 m/s² stop; one clamp stays, 1 mm late at 0.17 m/s (the 0.01 m guard). Shipped projects, seeds 42–51, and `multra-cli 42` unchanged. Details in NEXT.
-- **Verified:** probes only; no code changed.

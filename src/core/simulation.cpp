@@ -206,6 +206,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         if (leader && !zones.empty()) leaders[v] = VehicleLeader{leader->gap, leader->speed, leaderId};
         const double leaderCap = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity(); double holdCap = std::numeric_limits<double>::infinity(), headLine = holdCap; // every other hold; the nearest signal-head hold (MERGE_CLAMPS §2 Q)
         double giveWayLine = std::numeric_limits<double>::infinity(); // GIVE_WAY_STOP §2: the nearest rule or zone hold
+        double zoneLine = std::numeric_limits<double>::infinity(); // LINE_APPROACH §9 (D596): the nearest zone hold
         // M3.5 (PERCEPTION.md §2-§3): with a look-ahead or an observed-vehicle count, the
         // acceleration follows the PERCEIVED leaders; the physical leader above keeps the hard cap
         // and admission. Neither key: the physical leader, exactly as before.
@@ -293,8 +294,8 @@ SimState stepSimulation(SimState&& state, double dt) {
         if (const auto hold = index.routeZones[refs[v].route].empty() ? std::nullopt
                               : zoneHold(scenario, index, zones, vehicle, refs[v], vehicleLeader,
                                          stopOf.empty() ? nullptr : stopOf[v], startTick)) {
-            holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold);
-            if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0};
+            holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold); zoneLine = std::min(zoneLine, *hold);
+            if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0, true}; // D596: rest at the line
         }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
@@ -338,8 +339,15 @@ SimState stepSimulation(SimState&& state, double dt) {
         const double allowedDistance = tickCap(scenario, vehicles, refs, vehicle, parts, spans, buckets, &lateral, vehicleLeader, leaderCap, holdCap, giveWayLine, move.distance, dt); // MERGE_CLAMPS §2
         if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking; §2 Q (D251) at a signal head too, with amberDeceleration
             const bool standingBody = behaviour.stopFloor && !behaviour.w74 && vehicleLeader && vehicleLeader->speed == 0 && leaderCap == allowedDistance; // §8 (D583)
-            if (const auto a = giveWayLine == allowedDistance || standingBody || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
-                const auto stop = integrate(vehicle.speed, *a, dt); move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
+            // D596: at a zone's line with only a rounding residue of speed left (the law's own stop ended
+            // exactly there), coming to rest is not an emergency stop.
+            if (zoneLine == allowedDistance && vehicle.speed < 1e-6) move = {allowedDistance, 0, -vehicle.speed / dt, FollowingMode::braking, false, following.w74};
+            else if (const auto a = giveWayLine == allowedDistance || standingBody || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
+                auto stop = integrate(vehicle.speed, *a, dt);
+                // D596: a stop that ends at a zone's line rests there, without a rounding residue of
+                // speed a later tick would read as still moving (and as unable to stop).
+                if (zoneLine == allowedDistance && stop.distance >= allowedDistance - 1e-9) stop = {0, allowedDistance};
+                move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
             } else { move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
         }
     }

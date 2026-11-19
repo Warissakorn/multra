@@ -132,7 +132,10 @@ std::optional<double> zoneHold(const Scenario& scenario, const ScenarioIndex& in
             const bool exitTaken = leader && leader->speed < kStoppedSpeed &&
                 vehicle.distance + leader->gap - rz.clearAt < type.length + standstillGap(behaviour);
             // A driver who cannot stop at the line goes, unless the area is physically taken.
-            const bool blocked = committed(vehicle.speed, std::max(0.0, gap), type, behaviour) ? state.majorInside : state.majorBlocks;
+            // D596: one resting at its line (LINE_APPROACH §9) with a residue of speed from the stop
+            // that ended there has not "failed to stop": it is stopped.
+            const bool resting = gap <= kPast && vehicle.speed < kStoppedSpeed;
+            const bool blocked = !resting && committed(vehicle.speed, std::max(0.0, gap), type, behaviour) ? state.majorInside : state.majorBlocks;
             if (!unserved && !blocked && !exitTaken) continue;
         } else {
             gap = rz.entryAt - vehicle.distance;

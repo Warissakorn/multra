@@ -63,10 +63,14 @@ TEST(stopdwell, ba119_the_dwell_does_not_depend_on_the_time_step) { // BA119
         const auto story = run(minor(crossing(dt, 2.0)), 60);
         CHECK(story.crossedAt > 0);
         const double rest = (story.ticksAtRest - 1) * dt; // whole ticks after the arrival tick
-        CHECK(rest >= 2 - 1e-9 && rest < 2 + dt);
+        // D596: a stop the law ends exactly at the line stands from that tick, one before its service
+        // starts, so the rest can reach 2 s + one tick (dt 0.25: 2.25 s).
+        CHECK(rest >= 2 - 1e-9 && rest <= 2 + dt + 1e-9);
     }
     // Without the key it is one tick, so its length follows the time step.
-    CHECK((run(minor(crossing(0.5, std::nullopt)), 60).ticksAtRest - 1) * 0.5 == 0.5);
+    // (D596: plus the arrival tick when the law's own stop ends at the line, as above.)
+    const double oneTick = (run(minor(crossing(0.5, std::nullopt)), 60).ticksAtRest - 1) * 0.5;
+    CHECK(oneTick == 0.5 || oneTick == 1.0);
 }
 TEST(stopdwell, ba120_a_dwell_below_one_tick_rests_one_tick) { // BA120
     CHECK(run(minor(crossing(0.1, 0.05)), 60).ticksAtRest == 2);
@@ -75,13 +79,15 @@ TEST(stopdwell, ba120_a_dwell_below_one_tick_rests_one_tick) { // BA120
 }
 TEST(stopdwell, ba121_a_blocked_gap_still_holds_and_the_dwell_ran_while_waiting) { // BA121
     // Standing at the line already, with a major vehicle approaching: the gap stays closed for seconds.
-    const auto at = [](Scenario s) { return test::withVehicles(std::move(s), {{1, "minorRoute", 87, 0}, {2, "majorRoute", 130, 6}}); };
+    // D596: a held vehicle rests with its front at the line (90), no longer the standstill gap short.
+    const auto at = [](Scenario s) { return test::withVehicles(std::move(s), {{1, "minorRoute", 90, 0}, {2, "majorRoute", 130, 6}}); };
     const auto plain = run(at(crossing(0.1, std::nullopt)), 120);
     const auto dwell = run(at(crossing(0.1, 1.0)), 120);
-    const auto clear = run(test::withVehicles(crossing(0.1, 1.0), {{1, "minorRoute", 87, 0}}), 120);
+    const auto clear = run(test::withVehicles(crossing(0.1, 1.0), {{1, "minorRoute", 90, 0}}), 120);
     CHECK(plain.crossedAt > clear.crossedAt + 1); // the forcing: the gap stays closed past the 1 s dwell
     CHECK(dwell.crossedAt == plain.crossedAt);     // so the dwell adds nothing: it ran during the wait
-    CHECK(dwell.ticksAtRest > plain.ticksAtRest);  // it rested 1 s, where the one-tick rule crept up to the line
+    // D596: both now stand at the line for the whole wait; before, the one-tick rule crept up to it.
+    CHECK(dwell.ticksAtRest >= plain.ticksAtRest);
 }
 TEST(stopdwell, ba122_the_behaviour_of_the_minor_road_sets_the_dwell) { // BA122
     auto s = crossing(0.1, std::nullopt);

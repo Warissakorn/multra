@@ -58,6 +58,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    regenerated fixture puts `wait-14` at 12.31 m (overlap from 13.31 m), `wait-18` at 6.99 m (from 7.99 m),
    `wait-13` at 154.65 m and `wait-17` at 151.36 m on their Links (x = −4.65 and x = 1.36), 1 m short of each
    overlap. Attempt 2 is the owner's.
+   *Session note (2026-11-19, D596):* the creep and lurch: a held vehicle now rests with its front at a zone's
+   line (measured T-junction seeds 42–51: rest 2.65 m short → 0 m, crawl under 1 m/s 194.7 → 13.8 s per seed,
+   go-then-brake 15 → 0), [LINE_APPROACH](../reference/LINE_APPROACH.md) §9.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
