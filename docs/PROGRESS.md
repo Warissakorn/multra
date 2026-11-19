@@ -25,6 +25,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   two shared test helpers `[[maybe_unused]]`, one sign comparison). No behaviour or assertion changed.
 - **D600:** one `isBlank` (`src/core/text.hpp`) replaces the blank-id rule written 24 times (12 identical
   `blank()` helpers, 12 inline copies) in `core`, `model` and `project`.
+- **Final (same tree as committed, event hashes identical):** benchmark 14,578 → 9,786 M Ir (−32.9 %), study
+  32,935 → 32,889 M (−0.1 %), M2.6 3,841 → 3,827 M (−0.4 %); warnings 44 → 0; 361/361. Linux only; MSVC wall
+  time is the owner's check (NEXT).
 - **NEXT cut to open items again (D319):** the day's done slices (M3.2.4e, STOP_LINES, line approach), the
   M9–M12 done narration and M13's if-changes checklist moved whole to
   [archive/NEXT-state-2026-11-19](archive/NEXT-state-2026-11-19.md); NEXT ≈7,666 → 6,378 tokens (−17 %, estimate

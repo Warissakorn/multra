@@ -115,17 +115,20 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
   (each list's `selectRow()` callers would need rewriting first).
 
-## Optimisation pass of 2026-11-07 (D487–D489) — follow-ups only
+## Optimisation passes (2026-11-07 D487–D489; 2026-11-19 D597–D600) — follow-ups only
 
 - Owner: C14. A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
   source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
   cause is keys or sloppiness, not size.
-- The engine's next lever is the per-tick containers (spans, refs, events), not single copies
-  ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)); measure with callgrind first. D584 reused
-  insertion's snapshot (oversaturated study −6.6 % Ir); what is left there is listed in the notes
-  (older spread costs, not booked: `closestVehicle` 8 %, per-tick `Vehicle` moves 6 %, D283).
-  Owner check: MSVC Release wall time of the study.
+- **Owner check (D597, D598):** MSVC Release wall time of the study and of `multra-engine-benchmark 48 900`
+  before and after; Linux callgrind showed the benchmark −32.9 % Ir, the study −0.1 %.
+- **D599:** the build is warning-free on GCC 13; the next GCC 14+ or MSVC `/W4` build may show new ones:
+  fix them in the code, never widen the GCC < 14 exemption.
+- **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-19): `closestVehicle`
+  is 15.7 % of the oversaturated study. A rear-ordered search rebuilt every tick was measured and reverted
+  (study −7.6 %, M2.6 +2.4 %, benchmark +5.0 %); one that keeps the order across ticks is untried. Measure
+  study, M2.6 and the benchmark with callgrind, and hash events (seeds 42–43), before and after.
 
 ## Canvas style — slices A–C done; stop for owner review
 
