@@ -49,14 +49,14 @@ SimState creeping(Scenario s, double gap, double speed, std::vector<test::Placem
 }
 }
 TEST(givewaystop, ba146_braking_that_never_clamped_is_unchanged) { // BA146
-    // 20 cm at 1 m/s: the model stops short of the line by itself, today as before.
+    // 20 cm at 1 m/s: the model stops by itself, without a clamp. Since D596 (LINE_APPROACH §9) a zone's
+    // line is where the front rests, so it brakes evenly to the line itself rather than 1.2 cm short.
     const auto o = run(creeping(crossing(), 0.2, 1.0));
     CHECK(o.clamps == 0); CHECK(o.furthest <= 90 + 1e-9);
-    // Pinned, bit for bit, from the build before the rule: the model's own braking to rest.
-    const std::vector<double> before{89.884888888888881, 89.941655080350387, 89.974491622401857, 89.987650390382811};
+    const std::vector<double> before{89.887500000000003, 89.950000000000003, 89.987499999999997};
     CHECK(o.distances.size() == 20);
     for (std::size_t t = 0; t < before.size(); ++t) CHECK(o.distances[t] == before[t]);
-    for (std::size_t t = 4; t < o.distances.size(); ++t) CHECK(o.distances[t] == 89.988431338109166);
+    for (std::size_t t = 3; t < o.distances.size(); ++t) CHECK(o.distances[t] == 90);
     CHECK(o.hardest > -maxDeceleration(crossing()));
 }
 TEST(givewaystop, ba147_a_feasible_stop_at_a_yield_line_is_not_a_clamp) { // BA147

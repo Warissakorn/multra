@@ -83,6 +83,36 @@ std::string EditorCanvas::waitingLineAt(Point p) const {
     }
     return found;
 }
+void EditorCanvas::selectStopLine(std::string id) {
+    if (selectedStopLine_ == id) return;
+    selectedStopLine_ = std::move(id); redraw();
+}
+// M3.2.12 slice 3 (STOP_LINES §5). D84: Ctrl+right-click on a lane places a stop line there; a left
+// click picks a placed line and starts its drag along its own path.
+bool EditorCanvas::stopLinePress(QMouseEvent* e) {
+    if (tool_ != Tool::stopLine || !document_) return false;
+    const bool place = e->button() == Qt::RightButton && (e->modifiers() & Qt::ControlModifier);
+    if (!place && e->button() != Qt::LeftButton) return false;
+    const auto p = world(e->pos(), false);
+    lastPick_ = p;
+    if (const auto id = waitingLineAt(p); !place && !id.empty()) {
+        selectStopLine(id);
+        if (stopLinePicked) stopLinePicked(id);
+        for (const auto& line : document_->network.rightOfWay.waitingLines) if (line.id == id) {
+            auto polyline = controlPathPolyline(document_->network, line.point.path);
+            if (polyline.size() < 2) break;
+            lineDrag_ = LineDrag{id, std::move(polyline), line.point.station, line.point.station, false};
+            dragPress_ = e->pos();
+        }
+        return true;
+    }
+    if (!place) { selectStopLine({}); return true; }
+    const auto at = headAt(p);
+    const auto point = at ? slotControlPoint(document_->network, *at) : std::nullopt;
+    if (!point) { if (creationRejected) creationRejected(); return true; }
+    if (stopLinePlaced) stopLinePlaced(*point);
+    return true;
+}
 bool EditorCanvas::conflictPress(QMouseEvent* e) {
     if (tool_ != Tool::conflict || !document_) return false;
     const bool change = e->button() == Qt::RightButton && (e->modifiers() & Qt::ControlModifier);
@@ -171,9 +201,11 @@ void EditorCanvas::drawConflicts() {
             const bool yields=(side==&first)==(priority==ConflictPriority::firstYields);
             const bool lit=key==highlightedConflict_,hover=key==hoverConflict_ || key==hoverAutomatic_;
             QColor tint=branching?canvasStyle::error():undecided?(automatic?canvasStyle::ink():canvasStyle::warning()):yields?canvasStyle::error():canvasStyle::ok();
-            // D435: a soft, flat wash -- no hatching or outline at rest; an automatic candidate is
-            // fainter. Hover and the highlighted conflict get a clean solid edge.
-            tint.setAlpha(automatic?(undecided?40:48):yields?95:80);
+            // D435 as amended by D592 (owner, 2026-11-19): a flat fill with no hatching or outline at
+            // rest, fully opaque so the area reads on any road; the waiting lines stay above it (z 7).
+            // Only an automatic candidate nobody has decided stays a faint wash. Hover and the
+            // highlighted conflict get a clean solid edge.
+            tint.setAlpha(automatic && undecided?40:255);
             const bool hatched=!branching && !undecided && yields; // tag only: z order, not paint
             QPen pen(Qt::NoPen);
             if(lit || hover) {
@@ -191,9 +223,32 @@ void EditorCanvas::drawConflicts() {
             item->setData(3,QString::fromStdString(id)); // lane-pair identity, independent of group selection
         }
     };
-    for(const auto& a:n.rightOfWay.conflictAreas)draw(a.id,a.kind,a.priority,a.first,a.second,false,
+    // D590 (owner): conflict areas and their plain waiting lines show only under the Conflict area
+    // tool (and the lines under the Queue counter tool, which snaps to them); a line carrying Stop or
+    // Yield is a sign the author placed, and always shows.
+    // D594 slice 3: the Stop line tool shows the areas its lines cover, and every placed line.
+    const bool stopTool=tool_==Tool::stopLine,conflictTool=tool_==Tool::conflict,lineTool=conflictTool||stopTool||tool_==Tool::counter;
+    if(conflictTool||stopTool)for(const auto& a:n.rightOfWay.conflictAreas)draw(a.id,a.kind,a.priority,a.first,a.second,false,
         a.kind==ConflictKind::crossing?ConflictGeometryKind::crossing:ConflictGeometryKind::merge);
-    if(tool_==Tool::conflict)for(const auto& a:automatic_)draw(a.key,a.kind,a.priority,a.first,a.second,true,a.geometryKind);
+    if(conflictTool)for(const auto& a:automatic_)draw(a.key,a.kind,a.priority,a.first,a.second,true,a.geometryKind);
+    // SL7 (STOP_LINES §5): under the Conflict area tool a hovered or selected area shows where its
+    // sides without a line wait -- faint, dashed, ink -- and nothing else does.
+    if(conflictTool)for(const auto& a:n.rightOfWay.conflictAreas) {
+        std::string key=a.id;
+        for(const auto& g:conflictGroups_)if(conflictGroupContains(g,a.id)){key=g.key;break;}
+        if(key!=highlightedConflict_ && key!=hoverConflict_)continue;
+        for(const auto* side:{&a.first,&a.second}) {
+            if(!side->waitingLineId.empty() || !levelVisible(levelOf(n,side->path)))continue;
+            std::optional<std::pair<Point,Point>> bar;
+            try{bar=waitingLineBar(n,{side->path,derivedWaitingStation(n,*side)});}catch(const std::exception&){}
+            if(!bar)continue;
+            QColor ink=canvasStyle::ink();ink.setAlpha(150);
+            QPen pen(ink,1.5,Qt::DashLine);pen.setCosmetic(true);pen.setCapStyle(Qt::FlatCap);
+            auto* item=scene_.addLine(bar->first.x,bar->first.y,bar->second.x,bar->second.y,pen);
+            item->setZValue(levelOf(n,side->path)*100.+7);
+            item->setData(0,QStringLiteral("derived-line"));item->setData(1,QString::fromStdString(a.id));
+        }
+    }
     for (const auto& line : n.rightOfWay.waitingLines) {
         const int level = levelOf(n, line.point.path);
         if (!levelVisible(level)) continue;
@@ -207,8 +262,10 @@ void EditorCanvas::drawConflicts() {
         const auto control = std::find_if(n.rightOfWay.stopControls.begin(), n.rightOfWay.stopControls.end(),
                                           [&](const auto& c) { return c.waitingLineId == line.id; });
         const bool controlled = control != n.rightOfWay.stopControls.end();
+        if (!lineTool && !controlled) continue;
         const bool stop = controlled && control->mode == StopMode::stop;
-        QPen pen(dragged ? canvasStyle::active() : line.id==hoverWaitingLine_ ? canvasStyle::hover() : stop ? canvasStyle::error() : canvasStyle::warning(), dragged || stop ? 3 : 2,
+        const bool picked = stopTool && line.id == selectedStopLine_;
+        QPen pen(dragged || picked ? canvasStyle::active() : line.id==hoverWaitingLine_ ? canvasStyle::hover() : stop ? canvasStyle::error() : canvasStyle::warning(), dragged || stop ? 3 : 2,
                  controlled ? Qt::SolidLine : Qt::DashLine);
         pen.setCosmetic(true); pen.setCapStyle(Qt::FlatCap);
         auto* item = scene_.addLine(bar->first.x, bar->first.y, bar->second.x, bar->second.y, pen);

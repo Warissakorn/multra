@@ -33,6 +33,8 @@ struct WaitingLine {
 // Branching is a derived display kind only; authored controls/codec accept crossing and merge.
 enum class ConflictKind { crossing, merge, branching };
 enum class ConflictPriority { firstYields, secondYields, undetermined };
+// M3.2.12 (STOP_LINES, D594): an empty `waitingLineId` is the side's derived line, frontStopDistance
+// short of its entry, computed whenever it is needed and never stored (schema 79).
 struct ConflictSide {
     ControlPathRef path; double entryStation{}, exitStation{}; std::string waitingLineId;
     bool operator==(const ConflictSide&) const = default;
@@ -62,7 +64,12 @@ struct RightOfWay {
     std::vector<ConflictArea> conflictAreas;
     std::vector<AuthoredPriorityRule> priorityRules;
     std::vector<StopControl> stopControls; // schema 15
-    bool empty() const { return waitingLines.empty() && conflictAreas.empty() && priorityRules.empty() && stopControls.empty(); }
+    // M3.2.12 (STOP_LINES §2, schema 79): how far short of its entry a derived line stands, metres in
+    // (0, 10]. One value per project; written only when it is not the default.
+    double frontStopDistance{kDefaultFrontStopDistance};
+    static constexpr double kDefaultFrontStopDistance = 1.0; // D50's setback
+    bool empty() const { return waitingLines.empty() && conflictAreas.empty() && priorityRules.empty() && stopControls.empty() &&
+                                frontStopDistance == kDefaultFrontStopDistance; }
     bool operator==(const RightOfWay&) const = default;
 };
 // M3.2.6b (contract §1). Where a queue is measured from: an existing Signal head or waiting line

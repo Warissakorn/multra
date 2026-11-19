@@ -3,6 +3,7 @@
 #include "detail.hpp"
 #include <algorithm>
 #include <cmath>
+#include <set>
 #include <stdexcept>
 
 namespace multra {
@@ -70,18 +71,53 @@ std::vector<std::string> takeOverMerge(ProjectDocument& d, const std::string& se
     if (group->explicitControl) throw std::invalid_argument("EDIT_ALREADY_EXPLICIT");
     std::vector<MergeSide> sides;
     for (const auto& segment : group->incoming) sides.push_back(mergeSide(d.network, table, segment));
-    std::vector<std::string> lines;
-    for (const auto& side : sides) lines.push_back(putWaitingLine(d, {"", "", {side.path, side.wait}}));
-    const auto sideAt = [&](std::size_t k) { return ConflictSide{sides[k].path, sides[k].entry, sides[k].exit, lines[k]}; };
+    // The fallback's order: each later incoming path gives way to every earlier one. M3.2.4e
+    // (MERGE_MOUTH): each pair covers its measured overlap. M3.2.12 (D594): each side waits at its
+    // derived line, frontStopDistance short of that entry; nothing is stored for it.
     std::vector<std::string> created;
-    // The fallback's order: each later incoming path gives way to every earlier one.
     for (std::size_t j = 1; j < sides.size(); ++j)
         for (std::size_t i = 0; i < j; ++i) {
-            const auto area = putConflictArea(d, {"", "", ConflictKind::merge, sideAt(j), sideAt(i), ConflictPriority::firstYields});
+            const auto pair = mergeMouth(d.network, sides[j], sides[i]);
+            const auto area = putConflictArea(d, {"", "", ConflictKind::merge, pair.first, pair.second, ConflictPriority::firstYields});
             putPriorityRule(d, {"", "", area, defaults.gapTime, defaults.headway});
             created.push_back(area);
         }
     return created;
+}
+std::size_t deriveStopLines(ProjectDocument& d) {
+    auto& row = d.network.rightOfWay;
+    std::set<std::string> kept;
+    for (const auto& c : row.stopControls) kept.insert(c.waitingLineId);
+    for (const auto& c : d.network.queueCounters) for (const auto& l : c.lines) if (!l.referenceId.empty()) kept.insert(l.referenceId);
+    std::set<std::string> dropped;
+    for (const auto& w : row.waitingLines) {
+        if (kept.contains(w.id)) continue;
+        const ConflictSide* first = nullptr;
+        for (const auto& a : row.conflictAreas)
+            for (const auto* s : {&a.first, &a.second})
+                if (s->waitingLineId == w.id && s->path == w.point.path && (!first || s->entryStation < first->entryStation)) first = s;
+        if (!first) continue; // a line no area names is the author's own
+        double placed = INFINITY;
+        try { placed = derivedWaitingStation(d.network, *first); } catch (const std::exception&) { continue; }
+        if (std::abs(w.point.station - placed) <= 0.01 || std::abs(w.point.station - first->entryStation) <= 0.01) dropped.insert(w.id);
+    }
+    for (auto& a : row.conflictAreas)
+        for (auto* s : {&a.first, &a.second}) if (dropped.contains(s->waitingLineId)) s->waitingLineId.clear();
+    std::erase_if(row.waitingLines, [&](const auto& w) { return dropped.contains(w.id); });
+    return dropped.size();
+}
+std::size_t storeDerivedLines(ProjectDocument& d) {
+    std::size_t added = 0;
+    for (std::size_t i = 0; i < d.network.rightOfWay.conflictAreas.size(); ++i)
+        for (const bool first : {true, false}) {
+            const auto side = first ? d.network.rightOfWay.conflictAreas[i].first : d.network.rightOfWay.conflictAreas[i].second;
+            if (!side.waitingLineId.empty()) continue;
+            const auto id = putWaitingLine(d, {"", "", {side.path, derivedWaitingStation(d.network, side)}});
+            auto& a = d.network.rightOfWay.conflictAreas[i];
+            (first ? a.first : a.second).waitingLineId = id;
+            ++added;
+        }
+    return added;
 }
 void restoreAutomaticPriority(ProjectDocument& d, const std::string& section) {
     const auto table = runtimeSections(d.network);
@@ -228,12 +264,13 @@ void copyControls(ProjectDocument& d, const Network& source, const std::map<std:
         lines[old] = w.id; d.network.rightOfWay.waitingLines.push_back(std::move(w));
     }
     for (auto a : row.conflictAreas) {
-        const bool whole = copied(a.first.path) && copied(a.second.path) &&
-                           lines.contains(a.first.waitingLineId) && lines.contains(a.second.waitingLineId);
+        // A derived side (D594) has no line to copy; its copy derives its own.
+        const auto lineCopied = [&](const ConflictSide& s) { return s.waitingLineId.empty() || lines.contains(s.waitingLineId); };
+        const bool whole = copied(a.first.path) && copied(a.second.path) && lineCopied(a.first) && lineCopied(a.second);
         if (!whole) continue;
         const auto old = a.id;
         a.id = allocateId(d, "conflict"); a.generated = false; // S4.5b: a copy is the person's
-        for (auto* s : {&a.first, &a.second}) { s->path = remap(s->path); s->waitingLineId = lines.at(s->waitingLineId); }
+        for (auto* s : {&a.first, &a.second}) { s->path = remap(s->path); if (!s->waitingLineId.empty()) s->waitingLineId = lines.at(s->waitingLineId); }
         areas[old] = a.id; d.network.rightOfWay.conflictAreas.push_back(std::move(a));
     }
     for (auto r : row.priorityRules) {

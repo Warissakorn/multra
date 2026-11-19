@@ -22,6 +22,7 @@
 #include "../src/commands/connector_commands.hpp"
 #include "../src/commands/demand_commands.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
+#include "../src/model/network/right_of_way.hpp"
 #include <algorithm>
 #include <optional>
 #include <stdexcept>
@@ -111,11 +112,15 @@ inline TJunction tJunction(const TJunctionOptions& options = {}) {
             setAreaControl(d, t.crossingArea, options.control);
             setAreaControl(d, t.nearMerge, options.control);
         }
-        // The minor approach's queue, measured at both lines it forms behind.
+        // The minor approach's queue, measured at both lines it forms behind: the sign's line, or
+        // without a sign where the derived line stands (D594).
         AuthoredQueueCounter counter{"", "Minor approach queue", {}};
         for (const auto* area : {&t.crossingArea, &t.nearMerge})
-            for (const auto& a : d.network.rightOfWay.conflictAreas) if (a.id == *area)
-                counter.lines.push_back({(a.first.path.connectorId.empty() ? a.second : a.first).waitingLineId, std::nullopt});
+            for (const auto& a : d.network.rightOfWay.conflictAreas) if (a.id == *area) {
+                const auto& minor = a.first.path.connectorId.empty() ? a.second : a.first;
+                if (!minor.waitingLineId.empty()) counter.lines.push_back({minor.waitingLineId, std::nullopt});
+                else counter.lines.push_back({"", ControlPoint{minor.path, derivedWaitingStation(d.network, minor)}});
+            }
         t.counter = putQueueCounter(d, counter);
     }
     if (options.blockedExit) {

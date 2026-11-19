@@ -191,7 +191,8 @@ int main(int argc,char** argv) {
         int markings=0;
         for(auto* item:c->scene()->items())
             if(item->data(0).toString()=="road-marking" && item->data(1).toString()==QString::fromStdString(single.id))++markings;
-        require(markings==4,"A three-lane Connector is not drawn with its two dividers");
+        // D588: its two dividers; the plain solid outer edges are not painted beside the outline.
+        require(markings==2,"A three-lane Connector is not drawn with its two dividers");
         // M3.2.9d (D75): a drag from a two-lane Link onto the far lane of a five-lane one connects
         // 2 -> 4, centred on that lane, instead of refusing 2 -> 5.
         confirm("editorLinkDialog",0,2);drag(c,{-60,-110},{-10,-110},Qt::RightButton,Qt::ControlModifier);

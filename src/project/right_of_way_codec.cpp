@@ -1,5 +1,6 @@
 #include "network_fields.hpp"
 #include "node_codec.hpp"
+#include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 
@@ -17,13 +18,18 @@ namespace {
 ConflictSide readSide(const Json& j,const std::string& path,int version) {
     knownFields(j,Object::conflictSide,path,version);
     const auto field=[&](const char* key)->const Json& {return value(j,Object::conflictSide,key);};
-    return {readControlPath(field("path"),path+".path",version),field("entryStation").get<double>(),
+    ConflictSide side{readControlPath(field("path"),path+".path",version),field("entryStation").get<double>(),
         field("exitStation").get<double>(),field("waitingLineId").get<std::string>()};
+    // D594: empty is the derived line from schema 79; before it, a side always named its line.
+    if(side.waitingLineId.empty() && version<derivedLineVersion)
+        throw ValidationError({{"UNKNOWN_WAITING_LINE",path+".waitingLineId"}});
+    return side;
 }
 }
 RightOfWay readRightOfWay(const Json& j,int version) {
     knownFields(j,Object::rightOfWay,"network.rightOfWay",version);
     RightOfWay row;
+    if(present(j,"frontStopDistance"))row.frontStopDistance=value(j,Object::rightOfWay,"frontStopDistance").get<double>();
     if(present(j,"waitingLines"))for(const auto& w:value(j,Object::rightOfWay,"waitingLines")) {
         const auto path="rightOfWay.waitingLines["+std::to_string(row.waitingLines.size())+"]";
         knownFields(w,Object::waitingLine,path,version);

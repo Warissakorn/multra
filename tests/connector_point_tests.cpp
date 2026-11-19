@@ -132,3 +132,21 @@ TEST(points, a_hairpin_between_touching_links_stays_inside_its_own_junction) {
     CHECK(std::count_if(issues.begin(),issues.end(),[](const auto& i){return i.code=="TIGHT_CONNECTOR_RADIUS";})==1);
     for(const auto& i:issues)CHECK(i.code=="WARN_SHORT_CONNECTOR" || i.code=="TIGHT_CONNECTOR_RADIUS" || i.code=="WARN_CONNECTOR_ALIGNMENT");
 }
+// D589: on a Connector still on its default curve, the field buys roundness: the points are laid
+// on the curve again, so the polygon nears the arc (the owner saw extra points on straight legs).
+TEST(points, raising_the_count_on_a_default_connector_rounds_it) {
+    auto d=roads();const auto id=addConnector(d,{"in","in-1"},{"out","out-1"});
+    const auto& c=editableConnector(d,id);
+    const auto arc=connectorCurve(d.network,c.from,c.to,39);
+    // The forcing: the Connector is on its default curve, and that curve has a real sag at 3 points.
+    CHECK(apart(c.geometry,connectorCurve(d.network,c.from,c.to))<1e-9);
+    const double before=chordSag(c.geometry,arc);CHECK(before>.2);
+    resampleConnectorPoints(d,id,15);
+    const auto& rounder=editableConnector(d,id).geometry;
+    CHECK(rounder.size()==17);
+    CHECK(apart(rounder,connectorCurve(d.network,c.from,c.to,15))<1e-9);
+    CHECK(chordSag(rounder,arc)<.1);
+    // And down again it is the default curve at that count, not an even re-spacing of 15 points.
+    resampleConnectorPoints(d,id,kDefaultIntermediatePoints);
+    CHECK(apart(editableConnector(d,id).geometry,connectorCurve(d.network,c.from,c.to))<1e-9);
+}

@@ -81,8 +81,7 @@ ZonesPanel::ZonesPanel(QWidget* parent, ObjectTabContext context, ZonesHooks hoo
         context_.execute("editorDeleteZoneConnector", [&](auto& d) { deleteZoneConnector(d, id); });
     }));
     const auto open = [this] { const auto id = selected(); if (!id.empty()) edit(id); };
-    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [open](int, int) { open(); });
-    connect(tab_.table, &QTableWidget::activated, this, [open](const QModelIndex&) { open(); }); // Enter
+    openRowOn(tab_.table, this, open); // D587: double-click or Enter, once
     connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
     connect(connectorTable_, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
         const auto id = selectedConnector(); if (!id.empty()) editConnector(id); });

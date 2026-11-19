@@ -71,10 +71,17 @@ std::vector<Point> controlPathPolyline(const Network&, const ControlPathRef&);
 // Physical distance/offset on the driving lane, adapted to stored authoring coordinates.
 double controlStationDistance(const Network&, const ControlPathRef&, double from, double to);
 double offsetControlStation(const Network&, const ControlPathRef&, double station, double metres);
+// M3.2.12 (STOP_LINES §3, D594): where a side waits -- its named line, or with none its derived line,
+// frontStopDistance short of its entry (clamped to the path's start).
+double derivedWaitingStation(const Network&, const ConflictSide&);
+double waitingStation(const Network&, const ConflictSide&);
 // M3.2.6c: the ControlPoint at a place on a Link lane, from a station along that lane's own
 // polyline (what nearestHeadSlot picks) -- mapped cross-section for cross-section onto the Link's
 // reference polyline, where a ControlPoint's station is measured. Empty when the lane is gone.
 std::optional<ControlPoint> laneControlPoint(const Network&, const LaneReference&, double laneStation);
+// M3.2.12 slice 3: the ControlPoint at a place nearestHeadSlot picked, on a Link lane or a Connector
+// path (its station converted to the Connector's base polyline). Empty when the path is gone.
+std::optional<ControlPoint> slotControlPoint(const Network&, const HeadPlacement&);
 
 // One merge: the incoming segments that arrive on one section, in drawing order -- the order
 // derivedPriorityRules ranks them in. `explicitControl` is set when an authored area covers two
@@ -93,8 +100,15 @@ std::string mergeSectionOfArea(const Network&, const RuntimeSections&, const Con
 // The side a taken-over merge gives one incoming segment, in authored coordinates: its waiting
 // line, entry and exit (the join). Shared by takeOverMerge and automaticConflicts, so what the
 // editor shows before a take-over is what the take-over writes. Throws EDIT_UNKNOWN_OBJECT.
-struct MergeSide { ControlPathRef path; double wait{}, entry{}, exit{}; };
+// `start` is where that segment begins on the same polyline.
+struct MergeSide { ControlPathRef path; double wait{}, entry{}, exit{}, start{}; };
 MergeSide mergeSide(const Network&, const RuntimeSections&, const std::string& segment);
+// M3.2.4e (docs/reference/MERGE_MOUTH.md R1, R3, R4): two incoming sides of one merge over their
+// measured overlap -- entry at the first overlapping station on the joining segment, exit at the
+// join -- or the D50/D59 strips when no overlap of positive area is measured. Its sides name no
+// line: each waits at its derived line (STOP_LINES, D594).
+struct MergePair { ConflictSide first, second; bool measured{}; };
+MergePair mergeMouth(const Network&, const MergeSide& first, const MergeSide& second, ConnectorSurfaceCache* = nullptr);
 
 // M3.2.4c (D68): what the drawing implies where nobody has authored an area -- Vissim's automatic
 // conflict areas. Derived, never stored, so they need no lifecycle and a file never holds one.

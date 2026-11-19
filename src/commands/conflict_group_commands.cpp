@@ -75,8 +75,10 @@ void setConflictGroupStopControlImpl(ProjectDocument& d,const std::string& id,st
     for(const auto& member:g.areaIds) {
         const auto a=areaOf(d.network,member);
         if(a.priority==ConflictPriority::undetermined)throw std::invalid_argument("EDIT_UNDETERMINED_PRIORITY");
-        const auto& line=(a.priority==ConflictPriority::firstYields?a.first:a.second).waitingLineId;
-        if(lines.insert(line).second)setAreaControl(d,member,mode);
+        const auto yieldingLine=[&]{const auto x=areaOf(d.network,member);return (x.priority==ConflictPriority::firstYields?x.first:x.second).waitingLineId;};
+        // A derived side (D594) has no line yet: the control places one, covering its path's areas.
+        const auto line=yieldingLine();
+        if(line.empty() || lines.insert(line).second){setAreaControl(d,member,mode);lines.insert(yieldingLine());}
     }
 }
 void removeConflictGroupImpl(ProjectDocument& d,const std::string& id) {

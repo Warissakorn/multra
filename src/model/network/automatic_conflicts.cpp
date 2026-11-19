@@ -1,4 +1,5 @@
 #include "right_of_way.hpp"
+#include "conflict_display.hpp"
 #include "conflict_surface.hpp"
 #include "connector_surface.hpp"
 #include <algorithm>
@@ -56,7 +57,7 @@ MergeSide mergeSide(const Network& n, const RuntimeSections& table, const std::s
                     const auto base = [&](double s) { return connectorAuthoringStation(c,path,s); };
                     return {{"", "", c.id, path.from.laneId, path.to.laneId},
                             base(std::max(0.0, length - kMergeSideLength)),
-                            base(length - std::min(kMergeSideLength, length / 2)), base(length)};
+                            base(length - std::min(kMergeSideLength, length / 2)), base(length), base(0)};
                 }
     }
     for (const auto& section : table.sections) {
@@ -68,10 +69,30 @@ MergeSide mergeSide(const Network& n, const RuntimeSections& table, const std::s
                 // A station exactly on a cut resolves upstream (sectionForStation), so the waiting
                 // line never goes further back than the entry does.
                 const double entry = section.end - std::min(kMergeSideLength, (section.end - section.start) / 2);
-                return {{link.id, section.laneId, "", "", ""}, reference(entry), reference(entry), reference(section.end)};
+                return {{link.id, section.laneId, "", "", ""}, reference(entry), reference(entry), reference(section.end),
+                        reference(section.start)};
             }
     }
     throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
+}
+MergePair mergeMouth(const Network& n, const MergeSide& a, const MergeSide& b, ConnectorSurfaceCache* cache) {
+    MergePair pair{{a.path, a.entry, a.exit, ""}, {b.path, b.entry, b.exit, ""}};
+    const auto g = conflictAreaGeometry(n, ConflictKind::merge, pair.first, pair.second, cache);
+    if (g.polygons.empty() || g.first.empty() || g.second.empty()) return pair; // R3: the strips
+    // R1/R4: from the first overlapping station on the joining segment to the join. Past the join
+    // both streams share one lane and car-following keeps them apart; a mouth that tapers on past
+    // it, or begins upstream of a section cut, is clipped so each side stays on its own segment.
+    const auto cover = [](const std::vector<ConflictSide>& spans, const MergeSide& side, ConflictSide& out) {
+        double from = side.entry;
+        for (const auto& s : spans) from = std::min(from, s.entryStation);
+        // On a Link no closer to the cut than the strip's own rule (a metre, or half a short
+        // segment): a station exactly on a cut resolves to the segment before it.
+        const double floor = side.path.connectorId.empty() ? side.start + std::min(kMergeSideLength, (side.exit - side.start) / 2) : side.start;
+        out.entryStation = std::min(side.entry, std::max(from, floor));
+    };
+    cover(g.first, a, pair.first); cover(g.second, b, pair.second);
+    pair.measured = true;
+    return pair;
 }
 // An authored area covers the piece it lies over, not every piece of the pair (D72).
 bool authoredCovers(const Network& n, const ControlPathRef& a, const ControlPathRef& b, const SurfaceOverlap& o) {
@@ -136,14 +157,14 @@ std::vector<AutomaticConflict> automaticConflicts(const Network& n) {
         std::vector<MergeSide> sides;
         for (const auto& segment : g.incoming) sides.push_back(mergeSide(n, table, segment));
         // The fallback's order: each later incoming path gives way to every earlier one.
+        // What a take-over would write (M3.2.4e): the sides over the measured mouth.
         for (std::size_t j = 1; j < sides.size(); ++j)
-            for (std::size_t i = 0; i < j; ++i)
-                result.push_back({ConflictKind::merge, {sides[j].path, sides[j].entry, sides[j].exit, ""},
-                                  {sides[i].path, sides[i].entry, sides[i].exit, ""}, ConflictPriority::firstYields,
+            for (std::size_t i = 0; i < j; ++i) {
+                const auto pair = mergeMouth(n, sides[j], sides[i], &cache);
+                result.push_back({ConflictKind::merge, pair.first, pair.second, ConflictPriority::firstYields,
                                   "auto/" + g.section + "/" + std::to_string(j) + "/" + std::to_string(i), g.section, ConflictGeometryKind::merge,
-                                  conflictAreaPolygons(n,ConflictKind::merge,
-                                      {sides[j].path,sides[j].entry,sides[j].exit,""},
-                                      {sides[i].path,sides[i].entry,sides[i].exit,""},&cache)});
+                                  conflictAreaPolygons(n,ConflictKind::merge,pair.first,pair.second,&cache)});
+            }
     }
     std::sort(result.begin(), result.end(), [](const auto& a, const auto& b) { return a.key < b.key; });
     return result;

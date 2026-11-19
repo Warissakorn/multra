@@ -1,4 +1,5 @@
 #include "od_panel.hpp"
+#include "object_tab_panel.hpp"
 #include "table_layout.hpp"
 #include "../project/od_demand.hpp"
 #include "../project/mode_codec.hpp"
@@ -36,8 +37,7 @@ OdPanel::OdPanel(QWidget* parent, ObjectTabContext context, OdChoices choices)
         context_.execute("editorDeleteOdMatrix", [&](auto& d) { deleteOdMatrix(d, id); });
     }));
     const auto open = [this] { const auto id = selected(); if (!id.empty()) edit(id); };
-    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [open](int, int) { open(); });
-    connect(tab_.table, &QTableWidget::activated, this, [open](const QModelIndex&) { open(); });
+    openRowOn(tab_.table, this, open); // D587
     connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
 }
 void OdPanel::translate() {

@@ -13,9 +13,15 @@ FollowingResult followingAcceleration(double speed, double desiredSpeed, double 
                                    -type.comfortableDeceleration, type.maxAcceleration);
     double acceleration = free;
     auto mode = FollowingMode::free;
+    // LINE_APPROACH §9 (D596): a conflict zone's waiting line is where the front stops, so the law
+    // aims at the line itself -- no standstill distance and no speed term -- and the hard cap at the
+    // line finishes the stop (GIVE_WAY_STOP §2). Behind a vehicle, a signal head or a derived rule's
+    // line nothing changes.
+    const bool zoneLine = leader && leader->zoneLine;
+    const double standstill = zoneLine ? 0.0 : behaviour.standstillDistance;
     if (leader) {
         // M6_SWEEP §4 (D546), lever D: behind a leader slower than 0.1 m/s, the standstill gap alone.
-        const double desiredGap = behaviour.standstillDistance + (behaviour.standingTarget && leader->speed < 0.1 ? 0.0 :
+        const double desiredGap = standstill + (zoneLine || (behaviour.standingTarget && leader->speed < 0.1) ? 0.0 :
             (behaviour.additiveSafetyDistance + behaviour.multiplicativeSafetyDistance * driverFactor) *
             std::sqrt(std::max(0.0, speed)));
         const double closing = speed - leader->speed;
@@ -44,7 +50,7 @@ FollowingResult followingAcceleration(double speed, double desiredSpeed, double 
     // A moving merge leader can leave less than the standstill gap at the shared segment's
     // start. A stopped follower must wait for room, not accelerate into the zero hard cap.
     // Moving followers keep their existing braking/clamp behaviour (D105).
-    if (speed == 0 && leader && leader->gap <= behaviour.standstillDistance)
+    if (speed == 0 && leader && leader->gap <= standstill)
         acceleration = std::min(0.0, acceleration);
     return {std::max(-type.maxDeceleration, acceleration), mode};
 }

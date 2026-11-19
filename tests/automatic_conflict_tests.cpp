@@ -103,10 +103,13 @@ TEST(automatic_conflict, a_lanes_second_area_shares_its_line_moved_before_the_fi
     std::vector<std::string> roadLines;
     for (const auto& a : d.network.rightOfWay.conflictAreas)
         for (const auto* s : {&a.first, &a.second}) if (s->path.linkId == road) roadLines.push_back(s->waitingLineId);
-    CHECK(roadLines.size() == 2 && roadLines[0] == roadLines[1]); // one line for the lane
-    const auto& line = *std::find_if(d.network.rightOfWay.waitingLines.begin(), d.network.rightOfWay.waitingLines.end(),
-                                     [&](const auto& w) { return w.id == roadLines[0]; });
-    test::near(line.point.station, onRoad(near).entryStation - 1, 1e-9);
+    // D594: both wait at derived lines, so the near one's stands 1 m before it whatever the order;
+    // the two are admitted together at it when there is no room between them (A15).
+    CHECK(roadLines.size() == 2 && roadLines[0].empty() && roadLines[1].empty());
+    for (const auto& a : d.network.rightOfWay.conflictAreas)
+        for (const auto* s : {&a.first, &a.second})
+            if (s->path.linkId == road && std::abs(s->entryStation - onRoad(near).entryStation) < 1e-9)
+                test::near(waitingStation(d.network, *s), onRoad(near).entryStation - 1, 1e-9);
 }
 namespace {
 // Two crossing one-lane Links, each generated from its own Street segment (D436).

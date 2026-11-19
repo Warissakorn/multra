@@ -25,7 +25,42 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 2. **M3.2.7d T-junction exercise** (listed 2026-09-26). Fill the sheet in
    [M3_ACCEPTANCE](M3_ACCEPTANCE.md) §3 on `data/projects/t-junction-priority.traffic.json`. Does
    minor-road delay respond to gap time as an engineer expects? It is what M3.2 closes on (R7).
-   *Owner:*
+   *Owner:* 2026-11-18, attempt 1, step 1 only (verbatim): "พบว่า conflict area แสดงถูกต้อง แต่เส้นหยุดผิดตำแหน่ง
+   link ทิศมุ่งตะวันตก ควรตั้งเส้นหยุดไว้ทางทิศตะวันออกของ conflict area และเส้นหยุดของ conflict area บน
+   connector ควรอยู่ก่อนเข้า Link". **Fail at step 1, kept** (§3: fixes are separate attempts).
+   *Session note (measured in the file, no verdict):* lanes are 3.5 m with a 1 m median. The merge waiting
+   lines sit at the D50/D59 one-metre admission strip at each Connector's end, not before the displayed
+   (D115) overlap: `wait-14` (left turn) at (−19.0, 2.1) and `wait-18` (right turn) at (19.0, −2.3) are on
+   the major lanes' centre lines, so the minor vehicle waits inside the lane it joins; the major lines
+   `wait-13` (westbound, x = −19) and `wait-17` (eastbound, x = 19) are at the strip, downstream of where the
+   turn first overlaps the lane (about x = ∓6). The crossing's lines `wait-9` (y = −5.7, before the
+   eastbound edge at −4.0) and `wait-10` (x = −13.8, upstream of the area) are before their area. This is
+   the planned M3.2.4e gap (M3_CONTRACT: D50/D59 extents and waiting positions unchanged by M3.2.4d).
+   *Owner:* 2026-11-19, attempt 1, steps 3–4 (verbatim): "สีของ Conflict area ยังมองยากทำเป็นสีทึมดีหรือไม่ ·
+   การเปลี่ยน gap/headway สมเหตุสมผล แต่การหยุดรถตรงเส้นหยุดของ conflict area ยังไม่สมจริง เนื่องจากมีการเคลื่อนตัวเล็กน้อย
+   ก่อนถึงเส้น และมีจังหว่ะที่ใกล้ถึงเส้นจะขยับอย่างรวดเร็ว หรือเส้นหยุดนี้ไม่ใช่เส้นหยุดจริงแต่เป็นเส้นหยุดสมมุติเฉยๆ ·
+   ในแท็บ edit conflict area ต้องแต่ละปุ่ม 2 ครั้งถึงทำงาน ตรวจสอบปัญหานี้ทั้งหมดของโปรแกรม".
+   *Session note (measured, no verdict):* seed 42, crossing turn's line `wait-9`, Debug build on Linux. Vehicles
+   35 and 75 never come to rest at the line: in `approaching`/`following` mode the prototype law decays the
+   speed toward the line as toward a standing vehicle, so a held minor crawls at 0.5 → 0.02 m/s for about
+   20 s and settles 1.9–2.9 m short (F1a's floor binds only in `braking`). Each release jumps to the type's
+   2.5 m/s² in one tick, and when `majorBlocks` returns a tick later the vehicle brakes at up to 3.6 m/s²
+   (vehicle 75: go–stop twice within 7 s). The line is the model's real hold point for the vehicle's front;
+   the two defects are the approach law and the per-tick gap test without hysteresis. The double click was
+   not reproduced: one synthetic click acted on every Conflict areas button (cycle, Edit, Restore, Delete),
+   after a canvas pick, a row click and a shown tooltip; each handler took 14–156 ms.
+   *Owner:* 2026-11-19, follow-up (verbatim): "สีทึบ 100% เลยดีหรือไม่ · ปุ่ม confirm, ปุ่ม กากบาท · การชี้หรือเลือก
+   connector ยังเห็นเส้นขอบสีขาวอยู่". *Session note:* the buttons were the Edit dialog's Confirm and close box; a
+   row double-click opened that dialog twice, fixed by D587. The white Connector edge is removed by D588.
+   Opacity waits for the owner's choice (screenshots at 35 %, 75 % and 100 % sent).
+   *Owner:* 2026-11-19 (verbatim): "ความทึบ 100%  และเริ่ม M3.2.4e ได้เลย". *Session note:* D592 (areas opaque,
+   an undecided automatic candidate stays faint); D593, [MERGE_MOUTH](../reference/MERGE_MOUTH.md): the
+   regenerated fixture puts `wait-14` at 12.31 m (overlap from 13.31 m), `wait-18` at 6.99 m (from 7.99 m),
+   `wait-13` at 154.65 m and `wait-17` at 151.36 m on their Links (x = −4.65 and x = 1.36), 1 m short of each
+   overlap. Attempt 2 is the owner's.
+   *Session note (2026-11-19, D596):* the creep and lurch: a held vehicle now rests with its front at a zone's
+   line (measured T-junction seeds 42–51: rest 2.65 m short → 0 m, crawl under 1 m/s 194.7 → 13.8 s per seed,
+   go-then-brake 15 → 0), [LINE_APPROACH](../reference/LINE_APPROACH.md) §9.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any

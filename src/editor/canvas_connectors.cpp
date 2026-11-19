@@ -157,8 +157,10 @@ void EditorCanvas::drawConnectors() {
         const bool emphasised=isSelected(c.id) || c.id==hoverObject_ || tool_==Tool::connect;
         const QColor laneColour(QString::fromStdString(style(c.displayType).laneColor));
         if(emphasised && readable)
-        for(const auto& marking:markingStrokes(drawing.markings)) {
-            // An outer edge is solid; an interior divider draws its own type.
+        // D588: a plain solid outer edge is not painted white beside the selection or hover outline,
+        // as D460 already does for a Link; dividers and any other edge type keep their markings.
+        for(const auto& marking:canvasStyle::paintedLinkMarkings(markingStrokes(drawing.markings))) {
+            // An interior divider draws its own type; an edge that is still drawn is not plain solid.
             const auto pen=canvasStyle::markingPen(marking.edge?boundaryColour:laneColour,marking.type);
             const auto& look=style(c.displayType); // D430: true-length dashes
             auto* item=scene_.addPath(canvasStyle::markingPath(marking.geometry,marking.type,look.laneDash,look.laneGap),pen);item->setZValue(z+4.5);

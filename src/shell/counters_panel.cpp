@@ -51,10 +51,7 @@ CountersPanel::CountersPanel(QWidget* parent, ObjectTabContext context) : Object
         const auto id = selected(); if (id.empty()) return;
         context_.execute("editorDeleteCounter", [&](auto& d) { deleteQueueCounter(d, id); });
     }));
-    connect(tab_.table, &QTableWidget::cellDoubleClicked, this, [this](int, int) {
-        const auto id = selected(); if (!id.empty()) edit(id); });
-    connect(tab_.table, &QTableWidget::activated, this, [this](const QModelIndex&) { // Enter
-        const auto id = selected(); if (!id.empty()) edit(id); });
+    openRowOn(tab_.table, this, [this] { const auto id = selected(); if (!id.empty()) edit(id); }); // D587: double-click or Enter, once
     connect(tab_.table, &QTableWidget::itemSelectionChanged, this, [this] { context_.selectionChanged(); });
 }
 void CountersPanel::translate() {

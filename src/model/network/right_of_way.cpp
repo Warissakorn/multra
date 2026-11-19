@@ -116,6 +116,9 @@ std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
     };
     const auto finite = [](double v) { return std::isfinite(v) && v >= 0; };
     std::set<std::string> lines, areas, ruled;
+    // SL8: one project value in (0, 10] m.
+    if (!std::isfinite(row.frontStopDistance) || row.frontStopDistance <= 0 || row.frontStopDistance > 10)
+        add("INVALID_FRONT_STOP_DISTANCE", "rightOfWay.frontStopDistance");
     for (std::size_t i = 0; i < row.waitingLines.size(); ++i) {
         const auto& w = row.waitingLines[i];
         const auto path = "rightOfWay.waitingLines[" + std::to_string(i) + "]";
@@ -132,7 +135,9 @@ std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
             pathRef(side->path, path + name + ".path");
             if (!finite(side->entryStation) || !finite(side->exitStation) || side->entryStation >= side->exitStation)
                 add("INVALID_CONFLICT_EXTENT", path + name);
-            if (!lines.contains(side->waitingLineId)) add("UNKNOWN_WAITING_LINE", path + name + ".waitingLineId");
+            // Empty: the derived line (STOP_LINES, D594).
+            if (!side->waitingLineId.empty() && !lines.contains(side->waitingLineId))
+                add("UNKNOWN_WAITING_LINE", path + name + ".waitingLineId");
         }
     }
     for (std::size_t i = 0; i < row.priorityRules.size(); ++i) {
@@ -368,9 +373,11 @@ RightOfWayResolution resolveRightOfWay(const Network& n, const RuntimeSections& 
              {std::tuple{&a.first, &r.first, &r.waitFirst, ".first"}, std::tuple{&a.second, &r.second, &r.waitSecond, ".second"}}) {
             const auto line = std::find_if(row.waitingLines.begin(), row.waitingLines.end(),
                                            [&](const auto& w) { return w.id == side->waitingLineId; });
-            // A line or an entry that does not locate was reported above; nothing to measure.
-            const auto at = line == row.waitingLines.end() ? std::nullopt
-                                                           : locate(n, table, line->point.path, line->point.station);
+            // A line or an entry that does not locate was reported above; nothing to measure. No
+            // line named: the derived one, frontStopDistance short of the entry (D594).
+            std::optional<Located> at;
+            if (side->waitingLineId.empty()) { try { at = locate(n, table, side->path, derivedWaitingStation(n, *side)); } catch (const std::exception&) {} }
+            else if (line != row.waitingLines.end()) at = locate(n, table, line->point.path, line->point.station);
             if (!at || !*entry) continue;
             const auto held = waitOn(upstream, *at, **entry);
             if (!held.at) add(held.problem, path + name);

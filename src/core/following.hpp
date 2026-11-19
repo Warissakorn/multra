@@ -4,7 +4,9 @@
 namespace multra {
 // `acceleration` is read by the w74 model only (docs/reference/W74.md §2); the prototype ignores
 // it. Until the composition slice (BA28) fills it at every construction site it stays 0 (D135).
-struct Leader { double gap{}, speed{}, acceleration{}; };
+// `zoneLine`: a conflict zone's waiting line (D596, LINE_APPROACH §9), where a held vehicle's front
+// comes to rest exactly at the line rather than a standstill gap short of it.
+struct Leader { double gap{}, speed{}, acceleration{}; bool zoneLine{}; };
 struct Motion { double speed{}, distance{}; };
 FollowingResult followingAcceleration(double speed, double desiredSpeed, double driverFactor,
     const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader = {});

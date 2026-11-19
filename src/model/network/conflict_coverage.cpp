@@ -217,4 +217,12 @@ SurfaceOverlap surfaceOverlap(const Network& n, const ControlPathRef& first, con
     return {SurfaceOverlap::Status::overlap, *a, *b, std::move(polygons)};
 }
 std::vector<SurfaceOverlap> surfaceOverlaps(const Network& n,const ControlPathRef& a,const ControlPathRef& b) { return surfaceOverlaps(n,a,b,nullptr); }
+std::optional<ControlPoint> slotControlPoint(const Network& n, const HeadPlacement& at) {
+    if (at.slot.connectorId.empty()) return laneControlPoint(n, at.slot.lane, at.station);
+    for (const auto& c : n.connectors)
+        for (const auto& p : connectorPaths(n, c))
+            if (p.id == at.slot.connectorId)
+                return ControlPoint{{"", "", c.id, p.from.laneId, p.to.laneId}, connectorAuthoringStation(c, p, at.station)};
+    return std::nullopt;
+}
 }

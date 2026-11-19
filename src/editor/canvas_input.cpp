@@ -27,7 +27,7 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
     // modifier is what keeps a stray click from authoring something.
     if(e->button()==Qt::RightButton && (e->modifiers()&Qt::ControlModifier)) {
         lastPick_=world(e->pos(),false);
-        if(demandPress(e) || headPress(e) || conflictPress(e) || counterPress(e) || sectionPress(e) || zonePress(e))return;
+        if(demandPress(e) || headPress(e) || conflictPress(e) || stopLinePress(e) || counterPress(e) || sectionPress(e) || zonePress(e))return;
         if(tool_==Tool::split) {
             const auto picked=hit(lastPick_,false);
             if(picked.first.empty())clearSelection(false);else if(splitAt)splitAt(picked.first,picked.second);
@@ -56,11 +56,11 @@ void EditorCanvas::mousePressEvent(QMouseEvent* e) {
     }
     // D306: while a multi-click draft is open, a plain click adds its next point, not a selection.
     const bool draftOpen=(tool_==Tool::connect && connectorFrom_) || !counterDraft_.empty() || sectionStart_ || !zoneDraft_.empty();
-    if(tool_!=Tool::select && tool_!=Tool::conflict && !draftOpen &&
+    if(tool_!=Tool::select && tool_!=Tool::conflict && tool_!=Tool::stopLine && !draftOpen &&
        (!selection_.empty() || !highlightedRoute_.empty() || !highlightedConflict_.empty() || !highlightedNode_.empty()))clearSelection(false);
     if(demandPress(e))return;
     if(headPress(e))return;
-    if(conflictPress(e))return;
+    if(conflictPress(e) || stopLinePress(e))return;
     if(counterPress(e) || sectionPress(e) || zonePress(e))return;
     if(tool_==Tool::select && (e->modifiers()&Qt::AltModifier)) {
         if(hit(lastPick_).first.empty())clearSelection();else startRotation(e->pos());
@@ -346,6 +346,9 @@ void EditorCanvas::keyPressEvent(QKeyEvent* e) {
     if(e->key()==Qt::Key_Tab && (e->modifiers()&Qt::ControlModifier) &&
        (tool_==Tool::select || tool_==Tool::conflict) && !mouseGestureActive()) {
         cycleOverlap();e->accept();return;
+    }
+    if(e->key()==Qt::Key_Delete && tool_==Tool::stopLine && !selectedStopLine_.empty() && !mouseGestureActive()) {
+        const auto id=selectedStopLine_;selectedStopLine_.clear();if(stopLineRemoved)stopLineRemoved(id);return;
     }
     if(e->key()==Qt::Key_Delete && tool_==Tool::select && !mouseGestureActive()) {if(e->modifiers()&Qt::ControlModifier)removeVertex();else if(deleteRequested)deleteRequested();return;}
     const bool arrow = e->key()==Qt::Key_Left || e->key()==Qt::Key_Right ||

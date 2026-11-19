@@ -58,6 +58,10 @@ void EditorCanvas::updateHover(QPoint position) {
             else automatic = automaticAt(p);
         }
         if (!waiting.empty()) cursor = QCursor(Qt::SizeAllCursor);
+    } else if (tool_ == Tool::stopLine) {
+        waiting = waitingLineAt(p);
+        if (!waiting.empty()) cursor = QCursor(Qt::SizeAllCursor);
+        else if (headAt(p)) object = hit(p).first; // a lane a line can be placed on
     } else if (tool_ == Tool::counter && counterLineAt(p)) object = hit(p).first;
     else if (tool_ == Tool::section && sectionLineAt(p)) object = hit(p).first;
     const bool changed = object != hoverObject_ || conflict != hoverConflict_ || automatic != hoverAutomatic_ ||

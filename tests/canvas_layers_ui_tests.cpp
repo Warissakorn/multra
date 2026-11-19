@@ -68,18 +68,19 @@ void standalone(EditorCanvas& c,DrivingSide side) {
     // 3. At rest no edge and no mouth edge; under 8 px no dividers either.
     require(connectorLines(c,connector,"edge")==0 && tagged(c,"connector-mouth-edge").empty(),
             "A resting Connector still draws its edges over the junction");
-    // ...and selected, hovered or under the Connect tool it draws today's full set at z+4.5.
+    // ...and selected, hovered or under the Connect tool it draws its lines at z+4.5, but never a
+    // plain solid outer edge beside the outline (D588, as D460 for a Link).
     view(c,4);
     c.select(connector.toStdString());c.redraw();settle();
-    require(connectorLines(c,connector,"edge")==2 && faint(c)==0,"A selected Connector lost its full edges");
+    require(connectorLines(c,connector,"edge")==0 && faint(c)==0,"A selected Connector paints its solid edges (D588)");
     for(auto* m:tagged(c,"road-marking",connector))require(std::abs(m->zValue()-4.5)<1e-12,"A selected Connector's lines moved");
     c.clearSelection(false);c.redraw();settle();
     require(connectorLines(c,connector,"edge")==0,"Clearing the selection kept the edges");
     QTest::mouseMove(c.viewport(),c.mapFromScene(QPointF(-12,centre.y())));settle(); // clear of the level-1 bridge at x=0
-    require(connectorLines(c,connector,"edge")==2,"A hovered Connector does not draw its edges");
+    require(connectorLines(c,connector,"edge")==0,"A hovered Connector paints its solid edges (D588)");
     QTest::mouseMove(c.viewport(),c.mapFromScene(QPointF(0,50)+QPointF(40,0)));settle();
     c.setTool(EditorCanvas::Tool::connect);c.redraw();settle();
-    require(connectorLines(c,connector,"edge")==2,"The Connect tool does not show Connector edges");
+    require(connectorLines(c,connector,"edge")==0,"The Connect tool paints Connector solid edges (D588)");
     c.setTool(EditorCanvas::Tool::select);c.redraw();settle();
     // 4. Hits never read the scene: removing every kerb changes no answer.
     const std::vector<Point> probes{{-30,-1.75},{-30,-7.2},{-30,-7.6},{0,-1.75},{0,0},{0,40},{22,-12.1},{50,3.6}};

@@ -98,7 +98,7 @@ TEST(rightofway_lifecycle, a_copy_takes_controls_only_with_every_owner) {
     duplicateObjects(both, {m.x, m.z}, {0, 400});
     validateDocument(both);
     CHECK(both.network.rightOfWay.conflictAreas.size() == 2);
-    CHECK(both.network.rightOfWay.waitingLines.size() == 4);
+    CHECK(both.network.rightOfWay.waitingLines.empty()); // D594: a take-over's sides are derived, copy and all
     CHECK(both.network.rightOfWay.priorityRules.size() == 2);
     const auto& copy = both.network.rightOfWay.conflictAreas.back();
     CHECK(copy.id != m.d.network.rightOfWay.conflictAreas.front().id);

@@ -63,6 +63,12 @@ void EditorWindow::createRangeDialog(LaneReference from,LaneReference to,const s
     connect(fromCount,&QSpinBox::valueChanged,&dialog,ranges);connect(toCount,&QSpinBox::valueChanged,&dialog,ranges);
     form->addRow(text("editorConnectorFrom"),source);form->addRow(text("editorFromLaneCount"),fromCount);
     form->addRow(text("editorConnectorTo"),target);form->addRow(text("editorToLaneCount"),toCount);
+    // D589: the curve's intermediate points, set when the Connector is made. 0 is automatic: the
+    // fewest that keep the polygon within 0.10 m of the curve. A drag with its own corners keeps them.
+    auto* shapePoints=new QSpinBox(&dialog);shapePoints->setObjectName("editorRangePoints");
+    shapePoints->setFont(editorDesign::numericFont());shapePoints->setRange(0,40);shapePoints->setValue(0);
+    shapePoints->setSpecialValueText(text("editorConnectorPointsAuto"));
+    if(points.size()<=2)form->addRow(text("editorConnectorPoints"),shapePoints);else shapePoints->hide();
     auto* buttons=new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel,&dialog);form->addRow(buttons);
     buttons->button(QDialogButtonBox::Ok)->setText(text("editorConfirm"));buttons->button(QDialogButtonBox::Cancel)->setText(text("editorCancel"));
     connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
@@ -71,6 +77,11 @@ void EditorWindow::createRangeDialog(LaneReference from,LaneReference to,const s
     std::string created;
     if(execute("editorCreateConnector",[&](auto& d){
         created=addConnectorRange(d,from,to,fromCount->value(),toCount->value());
+        if(points.size()<=2) {
+            const auto& c=editableConnector(d,created);
+            const int wanted=shapePoints->value()>0?shapePoints->value():suitableIntermediatePoints(d.network,c.from,c.to);
+            resampleConnectorPoints(d,created,wanted);
+        }
         if(points.size()>2) {
             auto& c=editableConnector(d,created);std::vector<Point> shape{c.geometry.front()};
             shape.insert(shape.end(),points.begin()+1,points.end()-1);shape.push_back(c.geometry.back());

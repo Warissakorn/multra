@@ -29,6 +29,40 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## M3.2.7d attempt 1 failed at step 1 (2026-11-18) — M3.2.4e comes before attempt 2
+
+- **2026-11-19, STOP_LINES done** (D594–D595): default lines, `frontStopDistance`, schema 79, the Stop
+  line tool (`W`), Waits at and Use default lines in the tab.
+- **2026-11-19, line approach done** (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9): a held vehicle
+  rests with its front at a zone's line, no crawl, no go-then-brake. **Next: the owner's attempt 2 of
+  M3.2.7d on Windows** (lines, the Stop line tool, the stop at the line).
+- **2026-11-19, later:** owner: areas 100 % opaque (D592) and start M3.2.4e. Done: [MERGE_MOUTH](reference/MERGE_MOUTH.md)
+  (D593), the T-junction regenerated with its merge lines 1 m short of the measured overlap. **Next: the owner's
+  attempt 2 of M3.2.7d on Windows** (step 1 look); then STOP_LINES slice 1b (derived lines, `frontStopDistance`)
+  and the line-approach contract.
+- **2026-11-19:** the owner chose derived stop positions and a Stop line tool; the draft is
+  [STOP_LINES](reference/STOP_LINES.md) (D591, rows SL1–SL8). **Owner reviews §2–§6, then slice 1 =
+  M3.2.4e + derived lines.** Done the same day: D587 (row dialogs once), D588 (no white Connector
+  edge), D589 (intermediate points: red border, rounding, Connect dialog), D590 (areas only under
+  their tool).
+
+- The owner found the merge waiting lines inside the lane being joined ([OWNER_SITTING](plans/OWNER_SITTING.md)
+  A2, with the measured positions). The fix is M3.2.4e (ROADMAP): its own admission contract and
+  failure-first clearance rows ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)) before the D50/D59
+  solver changes, then regenerate the fixture and its archived sweep metadata deliberately.
+- **Steps 3–4 (2026-11-19):** gap/headway response plausible; three findings with measurements in OWNER_SITTING A2:
+  - **Ask:** conflict washes too faint (D435 alpha 80/95 of 255). Shown: 180/200 and 255 (100 % hides the
+    road and the waiting lines under a band). Amending D435 needs the owner's choice.
+  - **Line approach (engine, its own contract like LINE_APPROACH):** a held minor crawls ~20 s and stops 2–3 m
+    short; release is 2.5 m/s² at once and re-blocking brakes it again. Options to measure: a kinematic stop
+    at the line in `approaching`/`following` (scoped like F1a), zero standstill distance to a line, and a
+    go-decision hysteresis. Measure before choosing (D254's pattern).
+  - **Double click:** fixed by D587 (a row's dialog opened twice); the white Connector edge by D588. The
+    owner's look on Windows confirms both.
+- **Ask, before attempt 2:** the owner asked to test only what needs the owner. Proposed: keep steps 1
+  (look), 3–4 (gap/headway, Stop/Yield, engineer's plausibility) and the verdict; steps 2 and 6–7 are
+  covered by `rightofway` round-trip and same-seed replay tests. Changing §3 needs the owner's yes and a D-row.
+
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
 - [studies/ratchada-latphrao](../studies/ratchada-latphrao/README.md): counts from the owner's sheet,

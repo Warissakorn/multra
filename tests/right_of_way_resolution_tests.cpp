@@ -25,6 +25,10 @@ struct Upstream { Three t; std::string approach, yielding, line; double length{}
 Upstream lineOnApproach(double before) {
     Upstream u{threeWayMerge(), {}, {}, {}, 0};
     takeOverMerge(u.t.d, mergeAt(u.t.d, 3), kDefaults);
+    storeDerivedLines(u.t.d); // this row moves a stored line (D594): one per side, as a take-over wrote them
+    for (auto& a : u.t.d.network.rightOfWay.conflictAreas) for (auto* s : {&a.first, &a.second})
+        for (const auto& b : u.t.d.network.rightOfWay.conflictAreas) for (const auto* x : {&b.first, &b.second})
+            if (x->path == s->path) s->waitingLineId = std::min(s->waitingLineId, x->waitingLineId);
     const auto& area = u.t.d.network.rightOfWay.conflictAreas.back(); // the last-drawn path yields
     CHECK(area.priority == ConflictPriority::firstYields);
     const auto& connector = *std::find_if(u.t.d.network.connectors.begin(), u.t.d.network.connectors.end(),
@@ -95,6 +99,7 @@ TEST(rightofway_resolution, a_line_earlier_on_the_same_lane_compiles_back_along_
     addConnector(d, {x, lane(d, x), 50.0}, {y, lane(d, y)});
     addConnector(d, {z, lane(d, z)}, {x, lane(d, x), 50.6});
     takeOverMerge(d, mergeAt(d, 2), kDefaults);
+    storeDerivedLines(d); // this row moves a stored line (D594)
     auto& area = d.network.rightOfWay.conflictAreas.front();
     const auto& xSide = area.first.path.linkId == x ? area.first : area.second;
     // X yields instead, waiting 30 m back, in the section before the one it yields from.

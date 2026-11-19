@@ -134,7 +134,8 @@ TEST(rightofway_runtime, a_taken_over_merge_runs_on_the_solver_with_the_fallback
     const auto& zone = taken.conflictZones.front();
     CHECK(zone.minor.segmentIds.front() == derived.yieldSegmentId);
     CHECK(zone.major.segmentIds.back() == derived.conflictSegmentId);
-    test::near(zone.waitPosition, derived.yieldPosition, 1e-9);
+    // D593 (M3.2.4e): the take-over waits 1 m short of the measured overlap, upstream of the fallback's strip.
+    CHECK(zone.waitPosition < derived.yieldPosition - 1);
     test::near(zone.gapTime, derived.gapTime, 0); test::near(zone.headway, derived.headway, 0);
     // ...run on the admission solver (D59), which also holds the major side for an admitted minor.
     const auto run = runSimulation(taken, 42);

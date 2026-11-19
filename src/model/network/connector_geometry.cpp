@@ -234,6 +234,19 @@ ConnectorEquation connectorEquation(const Network& network,const LaneReference& 
     const auto c2 = control(b, exit, reach(exit), -1);
     return makeConnectorEquation({a,c1,c2,b});
 }
+int suitableIntermediatePoints(const Network& network,const LaneReference& from,const LaneReference& to,double tolerance) {
+    const auto arc=connectorCurve(network,from,to,40);
+    for(int count=0;count<40;++count) {
+        const auto polygon=connectorCurve(network,from,to,count);
+        double worst=0;
+        for(const auto& p:arc) {
+            const auto on=pointAlong(polygon,stationOfClosestPoint(polygon,p));
+            worst=std::max(worst,std::hypot(p.x-on.x,p.y-on.y));
+        }
+        if(worst<=tolerance)return count;
+    }
+    return 40;
+}
 std::vector<Point> connectorCurve(const Network& network,const LaneReference& from,const LaneReference& to,
                                   int intermediatePoints) {
     if(intermediatePoints<0 || intermediatePoints>40)throw std::invalid_argument("EDIT_CONNECTOR_POINTS");

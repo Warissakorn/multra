@@ -69,7 +69,7 @@ TEST(stop_control_model, stop_controls_round_trip_and_an_older_or_malformed_file
     auto p = crossingLinks();
     setAreaControl(p.d, p.area, StopMode::stop);
     auto file = documentJson(p.d);
-    CHECK(file["schemaVersion"] == 17);
+    CHECK(file["schemaVersion"] == 79); // D594: the major side waits at its derived line
     CHECK(file["network"]["rightOfWay"]["stopControls"][0]["mode"] == "stop");
     CHECK(parseDocument(file).network == p.d.network);
     auto older = file; older["schemaVersion"] = 14;
@@ -92,7 +92,10 @@ TEST(stop_control_model, structural_and_runtime_checks_name_the_control) {
     CHECK(has(rightOfWayStructuralIssues(unknown.network), "UNKNOWN_CONFLICT_AREA"));
     CHECK(rightOfWayStructuralIssues(p.d.network).empty());
     // The line the major side waits at is not where this area gives way: Run refuses it.
-    auto wrong = p.d; wrong.network.rightOfWay.stopControls.front().waitingLineId = area.first.waitingLineId;
+    auto wrong = p.d;
+    auto& major = wrong.network.rightOfWay.conflictAreas.front().first; // derived (D594): give it a line
+    major.waitingLineId = putWaitingLine(wrong, {"", "", {major.path, derivedWaitingStation(wrong.network, major)}});
+    wrong.network.rightOfWay.stopControls.front().waitingLineId = major.waitingLineId;
     CHECK(rightOfWayStructuralIssues(wrong.network).empty());
     CHECK(has(resolve(wrong).issues, "CONFLICT_STOP_LINE_MISMATCH"));
     CHECK(resolve(p.d).issues.empty());

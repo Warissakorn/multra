@@ -170,3 +170,60 @@ and met the cap at 0.67 m/s. The clamp stopped it in one tick (6.7 m/s², maximu
 | BA209 | A car 0.08 m short of the standstill gap behind a standing car at 1 m/s | Switch off: it clamps (forcing). On: no clamp, the deceleration is `v²/(2·0.08)`; without `amberDeceleration` the tick is unchanged |
 | BA210 | 5 mm short at 0.17 m/s, where the 0.01 m guard under-brakes | Off: it clamps (forcing). On: it stops in braking mode with no clamp; at 1.5 m/s (beyond the maximum) it still clamps |
 
+
+## 9. Resting at a conflict zone's waiting line (D596)
+
+**The defect (OWNER_SITTING A2, 2026-11-19).** The owner saw a held minor vehicle creep toward its
+line and then move off abruptly. A zone's line reached the law as a standing leader, so the law aimed
+at `standstillDistance` (2 m) plus `(add + mult · driverFactor) · √v` short of it. The speed term
+shrinks only as the vehicle slows, so it crawled for up to about 20 s and settled 2–3 m short; a
+release then started it from there, and a re-block a moment later braked it again.
+
+**The rule (owner, 2026-11-19, "ทำเรื่องรถคืบแล้วกระตุกที่เส้นต่อได้เลย").** The line is where the
+front stops (STOP_LINES §2), so behind a conflict zone's hold the prototype law's desired gap is 0:
+no standstill distance and no speed term. The hard cap at the line finishes the stop within the
+type's maximum (GIVE_WAY_STOP §2), so it does not clamp. Scope: zone holds only (authored areas, their
+default lines and stop lines, minor at the line and major at the entry). Signal heads, vehicles and a
+derived merge rule's line are unchanged, so the four-leg and M2.6 keep their bytes; the W74 law is
+unchanged.
+
+**Measured (T-junction, seeds 42–51; the first vehicle of its queue at its first zone line; probes
+outside the repo patched the law behind an environment switch, then were reverted).**
+
+| Option | Crawl under 1 m/s within 15 m (s per seed) | Rest gap median / max (m) | Go-then-brake > 2 m/s² within 5 s | Clamps | Minor delay, crossing / near (s) |
+|---|---|---|---|---|---|
+| Today | 194.7 | 2.65 / 5.15 | 15 | 0 | 26.12 / 16.73 |
+| K: the kinematic floor `−v²/2·room` in every mode | 196.4 | 2.67 / 5.22 | 17 | 0 | 26.74 / 17.08 |
+| G: rest gap 0.5 m, speed term kept | 184.8 | 1.23 / 3.72 | 7 | 0 | 23.72 / 13.48 |
+| S: no speed term, rest gap 0.5 m | 43.3 | 0.42 / 0.50 | 5 | 0 | 20.98 / 10.73 |
+| S, rest gap 1.0 m | 42.8 | 0.92 / 1.00 | 6 | 0 | 22.40 / 11.19 |
+| **S, rest gap 0 (chosen)** | **13.8** | **0.00 / 0.00** | **0** | **0** | **19.15 / 9.93** |
+| S + K, rest gap 0.5 m | 33.9 | 0.50 / 0.50 | 23 | 0 | 21.85 / 10.89 |
+
+- The speed term is the crawl; the standstill distance is the 2 m. The kinematic floor makes a
+  vehicle arrive faster and brake harder after a release, so it is not taken.
+- M2.6 and the four-leg: same clamp counts (1 and 0 in 10 seeds) in every option scoped to zones.
+- The minor delays fall by about 7 s on the crossing turn and 7 s on the near turn: the vehicle no
+  longer loses its gap to the crawl. Not validated (rule 4).
+- The shipped build reproduces the chosen row exactly (same probe after the patch was removed).
+
+**Two engine details the rule needed.** A stop that ends exactly at the line left a rounding residue
+of speed (7·10⁻¹⁴ m/s), which (a) `committed` read as unable to stop, admitting the vehicle into a
+blocked area, and (b) the cap then clamped. So, at a zone's hold only: a vehicle at its line below
+`kStoppedSpeed` is not committed (`zoneHold`), and a stop ending at the line, or a residue under
+10⁻⁶ m/s against it, comes to rest there without a clamp (`stepSimulation`).
+
+**Rows this moved, each on purpose.** BA146 now pins the even stop to the line (90.0) instead of
+89.988; BA121 puts its waiting vehicle at the line (90, not 87) and both variants now stand the whole
+wait; BA119 allows the arrival tick (rest up to 2 s + one tick); PL8's `t_f` tolerance is 1.2 s, since
+the saturated Stop's follow-up fell from 12.7 to 6.6 s and the fit gained a third point (PRIORITY_LINES).
+
+| Row | Case | Asserts |
+|---|---|---|
+| LA1 | Seeds 42–46, first vehicle of its queue, at rest before its zone line | Front within 0.05 m of the line (forcing: more than 50 rests; with the flag off this row fails) |
+| LA2 | The same vehicles | No vehicle spends 3 s under 1 m/s within 15 m of its line |
+| LA3 | Released from rest | None brakes harder than 2 m/s² within 5 s while still short of its line |
+| LA4 | The same runs | No safety clamp |
+
+`zonelinerest` holds LA1–LA4 and a unit row: standing 1 m short, a zone's line lets the vehicle move
+up; a vehicle or another line does not.

@@ -93,7 +93,7 @@ TEST(conflict_geometry, nine_pairs_are_one_group_with_atomic_author_edit_delete_
     History h;h.reset(d);std::string id;
     CHECK(h.execute("author",[&](auto& d){id=authorConflictGroup(d,groups[0].key,defaults);}));
     CHECK(h.document().network.rightOfWay.conflictAreas.size()==9);
-    CHECK(h.document().network.rightOfWay.waitingLines.size()==6);
+    CHECK(h.document().network.rightOfWay.waitingLines.empty()); // D594: every side on its derived line
     CHECK(automaticConflicts(h.document().network).empty());
     CHECK(resolveRightOfWay(h.document().network,runtimeSections(h.document().network),defaults).zones.size()==9);
     h.undo();CHECK(h.document()==d);h.redo();

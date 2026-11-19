@@ -49,7 +49,11 @@ std::optional<Extents> mergeNow(const Network& n, const RuntimeSections& table, 
             for (const auto& s : sides) {
                 if (&f == &s || !(f.path == a.first.path) || !(s.path == a.second.path)) continue;
                 const double d = std::abs(f.exit - a.first.exitStation) + std::abs(s.exit - a.second.exitStation);
-                if (d < bestDistance) { bestDistance = d; best = Extents{f.entry, f.exit, s.entry, s.exit}; }
+                if (d >= bestDistance) continue;
+                // M3.2.4e: the reshaped mouth, as a take-over would write it now (MERGE_MOUTH R1).
+                const auto pair = mergeMouth(n, f, s);
+                bestDistance = d;
+                best = Extents{pair.first.entryStation, pair.first.exitStation, pair.second.entryStation, pair.second.exitStation};
             }
     }
     gone = !best;

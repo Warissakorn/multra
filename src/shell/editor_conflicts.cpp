@@ -35,6 +35,16 @@ void EditorWindow::buildConflicts() {
     connect(objects_, &QTabWidget::currentChanged, this, [this](int index) { if (objects_->widget(index) == conflicts_) conflicts_->refresh(); });
     canvas_->waitingLineMoved = [this](const std::string& id, double station) {
         execute("editorMoveWaitingLine", [&](auto& d) { moveWaitingLine(d, id, station); }); };
+    // M3.2.12 slice 3: the Stop line tool (STOP_LINES §5), the same commands the tab would submit.
+    canvas_->stopLinePlaced = [this](const ControlPoint& at) {
+        std::string created;
+        if (execute("editorPlaceStopLine", [&](auto& d) { created = placeStopLine(d, at); })) {
+            canvas_->selectStopLine(created); conflicts_->select(created);
+        }
+    };
+    canvas_->stopLinePicked = [this](const std::string& id) { conflicts_->select(id); };
+    canvas_->stopLineRemoved = [this](const std::string& id) {
+        execute("editorRemoveStopLine", [&](auto& d) { removeStopLine(d, id); }); };
 }
 void EditorWindow::translateConflicts() {
     conflicts_->translate();

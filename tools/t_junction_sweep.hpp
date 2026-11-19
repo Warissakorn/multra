@@ -112,6 +112,19 @@ struct SweepRow {
 inline bool sameTrafficVehicleType(nlohmann::json now,const nlohmann::json& archived) {
     now.erase("axles");return now==archived;
 }
+// D594: the builder allocates no waiting line for a derived side, so the routes it adds after the
+// right-of-way objects are numbered lower than when the sweeps ran. Route ids are names only: when
+// every input still matches the archived one field for field, the archived names are restored.
+inline bool restoreArchivedRouteIds(const nlohmann::ordered_json& archived,nlohmann::ordered_json& current) {
+    const auto& was=archived.at("inputs");auto& now=current.at("inputs");
+    if(was.size()!=now.size())return false;
+    for(std::size_t k=0;k<was.size();++k) {
+        auto a=was[k],b=now[k];a.erase("route");b.erase("route");
+        if(a!=b)return false;
+    }
+    for(std::size_t k=0;k<was.size();++k)now[k]["route"]=was[k].at("route");
+    return true;
+}
 inline bool restoreArchivedVehicleAxles(const std::filesystem::path& root,nlohmann::ordered_json& current) {
     auto restored=current;
     for(const auto* type:{"car","heavy-vehicle"}) {

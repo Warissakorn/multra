@@ -11,9 +11,6 @@
 // commands, so the structural checks and History's atomicity are the ones already tested.
 namespace multra {
 namespace {
-// Where an authored crossing's waiting line stands: 1 m short of its entry, the same setback a
-// derived merge rule uses (D50), so a vehicle waiting there is clear of the area.
-constexpr double kCrossingSetback = 1.0;
 void requireDefaults(const PriorityDefaults& d) {
     if (!std::isfinite(d.gapTime) || d.gapTime <= 0 || !std::isfinite(d.headway) || d.headway <= 0)
         throw std::invalid_argument("EDIT_NO_PRIORITY_DEFAULTS");
@@ -54,24 +51,13 @@ std::vector<std::string> addCrossingAreas(ProjectDocument& d, const std::string&
             }
         }
     if (found.empty()) throw std::invalid_argument(authored ? "EDIT_CROSSING_EXISTS" : "EDIT_NO_CROSSING");
-    // One line per lane, before the FIRST area that lane meets (D63): a line per area put the far
-    // lane's line inside the near lane's area, where a Stop would halt a vehicle mid-crossing.
-    // The areas behind one line are admitted together (A15), exactly as before.
-    const auto lineFor = [&](const std::vector<ControlPathRef>& lanes, std::size_t k, bool onFirst) {
-        double from = INFINITY;
-        for (const auto& f : found)
-            if ((onFirst ? f.i : f.j) == k) from = std::min(from, onFirst ? f.o.first.from : f.o.second.from);
-        return putWaitingLine(d, {"", "", {lanes[k], offsetControlStation(d.network,lanes[k],from,-kCrossingSetback)}});
-    };
-    std::map<std::size_t, std::string> linesA, linesB;
-    for (const auto& f : found) {
-        if (!linesA.contains(f.i)) linesA[f.i] = lineFor(a, f.i, true);
-        if (!linesB.contains(f.j)) linesB[f.j] = lineFor(b, f.j, false);
-    }
+    // M3.2.12 (D594): each side waits at its derived line, frontStopDistance short of its entry.
+    // Where a lane meets several areas, the ones with no room to wait between them are admitted
+    // together at the first line (A15), as D63's one shared line did.
     std::vector<std::string> created;
     for (const auto& f : found) {
-        const auto id = putConflictArea(d, {"", "", ConflictKind::crossing, {a[f.i], f.o.first.from, f.o.first.to, linesA[f.i]},
-                                            {b[f.j], f.o.second.from, f.o.second.to, linesB[f.j]},
+        const auto id = putConflictArea(d, {"", "", ConflictKind::crossing, {a[f.i], f.o.first.from, f.o.first.to, ""},
+                                            {b[f.j], f.o.second.from, f.o.second.to, ""},
                                             yielding == first ? ConflictPriority::firstYields : ConflictPriority::secondYields});
         putPriorityRule(d, {"", "", id, defaults.gapTime, defaults.headway});
         created.push_back(id);
@@ -140,8 +126,30 @@ void setAreaControl(ProjectDocument& d, const std::string& areaId, std::optional
     const auto yieldingLine = [](const ConflictArea& x) {
         return x.priority == ConflictPriority::undetermined ? std::string{}
              : (x.priority == ConflictPriority::firstYields ? x.first : x.second).waitingLineId; };
-    const auto line = yieldingLine(a);
+    auto line = yieldingLine(a);
     auto& row = d.network.rightOfWay;
+    // A side on its derived line (D594) gets a stop line where it waits now: a Stop/Yield is a sign
+    // the author places, so the line becomes theirs (STOP_LINES §3). It covers every decided area
+    // giving way further along the same path on its derived line (§2), as D63's one line per lane
+    // did, so a Stop halts a vehicle once, before the first of them.
+    if (line.empty()) {
+        if (!mode) return;
+        // The sign stands before the FIRST such area on the path, whichever of them was clicked.
+        const auto& yielding = a.priority == ConflictPriority::firstYields ? a.first : a.second;
+        const auto derivedYielding = [&](ConflictArea& x) -> ConflictSide* {
+            if (x.priority == ConflictPriority::undetermined) return nullptr;
+            auto& side = x.priority == ConflictPriority::firstYields ? x.first : x.second;
+            return side.path == yielding.path && side.waitingLineId.empty() ? &side : nullptr;
+        };
+        const ConflictSide* first = &yielding;
+        for (auto& x : row.conflictAreas)
+            if (const auto* side = derivedYielding(x); side && side->entryStation < first->entryStation) first = side;
+        const auto at = derivedWaitingStation(d.network, *first);
+        const double from = first->entryStation;
+        line = putWaitingLine(d, {"", "", {yielding.path, at}});
+        for (auto& x : row.conflictAreas)
+            if (auto* side = derivedYielding(x); side && side->entryStation >= from - 1e-9) side->waitingLineId = line;
+    }
     // The control is the line's (D62): every decided area giving way at it, never one of them.
     std::vector<std::string> behind;
     for (const auto& x : row.conflictAreas) if (yieldingLine(x) == line) behind.push_back(x.id);
@@ -150,6 +158,42 @@ void setAreaControl(ProjectDocument& d, const std::string& areaId, std::optional
         return c.waitingLineId == line || std::find(behind.begin(), behind.end(), id) != behind.end(); });
     std::erase_if(controls, [](const auto& c) { return c.conflictAreaIds.empty(); });
     if (mode) putStopControl(d, {"", "", line, *mode, behind});
+}
+std::vector<std::string> stopLineCoverage(const Network& n, const ControlPoint& at) {
+    const auto downstream = [&](const ConflictSide& side) {
+        if (side.path == at.path) return side.entryStation >= at.station - 1e-9;
+        if (at.path.connectorId.empty() && !side.path.connectorId.empty() && side.path.fromLaneId == at.path.laneId)
+            for (const auto& c : n.connectors)
+                if (c.id == side.path.connectorId && c.from.linkId == at.path.linkId)
+                    return attachmentStation(n, c.from, true) >= at.station - 1e-9;
+        return false;
+    };
+    std::vector<std::string> covered;
+    for (const auto& a : n.rightOfWay.conflictAreas) {
+        if (a.priority == ConflictPriority::undetermined) continue;
+        const auto& side = a.priority == ConflictPriority::firstYields ? a.first : a.second;
+        if (side.waitingLineId.empty() && downstream(side)) covered.push_back(a.id);
+    }
+    return covered;
+}
+std::string placeStopLine(ProjectDocument& d, const ControlPoint& at) {
+    const auto covered = stopLineCoverage(d.network, at);
+    if (covered.empty()) throw std::invalid_argument("EDIT_NO_CONFLICT_DOWNSTREAM");
+    const auto id = putWaitingLine(d, {"", "", at});
+    for (auto& a : d.network.rightOfWay.conflictAreas)
+        if (std::find(covered.begin(), covered.end(), a.id) != covered.end())
+            (a.priority == ConflictPriority::firstYields ? a.first : a.second).waitingLineId = id;
+    return id;
+}
+void removeStopLine(ProjectDocument& d, const std::string& lineId) {
+    auto& row = d.network.rightOfWay;
+    if (std::none_of(row.waitingLines.begin(), row.waitingLines.end(), [&](const auto& w) { return w.id == lineId; }))
+        throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
+    std::erase_if(row.stopControls, [&](const auto& c) { return c.waitingLineId == lineId; });
+    for (auto& a : row.conflictAreas)
+        for (auto* s : {&a.first, &a.second}) if (s->waitingLineId == lineId) s->waitingLineId.clear();
+    std::erase_if(row.waitingLines, [&](const auto& w) { return w.id == lineId; });
+    detail::pruneQueueCounters(d); // a counter measuring at the line loses that line
 }
 void removeConflictArea(ProjectDocument& d, const std::string& areaId) {
     const auto removed = area(d, areaId);
@@ -188,25 +232,9 @@ std::string detail::authorCurrentConflict(ProjectDocument& d, const AutomaticCon
         }
         throw std::invalid_argument("EDIT_NO_MERGE");
     }
-    const auto* current = &automatic;
-    // A lane's crossing areas share one waiting line before the first of them (D63): reuse the
-    // line this path already waits at, moved upstream when the new area comes first.
-    const auto lineFor = [&](const ConflictSide& side) {
-        const double station = offsetControlStation(d.network,side.path,side.entryStation,-kCrossingSetback);
-        for (const auto& a : d.network.rightOfWay.conflictAreas) {
-            if (a.kind != ConflictKind::crossing) continue;
-            for (const auto* s : {&a.first, &a.second})
-                if (s->path == side.path) {
-                    for (const auto& w : d.network.rightOfWay.waitingLines)
-                        if (w.id == s->waitingLineId && w.point.station > station) moveWaitingLine(d, w.id, station);
-                    return s->waitingLineId;
-                }
-        }
-        return putWaitingLine(d, {"", "", {side.path, station}});
-    };
-    auto first = current->first, second = current->second;
-    first.waitingLineId = lineFor(first);
-    second.waitingLineId = lineFor(second);
+    // M3.2.12 (D594): both sides wait at their derived lines.
+    auto first = automatic.first, second = automatic.second;
+    first.waitingLineId.clear(); second.waitingLineId.clear();
     // Who gives way first: a turning Connector yields to a Link, as a side road yields to the
     // through road; between two of a kind, the second in key order. One click cycles it after.
     const bool firstIsConnector = !first.path.connectorId.empty(), secondIsConnector = !second.path.connectorId.empty();

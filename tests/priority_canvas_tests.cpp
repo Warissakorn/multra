@@ -100,6 +100,12 @@ int main(int argc, char** argv) {
         const auto b = addLink(d, {{100, -100}, {100, 100}}, 1, 3.5);
         const auto areas = addCrossingAreas(d, a, b, b, {3, 7}); // B gives way
         require(areas.size() == 2, "Fixture did not make two crossing areas");
+        storeDerivedLines(d); // the drag below moves a stored line (D594: new areas store none),
+        auto& stored = d.network.rightOfWay;          // one for B's lane, as D63 placed it
+        for (auto& x : stored.conflictAreas) if (x.second.path == stored.conflictAreas.front().second.path)
+            x.second.waitingLineId = stored.conflictAreas.front().second.waitingLineId;
+        std::erase_if(stored.waitingLines, [&](const auto& l) { return std::none_of(stored.conflictAreas.begin(), stored.conflictAreas.end(),
+            [&](const auto& x) { return x.first.waitingLineId == l.id || x.second.waitingLineId == l.id; }); });
         const auto file = temp.filePath("canvas.traffic.json"); write(file, d);
         EditorWindow w{std::filesystem::path(argv[1])}; w.show(); QTest::qWait(30);
         w.openFile(file);act(w,"editorWorkspaceTables")->trigger();QTest::qWait(30);QApplication::processEvents();
@@ -117,6 +123,8 @@ int main(int argc, char** argv) {
         // the point really is inside an area.
         require(c->conflictsAt(inside) == std::vector<std::string>{first.id}, "The probe point is not inside the first area");
         // D117: lateral rail offset keeps both directions readable; ends retain measured cuts.
+        // D590: the bands are drawn under the Conflict area tool only.
+        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         {
             const auto outline = conflictSideOutline(network(), first.second);
             double minX = INFINITY, maxX = -INFINITY;
@@ -129,6 +137,7 @@ int main(int argc, char** argv) {
             }
             require(found, "The band does not stand 0.5 m inside the lane rails");
         }
+        c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
         click(w, inside);
         require(c->selected() == a || c->selected() == b, "Select did not pick a Link at the crossing");
         require(c->highlightedConflict().empty(), "Select picked a conflict area");

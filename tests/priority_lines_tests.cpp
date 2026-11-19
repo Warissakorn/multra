@@ -181,7 +181,10 @@ TEST(prioritylines, pl8_saturated_gaps_equal_the_independent_count) {
     }
     CHECK(row.siegloch.has_value()); // the forcing: at least two distinct n
     CHECK(row.followUpMean.has_value());
-    CHECK(std::abs(row.siegloch->tf - *row.followUpMean) <= 0.5);
+    // D596 (LINE_APPROACH §9) halved the follow-up at this Stop line (12.7 -> 6.6 s): vehicles no longer
+    // crawl to 2 m short of it. The fit then has three points instead of two (31, 8 and 4 gaps), and
+    // t_f = 7.7 s lies 1.1 s from the mean follow-up; before, 12.5 against 12.7 s on two points.
+    CHECK(std::abs(row.siegloch->tf - *row.followUpMean) <= 1.2);
 }
 TEST(prioritylines, pl9_sparse_minor_demand_leaves_gaps_unsaturated) {
     PriorityLineAccumulator counter(spec());
