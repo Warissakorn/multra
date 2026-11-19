@@ -1,11 +1,11 @@
 #include "junction_templates.hpp"
+#include "../../core/text.hpp"
 #include <algorithm>
 #include <cmath>
 #include <set>
 
 namespace multra {
 namespace {
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 bool positive(double n) { return std::isfinite(n) && n > 0; }
 }
 std::vector<ValidationIssue> junctionLaneIssues(const std::vector<JunctionLane>& lanes, const std::string& path) {
@@ -29,8 +29,8 @@ std::vector<ValidationIssue> junctionLaneIssues(const std::vector<JunctionLane>&
 std::vector<ValidationIssue> junctionTemplateIssues(const JunctionTemplate& t, const std::string& path) {
     std::vector<ValidationIssue> issues;
     const auto bad = [&](const std::string& field) { issues.push_back({"JUNCTION_TEMPLATE_INVALID",path+"."+field}); };
-    if (blank(t.id)) bad("id");
-    if (blank(t.name)) bad("name");
+    if (isBlank(t.id)) bad("id");
+    if (isBlank(t.name)) bad("name");
     if (t.kind == "transition") {
         if(t.legs!=2)bad("legs");
         if(!t.control.empty())bad("control");
@@ -62,13 +62,13 @@ std::vector<ValidationIssue> junctionTemplateIssues(const JunctionTemplate& t, c
 std::vector<ValidationIssue> junctionRecipeIssues(const NodeJunction& r, const std::string& path) {
     std::vector<ValidationIssue> issues;
     const auto bad = [&](const std::string& at) { issues.push_back({"EDIT_NODE_INVALID",at}); };
-    if (blank(r.templateId)) bad(path+".templateId");
+    if (isBlank(r.templateId)) bad(path+".templateId");
     std::set<std::string> major;
     for (std::size_t i = 0; i < r.major.size(); ++i)
-        if (blank(r.major[i]) || !major.insert(r.major[i]).second) bad(path+".major["+std::to_string(i)+"]");
+        if (isBlank(r.major[i]) || !major.insert(r.major[i]).second) bad(path+".major["+std::to_string(i)+"]");
     for (const auto& [id,leg] : r.legs) {
         const auto at = path+".legs."+id;
-        if (blank(id)) bad(at);
+        if (isBlank(id)) bad(at);
         for (const auto* key : {"storage","taper"}) {
             const auto& values = std::string(key) == "storage" ? leg.storage : leg.taper;
             for (std::size_t i = 0; i < values.size(); ++i)

@@ -1,4 +1,5 @@
 #include "missed_exit.hpp"
+#include "text.hpp"
 #include "validate.hpp"
 #include "conflicts.hpp"
 #include "lanes.hpp"
@@ -29,14 +30,13 @@ void spreadIssues(const DriverBehaviour& b, const std::string& p, std::vector<Va
     if (b.driverFactorSpread && !(std::isfinite(*b.driverFactorSpread) && *b.driverFactorSpread >= 0 && *b.driverFactorSpread <= 0.5))
         issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", p + ".driverFactorSpread"});
 }
-bool blank(const std::string& id) { return id.find_first_not_of(" \t\r\n") == std::string::npos; }
 template<class T>
 std::map<std::string, const T*> index(const std::vector<T>& items, const std::string& path,
                                     std::vector<ValidationIssue>& issues) {
     std::map<std::string, const T*> result;
     for (std::size_t i = 0; i < items.size(); ++i) {
         const auto p = path + "[" + std::to_string(i) + "].id";
-        if (blank(items[i].id)) issues.push_back({"INVALID_ID", p});
+        if (isBlank(items[i].id)) issues.push_back({"INVALID_ID", p});
         else if (result.contains(items[i].id)) issues.push_back({"DUPLICATE_ID", p});
         result[items[i].id] = &items[i];
     }
@@ -340,7 +340,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         number(t.desiredSpeed.min, p + ".desiredSpeed.min"); number(t.desiredSpeed.max, p + ".desiredSpeed.max");
         if (t.desiredSpeed.max < t.desiredSpeed.min) add("INVALID_RANGE", p + ".desiredSpeed");
         if (t.kerbLanes && (*t.kerbLanes < 1 || *t.kerbLanes > 16)) add("INVALID_KERB_LANES", p + ".kerbLanes"); // B-7 (D234)
-        if (t.pcu && (!std::isfinite(t.pcu->value) || t.pcu->value <= 0 || t.pcu->source.find_first_not_of(" \t\r\n") == std::string::npos))
+        if (t.pcu && (!std::isfinite(t.pcu->value) || t.pcu->value <= 0 || isBlank(t.pcu->source)))
             add("INVALID_PCU", p + ".pcu"); // S1.2 (STUDY_PERIODS §7, D270): positive and cited
         // B-5 (SPEED_DISTRIBUTION §4, D229): a curve from (min, 0) to (max, 1), speeds rising, shares not falling.
         const auto& curve = t.desiredSpeed.curve;

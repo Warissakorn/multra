@@ -1,4 +1,5 @@
 #include "cost_matrix_codec.hpp"
+#include "../core/text.hpp"
 #include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -8,7 +9,6 @@
 namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 bool isString(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
 void bad(Issues& issues, const std::string& path) { issues.push_back({"INVALID_COST_MATRIX", path}); }
 }
@@ -16,7 +16,7 @@ CostMatrix parseCostMatrix(const Json& j, const std::string& path) {
     Issues issues;
     CostMatrix m;
     if (!j.is_object() || !networkCodec::onlyKnownKeys(j, networkCodec::Object::costMatrix)) throw ValidationError({{"INVALID_COST_MATRIX", path}});
-    if (!isString(j, "id") || blank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
+    if (!isString(j, "id") || isBlank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
     else m.id = j.at("id").get<std::string>();
     if (!isString(j, "name")) bad(issues, path + ".name");
     else m.name = j.at("name").get<std::string>();
@@ -32,7 +32,7 @@ CostMatrix parseCostMatrix(const Json& j, const std::string& path) {
         const auto& list = j.at("zoneIds");
         for (std::size_t k = 0; k < list.size(); ++k) {
             const auto at = path + ".zoneIds[" + std::to_string(k) + "]";
-            if (!list[k].is_string() || blank(list[k].get<std::string>()) || !ids.insert(list[k].get<std::string>()).second) bad(issues, at);
+            if (!list[k].is_string() || isBlank(list[k].get<std::string>()) || !ids.insert(list[k].get<std::string>()).second) bad(issues, at);
             else m.zoneIds.push_back(list[k].get<std::string>());
         }
     }
@@ -94,7 +94,7 @@ std::vector<ValidationIssue> ownedCostMatrixIssues(const std::vector<CostMatrix>
     std::set<std::string> ids;
     for (std::size_t k = 0; k < matrices.size(); ++k) {
         const auto path = "costMatrices[" + std::to_string(k) + "].id";
-        if (blank(matrices[k].id)) issues.push_back({"INVALID_ID", path});
+        if (isBlank(matrices[k].id)) issues.push_back({"INVALID_ID", path});
         else if (!ids.insert(matrices[k].id).second) issues.push_back({"DUPLICATE_ID", path});
     }
     return issues;

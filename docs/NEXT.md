@@ -29,36 +29,15 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2.7d attempt 1 failed at step 1 (2026-11-18) — M3.2.4e comes before attempt 2
+## M3.2.7d — the owner's attempt 2 on Windows is next
 
-- **2026-11-19, STOP_LINES done** (D594–D595): default lines, `frontStopDistance`, schema 79, the Stop
-  line tool (`W`), Waits at and Use default lines in the tab.
-- **2026-11-19, line approach done** (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9): a held vehicle
-  rests with its front at a zone's line, no crawl, no go-then-brake. **Next: the owner's attempt 2 of
-  M3.2.7d on Windows** (lines, the Stop line tool, the stop at the line).
-- **2026-11-19, later:** owner: areas 100 % opaque (D592) and start M3.2.4e. Done: [MERGE_MOUTH](reference/MERGE_MOUTH.md)
-  (D593), the T-junction regenerated with its merge lines 1 m short of the measured overlap. **Next: the owner's
-  attempt 2 of M3.2.7d on Windows** (step 1 look); then STOP_LINES slice 1b (derived lines, `frontStopDistance`)
-  and the line-approach contract.
-- **2026-11-19:** the owner chose derived stop positions and a Stop line tool; the draft is
-  [STOP_LINES](reference/STOP_LINES.md) (D591, rows SL1–SL8). **Owner reviews §2–§6, then slice 1 =
-  M3.2.4e + derived lines.** Done the same day: D587 (row dialogs once), D588 (no white Connector
-  edge), D589 (intermediate points: red border, rounding, Connect dialog), D590 (areas only under
-  their tool).
+Done before it (2026-11-19; history in [the archived NEXT](archive/NEXT-state-2026-11-19.md)): M3.2.4e
+([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), [STOP_LINES](reference/STOP_LINES.md) (D591, D594–D595),
+the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas opaque (D592), D587–D590.
 
-- The owner found the merge waiting lines inside the lane being joined ([OWNER_SITTING](plans/OWNER_SITTING.md)
-  A2, with the measured positions). The fix is M3.2.4e (ROADMAP): its own admission contract and
-  failure-first clearance rows ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)) before the D50/D59
-  solver changes, then regenerate the fixture and its archived sweep metadata deliberately.
-- **Steps 3–4 (2026-11-19):** gap/headway response plausible; three findings with measurements in OWNER_SITTING A2:
-  - **Ask:** conflict washes too faint (D435 alpha 80/95 of 255). Shown: 180/200 and 255 (100 % hides the
-    road and the waiting lines under a band). Amending D435 needs the owner's choice.
-  - **Line approach (engine, its own contract like LINE_APPROACH):** a held minor crawls ~20 s and stops 2–3 m
-    short; release is 2.5 m/s² at once and re-blocking brakes it again. Options to measure: a kinematic stop
-    at the line in `approaching`/`following` (scoped like F1a), zero standstill distance to a line, and a
-    go-decision hysteresis. Measure before choosing (D254's pattern).
-  - **Double click:** fixed by D587 (a row's dialog opened twice); the white Connector edge by D588. The
-    owner's look on Windows confirms both.
+- **Next: the owner's attempt 2 of M3.2.7d on Windows** — lines, the Stop line tool (`W`), the stop at
+  the line, and the look at D587 (a row's dialog opened once) and D588 (no white Connector edge).
+  Findings and measured positions are in [OWNER_SITTING](plans/OWNER_SITTING.md) A2.
 - **Ask, before attempt 2:** the owner asked to test only what needs the owner. Proposed: keep steps 1
   (look), 3–4 (gap/headway, Stop/Yield, engineer's plausibility) and the verdict; steps 2 and 6–7 are
   covered by `rightofway` round-trip and same-seed replay tests. Changing §3 needs the owner's yes and a D-row.
@@ -136,17 +115,20 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
   (each list's `selectRow()` callers would need rewriting first).
 
-## Optimisation pass of 2026-11-07 (D487–D489) — follow-ups only
+## Optimisation passes (2026-11-07 D487–D489; 2026-11-19 D597–D600) — follow-ups only
 
 - Owner: C14. A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
   source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
   cause is keys or sloppiness, not size.
-- The engine's next lever is the per-tick containers (spans, refs, events), not single copies
-  ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md)); measure with callgrind first. D584 reused
-  insertion's snapshot (oversaturated study −6.6 % Ir); what is left there is listed in the notes
-  (older spread costs, not booked: `closestVehicle` 8 %, per-tick `Vehicle` moves 6 %, D283).
-  Owner check: MSVC Release wall time of the study.
+- **Owner check (D597, D598):** MSVC Release wall time of the study and of `multra-engine-benchmark 48 900`
+  before and after; Linux callgrind showed the benchmark −32.9 % Ir, the study −0.1 %.
+- **D599:** the build is warning-free on GCC 13; the next GCC 14+ or MSVC `/W4` build may show new ones:
+  fix them in the code, never widen the GCC < 14 exemption.
+- **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-19): `closestVehicle`
+  is 15.7 % of the oversaturated study. A rear-ordered search rebuilt every tick was measured and reverted
+  (study −7.6 %, M2.6 +2.4 %, benchmark +5.0 %); one that keeps the order across ticks is untried. Measure
+  study, M2.6 and the benchmark with callgrind, and hash events (seeds 42–43), before and after.
 
 ## Canvas style — slices A–C done; stop for owner review
 
@@ -158,29 +140,12 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 ## M13 — A9 implemented; stop for owner review
 
-- **Stop here; do not start another slice.** The owner accepted checkpoints `a6d0a25` and
-  `d663bf5` so far, including shipped demand totals, schema-64 reopen, exact Undo/source
-  clearing and unchanged old outputs. B41 is answered: explicit per-Node session-only manual
-  count window, matching batch evaluation start/end and Node T, labelled manual counts; no
-  stored field. D422 finishes that path and NA24–NA30; A9 now awaits the owner's final review.
-- **If the owner requests changes:** keep them in A9. Read [NODE_ANALYSIS_MODEL](reference/NODE_ANALYSIS_MODEL.md),
-  [NODE_ANALYSIS_EDITOR](reference/NODE_ANALYSIS_EDITOR.md), NODE_ANALYSIS §4–§6/§12,
-  D383/D418–D422 by anchor, and BATCH/NODES/STUDY_PERIODS for reused evaluation/clock rules.
-  All B40/B41 choices are answered; no further contract question is pending.
-- **Preserve:** current saved/Save-representation capture and exact analytical CLI JSON/CSV;
-  staged explicit model window/HV choices, T=window hours/PHF=1, whole-set preview and one Undo;
-  historical source fields at feature-selected 64 with old-file/version-path handling. Demand
-  edits clear the claim and Undo restores it; site-only edits retain it. Schema 65 is unused.
-- **Manual comparison:** Confirm manual count window… selects one Node and shows its effective
-  T/batch window before Confirm. Validate through the same comparison function; missing,
-  non-finite/reversed/mismatched windows or T refuse. No inference from duration, name matching,
-  History edit, stored confirmation or implicit run. Re-Analyse, batch replacement/cancel,
-  edits/Undo and New/reopen clear confirmations. Node/approach source labels and CSV
-  countsSource distinguish manual counts/model demand; analytical export format stays unchanged.
-- **Verification after any correction:** desktop build/ctest/check, conditional headless, real
-  CLI parity and old-output byte checks; both driving sides/locales, then commit/push the same
-  branch and stop again. Keep Window header ≤500 lines. Windows/high-DPI/manual appearance is
-  [OWNER_SITTING E32](plans/OWNER_SITTING.md), with E31's cleared-approach carry-over fixed.
+- **Stop here; do not start another slice.** A9 (D422, NA24–NA30) awaits the owner's final review;
+  B40/B41 are answered and no contract question is pending. Windows/high-DPI appearance is
+  [OWNER_SITTING E32](plans/OWNER_SITTING.md).
+- **If the owner requests changes:** keep them in A9 and follow the reading list, the behaviour to
+  preserve and the verification steps in [the archived NEXT's M13 section](archive/NEXT-state-2026-11-19.md#m13--a9-implemented-stop-for-owner-review)
+  (NODE_ANALYSIS_MODEL, NODE_ANALYSIS_EDITOR, NODE_ANALYSIS §4–§6/§12, D383/D418–D422). Schema 65 is unused.
 - After A9 approval, wait for the owner's next pick. A4/timing/coarse HCM are unselected. No
   M13/M14 milestone gate closes merely from these Linux tests or implementation review.
 
@@ -287,52 +252,30 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 ## Order of level work (D378)
 
 Micro, Meso and Macro carry equal weight; open level work follows the study chain, Macro → Meso →
-Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done (below); when the owner asks for an engine
+Micro ([PROBLEM](PROBLEM.md) §3). M10.2–M10.4 are done; when the owner asks for an engine
 slice, M9 and M11.5 are done to their owner gates; M12 R1 and R2 are done (D553, D554) and wait for the owner (C18); the M11 gate waits on the book. Each starts with its contract. M13 is
 a Node method serving all three; A4 waits for the owner. OWNER_SITTING B26 (hybrid meso–micro; the
 user roles) is open.
 
-## M12 subarea workflow — R1 and R2 done (D553, D554); stop for the owner
+## M9, M10, M11.5, M12 — implemented; each waits for the owner
 
-- [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), rows SC1–SC7 pass first time. `runMesoArea` runs Meso on the
-  study area's run-time copy; `--consistency-report OUT --project P [--seeds] [--csv]` writes Macro, Meso and Micro
-  veh/h per gate and kept Link with Δ, % and GEH (no pass/fail). On the corridor fixture Micro reads 240 against
+What shipped is in PROGRESS, the decision record and [the archived NEXT](archive/NEXT-state-2026-11-19.md).
+Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md),
+[DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), and for M10 [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14,
+[TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md) §14–§16, [MODE_CHOICE](reference/MODE_CHOICE.md) §13,
+[NESTED_LOGIT](reference/NESTED_LOGIT.md), [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md),
+[PROCEDURE_FEEDBACK](reference/PROCEDURE_FEEDBACK.md), [MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md).
+
+- **M12 (R1, R2; D553–D557):** **Owner:** C18 on Windows. On the corridor fixture Micro reads 240 against
   Macro 600 and Meso 593: the movement gives way in Micro, while Meso ignores priority inside a Node (§12).
-- **R2 done (D554, §13–§14, SC8–SC10):** *Results → Cross-level → Consistency* (seeds, Run/Cancel, the table, CSV).
-  **Owner:** C18 on Windows. **O2 answered (D555, §15):** a gate counts the inside zones' trips on its Link (SC11). **O1 answered and read (D556, D557):**
-  TAG M3.1, May 2026, §3.3.10, p. 31; the formula matches.
-
-## M11.5 Meso assignment — S1 done (D550); stop for the owner
-
-- [MESO_ASSIGNMENT](reference/MESO_ASSIGNMENT.md), rows MA1–MA8 pass: M9's loop with a Meso provider (FIFO cumulative-curve
-  costs), `--dynamic-assignment --meso`, `"level": "meso"` in the route-costs file. The bottleneck fixture converged at
-  n = 6 with short share 0.5833 against the hand x* = 0.5909 (§9).
-- Done since: A2b (D551, DYNAMIC_ASSIGNMENT §15–§16) and A4, the Results page (D552). **Owner:** C17.
-- **Deferred (D551):** Meso following positioned weights (a loading change) waits for a study that needs it; the M11
-  gate's benchmark waits on the owner's copy of Boyles et al. 2025 (D315).
-
-## M9 dynamic assignment — A1–A3 done (D549); stop for the owner
-
-- [DYNAMIC_ASSIGNMENT](reference/DYNAMIC_ASSIGNMENT.md), rows DA1–DA9. Owner chose every recommended option:
-  MSA with all-or-nothing auxiliary shares per decision × interval cell, cost from the decision to arrival,
-  δ (Eq. 10.22) ≤ 0.05 within 20 runs on one seed, a separate `MultraRouteCosts` file read back by `--route-costs`.
-- A1–A3 done (D549); A2b and A4 since (D551, D552). Rows DA1–DA17.
-- **Owner:** whether the M9 gate's rows (DYNAMIC_ASSIGNMENT §14) close it (rule 8).
-
-## M10 four-step — G1–G2, D1–D4, E1–E2, N1, P1–P2, F1–F2, L1–L2 done (D470–D485, D547, D548); stop for the owner
-
-- Code is complete and chains end to end: generation → distribution → mode choice → written
-  `odMatrices` → Run Macro, or one stored procedure (`--procedure`). Contracts and their rows:
-  [TRIP_GENERATION](reference/TRIP_GENERATION.md) §14, [TRIP_DISTRIBUTION](reference/TRIP_DISTRIBUTION.md)
-  §14–§16, [MODE_CHOICE](reference/MODE_CHOICE.md) §13, [NESTED_LOGIT](reference/NESTED_LOGIT.md),
-  [PROCEDURE_SEQUENCE](reference/PROCEDURE_SEQUENCE.md), [PROCEDURE_FEEDBACK](reference/PROCEDURE_FEEDBACK.md). The M10
-  gate stays open (rule 8).
-- Feedback (D547, schema 75) and logsum (D548, schema 76, [MODE_CHOICE_LOGSUM](reference/MODE_CHOICE_LOGSUM.md))
-  are done. **Owner:** the feedback dialog and page, and the *Nests* dialog, on Windows.
-- **Owner:** OWNER_SITTING item 42.
-- **Later (M10.3):** whether the Furness target and cap become a document setting (open from D1).
-- **Next, the owner's pick:** G/MS/D/A (Ortúzar Eq. 6.12–6.13, mode split by origin then per-mode gravity), if a
-  study needs it; otherwise M10 waits for the owner's checks.
+- **M11.5 (S1, D550–D552):** **Owner:** C17. **Deferred (D551):** Meso following positioned weights (a loading
+  change) waits for a study that needs it; the M11 gate's benchmark waits on the owner's copy of Boyles et al.
+  2025 (D315).
+- **M9 (A1–A4, D549–D552):** **Owner:** whether the M9 gate's rows (DYNAMIC_ASSIGNMENT §14) close it (rule 8).
+- **M10 (D470–D485, D547, D548):** the gate stays open (rule 8). **Owner:** the feedback dialog and page, and the
+  *Nests* dialog, on Windows; OWNER_SITTING item 42. **Later (M10.3):** whether the Furness target and cap
+  become a document setting (open from D1). **Next, the owner's pick:** G/MS/D/A (Ortúzar Eq. 6.12–6.13, mode
+  split by origin then per-mode gravity), if a study needs it; otherwise M10 waits for the owner's checks.
 
 ## Next session — the owner's pick
 
@@ -342,10 +285,8 @@ user roles) is open.
 - **Lateral: closed by owner choice (2026-11-04)** after D444–D448 ([audit](evidence/lateral-run-audit.md)).
   The long m2.6 waits are signal-queue congestion that exists switched off too
   ([m26-long-waits](evidence/m26-long-waits.md)).
-  - **Gap seeking ([GAP_SEEKING](reference/GAP_SEEKING.md)):** slices 1–2 done (D455, D458; slice 2
-    only switched on), D455's clamp cost fixed (D456).
-    - **Deferred:** speeding up to slip in ahead, the lane-change state machine, a no-progress
-      timer, and abandoning a change.
+  - **Gap seeking ([GAP_SEEKING](reference/GAP_SEEKING.md), D455–D458), deferred:** speeding up to slip in
+    ahead, the lane-change state machine, a no-progress timer, and abandoning a change.
   - **Not shipped:** no `data/` behaviour carries the lateral keys; D178 needs a cited preset first.
     The one exception is the [lateral lab](reference/LATERAL_LAB.md) (D457), a shipped project with
     four scenes carrying lab placeholder values. **The owner's check:** open it in the editor and

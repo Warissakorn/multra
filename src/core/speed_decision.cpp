@@ -1,4 +1,5 @@
 #include "speed_decision.hpp"
+#include "text.hpp"
 #include "speed_distribution.hpp"
 #include <algorithm>
 #include <cmath>
@@ -54,7 +55,7 @@ std::vector<ValidationIssue> speedDecisionIssues(const Scenario& s) {
     for (std::size_t i = 0; i < s.speedDecisions.size(); ++i) {
         const auto& d = s.speedDecisions[i];
         const auto path = "speedDecisions[" + std::to_string(i) + "]";
-        if (d.id.find_first_not_of(" \t\r\n") == std::string::npos) issues.push_back({"INVALID_ID", path + ".id"});
+        if (isBlank(d.id)) issues.push_back({"INVALID_ID", path + ".id"});
         const auto segment = std::find_if(s.segments.begin(), s.segments.end(), [&](const auto& g) { return g.id == d.segmentId; });
         if (segment == s.segments.end()) issues.push_back({"UNKNOWN_SEGMENT", path + ".segmentId"});
         else if (!std::isfinite(d.position) || d.position < 0 || d.position > segment->length) issues.push_back({"INVALID_POSITION", path + ".position"});

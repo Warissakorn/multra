@@ -1,4 +1,5 @@
 #include "junction_template_codec.hpp"
+#include "../core/text.hpp"
 #include "input_manifest.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -160,7 +161,7 @@ std::vector<ValidationIssue> junctionDocumentIssues(const ProjectDocument& d) {
             issues.insert(issues.end(),rows.begin(),rows.end());
         }
         for (const auto& [id,direction] : node.approachDirections)
-            if (id.find_first_not_of(" \t\r\n") == std::string::npos ||
+            if (isBlank(id) ||
                 std::none_of(d.network.links.begin(),d.network.links.end(),[&](const auto& l) { return l.id == id; }) ||
                 (direction != ApproachDirection::north && direction != ApproachDirection::east && direction != ApproachDirection::south && direction != ApproachDirection::west))
                 issues.push_back({"EDIT_NODE_INVALID",path+".approachDirections."+id});

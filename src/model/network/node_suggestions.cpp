@@ -21,7 +21,7 @@ std::vector<Point> padded(const Cluster& c) {
     std::vector<Point> around;
     const double d = c.pad / std::sqrt(2.0);
     for (const auto p : c.points)
-        for (const auto [dx, dy] : {std::pair{c.pad, 0.0}, {-c.pad, 0.0}, {0.0, c.pad}, {0.0, -c.pad}, {d, d}, {d, -d}, {-d, d}, {-d, -d}})
+        for (const auto& [dx, dy] : {std::pair{c.pad, 0.0}, {-c.pad, 0.0}, {0.0, c.pad}, {0.0, -c.pad}, {d, d}, {d, -d}, {-d, d}, {-d, -d}})
             around.push_back({p.x + dx, p.y + dy});
     return convexHull(std::move(around));
 }

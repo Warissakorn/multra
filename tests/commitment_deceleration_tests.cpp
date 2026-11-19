@@ -166,7 +166,7 @@ TEST(commitdecel, ba78_the_key_round_trips_at_schema_36_and_is_refused_before) {
     };
     auto older = j; older["schemaVersion"] = 35;
     CHECK(refused(older, "EDIT_UNSUPPORTED_FIELD"));
-    for (const Json bad : {Json("4"), Json(0), Json(16)}) {
+    for (const Json& bad : {Json("4"), Json(0), Json(16)}) {
         auto doc = j; doc["definition"]["behaviours"][0]["commitmentDeceleration"] = bad;
         CHECK(refused(doc, "INVALID_BEHAVIOUR_PARAMETER"));
     }

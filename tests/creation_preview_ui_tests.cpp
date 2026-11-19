@@ -80,7 +80,8 @@ int main(int argc,char** argv){
         d->findChild<QSpinBox*>("editorCrossSectionLanesForward")->setValue(2);
         d->findChild<QSpinBox*>("editorCrossSectionLanesBackward")->setValue(2);
         d->findChild<QDoubleSpinBox*>("editorCrossSectionLaneWidth")->setValue(3.25);
-        if(auto* source=d->findChild<QLineEdit*>("editorCrossSectionSource"))source->setText("Test fixture");d->accept();});
+        if(auto* source=d->findChild<QLineEdit*>("editorCrossSectionSource"))source->setText("Test fixture");
+        d->accept();});
     w.findChild<QAction*>("editorAddCrossSection")->trigger();settle();
     require(w.history().document().definition&&w.history().document().definition->crossSections.size()==1,"Adding the template failed");
     c.setFocus();QTest::keyClick(&c,Qt::Key_O);settle(); // the StreetSegment tool lists the templates

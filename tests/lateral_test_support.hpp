@@ -40,7 +40,7 @@ std::size_t slot(const auto& items, const std::string& id) {
 }
 // Vehicles placed, ids ascending, on the route that starts on the named segment (createSimulation
 // re-sorts routes, so the slot is resolved on its canonical copy).
-SimState place(const Scenario& s, const std::vector<std::tuple<std::string, double, double, double>>& at) {
+[[maybe_unused]] SimState place(const Scenario& s, const std::vector<std::tuple<std::string, double, double, double>>& at) {
     auto state = createSimulation(s, 42);
     std::uint64_t id = 1;
     for (const auto& [segment, distance, speed, lateral] : at) {
@@ -66,7 +66,7 @@ std::size_t laneSegment(const Scenario& s, std::size_t k) {
     return byCentre.at(k).second;
 }
 // Two bodies overlap in two dimensions when they share a carriageway, overlap along it and across it.
-bool overlap2d(const SimState& state) {
+[[maybe_unused]] bool overlap2d(const SimState& state) {
     const auto spans = spansOf(state);
     for (std::size_t i = 0; i < spans.size(); ++i)
         for (std::size_t j = i + 1; j < spans.size(); ++j) {

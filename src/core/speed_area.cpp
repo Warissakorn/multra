@@ -1,4 +1,5 @@
 #include "speed_area.hpp"
+#include "text.hpp"
 #include "speed_decision.hpp"
 #include <algorithm>
 #include <cmath>
@@ -69,7 +70,7 @@ std::vector<ValidationIssue> speedAreaIssues(const Scenario& s) {
     for (std::size_t i = 0; i < s.reducedSpeedAreas.size(); ++i) {
         const auto& a = s.reducedSpeedAreas[i];
         const auto path = "reducedSpeedAreas[" + std::to_string(i) + "]";
-        if (a.id.find_first_not_of(" \t\r\n") == std::string::npos) issues.push_back({"INVALID_ID", path + ".id"});
+        if (isBlank(a.id)) issues.push_back({"INVALID_ID", path + ".id"});
         const auto segment = std::find_if(s.segments.begin(), s.segments.end(), [&](const auto& g) { return g.id == a.segmentId; });
         if (segment == s.segments.end()) issues.push_back({"UNKNOWN_SEGMENT", path + ".segmentId"});
         else if (!(std::isfinite(a.from) && std::isfinite(a.to) && a.from >= 0 && a.from < a.to && a.to <= segment->length + 1e-9))

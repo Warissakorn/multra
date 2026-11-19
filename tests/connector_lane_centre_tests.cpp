@@ -132,7 +132,7 @@ TEST(lane_centres, waiting_bar_intersects_rails_at_the_runtime_vehicle_station) 
 TEST(lane_centres, forty_seeds_run_curves_and_both_count_changes_with_replay_and_accounting) {
     unsigned onInterior=0;
     for(auto side:{DrivingSide::left,DrivingSide::right})
-    for(const auto counts:{std::pair{3,3},std::pair{3,2},std::pair{2,3}}) {
+    for(const auto& counts:{std::pair{3,3},std::pair{3,2},std::pair{2,3}}) {
         auto d=turn(side,counts.first,counts.second);const auto& c=d.network.connectors.front();
         auto definition=static_cast<ScenarioDefinition>(test::straight());definition.duration=30;
         definition.priorityDefaults={3,1};definition.routes={{"r",{"a",c.id,"b"}}};
@@ -140,7 +140,7 @@ TEST(lane_centres, forty_seeds_run_curves_and_both_count_changes_with_replay_and
         const auto scenario=compileScenario(d.network,definition);const auto paths=connectorPaths(d.network,c);
         for(std::uint32_t seed=42;seed<=81;++seed) {
             auto state=createSimulation(scenario,seed),replay=state;
-            for(auto tick=0;tick<totalTicks(scenario);++tick) {
+            for(std::uint64_t tick=0;tick<totalTicks(scenario);++tick) {
                 state=stepSimulation(std::move(state));replay=stepSimulation(std::move(replay));
                 CHECK(state.vehicles==replay.vehicles);CHECK(state.events==replay.events);
                 CHECK(state.inputs==replay.inputs);CHECK(state.stopService==replay.stopService);

@@ -14,3 +14,6 @@ CMakeUserPresets.json
 *.swo
 .DS_Store
 Thumbs.db
+
+# Local optimisation baselines and measurements
+.optimize/

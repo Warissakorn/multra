@@ -1,4 +1,5 @@
 #include "procedure_codec.hpp"
+#include "../core/text.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <set>
@@ -8,7 +9,6 @@
 namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 bool onlyKeys(const Json& j, std::initializer_list<const char*> allowed) {
     for (const auto& [key, value] : j.items())
         if (std::none_of(allowed.begin(), allowed.end(), [&](const char* a) { return key == a; })) return false;
@@ -17,7 +17,7 @@ bool onlyKeys(const Json& j, std::initializer_list<const char*> allowed) {
 void bad(Issues& issues, const std::string& path) { issues.push_back({"INVALID_PROCEDURE", path}); }
 std::optional<std::string> id(const Json& j, const char* key, const std::string& at, Issues& issues, bool required) {
     if (!j.contains(key)) { if (required) bad(issues, at + "." + key); return std::nullopt; }
-    if (!j.at(key).is_string() || blank(j.at(key).get<std::string>())) { bad(issues, at + "." + key); return std::nullopt; }
+    if (!j.at(key).is_string() || isBlank(j.at(key).get<std::string>())) { bad(issues, at + "." + key); return std::nullopt; }
     return j.at(key).get<std::string>();
 }
 const std::vector<std::pair<ProcedureStepKind, const char*>> kKinds{
@@ -51,7 +51,7 @@ ProcedureStep step(const Json& j, const std::string& at, Issues& issues) {
             const auto& list = j.at("periods");
             if (!list.is_array() || list.empty()) bad(issues, at + ".periods");
             else for (std::size_t k = 0; k < list.size(); ++k) {
-                if (!list[k].is_string() || blank(list[k].get<std::string>())) bad(issues, at + ".periods[" + std::to_string(k) + "]");
+                if (!list[k].is_string() || isBlank(list[k].get<std::string>())) bad(issues, at + ".periods[" + std::to_string(k) + "]");
                 else s.periods.push_back(list[k].get<std::string>());
             }
         }
@@ -163,7 +163,7 @@ std::vector<ValidationIssue> procedureIssues(const std::vector<Procedure>& proce
     std::set<std::string> ids;
     for (std::size_t i = 0; i < procedures.size(); ++i) {
         const auto at = "procedures[" + std::to_string(i) + "]";
-        if (blank(procedures[i].id)) issues.push_back({"INVALID_ID", at + ".id"});
+        if (isBlank(procedures[i].id)) issues.push_back({"INVALID_ID", at + ".id"});
         else if (!ids.insert(procedures[i].id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
         if (procedures[i].steps.empty()) bad(issues, at + ".steps");
         if (procedures[i].feedback)
@@ -171,14 +171,14 @@ std::vector<ValidationIssue> procedureIssues(const std::vector<Procedure>& proce
         for (std::size_t k = 0; k < procedures[i].steps.size(); ++k) {
             const auto& s = procedures[i].steps[k];
             const auto where = at + ".steps[" + std::to_string(k) + "]";
-            if (s.kind != ProcedureStepKind::assignment && blank(s.set)) bad(issues, where);
+            if (s.kind != ProcedureStepKind::assignment && isBlank(s.set)) bad(issues, where);
             if (s.kind == ProcedureStepKind::assignment && s.period.has_value() == s.macroRun.has_value()) bad(issues, where);
             // The reader's blank-value rules, so a step built outside JSON (the dialog) is refused before it is saved.
             for (const auto& [value, key] : {std::pair{&s.period, ".period"}, std::pair{&s.macroRun, ".macroRun"},
                                              std::pair{&s.skimMode, ".skimMode"}, std::pair{&s.costMatrix, ".costMatrix"}})
-                if (value->has_value() && blank(**value)) bad(issues, where + key);
+                if (value->has_value() && isBlank(**value)) bad(issues, where + key);
             for (std::size_t m = 0; m < s.periods.size(); ++m)
-                if (blank(s.periods[m])) bad(issues, where + ".periods[" + std::to_string(m) + "]");
+                if (isBlank(s.periods[m])) bad(issues, where + ".periods[" + std::to_string(m) + "]");
         }
     }
     return issues;

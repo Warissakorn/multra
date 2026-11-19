@@ -38,7 +38,7 @@ SimState state(const Setup& u, double ahead, double speed) {
 TEST(tjunction_controlled, the_gap_time_threshold_admits_at_and_below_the_time_to_entry) {
     // §2's example: front 50 m before entry at 10 m/s, headway 7 m -- 5 s to entry.
     for (const auto side : {DrivingSide::right, DrivingSide::left})
-        for (const auto [gap, blocks] : {std::pair{4.0, false}, {5.0, false}, {6.0, true}}) {
+        for (const auto& [gap, blocks] : {std::pair{4.0, false}, {5.0, false}, {6.0, true}}) {
             const auto u = setup(gap, 7, side);
             const auto s = state(u, 50, 10);
             const auto at = locateVehicle(*s.scenario, s.vehicles.front(), *s.index);
@@ -50,7 +50,7 @@ TEST(tjunction_controlled, the_gap_time_threshold_admits_at_and_below_the_time_t
 TEST(tjunction_controlled, the_headway_threshold_blocks_up_to_and_including_its_distance) {
     // Time blocking inactive: the major stands still, so its time to entry is unbounded.
     const double eps = 0.01;
-    for (const auto [ahead, blocks] : {std::pair{7 - eps, true}, {7.0, true}, {7 + eps, false}}) {
+    for (const auto& [ahead, blocks] : {std::pair{7 - eps, true}, {7.0, true}, {7 + eps, false}}) {
         const auto u = setup(0.1, 7);
         CHECK(majorBlocks(state(u, ahead, 0), u.crossing.id) == blocks);
     }

@@ -9,6 +9,7 @@ the whole directory.
 
 | File | What it holds |
 |---|---|
+| [`NEXT-state-2026-11-19.md`](NEXT-state-2026-11-19.md) | The whole of NEXT before it was cut to open items again (2026-11-19, D319): the STOP_LINES, line-approach and merge-mouth slices of the day, M3.2.7d step 3–4 findings, and the M9/M10/M11.5/M12 done narration |
 | [`NEXT-state-2026-11-18.md`](NEXT-state-2026-11-18.md) | Text cut from NEXT when it was compacted to open items (2026-11-18): finished-slice history of the lane locks, the M6 runs (D527–D546), the EditorWindow split, random streams, the schema slices D558–D573, M9/M11.5/M10 and weaving results, the M9 next-pick list, and the old clamp count |
 | [`NEXT-state-2026-10-23.md`](NEXT-state-2026-10-23.md) | The whole of NEXT before it was cut to open items again (2026-10-23, D319): M11 through M11.4b, S3 and S4 complete |
 | [`NEXT-state-2026-10-20.md`](NEXT-state-2026-10-20.md) | NEXT's "State on 2026-10-19" list (D199–D270), moved whole when NEXT was cut to its open state (D280) |

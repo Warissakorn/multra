@@ -5,6 +5,34 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-19 — Optimisation pass: measured, one item per commit (D597–)
+
+- **Owner:** "/optimize-program", all four dimensions, then "ทำตามแนะนำ" (items 1–6 in the recommended order).
+- **Baseline** (Linux GCC 13.3, Release `-g1` callgrind, seed 42): Ratchada study 32,935 M Ir, M2.6 3,841 M,
+  `multra-engine-benchmark 48 900` 14,578 M; desktop ctest 361/361; 44 compiler warnings.
+- **Same results:** a probe hashing every event (`eventJson`) of every shipped project that runs, the study and the
+  12-crossing benchmark corridor, seeds 42 and 43, matches the baseline after each engine item; CLI summaries byte-identical.
+- **D597:** `publishMoves` finds the joins crossed this tick by binary search over the ascending part starts
+  instead of reading every part of the route. Benchmark 14,578 → 10,363 M Ir (−28.9 %), study −0.6 %, M2.6 −0.9 %.
+- **D598:** `frontPart` bisects routes of more than 8 parts and keeps the scan for shorter ones. Benchmark
+  10,363 → 9,786 M Ir (−5.6 %); study 32,730 → 32,889 M (+0.5 %) and M2.6 +0.5 %: GCC no longer inlines the
+  scan into `locate`. Bisecting every route cost the study +1.8 %, so the short-route scan stays.
+- **Item 3, reverted:** a leader search by rear order cut the study 7.6 % but cost M2.6 2.4 % and the
+  benchmark 5.0 %; measurements in ENGINEERING_NOTES. No D-row: nothing changed.
+- **D599:** compiler warnings 44 → 0 (desktop Debug, GCC 13.3). 17 were GCC 13's `-Wdangling-reference` on
+  lookups that return into their container (each checked: none dangles), now off for GCC before 14 only; the rest
+  fixed in place (range-loop copies, misleading indentation, an unused parameter, two dead test helpers removed,
+  two shared test helpers `[[maybe_unused]]`, one sign comparison). No behaviour or assertion changed.
+- **D600:** one `isBlank` (`src/core/text.hpp`) replaces the blank-id rule written 24 times (12 identical
+  `blank()` helpers, 12 inline copies) in `core`, `model` and `project`.
+- **Final (same tree as committed, event hashes identical):** benchmark 14,578 → 9,786 M Ir (−32.9 %), study
+  32,935 → 32,889 M (−0.1 %), M2.6 3,841 → 3,827 M (−0.4 %); warnings 44 → 0; 361/361. Linux only; MSVC wall
+  time is the owner's check (NEXT).
+- **NEXT cut to open items again (D319):** the day's done slices (M3.2.4e, STOP_LINES, line approach), the
+  M9–M12 done narration and M13's if-changes checklist moved whole to
+  [archive/NEXT-state-2026-11-19](archive/NEXT-state-2026-11-19.md); NEXT ≈7,666 → 6,378 tokens (−17 %, estimate
+  by characters). Every open item, owner ask, command and D-id is kept.
+
 ## 2026-11-19 — A held vehicle rests at its zone line: no crawl, no lurch (D596)
 
 - **Owner:** "ทำเรื่องรถคืบแล้วกระตุกที่เส้นต่อได้เลย".

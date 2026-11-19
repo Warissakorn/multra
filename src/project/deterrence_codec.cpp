@@ -1,4 +1,5 @@
 #include "deterrence_codec.hpp"
+#include "../core/text.hpp"
 #include "input_manifest.hpp"
 #include "../core/validate.hpp"
 #include "network_fields.hpp"
@@ -10,7 +11,6 @@
 namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 bool isString(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
 bool isNumber(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_number() && std::isfinite(j.at(key).get<double>()); }
 void bad(Issues& issues, const std::string& path) { issues.push_back({"INVALID_DETERRENCE_SET", path}); }
@@ -20,7 +20,7 @@ DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool re
     DeterrenceSet set;
     if (!j.is_object() || !networkCodec::onlyKnownKeys(j, networkCodec::Object::deterrenceSet))
         throw ValidationError({{"INVALID_DETERRENCE_SET", path}});
-    if (!isString(j, "id") || blank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
+    if (!isString(j, "id") || isBlank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
     else set.id = j.at("id").get<std::string>();
     if (!isString(j, "name")) bad(issues, path + ".name");
     else set.name = j.at("name").get<std::string>();
@@ -33,7 +33,7 @@ DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool re
         else if (s.contains("citation")) set.citation = s.at("citation").get<std::string>();
         if (s.contains("table") && !s.at("table").is_string()) bad(issues, path + ".source.table");
         else if (s.contains("table")) set.table = s.at("table").get<std::string>();
-        if (requireCitation && blank(set.citation)) bad(issues, path + ".source.citation");
+        if (requireCitation && isBlank(set.citation)) bad(issues, path + ".source.citation");
     }
     if (!j.contains("purposes") || !j.at("purposes").is_array() || j.at("purposes").empty()) bad(issues, path + ".purposes");
     else {
@@ -44,7 +44,7 @@ DeterrenceSet parseDeterrenceSet(const Json& j, const std::string& path, bool re
             const auto& item = items[k];
             if (!item.is_object() || !networkCodec::onlyKnownKeys(item, networkCodec::Object::deterrencePurpose)) { bad(issues, at); continue; }
             DeterrencePurpose p;
-            if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
+            if (!isString(item, "id") || isBlank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
             else if (p.id = item.at("id").get<std::string>(); !ids.insert(p.id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
             if (!isNumber(item, "beta") || !(item.at("beta").get<double>() > 0)) bad(issues, at + ".beta");
             else p.beta = item.at("beta").get<double>();
@@ -102,7 +102,7 @@ std::vector<ValidationIssue> ownedDeterrenceSetIssues(const std::vector<Deterren
     std::set<std::string> ids;
     for (std::size_t k = 0; k < sets.size(); ++k) {
         const auto path = "deterrenceSets[" + std::to_string(k) + "].id";
-        if (blank(sets[k].id)) issues.push_back({"INVALID_ID", path});
+        if (isBlank(sets[k].id)) issues.push_back({"INVALID_ID", path});
         else if (!ids.insert(sets[k].id).second) issues.push_back({"DUPLICATE_ID", path});
     }
     return issues;

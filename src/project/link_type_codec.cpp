@@ -1,4 +1,5 @@
 #include "link_type_codec.hpp"
+#include "../core/text.hpp"
 #include "input_manifest.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
@@ -12,7 +13,6 @@ namespace {
 [[noreturn]] void broken() { throw std::invalid_argument("EDIT_CATALOG_READ"); }
 std::string text(const Json& j, const char* key) { if (!j.contains(key) || !j.at(key).is_string()) broken(); return j.at(key).get<std::string>(); }
 double number(const Json& j, const char* key) { if (!j.contains(key) || !j.at(key).is_number()) broken(); return j.at(key).get<double>(); }
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 std::vector<std::filesystem::path> files(const std::filesystem::path& directory) {
     std::vector<std::filesystem::path> result;
     if (!std::filesystem::is_directory(directory)) return result;
@@ -116,16 +116,16 @@ std::vector<ValidationIssue> linkTypeIssues(const std::vector<ResolvedLinkType>&
     const auto positive = [](double v) { return std::isfinite(v) && v > 0; };
     for (const auto& [t, path] : types) {
         const auto bad = [&](const std::string& field) { issues.push_back({"INVALID_LINK_TYPE", path + "." + field}); };
-        if (blank(t.id) || !ids.insert(t.id).second) bad("id");
+        if (isBlank(t.id) || !ids.insert(t.id).second) bad("id");
         if (!positive(t.capacityPerLane)) bad("capacityPerLane");
         if (!positive(t.freeSpeed)) bad("freeSpeed");
-        if (blank(t.vdfId)) bad("vdfId");
-        if (blank(t.source)) bad("source");
+        if (isBlank(t.vdfId)) bad("vdfId");
+        if (isBlank(t.source)) bad("source");
         // M11.2: above the critical density capacity / speed (pcu/h over km/h), or the wave speed
         // capacity / (jam - critical) is not a finite positive number.
         if (t.jamDensity && !(std::isfinite(t.jamDensity->value) && positive(t.capacityPerLane) && positive(t.freeSpeed) &&
                               t.jamDensity->value > t.capacityPerLane / (t.freeSpeed * 3.6))) bad("jamDensity.value");
-        if (t.jamDensity && blank(t.jamDensity->source)) bad("jamDensity.source");
+        if (t.jamDensity && isBlank(t.jamDensity->source)) bad("jamDensity.source");
         if (!t.capacityBasis.empty() && t.capacityBasis != "practical" && t.capacityBasis != "ultimate") bad("capacityBasis");
         if (modeIds)
             for (std::size_t k = 0; k < t.modes.size(); ++k)
@@ -148,7 +148,7 @@ std::vector<ValidationIssue> vdfIssues(const std::vector<Vdf>& vdfs) {
 std::vector<ValidationIssue> linkTypeDocumentIssues(const ProjectDocument& d) {
     std::vector<ValidationIssue> issues;
     for (std::size_t i = 0; i < d.network.links.size(); ++i)
-        if (d.network.links[i].linkTypeId && blank(*d.network.links[i].linkTypeId))
+        if (d.network.links[i].linkTypeId && isBlank(*d.network.links[i].linkTypeId))
             issues.push_back({"INVALID_LINK_TYPE", "network.links[" + std::to_string(i) + "].linkType"});
     if (d.definition && !d.definition->externalLinkTypes) {
         const auto owned = linkTypeIssues(resolveLinkTypes(*d.definition, {}));

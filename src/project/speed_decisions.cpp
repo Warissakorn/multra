@@ -1,4 +1,5 @@
 #include "speed_decisions.hpp"
+#include "../core/text.hpp"
 #include "../core/validate.hpp"
 #include "../model/network/travel_time.hpp"
 #include <nlohmann/json.hpp>
@@ -52,7 +53,7 @@ std::vector<ValidationIssue> speedDecisionSpecIssues(const Network& n, const Aut
     for (std::size_t i = 0; i < def.speedDecisions.size(); ++i) {
         const auto& d = def.speedDecisions[i];
         const auto path = at(i);
-        if (d.id.find_first_not_of(" \t\r\n") == std::string::npos) issues.push_back({"INVALID_ID", path + ".id"});
+        if (isBlank(d.id)) issues.push_back({"INVALID_ID", path + ".id"});
         for (std::size_t e = 0; e < i; ++e) if (def.speedDecisions[e].id == d.id) issues.push_back({"DUPLICATE_ID", path + ".id"});
         const auto link = std::find_if(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == d.linkId; });
         if (link == n.links.end()) issues.push_back({"UNKNOWN_SPEED_DECISION_LINK", path + ".linkId"});

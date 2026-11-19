@@ -251,7 +251,7 @@ void EditorCanvas::placeLabels() {
                 width = std::max(width, l->frame().width()); height += l->frame().height() + stackGap;
             }
             for (const double reach : {12.0, 32.0, 64.0})
-                for (const auto [dx, dy] : {std::pair{1, 0}, {-1, 0}, {0, -1}, {0, 1}, {1, -1}, {-1, -1}, {1, 1}, {-1, 1}}) {
+                for (const auto& [dx, dy] : {std::pair{1, 0}, {-1, 0}, {0, -1}, {0, 1}, {1, -1}, {-1, -1}, {1, 1}, {-1, 1}}) {
                     const double x = dx > 0 ? anchors.right() + reach : dx < 0 ? anchors.left() - reach - width : anchors.center().x() - width / 2;
                     double y = dy > 0 ? anchors.bottom() + reach : dy < 0 ? anchors.top() - reach - height : anchors.center().y() - height / 2;
                     std::vector<QRectF> layout;

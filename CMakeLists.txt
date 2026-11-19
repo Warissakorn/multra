@@ -36,9 +36,9 @@ if(MSVC)
     target_compile_options(multra_options INTERFACE /W4 /permissive- /utf-8 /fp:strict)
 else()
     target_compile_options(multra_options INTERFACE -Wall -Wextra -Wpedantic -fno-fast-math -ffp-contract=off
-        # Aggregates are built with trailing members left to their defaults on purpose; the
-        # warning for that was 1120 of 1151 lines and hid the ones that mean something.
-        -Wno-missing-field-initializers)
+        # Aggregates keep trailing members at their defaults on purpose (that warning was 1120 of 1151
+        # lines); GCC 13's -Wdangling-reference flags every lookup that returns into its container (D599).
+        -Wno-missing-field-initializers $<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,14>>:-Wno-dangling-reference>)
     if(MULTRA_SANITIZERS)
         target_compile_options(multra_options INTERFACE -fsanitize=address,undefined,float-cast-overflow
             -fno-sanitize-recover=all -fno-omit-frame-pointer)

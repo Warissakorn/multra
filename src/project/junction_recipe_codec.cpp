@@ -1,4 +1,5 @@
 #include "junction_recipe_codec.hpp"
+#include "../core/text.hpp"
 #include "junction_template_codec.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -125,7 +126,7 @@ ApproachDirections parseApproachDirections(const Json& j, const std::string& pat
     ApproachDirections out;
     for (const auto& [id,direction] : j.items()) {
         const auto at = path+"."+id;
-        if (id.find_first_not_of(" \t\r\n") == std::string::npos || !direction.is_string()) invalid(at);
+        if (isBlank(id) || !direction.is_string()) invalid(at);
         const auto s = direction.get<std::string>();
         if (s == "N") out[id] = ApproachDirection::north;
         else if (s == "E") out[id] = ApproachDirection::east;

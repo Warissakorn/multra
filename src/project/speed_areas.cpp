@@ -1,4 +1,5 @@
 #include "speed_areas.hpp"
+#include "../core/text.hpp"
 #include "../core/validate.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
@@ -69,7 +70,7 @@ std::vector<ValidationIssue> speedAreaSpecIssues(const Network& n, const Authori
     for (std::size_t i = 0; i < areas.size(); ++i) {
         const auto& a = areas[i];
         const auto path = at(i);
-        if (a.id.find_first_not_of(" \t\r\n") == std::string::npos) issues.push_back({"INVALID_ID", path + ".id"});
+        if (isBlank(a.id)) issues.push_back({"INVALID_ID", path + ".id"});
         for (std::size_t e = 0; e < i; ++e) if (areas[e].id == a.id) issues.push_back({"DUPLICATE_ID", path + ".id"});
         const auto link = std::find_if(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == a.linkId; });
         if (link == n.links.end()) issues.push_back({"UNKNOWN_REDUCED_SPEED_AREA_LINK", path + ".linkId"});

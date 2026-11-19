@@ -1,4 +1,5 @@
 #include "signal_control.hpp"
+#include "../../core/text.hpp"
 #include <cmath>
 #include <set>
 
@@ -47,7 +48,7 @@ std::vector<ValidationIssue> signalControlIssues(const Network& network, const A
     for (std::size_t i = 0; i < d.signalControllers.size(); ++i) {
         const auto& c = d.signalControllers[i];
         const auto p = "signalControllers[" + std::to_string(i) + "]";
-        if (c.id.find_first_not_of(" \t\r\n") == std::string::npos || !ids.insert(c.id).second) add("INVALID_ID", p + ".id");
+        if (isBlank(c.id) || !ids.insert(c.id).second) add("INVALID_ID", p + ".id");
         const bool cycleOk = std::isfinite(c.cycle) && c.cycle > 0 && onGrid(c.cycle, d.timeStep);
         if (!cycleOk) { add("INVALID_SIGNAL_TIMING", p + ".cycle"); continue; }
         if (!std::isfinite(c.offset) || c.offset < 0 || c.offset >= c.cycle || !onGrid(c.offset, d.timeStep))

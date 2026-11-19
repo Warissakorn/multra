@@ -178,7 +178,7 @@ TEST(mergedecel, ba85_the_keys_round_trip_at_schema_37_and_are_refused_before) {
         return d;
     };
     CHECK(documentJson(document({}))["schemaVersion"] < 37);
-    for (const Keys k : {Keys{4, std::nullopt}, Keys{std::nullopt, 4}, Keys{3, 5}}) {
+    for (const Keys& k : {Keys{4, std::nullopt}, Keys{std::nullopt, 4}, Keys{3, 5}}) {
         const auto d = document(k);
         const auto j = documentJson(d);
         CHECK(j["schemaVersion"] == 37);
@@ -199,7 +199,7 @@ TEST(mergedecel, ba85_the_keys_round_trip_at_schema_37_and_are_refused_before) {
         };
         auto older = j; older["schemaVersion"] = 36;
         CHECK(refused(older, "EDIT_UNSUPPORTED_FIELD"));
-        for (const Json bad : {Json("4"), Json(0), Json(16)}) {
+        for (const Json& bad : {Json("4"), Json(0), Json(16)}) {
             auto doc = j; doc["definition"]["behaviours"][0][key] = bad;
             CHECK(refused(doc, "INVALID_BEHAVIOUR_PARAMETER"));
         }

@@ -38,7 +38,8 @@ LaneReference reference(const Network& network,const QJsonObject& params,const c
 QJsonObject point(Point p) {return {{"x",p.x},{"y",p.y}};}
 QJsonObject refJson(const LaneReference& ref) {
     QJsonObject result{{"linkId",QString::fromStdString(ref.linkId)},{"laneId",QString::fromStdString(ref.laneId)}};
-    if(ref.station)result.insert("station",*ref.station);return result;
+    if(ref.station)result.insert("station",*ref.station);
+    return result;
 }
 }
 QJsonObject suggestConnector(const ProjectDocument& document,const QJsonObject& params) {

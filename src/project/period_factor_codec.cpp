@@ -1,4 +1,5 @@
 #include "period_factor_codec.hpp"
+#include "../core/text.hpp"
 #include "document.hpp"
 #include "network_fields.hpp"
 #include <nlohmann/json.hpp>
@@ -8,7 +9,6 @@
 
 namespace multra {
 namespace {
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 }
 std::vector<PeriodFactor> parsePeriodFactors(const Json& file) {
     if (!file.contains("periodFactors")) return {};
@@ -25,7 +25,7 @@ std::vector<PeriodFactor> parsePeriodFactors(const Json& file) {
         PeriodFactor f;
         for (const auto* key : {"purposeId", "periodId"}) {
             const auto& v = item.at(key);
-            if (!v.is_string() || blank(v.get<std::string>())) { issues.push_back({"PERIOD_FACTOR_INVALID", at + "." + key}); continue; }
+            if (!v.is_string() || isBlank(v.get<std::string>())) { issues.push_back({"PERIOD_FACTOR_INVALID", at + "." + key}); continue; }
             (std::string(key) == "purposeId" ? f.purposeId : f.periodId) = v.get<std::string>();
         }
         bool shares = true;

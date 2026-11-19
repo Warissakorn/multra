@@ -38,12 +38,6 @@ QRectF rightOf(EditorCanvas& c,CanvasLabel* l) {
     const QPointF at=c.viewportTransform().map(l->anchor());
     return QRectF(at+QPointF(editorDesign::space2,-text.height()/2),text.size());
 }
-// D425's first box place: 12 px east of the anchor, centred on it.
-QRectF eastBox(EditorCanvas& c,CanvasLabel* l) {
-    const auto box=l->frame();
-    const QPointF at=c.viewportTransform().map(l->anchor());
-    return QRectF(at+QPointF(12,-box.height()/2),box.size());
-}
 // Every visible box hangs on a leader from its anchor to its frame; a hidden one takes it along.
 void leaders(EditorCanvas& c) {
     for(auto* l:labels(c,nullptr))if(l->style()==CanvasLabel::Style::box) {
@@ -59,10 +53,6 @@ void leaders(EditorCanvas& c) {
                                                   std::abs(b.y()-frame.top())<1.5||std::abs(b.y()-frame.bottom())<1.5);
         require(onEdge,"A leader does not end on its box frame");
     }
-}
-// Equal to within half a pixel per edge: what placement computed is what was painted.
-bool same(const QRectF& a,const QRectF& b) {
-    return std::abs(a.left()-b.left())<=.5&&std::abs(a.top()-b.top())<=.5&&std::abs(a.right()-b.right())<=.5&&std::abs(a.bottom()-b.bottom())<=.5;
 }
 // A drawn road or demand object under a screen rectangle (what D426 avoids when it can).
 bool onObject(EditorCanvas& c,const QRectF& rect) {

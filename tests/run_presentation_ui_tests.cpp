@@ -187,8 +187,9 @@ int main(int argc,char** argv) {
         // background, pixel for pixel what live items paint, and a selection still repaints it.
         // D460: a rate label too tall for its lanes hides by design (and its leader with it); only
         // the static layer's items count.
-        const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items())
-            if(!item->isVisible()&&!dynamic_cast<CanvasLabel*>(item)&&item->data(0).toString()!="label-leader")++n;return n;};
+        const auto hidden=[&]{int n=0;for(auto* item:canvas->scene()->items()) {
+            if(!item->isVisible()&&!dynamic_cast<CanvasLabel*>(item)&&item->data(0).toString()!="label-leader")++n;
+        } return n;};
         require(hidden()>0,"The forcing: a run hides the static layer it bakes");
         const auto grab=[&]{settle();return canvas->viewport()->grab().toImage().convertToFormat(QImage::Format_RGB32);};
         // The cache is a premultiplied pixmap, so a blend can round a level or two apart from the live
@@ -272,10 +273,12 @@ int main(int argc,char** argv) {
             std::ofstream(file.toStdString())<<documentJson(document).dump(1);
             window.openFile(file);settle();
             canvas->setTransform(QTransform::fromScale(14,-14));canvas->centerOn(0,0);canvas->redraw();settle();
-            const auto outline=[&]()->QGraphicsItem*{for(auto* item:canvas->scene()->items())
-                if(item->data(0).toString()=="node"&&item->data(1).toString()=="run-node")return item;return nullptr;};
-            const auto rates=[&]{std::vector<CanvasLabel*> out;for(auto* item:canvas->scene()->items())
-                if(auto* label=dynamic_cast<CanvasLabel*>(item);label&&label->data(0).toString()=="input-volume")out.push_back(label);return out;};
+            const auto outline=[&]()->QGraphicsItem*{for(auto* item:canvas->scene()->items()) {
+                if(item->data(0).toString()=="node"&&item->data(1).toString()=="run-node")return item;
+            } return nullptr;};
+            const auto rates=[&]{std::vector<CanvasLabel*> out;for(auto* item:canvas->scene()->items()) {
+                if(auto* label=dynamic_cast<CanvasLabel*>(item);label&&label->data(0).toString()=="input-volume")out.push_back(label);
+            } return out;};
             require(outline()&&outline()->isVisible()&&!rates().empty(),"Forcing: editing shows the Node outline and the rates");
             for(int i=0;i<50;++i)window.findChild<QAction*>("editorStep")->trigger();
             settle();

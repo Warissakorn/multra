@@ -1,4 +1,5 @@
 #include "mode_choice_codec.hpp"
+#include "../core/text.hpp"
 #include "input_manifest.hpp"
 #include "network_fields.hpp"
 #include <nlohmann/json.hpp>
@@ -9,19 +10,18 @@
 namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
-bool blank(const std::string& s) { return s.find_first_not_of(" \t\r\n") == std::string::npos; }
 bool isString(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_string(); }
 bool isNumber(const Json& j, const char* key) { return j.contains(key) && j.at(key).is_number() && std::isfinite(j.at(key).get<double>()); }
 void bad(Issues& issues, const std::string& path) { issues.push_back({"MODE_CHOICE_INVALID_SET", path}); }
 std::optional<std::string> optionalId(const Json& j, const char* key, const std::string& at, Issues& issues) {
     if (!j.contains(key)) return std::nullopt;
-    if (!j.at(key).is_string() || blank(j.at(key).get<std::string>())) { bad(issues, at + "." + key); return std::nullopt; }
+    if (!j.at(key).is_string() || isBlank(j.at(key).get<std::string>())) { bad(issues, at + "." + key); return std::nullopt; }
     return j.at(key).get<std::string>();
 }
 ModeAlternative alternative(const Json& item, const std::string& at, Issues& issues) {
     ModeAlternative a;
     if (!item.is_object() || !networkCodec::onlyKnownKeys(item, networkCodec::Object::modeChoiceAlternative)) { bad(issues, at); return a; }
-    if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
+    if (!isString(item, "id") || isBlank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
     else a.id = item.at("id").get<std::string>();
     a.modeId = optionalId(item, "modeId", at, issues);
     a.costMatrix = optionalId(item, "costMatrix", at, issues);
@@ -45,7 +45,7 @@ std::vector<ModeChoiceNest> nests(const Json& list, const std::string& at, const
         const auto& item = list[n];
         if (!item.is_object() || !networkCodec::onlyKnownKeys(item, networkCodec::Object::modeChoiceNest)) { bad(issues, where); continue; }
         ModeChoiceNest nest;
-        if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", where + ".id"});
+        if (!isString(item, "id") || isBlank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", where + ".id"});
         else if (nest.id = item.at("id").get<std::string>(); !ids.insert(nest.id).second) issues.push_back({"DUPLICATE_ID", where + ".id"});
         // Eq. (7.18)/(7.20): phi > 1 contradicts utility maximisation; (7.35) is equivalent to 0 < phi <= 1 (p. 245).
         if (!isNumber(item, "phi") || !(item.at("phi").get<double>() > 0) || item.at("phi").get<double>() > 1) bad(issues, where + ".phi");
@@ -68,7 +68,7 @@ ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool re
     Issues issues;
     ModeChoiceSet set;
     if (!j.is_object() || !networkCodec::onlyKnownKeys(j, networkCodec::Object::modeChoiceSet)) throw ValidationError({{"MODE_CHOICE_INVALID_SET", path}});
-    if (!isString(j, "id") || blank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
+    if (!isString(j, "id") || isBlank(j.at("id").get<std::string>())) issues.push_back({"INVALID_ID", path + ".id"});
     else set.id = j.at("id").get<std::string>();
     if (!isString(j, "name")) bad(issues, path + ".name");
     else set.name = j.at("name").get<std::string>();
@@ -80,7 +80,7 @@ ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool re
         else if (s.contains("citation")) set.citation = s.at("citation").get<std::string>();
         if (s.contains("table") && !s.at("table").is_string()) bad(issues, path + ".source.table");
         else if (s.contains("table")) set.table = s.at("table").get<std::string>();
-        if (requireCitation && blank(set.citation)) bad(issues, path + ".source.citation");
+        if (requireCitation && isBlank(set.citation)) bad(issues, path + ".source.citation");
     }
     if (!j.contains("purposes") || !j.at("purposes").is_array() || j.at("purposes").empty()) bad(issues, path + ".purposes");
     else {
@@ -91,7 +91,7 @@ ModeChoiceSet parseModeChoiceSet(const Json& j, const std::string& path, bool re
             const auto& item = items[p];
             if (!item.is_object() || !networkCodec::onlyKnownKeys(item, networkCodec::Object::modeChoicePurpose)) { bad(issues, at); continue; }
             ModeChoicePurpose purpose;
-            if (!isString(item, "id") || blank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
+            if (!isString(item, "id") || isBlank(item.at("id").get<std::string>())) issues.push_back({"INVALID_ID", at + ".id"});
             else if (purpose.id = item.at("id").get<std::string>(); !ids.insert(purpose.id).second) issues.push_back({"DUPLICATE_ID", at + ".id"});
             if (!item.contains("alternatives") || !item.at("alternatives").is_array() || item.at("alternatives").empty()) {
                 bad(issues, at + ".alternatives");
@@ -175,7 +175,7 @@ std::vector<ValidationIssue> ownedModeChoiceSetIssues(const std::vector<ModeChoi
     std::set<std::string> ids;
     for (std::size_t k = 0; k < sets.size(); ++k) {
         const auto path = "modeChoiceSets[" + std::to_string(k) + "].id";
-        if (blank(sets[k].id)) issues.push_back({"INVALID_ID", path});
+        if (isBlank(sets[k].id)) issues.push_back({"INVALID_ID", path});
         else if (!ids.insert(sets[k].id).second) issues.push_back({"DUPLICATE_ID", path});
     }
     return issues;
