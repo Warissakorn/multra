@@ -91,6 +91,9 @@ int main(int argc, char** argv) {
                 "Two lane pairs did not make one group with two reservations");
         require(automaticRows(table) == 1, "The automatic merge is not listed"); // the crossings are authored now
         require(tabs->currentWidget() == test::tabPage(tabs,table), "The Conflict areas tab was not shown");
+        // D590: areas and plain waiting lines are drawn under the Conflict area tool only.
+        require(items(w, "conflict-area") == 0, "Conflict areas are drawn outside their tool");
+        w.canvas()->setTool(EditorCanvas::Tool::conflict); w.canvas()->redraw(); QApplication::processEvents();
         require(items(w, "conflict-area") == 4 && items(w, "waiting-line") == 3, "Individual lane-pair sides and waiting lines were not drawn");
         for (auto* i : w.canvas()->scene()->items()) if (i->data(0).toString() == "conflict-area")
             require(i->toolTip().isEmpty() && !i->data(1).toString().isEmpty(), "A conflict area shows its internal key as a tooltip or lost its key");
