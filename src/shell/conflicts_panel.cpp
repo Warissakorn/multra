@@ -44,7 +44,7 @@ ConflictsPanel::ConflictsPanel(QWidget* parent, ObjectTabContext context, Confli
     auto* body = this; auto* layout = new QVBoxLayout(body);
     layout->setContentsMargins(0, 0, 0, 0); layout->setSpacing(editorDesign::space1);
     auto* bar = new QToolBar(body); layout->addWidget(bar);
-    tab_.table = new QTableWidget(0, 8, body); tab_.table->setObjectName("editorConflictTable");
+    tab_.table = new QTableWidget(0, 9, body); tab_.table->setObjectName("editorConflictTable");
     tab_.table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     tab_.table->setSelectionBehavior(QAbstractItemView::SelectRows);
     tab_.table->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -67,6 +67,10 @@ ConflictsPanel::ConflictsPanel(QWidget* parent, ObjectTabContext context, Confli
         const auto id = selected(); if (id.empty()) return;
         context_.execute("editorRestorePriority", [&](auto& d) { restoreAutomaticPriorityOf(d, id); });
     }));
+    // D594 (STOP_LINES §4): drop every stored line nobody made their own; the rest of the areas wait
+    // at their default lines. One Undo step.
+    bar->addAction(action("editorDeriveStopLines", [this] {
+        context_.execute("editorDeriveStopLines", [&](auto& d) { deriveStopLines(d); }); }));
     bar->addAction(action("editorDeleteConflict", [this] {
         const auto id = selected(); if (id.empty()) return;
         context_.execute("editorDeleteConflict", [&](auto& d) { removeConflictGroup(d, id); });
@@ -78,7 +82,7 @@ ConflictsPanel::ConflictsPanel(QWidget* parent, ObjectTabContext context, Confli
 void ConflictsPanel::translate() {
     tab_.table->setHorizontalHeaderLabels({text("editorColumnId"), text("editorColumnName"), text("editorConflictKind"),
         text("editorConflictPriority"), text("editorConflictGap"), text("editorConflictHeadway"), text("editorConflictStatus"),
-        text("editorConflictControl")});
+        text("editorConflictControl"), text("editorConflictWaitsAt")});
     tab_.invalidate(); // translated cells are rebuilt on the next refresh
 }
 std::string ConflictsPanel::selected() const {
@@ -106,6 +110,14 @@ void ConflictsPanel::refresh() {
         for (int r=0;r<rows;++r) {
             const auto& g=groups[static_cast<std::size_t>(r)];
             std::vector<QStringList> members;std::vector<bool> editable;
+            // STOP_LINES §5 (SL4): the line the yielding side waits at -- a placed stop line by name, or its default.
+            const auto waitsAt=[&](const ConflictArea& a) {
+                if(a.priority==ConflictPriority::undetermined)return QString();
+                const auto& id=(a.priority==ConflictPriority::firstYields?a.first:a.second).waitingLineId;
+                if(id.empty())return text("editorConflictDerivedLine");
+                for(const auto& w:row.waitingLines)if(w.id==id && !w.name.empty())return QString::fromStdString(w.name);
+                return QString::fromStdString(id);
+            };
             QString blocked;
             for(const auto& id:g.areaIds) {
                 const auto at=std::find_if(row.conflictAreas.begin(),row.conflictAreas.end(),[&](const auto& a){return a.id==id;});
@@ -121,7 +133,8 @@ void ConflictsPanel::refresh() {
                     text("editorConflictGivesWay").arg(owner(a.priority==ConflictPriority::firstYields?a.first.path:a.second.path)),
                     rule==row.priorityRules.end()?QString():editorDesign::formatValue(rule->gapTime,1),
                     rule==row.priorityRules.end()?QString():editorDesign::formatValue(rule->headway,1),text("editorConflictRuns"),
-                    !control?QString():text(*control==StopMode::stop?"editorControlStop":"editorControlYield")});
+                    !control?QString():text(*control==StopMode::stop?"editorControlStop":"editorControlYield"),
+                    waitsAt(a)});
             }
             for(const auto& key:g.automaticKeys) {
                 const auto at=std::find_if(automatic_.begin(),automatic_.end(),[&](const auto& a){return a.key==key;});
@@ -130,7 +143,7 @@ void ConflictsPanel::refresh() {
                 editable.push_back(!branching);
                 members.push_back({QString(),branching?text("editorConflictOriginalOrder"):a.priority==ConflictPriority::undetermined?text("editorConflictPassive"):
                     text("editorConflictGivesWay").arg(owner(a.priority==ConflictPriority::firstYields?a.first.path:a.second.path)),
-                    QString(),QString(),text(branching?"editorConflictBranchingStatus":a.kind==ConflictKind::crossing?"editorConflictPassiveStatus":"editorConflictAutomaticStatus"),QString()});
+                    QString(),QString(),text(branching?"editorConflictBranchingStatus":a.kind==ConflictKind::crossing?"editorConflictPassiveStatus":"editorConflictAutomaticStatus"),QString(),QString()});
             }
             const auto common=[&](int column) {
                 const bool hasEditable=std::find(editable.begin(),editable.end(),true)!=editable.end();
@@ -146,7 +159,7 @@ void ConflictsPanel::refresh() {
             for(const auto kind:g.kinds)kinds.push_back(text(kind==ConflictKind::branching?"editorConflictBranching":kind==ConflictKind::crossing?"editorConflictCrossing":"editorConflictMerge"));
             const QStringList values{g.areaIds.empty()?QStringLiteral("\u2014"):QString::fromStdString(g.key),common(0),
                 kinds.join(" / "),common(1),common(2),common(3),
-                blocked.isEmpty()?common(4):blocked,common(5)};
+                blocked.isEmpty()?common(4):blocked,common(5),common(6)};
             for(int c=0;c<values.size();++c) {
                 auto* cell=new QTableWidgetItem(values[c]);cell->setData(Qt::UserRole,QString::fromStdString(g.key));
                 cell->setToolTip(text("editorConflictGroupPairs").arg(g.areaIds.size()+g.automaticKeys.size())+
@@ -173,6 +186,7 @@ void ConflictsPanel::refresh() {
     const bool branching=group!=groups.end() && group->geometryKind==ConflictGeometryKind::branching;
     for (const auto* key : {"editorEditConflict", "editorCyclePriority"}) actions_.at(key)->setEnabled(!chosen.empty() && !branching);
     for (const auto* key : {"editorRestorePriority", "editorDeleteConflict"}) actions_.at(key)->setEnabled(!chosen.empty() && !automatic);
+    actions_.at("editorDeriveStopLines")->setEnabled(!row.waitingLines.empty());
 }
 void ConflictsPanel::authorConflict(const std::string& key) {
     for(const auto& g:conflictGroups(context_.document().network,automatic_))

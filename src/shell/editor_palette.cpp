@@ -77,15 +77,15 @@ void EditorWindow::buildPalette() {
     struct Group {const char* key;std::initializer_list<int> modes;};
     const Group groups[]={
         {"editorPaletteGeometry",{0,1,14,5,2}},
-        {"editorPaletteControl",{8,9}},
+        {"editorPaletteControl",{8,9,15}},
         {"editorPaletteDemand",{6,7,12}},
         {"editorPaletteMeasurement",{10,11,13}},
         {"editorPaletteTools",{3,4}}
     };
-    const char* shortcuts[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z","N","O"};
+    const char* shortcuts[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z","N","O","W"};
     const EditorIcon icons[]={EditorIcon::select,EditorIcon::link,EditorIcon::split,EditorIcon::measure,
         EditorIcon::image,EditorIcon::connector,EditorIcon::route,EditorIcon::input,EditorIcon::signal,
-        EditorIcon::conflict,EditorIcon::counter,EditorIcon::section,EditorIcon::zone,EditorIcon::zone,EditorIcon::road};
+        EditorIcon::conflict,EditorIcon::counter,EditorIcon::section,EditorIcon::zone,EditorIcon::zone,EditorIcon::road,EditorIcon::stopLine};
     for(const auto& group:groups){
         auto* root=new QTreeWidgetItem(palette_);root->setData(0,Qt::UserRole,QString::fromLatin1(group.key));
         root->setFlags(Qt::ItemIsEnabled);root->setData(0,Qt::UserRole+1,true);
@@ -146,7 +146,7 @@ void EditorWindow::translatePalette() {
     palette_->setAccessibleName(text("editorNetworkObjects"));
     visibleLevel_->setAccessibleName(text("editorVisibleLevel"));
     canvas_->setAccessibleDescription(text("editorKeyboardHelp"));
-    const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorStreetSegmentTool"};
+    const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorStreetSegmentTool","editorStopLineTool"};
     // Icons only hides the words, never the name: tooltip and accessible text keep name and chord.
     const bool compact=actions_.at("editorPaletteIconsOnly")->isChecked();
     palette_->setProperty("compact",compact);palette_->setColumnHidden(1,compact);

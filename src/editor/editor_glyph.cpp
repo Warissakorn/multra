@@ -68,6 +68,8 @@ void paintEditorGlyph(QPainter& p,EditorIcon icon,const QColor& ink,double strok
     case EditorIcon::zone: line(3,6,10,3);line(10,3,17,8);line(17,8,13,17);line(13,17,4,15);line(4,15,3,6);break; // a polygon
     // A road going away: two kerbs closing towards the horizon and the dashed centre between (S3.3b).
     case EditorIcon::road: line(2,18,7,2);line(18,18,13,2);line(10,17,10,14);line(10,10,10,8);line(10,5,10,4);break;
+    // A lane's two edges and the thick bar across them a vehicle stops at.
+    case EditorIcon::stopLine: line(5,2,5,18);line(15,2,15,18);line(5,10,15,10);line(5,11,15,11);break;
     case EditorIcon::grid: for(int v:{4,10,16}){line(v,2,v,18);line(2,v,18,v);}break;
     }
 }

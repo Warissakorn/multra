@@ -132,3 +132,35 @@ TEST(stoplines, sl8_front_stop_distance_is_a_project_value_in_0_to_10_metres) {
     old["network"]["rightOfWay"].erase("frontStopDistance");
     test::throws([&] { parseDocument(old); }, "UNKNOWN_WAITING_LINE");
 }
+TEST(stoplines, sl4_a_placed_line_covers_the_areas_downstream_of_it) {
+    const auto t = unsigned_();
+    const auto& n = t.document.network;
+    const double end = polylineLength(std::find_if(n.links.begin(), n.links.end(), [&](const auto& l) { return l.id == t.minor; })->geometry);
+    const ControlPathRef approach{t.minor, n.links[2].lanes.front().id, "", "", ""};
+    CHECK(n.links[2].id == t.minor);
+    // On the minor approach, 2 m before its end: every area either turn gives way at.
+    auto d = t.document;
+    const auto line = placeStopLine(d, {approach, end - 2});
+    for (const auto* id : {&t.crossingArea, &t.crossingMerge, &t.nearMerge}) {
+        const auto& a = areaOf(d, *id);
+        CHECK((a.priority == ConflictPriority::firstYields ? a.first : a.second).waitingLineId == line);
+    }
+    validateDocument(d);
+    const auto r = resolveRightOfWay(d.network, runtimeSections(d.network), {5, 7});
+    CHECK(r.issues.empty());
+    for (const auto& z : r.zones) CHECK(z.waitPosition < 0); // every minor side waits on the approach, before its Connector
+    // A second line upstream covers nothing the first already does.
+    test::throws([&] { auto again = d; placeStopLine(again, {approach, end - 12}); }, "EDIT_NO_CONFLICT_DOWNSTREAM");
+    // On the crossing turn before its crossing: that turn's areas only.
+    auto turn = t.document;
+    const auto& crossing = areaOf(turn, t.crossingArea);
+    const auto& minorSide = crossing.first.path.connectorId == t.crossingTurn ? crossing.first : crossing.second;
+    const auto onTurn = placeStopLine(turn, {minorSide.path, minorSide.entryStation - 3});
+    CHECK(stopLineCoverage(t.document.network, {minorSide.path, minorSide.entryStation - 3}).size() == 2);
+    const auto& near = areaOf(turn, t.nearMerge);
+    CHECK((near.priority == ConflictPriority::firstYields ? near.first : near.second).waitingLineId.empty());
+    // Removing it hands the areas back to their derived lines: the drawing is as it was.
+    removeStopLine(turn, onTurn);
+    CHECK(turn.network == t.document.network); // only the id counter moved on
+    test::throws([&] { removeStopLine(turn, onTurn); }, "EDIT_UNKNOWN_OBJECT");
+}

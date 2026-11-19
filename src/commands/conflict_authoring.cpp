@@ -159,6 +159,42 @@ void setAreaControl(ProjectDocument& d, const std::string& areaId, std::optional
     std::erase_if(controls, [](const auto& c) { return c.conflictAreaIds.empty(); });
     if (mode) putStopControl(d, {"", "", line, *mode, behind});
 }
+std::vector<std::string> stopLineCoverage(const Network& n, const ControlPoint& at) {
+    const auto downstream = [&](const ConflictSide& side) {
+        if (side.path == at.path) return side.entryStation >= at.station - 1e-9;
+        if (at.path.connectorId.empty() && !side.path.connectorId.empty() && side.path.fromLaneId == at.path.laneId)
+            for (const auto& c : n.connectors)
+                if (c.id == side.path.connectorId && c.from.linkId == at.path.linkId)
+                    return attachmentStation(n, c.from, true) >= at.station - 1e-9;
+        return false;
+    };
+    std::vector<std::string> covered;
+    for (const auto& a : n.rightOfWay.conflictAreas) {
+        if (a.priority == ConflictPriority::undetermined) continue;
+        const auto& side = a.priority == ConflictPriority::firstYields ? a.first : a.second;
+        if (side.waitingLineId.empty() && downstream(side)) covered.push_back(a.id);
+    }
+    return covered;
+}
+std::string placeStopLine(ProjectDocument& d, const ControlPoint& at) {
+    const auto covered = stopLineCoverage(d.network, at);
+    if (covered.empty()) throw std::invalid_argument("EDIT_NO_CONFLICT_DOWNSTREAM");
+    const auto id = putWaitingLine(d, {"", "", at});
+    for (auto& a : d.network.rightOfWay.conflictAreas)
+        if (std::find(covered.begin(), covered.end(), a.id) != covered.end())
+            (a.priority == ConflictPriority::firstYields ? a.first : a.second).waitingLineId = id;
+    return id;
+}
+void removeStopLine(ProjectDocument& d, const std::string& lineId) {
+    auto& row = d.network.rightOfWay;
+    if (std::none_of(row.waitingLines.begin(), row.waitingLines.end(), [&](const auto& w) { return w.id == lineId; }))
+        throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
+    std::erase_if(row.stopControls, [&](const auto& c) { return c.waitingLineId == lineId; });
+    for (auto& a : row.conflictAreas)
+        for (auto* s : {&a.first, &a.second}) if (s->waitingLineId == lineId) s->waitingLineId.clear();
+    std::erase_if(row.waitingLines, [&](const auto& w) { return w.id == lineId; });
+    detail::pruneQueueCounters(d); // a counter measuring at the line loses that line
+}
 void removeConflictArea(ProjectDocument& d, const std::string& areaId) {
     const auto removed = area(d, areaId);
     deleteConflictArea(d, areaId);

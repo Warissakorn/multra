@@ -110,7 +110,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
     buildHistory();
     auto* tools=addToolBar(QString());texts_["editorTools"]=tools; tools->setObjectName("editorTools");
     tool_=new QComboBox(this); tool_->setObjectName("editorTool");
-    for(int i=0;i<15;++i) tool_->addItem("",i);
+    for(int i=0;i<16;++i) tool_->addItem("",i);
     tool_->hide();
     tools->addAction(action("editorFit",QKeySequence(Qt::Key_F),[this]{canvas_->fitNetwork();}));
     tools->addAction(action("editorRotate",QKeySequence(Qt::CTRL|Qt::SHIFT|Qt::Key_R),[this]{rotateSelection();}));
@@ -136,7 +136,7 @@ EditorWindow::EditorWindow(const std::filesystem::path& data,const QString& lang
         if (index==5) properties_->setCurrentIndex(1);
         else if (index==4) properties_->setCurrentIndex(2);
         else if (index==1 || index==2) properties_->setCurrentIndex(0);
-        else if (index==9) showConflicts(); // the tool edits what that tab lists
+        else if (index==9 || index==15) showConflicts(); // the tool edits what that tab lists
         else if (index==10) objects_->setCurrentWidget(counters_);
         else if (index==11) objects_->setCurrentWidget(sections_);
         else if (index==12) objects_->setCurrentWidget(zones_); // M8.6a
@@ -237,8 +237,8 @@ void EditorWindow::translate() {
         else if(auto* menu=qobject_cast<QMenu*>(w)) menu->setTitle(text(key));
     }
     for(const auto& refreshValidation:validationRefresh_)refreshValidation();
-    const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorStreetSegmentTool"};
-    for(int i=0;i<15;++i) tool_->setItemText(i,text(modes[i]));
+    const char* modes[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect","editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorStreetSegmentTool","editorStopLineTool"};
+    for(int i=0;i<16;++i) tool_->setItemText(i,text(modes[i]));
     const char* tabs[]={"editorLinksTab","editorConnectorsTab","editorBackgroundTab"};
     for (int i=0;i<3;++i) properties_->setTabText(i,text(tabs[i]));
     side_->setItemText(0,text("editorLeft"));side_->setItemText(1,text("editorRight"));

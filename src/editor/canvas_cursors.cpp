@@ -62,6 +62,7 @@ EditorIcon toolGlyph(EditorCanvas::Tool tool) {
     case T::section: return EditorIcon::section;
     case T::zone: case T::node: return EditorIcon::zone;
     case T::road: return EditorIcon::road;
+    case T::stopLine: return EditorIcon::stopLine;
     }
     return EditorIcon::select;
 }

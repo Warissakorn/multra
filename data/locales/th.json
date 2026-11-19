@@ -1807,5 +1807,14 @@
   "editorConsistencyLink": "Link",
   "CONSISTENCY_NO_STUDY_AREA": "โปรเจกต์ไม่มีพื้นที่ศึกษา",
   "MESO_AREA_SOURCE_SELF": "พื้นที่ศึกษาที่รับ flow จาก Meso จะรัน Meso บนพื้นที่ที่ตัดจากตัวเองไม่ได้",
-  "CONSISTENCY_PERIOD_OUTSIDE": "study period ที่อยู่ในช่วงรันเพียงบางส่วนถูกตัดออก"
+  "CONSISTENCY_PERIOD_OUTSIDE": "study period ที่อยู่ในช่วงรันเพียงบางส่วนถูกตัดออก",
+  "editorStopLineTool": "เส้นหยุด",
+  "editorStopLinePlaceHelp": "Ctrl + คลิกขวาบนช่องจราจรเพื่อวางเส้นหยุด เส้นนี้คุม conflict area ที่อยู่ถัดไปบนช่องจราจรนั้นและทางเลี้ยวที่ออกจากช่องนั้น คลิกเส้นเพื่อเลือกและลาก กด Delete เพื่อลบ แล้ว area เหล่านั้นจะกลับไปรอที่เส้นค่าเริ่มต้น",
+  "editorPlaceStopLine": "วางเส้นหยุด",
+  "editorRemoveStopLine": "ลบเส้นหยุด",
+  "editorConflictWaitsAt": "รอที่",
+  "editorConflictDerivedLine": "เส้นค่าเริ่มต้น",
+  "editorDeriveStopLines": "ใช้เส้นค่าเริ่มต้น",
+  "EDIT_NO_CONFLICT_DOWNSTREAM": "ไม่มี conflict area ถัดจากจุดนี้ที่รอที่เส้นค่าเริ่มต้น เส้นหยุดตรงนี้จึงไม่ได้คุมอะไร",
+  "INVALID_FRONT_STOP_DISTANCE": "ระยะหยุดหน้าเส้นต้องมากกว่า 0 m และไม่เกิน 10 m"
 }

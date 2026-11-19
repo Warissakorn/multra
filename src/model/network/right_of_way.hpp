@@ -79,6 +79,9 @@ double waitingStation(const Network&, const ConflictSide&);
 // polyline (what nearestHeadSlot picks) -- mapped cross-section for cross-section onto the Link's
 // reference polyline, where a ControlPoint's station is measured. Empty when the lane is gone.
 std::optional<ControlPoint> laneControlPoint(const Network&, const LaneReference&, double laneStation);
+// M3.2.12 slice 3: the ControlPoint at a place nearestHeadSlot picked, on a Link lane or a Connector
+// path (its station converted to the Connector's base polyline). Empty when the path is gone.
+std::optional<ControlPoint> slotControlPoint(const Network&, const HeadPlacement&);
 
 // One merge: the incoming segments that arrive on one section, in drawing order -- the order
 // derivedPriorityRules ranks them in. `explicitControl` is set when an authored area covers two

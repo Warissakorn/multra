@@ -1,7 +1,7 @@
 # Stop lines: derived waiting positions and a Stop line tool (M3.2.12)
 
-Written 2026-11-19 (D591) as a draft; the owner said go ("ทำ STOP_LINES ต่อได้เลย"). **Slices 1–2
-implemented (D594), slice 3 planned.** No gate closes with it, and rule 4 applies: nothing here is
+Written 2026-11-19 (D591) as a draft; the owner said go ("ทำ STOP_LINES ต่อได้เลย"). **Implemented:
+slices 1–2 (D594), slice 3 (D595).** No gate closes with it, and rule 4 applies: nothing here is
 validated. It follows M3.2.4e (merge
 admission over the physical mouth) because both decide where a yielding vehicle stops.
 
@@ -117,5 +117,15 @@ to the type's maximum): its own contract, as LINE_APPROACH. Calibrated stop dist
   (`automatic_conflict`, `conflict_follow`); the T-junction's ids shift (fewer
   lines allocated), so `nodemembership` names `conflict-9/11/13` and the archived sweep metadata
   restores the old route names when every input still matches (`restoreArchivedRouteIds`).
-- **Not yet:** the Stop line tool, coverage, faint derived lines on hover (SL4, SL7). A derived line
-  is simply not drawn today, under any tool.
+- **Slice 3 (D595, owner "ทำส่วนที่ 3 ต่อได้เลย"):** the Stop line tool (`W`, palette after Conflict
+  area): Ctrl+right-click on a lane places a line (`placeStopLine`), a click picks and drags one,
+  Delete removes it (`removeStopLine`, its areas back on their default lines). Coverage is written
+  as names when the line is placed (`stopLineCoverage`): decided areas on default lines at or past
+  it on its path, or, from a Link lane, on a Connector leaving that lane at or past it. Refused with
+  `EDIT_NO_CONFLICT_DOWNSTREAM` when that is none. The Conflict areas table has a Waits at column
+  and a Use default lines button (`deriveStopLines`). Under the Conflict area tool the hovered or
+  selected area's default lines are drawn dashed and faint (`derived-line`). Rows: `stoplines` SL4,
+  `stop-line-ui` (SL4 in the table, SL7).
+- **Still differs from §5:** dragging a default line does nothing (the draft offered to place a line
+  there; place one with the tool instead); coverage stops one Connector past a Link lane rather than
+  at the next Link of a Connector chain.

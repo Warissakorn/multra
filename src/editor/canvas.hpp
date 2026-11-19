@@ -26,7 +26,7 @@ struct MapLoadState;
 struct CanvasImageOptions;
 class EditorCanvas : public QGraphicsView {
 public:
-    enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone, node, road };
+    enum class Tool { select, draw, split, measure, calibrate, connect, route, input, head, conflict, counter, section, zone, node, road, stopLine };
     explicit EditorCanvas(QWidget* parent = nullptr);
     ~EditorCanvas() override;
     void setMapProviders(std::vector<MapProvider>);
@@ -142,6 +142,12 @@ public:
     // its own path. The canvas never writes to the document itself.
     std::function<void(const std::string&)> conflictPicked, conflictCycled;
     std::function<void(const std::string&, double)> waitingLineMoved;
+    // M3.2.12 slice 3 (STOP_LINES §5): the Stop line tool. Ctrl+right-click on a lane places one,
+    // a left click picks (and drags) a placed line, Delete removes the picked one.
+    std::function<void(const ControlPoint&)> stopLinePlaced;
+    std::function<void(const std::string&)> stopLinePicked, stopLineRemoved;
+    const std::string& selectedStopLine() const { return selectedStopLine_; }
+    void selectStopLine(std::string id);
     std::vector<std::string> conflictsAt(Point) const;   // groups whose visible lane bands contain it
     // M3.2.4c (D68): the areas the drawing implies (automaticConflicts), drawn under the Conflict
     // area tool only -- passive crossings grey, derived merges in their derived colours, both
@@ -241,6 +247,8 @@ private:
     std::vector<AutomaticConflict> automatic_;
     std::vector<ConflictGroup> conflictGroups_;
     std::string waitingLineAt(Point) const;
+    bool stopLinePress(QMouseEvent*);
+    std::string selectedStopLine_;
     bool conflictPress(QMouseEvent*);
     void updateLineDrag(QPoint);
     void finishLineDrag(QPoint);

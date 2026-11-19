@@ -142,11 +142,11 @@ void paletteViews(EditorWindow& window,const std::filesystem::path& data) {
     auto* tree=item<QTreeWidget>(window,"editorObjectPalette");auto* tool=item<QComboBox>(window,"editorTool");
     auto* canvas=window.canvas();auto* dock=item<QDockWidget>(window,"editorPaletteDock");
     struct Group {const char* key;std::vector<int> modes;};
-    const Group groups[]={{"editorPaletteGeometry",{0,1,14,5,2}},{"editorPaletteControl",{8,9}},
+    const Group groups[]={{"editorPaletteGeometry",{0,1,14,5,2}},{"editorPaletteControl",{8,9,15}},
         {"editorPaletteDemand",{6,7,12}},{"editorPaletteMeasurement",{10,11,13}},{"editorPaletteTools",{3,4}}};
-    const char* chords[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z","N","O"};
+    const char* chords[]={"S","L","X","M","K","C","R","V","H","A","Q","T","Z","N","O","W"};
     const char* names[]={"editorSelect","editorDraw","editorSplit","editorMeasure","editorCalibrate","editorConnect",
-        "editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorStreetSegmentTool"};
+        "editorRouteTable","editorInputTable","editorSignalTable","editorConflictTool","editorCounterTool","editorSectionTool","editorZoneTool","editorNodeTool","editorStreetSegmentTool","editorStopLineTool"};
     std::vector<int> order;for(const auto& g:groups)order.insert(order.end(),g.modes.begin(),g.modes.end());
     auto* language=item<QComboBox>(window,"editorLanguage");QApplication::setActiveWindow(&window);
     int namesWidth=0;

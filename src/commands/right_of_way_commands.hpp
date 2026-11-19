@@ -48,6 +48,15 @@ std::size_t deriveStopLines(ProjectDocument&);
 // The inverse: every derived side gets a stored line where it waits now, so the drawing can be
 // written for a reader older than schema 79. Runs as before (SL6). Returns how many lines it added.
 std::size_t storeDerivedLines(ProjectDocument&);
+// M3.2.12 slice 3 (STOP_LINES §2, §5, SL4). The areas a stop line at `at` would cover: every
+// decided area whose yielding side waits at its derived line, on the line's own path at or past
+// it, or -- for a line on a Link lane -- on a Connector leaving that lane at or past it. An area
+// that already names a line keeps it, so a second line upstream covers nothing the first does.
+std::vector<std::string> stopLineCoverage(const Network&, const ControlPoint& at);
+// Places the line and names it on those areas; refused (EDIT_NO_CONFLICT_DOWNSTREAM) when there are none.
+std::string placeStopLine(ProjectDocument&, const ControlPoint& at);
+// The line goes with its Stop/Yield; the areas that named it wait at their derived lines again.
+void removeStopLine(ProjectDocument&, const std::string& lineId);
 
 // M3.2.4, the editor's gestures (src/commands/conflict_authoring.cpp). Each is one document change
 // the caller runs inside History::execute.
