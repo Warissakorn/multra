@@ -36,6 +36,19 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    turn first overlaps the lane (about x = ∓6). The crossing's lines `wait-9` (y = −5.7, before the
    eastbound edge at −4.0) and `wait-10` (x = −13.8, upstream of the area) are before their area. This is
    the planned M3.2.4e gap (M3_CONTRACT: D50/D59 extents and waiting positions unchanged by M3.2.4d).
+   *Owner:* 2026-11-19, attempt 1, steps 3–4 (verbatim): "สีของ Conflict area ยังมองยากทำเป็นสีทึมดีหรือไม่ ·
+   การเปลี่ยน gap/headway สมเหตุสมผล แต่การหยุดรถตรงเส้นหยุดของ conflict area ยังไม่สมจริง เนื่องจากมีการเคลื่อนตัวเล็กน้อย
+   ก่อนถึงเส้น และมีจังหว่ะที่ใกล้ถึงเส้นจะขยับอย่างรวดเร็ว หรือเส้นหยุดนี้ไม่ใช่เส้นหยุดจริงแต่เป็นเส้นหยุดสมมุติเฉยๆ ·
+   ในแท็บ edit conflict area ต้องแต่ละปุ่ม 2 ครั้งถึงทำงาน ตรวจสอบปัญหานี้ทั้งหมดของโปรแกรม".
+   *Session note (measured, no verdict):* seed 42, crossing turn's line `wait-9`, Debug build on Linux. Vehicles
+   35 and 75 never come to rest at the line: in `approaching`/`following` mode the prototype law decays the
+   speed toward the line as toward a standing vehicle, so a held minor crawls at 0.5 → 0.02 m/s for about
+   20 s and settles 1.9–2.9 m short (F1a's floor binds only in `braking`). Each release jumps to the type's
+   2.5 m/s² in one tick, and when `majorBlocks` returns a tick later the vehicle brakes at up to 3.6 m/s²
+   (vehicle 75: go–stop twice within 7 s). The line is the model's real hold point for the vehicle's front;
+   the two defects are the approach law and the per-tick gap test without hysteresis. The double click was
+   not reproduced: one synthetic click acted on every Conflict areas button (cycle, Edit, Restore, Delete),
+   after a canvas pick, a row click and a shown tooltip; each handler took 14–156 ms.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
