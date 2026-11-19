@@ -283,7 +283,7 @@
         },
         {
           "first": {
-            "entryStation": 26.2272604864502,
+            "entryStation": 13.314884945252704,
             "exitStation": 27.2272604864502,
             "path": {
               "connectorId": "connector-7",
@@ -297,7 +297,7 @@
           "name": "Minor joins westbound",
           "priority": "firstYields",
           "second": {
-            "entryStation": 169.0,
+            "entryStation": 155.65018672233523,
             "exitStation": 170.0,
             "path": {
               "laneId": "lane-4",
@@ -308,7 +308,7 @@
         },
         {
           "first": {
-            "entryStation": 24.013305159865943,
+            "entryStation": 7.990501931530556,
             "exitStation": 25.013305159865943,
             "path": {
               "connectorId": "connector-8",
@@ -322,7 +322,7 @@
           "name": "Minor joins eastbound",
           "priority": "firstYields",
           "second": {
-            "entryStation": 169.0,
+            "entryStation": 152.36185107916148,
             "exitStation": 170.0,
             "path": {
               "laneId": "lane-2",
@@ -407,7 +407,7 @@
               "laneId": "lane-4",
               "linkId": "link-3"
             },
-            "station": 169.0
+            "station": 154.65018672233523
           }
         },
         {
@@ -419,7 +419,7 @@
               "fromLaneId": "lane-6",
               "toLaneId": "lane-4"
             },
-            "station": 26.2272604864502
+            "station": 12.314884945252704
           }
         },
         {
@@ -430,7 +430,7 @@
               "laneId": "lane-2",
               "linkId": "link-1"
             },
-            "station": 169.0
+            "station": 151.36185107916148
           }
         },
         {
@@ -442,7 +442,7 @@
               "fromLaneId": "lane-6",
               "toLaneId": "lane-2"
             },
-            "station": 24.013305159865943
+            "station": 6.990501931530556
           }
         }
       ]

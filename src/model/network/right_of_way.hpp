@@ -93,8 +93,16 @@ std::string mergeSectionOfArea(const Network&, const RuntimeSections&, const Con
 // The side a taken-over merge gives one incoming segment, in authored coordinates: its waiting
 // line, entry and exit (the join). Shared by takeOverMerge and automaticConflicts, so what the
 // editor shows before a take-over is what the take-over writes. Throws EDIT_UNKNOWN_OBJECT.
-struct MergeSide { ControlPathRef path; double wait{}, entry{}, exit{}; };
+// `start` is where that segment begins on the same polyline.
+struct MergeSide { ControlPathRef path; double wait{}, entry{}, exit{}, start{}; };
 MergeSide mergeSide(const Network&, const RuntimeSections&, const std::string& segment);
+// M3.2.4e (docs/reference/MERGE_MOUTH.md R1, R3, R4): two incoming sides of one merge over their
+// measured overlap -- entry at the first overlapping station on the joining segment, exit at the
+// join -- or the D50/D59 strips when no overlap of positive area is measured. Each side's waiting
+// line stands kMergeLineSetback short of the earliest entry over its group (R2).
+struct MergePair { ConflictSide first, second; bool measured{}; };
+MergePair mergeMouth(const Network&, const MergeSide& first, const MergeSide& second, ConnectorSurfaceCache* = nullptr);
+inline constexpr double kMergeLineSetback = 1.0; // D50
 
 // M3.2.4c (D68): what the drawing implies where nobody has authored an area -- Vissim's automatic
 // conflict areas. Derived, never stored, so they need no lifecycle and a file never holds one.

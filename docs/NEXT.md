@@ -31,6 +31,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 
 ## M3.2.7d attempt 1 failed at step 1 (2026-11-18) — M3.2.4e comes before attempt 2
 
+- **2026-11-19, later:** owner: areas 100 % opaque (D592) and start M3.2.4e. Done: [MERGE_MOUTH](reference/MERGE_MOUTH.md)
+  (D593), the T-junction regenerated with its merge lines 1 m short of the measured overlap. **Next: the owner's
+  attempt 2 of M3.2.7d on Windows** (step 1 look); then STOP_LINES slice 1b (derived lines, `frontStopDistance`)
+  and the line-approach contract.
 - **2026-11-19:** the owner chose derived stop positions and a Stop line tool; the draft is
   [STOP_LINES](reference/STOP_LINES.md) (D591, rows SL1–SL8). **Owner reviews §2–§6, then slice 1 =
   M3.2.4e + derived lines.** Done the same day: D587 (row dialogs once), D588 (no white Connector

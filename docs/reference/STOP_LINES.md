@@ -1,7 +1,7 @@
 # Stop lines: derived waiting positions and a Stop line tool (M3.2.12)
 
 Written 2026-11-19 (D591) as a draft for the owner's review. **Not implemented.** No gate closes
-with it, and rule 4 applies: nothing here is validated. It joins the planned M3.2.4e (merge
+with it, and rule 4 applies: nothing here is validated. It follows M3.2.4e (merge
 admission over the physical mouth) because both decide where a yielding vehicle stops.
 
 ## 1. The problem
@@ -80,7 +80,7 @@ to the type's maximum): its own contract, as LINE_APPROACH. Calibrated stop dist
 
 ## 8. Slices
 
-1. M3.2.4e physical merge admission with its own failure-first rows, then the derived line and
+1. M3.2.4e physical merge admission (done: [MERGE_MOUTH](MERGE_MOUTH.md), D593), then the derived line and
    `frontStopDistance` (SL1–SL3, SL6, SL8).
 2. Schema step and migration, shipped projects regenerated (SL5).
 3. Stop line tool and coverage (SL4, SL7).

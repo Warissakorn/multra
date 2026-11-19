@@ -53,6 +53,11 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    connector ยังเห็นเส้นขอบสีขาวอยู่". *Session note:* the buttons were the Edit dialog's Confirm and close box; a
    row double-click opened that dialog twice, fixed by D587. The white Connector edge is removed by D588.
    Opacity waits for the owner's choice (screenshots at 35 %, 75 % and 100 % sent).
+   *Owner:* 2026-11-19 (verbatim): "ความทึบ 100%  และเริ่ม M3.2.4e ได้เลย". *Session note:* D592 (areas opaque,
+   an undecided automatic candidate stays faint); D593, [MERGE_MOUTH](../reference/MERGE_MOUTH.md): the
+   regenerated fixture puts `wait-14` at 12.31 m (overlap from 13.31 m), `wait-18` at 6.99 m (from 7.99 m),
+   `wait-13` at 154.65 m and `wait-17` at 151.36 m on their Links (x = −4.65 and x = 1.36), 1 m short of each
+   overlap. Attempt 2 is the owner's.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any

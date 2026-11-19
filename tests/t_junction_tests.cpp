@@ -45,12 +45,13 @@ TEST(tjunction, every_variant_resolves_to_a_crossing_and_separate_merges) {
             const auto s = compiled(t);
             CHECK(s.conflictZones.size() == 3);
             const auto& crossing = zoneOn(s, t.crossingTurn);
-            // The crossing turn meets the crossing first and the merge after it, separately: the
-            // merge's zone starts past the crossing's exit on the same Connector.
+            // The crossing turn meets the crossing first and the merge after it: the merge's zone
+            // ends past the crossing's. Across the 1 m median the measured mouth (D593) begins
+            // inside the crossing, so the two chain and the turn waits for both at once (MM5).
             const auto merge = std::find_if(s.conflictZones.begin(), s.conflictZones.end(), [&](const auto& z) {
                 return &z != &crossing && z.minor.segmentIds.front() == t.crossingTurn; });
             CHECK(merge != s.conflictZones.end());
-            CHECK(merge->minor.entry > crossing.minor.exit);
+            CHECK(merge->minor.entry > crossing.minor.entry && merge->minor.exit > crossing.minor.exit);
             CHECK(crossing.major.segmentIds.front() != merge->major.segmentIds.front()); // two different streams
             CHECK(crossing.waitPosition < crossing.minor.entry);
             test::near(crossing.gapTime, 5, 0); test::near(crossing.headway, 7, 0);

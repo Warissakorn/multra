@@ -132,7 +132,8 @@ TEST(rightofway, a07_reversing_a_merge_replaces_its_whole_fallback) {
     const auto fallback = std::find_if(derived.begin(), derived.end(), [&](const auto& x) {
         return x.yieldSegmentId == taken.minor.segmentIds.front() && x.conflictSegmentId == taken.major.segmentIds.back(); });
     CHECK(fallback != derived.end());
-    test::near(taken.waitPosition, fallback->yieldPosition, 1e-9);
+    // D593 (M3.2.4e): the take-over waits 1 m short of the measured overlap, upstream of the fallback's strip.
+    CHECK(taken.waitPosition < fallback->yieldPosition - 1);
     test::near(taken.major.exit, fallback->conflictPosition, 1e-9);
     const auto pair = [&](const PriorityRule& x) {
         return (x.yieldSegmentId == fallback->yieldSegmentId && x.conflictSegmentId == fallback->conflictSegmentId) ||
@@ -210,7 +211,8 @@ TEST(rightofway, a_taken_over_lane_two_of_a_curved_range_compiles_to_the_fallbac
     const auto res = resolve(d);
     const auto* taken = zoneYielding(res, yielding);
     CHECK(taken != nullptr);
-    test::near(taken->waitPosition, fallback->yieldPosition, 1e-9);
+    // D593 (M3.2.4e): the take-over waits 1 m short of the measured overlap, upstream of the fallback's strip.
+    CHECK(taken->waitPosition < fallback->yieldPosition - 1);
     test::near(taken->major.exit, fallback->conflictPosition, 1e-9);
 }
 TEST(rightofway, the_resolver_never_throws_on_a_reference_it_cannot_locate) {

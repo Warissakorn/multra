@@ -171,9 +171,11 @@ void EditorCanvas::drawConflicts() {
             const bool yields=(side==&first)==(priority==ConflictPriority::firstYields);
             const bool lit=key==highlightedConflict_,hover=key==hoverConflict_ || key==hoverAutomatic_;
             QColor tint=branching?canvasStyle::error():undecided?(automatic?canvasStyle::ink():canvasStyle::warning()):yields?canvasStyle::error():canvasStyle::ok();
-            // D435: a soft, flat wash -- no hatching or outline at rest; an automatic candidate is
-            // fainter. Hover and the highlighted conflict get a clean solid edge.
-            tint.setAlpha(automatic?(undecided?40:48):yields?95:80);
+            // D435 as amended by D592 (owner, 2026-11-19): a flat fill with no hatching or outline at
+            // rest, fully opaque so the area reads on any road; the waiting lines stay above it (z 7).
+            // Only an automatic candidate nobody has decided stays a faint wash. Hover and the
+            // highlighted conflict get a clean solid edge.
+            tint.setAlpha(automatic && undecided?40:255);
             const bool hatched=!branching && !undecided && yields; // tag only: z order, not paint
             QPen pen(Qt::NoPen);
             if(lit || hover) {

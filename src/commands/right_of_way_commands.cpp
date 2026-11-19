@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
+#include <tuple>
 
 namespace multra {
 namespace {
@@ -70,17 +71,30 @@ std::vector<std::string> takeOverMerge(ProjectDocument& d, const std::string& se
     if (group->explicitControl) throw std::invalid_argument("EDIT_ALREADY_EXPLICIT");
     std::vector<MergeSide> sides;
     for (const auto& segment : group->incoming) sides.push_back(mergeSide(d.network, table, segment));
-    std::vector<std::string> lines;
-    for (const auto& side : sides) lines.push_back(putWaitingLine(d, {"", "", {side.path, side.wait}}));
-    const auto sideAt = [&](std::size_t k) { return ConflictSide{sides[k].path, sides[k].entry, sides[k].exit, lines[k]}; };
-    std::vector<std::string> created;
-    // The fallback's order: each later incoming path gives way to every earlier one.
+    // The fallback's order: each later incoming path gives way to every earlier one. M3.2.4e
+    // (MERGE_MOUTH): each pair covers its measured overlap, and each side's one line stands 1 m
+    // short of the earliest entry it has in any pair.
+    std::vector<std::tuple<std::size_t, std::size_t, MergePair>> pairs;
+    std::vector<double> wait;
+    for (const auto& side : sides) wait.push_back(side.wait);
     for (std::size_t j = 1; j < sides.size(); ++j)
         for (std::size_t i = 0; i < j; ++i) {
-            const auto area = putConflictArea(d, {"", "", ConflictKind::merge, sideAt(j), sideAt(i), ConflictPriority::firstYields});
-            putPriorityRule(d, {"", "", area, defaults.gapTime, defaults.headway});
-            created.push_back(area);
+            auto pair = mergeMouth(d.network, sides[j], sides[i]);
+            if (pair.measured) {
+                wait[j] = std::min(wait[j], std::max(sides[j].start, pair.first.entryStation - kMergeLineSetback));
+                wait[i] = std::min(wait[i], std::max(sides[i].start, pair.second.entryStation - kMergeLineSetback));
+            }
+            pairs.emplace_back(j, i, std::move(pair));
         }
+    std::vector<std::string> lines;
+    for (std::size_t k = 0; k < sides.size(); ++k) lines.push_back(putWaitingLine(d, {"", "", {sides[k].path, wait[k]}}));
+    std::vector<std::string> created;
+    for (auto& [j, i, pair] : pairs) {
+        pair.first.waitingLineId = lines[j]; pair.second.waitingLineId = lines[i];
+        const auto area = putConflictArea(d, {"", "", ConflictKind::merge, pair.first, pair.second, ConflictPriority::firstYields});
+        putPriorityRule(d, {"", "", area, defaults.gapTime, defaults.headway});
+        created.push_back(area);
+    }
     return created;
 }
 void restoreAutomaticPriority(ProjectDocument& d, const std::string& section) {

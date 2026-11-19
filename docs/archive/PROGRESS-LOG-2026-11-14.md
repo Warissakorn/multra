@@ -2,6 +2,30 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-18 — Option A: entry lanes by destination, schema 77 (D580)
+
+- **Pick:** the owner's order (B50): A after LL1. The 6 clamps were checked first: 3 come 0.3 s after the clamped vehicle's own lane change into a standing queue on the entry Link; 3 show no change of its own.
+- **D580:** a routing decision's `"entryLanes": "serving"` (schema 77) puts each destination's share on the entry Link's lanes with a full chain to it; stubs only where none has one. Compile only (`entryDecision`), refused with `position` or without `linkId`. Editor: a checkbox in the decision dialog (en/th). `multra-count-study` reads `entrylanes,serving` from `site.csv`, and the study uses it.
+- **Measured, seed 42 (study):** completed 4,698 → 6,627, active 539 → 428, pending 5,503 → 3,666; dead-end waits 187 / 19,600 s → 0; clamps 6 → 1 (vehicle 3915 on a Connector at 14 m, no lane change of its own: open). LL3: every shipped project, seeds 42–51, and `multra-cli 42` identical to the pre-change binary except the build commit.
+- **Tests:** `pocketdecision.serving_entry_lanes_put_each_destination_on_its_full_chains` (LL5, both driving sides), `pocketdecision.entry_lanes_is_refused_where_it_means_nothing`, `countstudy.serving_entry_lanes_leave_no_stub_on_an_entry_link`; LL1's test now runs on the study without the row.
+- **Verified on Linux:** headless `check` 241/241; the decision dialog (`editor_decision.cpp`) compiles under the desktop preset. The dialog was not opened, the full desktop build and Windows were not run.
+- **Owner question open:** LANE_LOCKS §7 q2 (key on the decision or on the Link's lanes) was not answered; the decision was taken as the default and is recorded in D580.
+
+## 2026-11-18 — LL1: a dead end past the point of no return (D579)
+
+- **Pick:** the owner answered B50 with "ทำตามแนะนำ": A, then B off by default; not D. The contract's first row, LL1, ran first.
+- **Found:** a left-turn stub's dead end was the end of its own lane (280 m), not where the kerb lane's left Connector leaves (273 m). A span outward to another stub had carried it on. A vehicle past 273 m could only change to a stub that could no longer turn left, so it stood for good (vehicle 848).
+- **D579:** `appendLaneChanges` sets the dead end to the last metre from which a change still leads to a full chain. It uses a fixed point over the family's spans: a span onto a stub counts as far as that stub's own dead end, carried back. Spans are cut at the dead end. The engine is unchanged.
+- **Measured, seed 42:** study completed 3,385 → 4,698, never entered 6,754 → 5,503, waiting 36,267 → 19,600 s (longest 3,411 → 2,683), clamps 1 → 6. Every shipped project and `multra-cli 42` give byte-identical output. Test `countstudy.a_left_turn_stub_is_held_before_its_turn_leaves` fails without the fix.
+- **Verified on Linux (headless):** `check` 241/241. The desktop preset, check_no_pch.py and Windows were not run.
+
+## 2026-11-17 — Purpose review; lane locks recorded and a draft contract (D578)
+
+- **Pick:** the owner asked whether the stuck vehicles matter for future development and for a review of the test's purpose, then asked for both to be recorded and a contract drafted.
+- **Purpose:** M2.6/M5.7 test whether the owner can build and report a study in the editor. Tuning a builder-made project's lanes and timing for throughput is not that test, and it is close to calibration (D544). The study stops being tuned and is kept as a failing case.
+- **D578:** lane locks are recorded as an engine defect: ROADMAP M3.2.11 (proposed), OWNER_SITTING B50 and draft [LANE_LOCKS](../reference/LANE_LOCKS.md). The draft has the evidence (study: 82 waiting, longest 3,411 s; shipped projects at most 42 s), the four options (entry lane by destination, missed exit, zipper, removal) under fixed constraints (replay, M3 §4, accounting, byte-identical shipped files), a recommendation (A then B), rows LL1–LL8 and the owner's questions. Nothing is implemented.
+- **Verified:** docs checks only (`multra-check-docs`, file sizes). No code changed.
+
 ## 2026-11-17 — Study lanes from the owner's drawing, two right-turn lanes (D577)
 
 - **Pick:** the owner asked for a check of a junction drawing (D576's lanes were from the aerial image), then for items 1, 2 and 4: lanes from the drawing, more than one right-turn lane, and a redesigned plan. Item 3 (each movement entering on its own lanes) was not picked.

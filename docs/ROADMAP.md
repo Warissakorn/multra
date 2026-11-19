@@ -178,7 +178,7 @@ Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
 |---|---|
 | M3.2.1 contracts · M3.2.2a–c (D54–D56) · M3.2.3a–c (D57–D59) · M3.2.5a/b Stop/Yield (D62, D63) · M3.2.6a–c signal positions and queue counters (D64, D65) | Implemented 2026-09-25 |
 | M3.2.4a–c conflict-area editor and automatic areas (D60, D61, D68, D72, D84, D86) · M3.2.4d/f measured overlaps and mouth continuation (D115, D117, D118) | Implemented; **owner look pending** |
-| M3.2.4e merge admission over the full mouth overlap, then M3.2.12 derived stop positions and a Stop line tool ([STOP_LINES](reference/STOP_LINES.md), D591) | **Planned**; STOP_LINES is a draft for the owner's review |
+| M3.2.4e merge admission over the full mouth overlap ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), then M3.2.12 derived stop positions and a Stop line tool ([STOP_LINES](reference/STOP_LINES.md), D591) | M3.2.4e **implemented** (MM1–MM7, Linux; T-junction regenerated); M3.2.12 **planned** |
 | M3.2.7a–c T-junction evidence (D66, D67) | Implemented |
 | M3.2.7d owner exercise (§3, Windows) | **Pending, owner**; attempt 1 (2026-11-18) failed at step 1: merge waiting lines inside the joined lane (M3.2.4e), [OWNER_SITTING](plans/OWNER_SITTING.md) A2 |
 | M3.2.8a commitment (D69) · M3.2.8b mandatory lane change (D71) · M3.2.8c routing-decision changes (D93) and cooperative braking (D90) | Implemented |
