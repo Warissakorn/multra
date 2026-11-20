@@ -66,23 +66,15 @@ A session prepares the build and records the owner's words; Linux tests close no
 lines hidden outside the right-of-way tools); E35's block selection → D605 (one outline per selected
 block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at the next table use.
 
-## Priority rules like Vissim (D604) — draft; ask §8 before any code
+## Priority rules like Vissim (D604, D606) — choices answered; slice 1 next
 
-[PRIORITY_RULES](reference/PRIORITY_RULES.md): a stop line with conflict markers, no conflict area. The
-engine's `PriorityRule` already does one marker's gap test; the work is the schema step, the compile step,
-the Stop line tool's gestures and the display. **Ask the owner §8's five choices** (where it lives,
-conditions per marker, which vehicles stop, Stop at the line, default numbers), then slice 1 (schema,
-codec, compile, runtime rows PR1–PR6, PR9, PR10, no UI). Read STOP_LINES §5 and `stepSimulation`'s
-"Priority rules" block first.
-
-**Start new work only after the sitting, or when the owner picks one.**
-
-**Review waiting (code, not a gate):** D570–D574 on branch `claude/optimistic-bohr-lpfu98`: the
-Macro-set schema rows ([PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md)) and D574,
-the code-review fixes to them (named floors, `onlyKnownKeys`, `citedSource`, `atLeastOne`, ctest
-`schema-labels` and `python3-jsonschema` on Linux CI). Verified on Linux headless (`check` 240/240)
-and the changed units without the PCH; the desktop preset and Windows were not run, and the CI
-change has not run on GitHub yet. Nothing is merged. Stop for owner review before `procedures`.
+[PRIORITY_RULES](reference/PRIORITY_RULES.md): a stop line with conflict markers, no conflict area. Owner
+answered §8 as Vissim does it (D606): maximum speed on the headway test, vehicle classes on the line and on
+each marker, Stop means a full stop first, defaults 3.0 s / 5.0 m. **Slice 1** (PR1–PR6, PR9–PR13): the next
+schema step, codec, compile to the engine's `PriorityRule` (add `maxSpeed` and type-id filters, empty and
+unlimited for derived merges), runtime rows on a hand-built crossing; no UI. Read STOP_LINES §5,
+`stepSimulation`'s "Priority rules" block and `resolveRightOfWay` first; keep every shipped project's
+events identical (seeds 42–51).
 
 ## Review of 2026-11-10 — queued proposals (D493)
 

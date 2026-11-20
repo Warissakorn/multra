@@ -1,9 +1,9 @@
 # PRIORITY_RULES — a stop line with conflict markers, without a conflict area (draft, D604)
 
-**Draft, not implemented.** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
+**Contract, not yet implemented; the owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
 Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim", then the choice "ข. Priority rule แบบ Vissim" over
 taking over the automatic candidates. Written before code; rows PR1–PR10 fail first. Section 8 holds
-the owner's choices; no slice starts before they are answered.
+the owner's choices, answered as Vissim does it (D606).
 
 ## 1. The problem
 
@@ -29,26 +29,40 @@ off. Vissim models these with a *priority rule*: a stop line on the minor path a
   area's `gapTime`/`headway` by `conflictAreaId` and compile to a conflict zone, not to a rule.
 
 So this feature is mostly authoring: a file form, a compile step to the existing `PriorityRule`, an
-editor gesture and a display. The engine changes only if §8 asks for more than gap and headway.
+editor gesture and a display. The engine changes for D606's two Vissim conditions only: a maximum
+speed on the headway test and vehicle-class filters (§3).
 
 ## 3. Model
 
-- A **priority rule** is one stop line (a `WaitingLine`, a `ControlPoint` on a lane path) and one
-  or more **markers**, each a `ControlPoint` on any lane path with its own `gapTime` (s, > 0) and
-  `headway` (m, ≥ 0).
+- A **priority rule** is one stop line (a `WaitingLine`, a `ControlPoint` on a lane path) with an
+  optional list of vehicle classes, and one or more **markers**. A marker is a `ControlPoint` on any
+  lane path with its own `gapTime` (s, > 0), `headway` (m, ≥ 0), `maxSpeed` (km/h, > 0) and optional
+  list of vehicle classes.
+- **Who waits:** a vehicle whose route passes the line and whose type is in one of the line's classes
+  (no list: every type). Other types pass the line as if it were not there; a different class needs a
+  second rule at the same line (Vissim).
+- **Who blocks, per marker:** a major vehicle on the marker's segment whose type is in the marker's
+  classes (no list: every type), and that (i) is over the marker, or (ii) is within `headway` short of
+  it **and** its speed is at or below `maxSpeed`, or (iii) reaches it in less than `gapTime` at its
+  current speed. A standing major vehicle beyond the headway does not block (unchanged). With
+  `maxSpeed` at its ceiling the headway test is today's.
 - It compiles to one runtime `PriorityRule` per marker, all sharing the line's yield position, so a
-  vehicle at the line waits while **any** marker blocks (Vissim's rule with several markers).
-- The rule applies to every vehicle whose route passes the line. A marker no route reaches is a
-  Problems row, not an error; a marker on the line's own path, or upstream of the line on it, is
-  refused (it would hold a vehicle for itself).
+  vehicle at the line waits while **any** marker blocks: it passes only when every marker's
+  conditions hold (Vissim's rule with several markers).
+- A marker no route reaches is a Problems row, not an error; a marker on the line's own path, or
+  upstream of the line on it, is refused (it would hold a vehicle for itself). A class id that names
+  no vehicle class is refused at its path.
 - A line can serve conflict areas (STOP_LINES) and rules at once; both hold, and the nearer hold
-  wins as for heads and zones today. A Stop control on the line (`StopMode::stop`) also requires the
-  full stop before the rule's gap test, as for areas (§8 Q4).
+  wins as for heads and zones today. A Stop control on the line (`StopMode::stop`) requires the full
+  stop before the rule's gap test, as for areas (Q4 (a)); Yield is the rule alone.
+- **Derived merge rules are unchanged:** no class lists, `maxSpeed` at its ceiling, so every shipped
+  project and seed keeps its bytes (PR9).
 
 ## 4. Schema (the next step after 79)
 
 - `rightOfWay.priorityRules[i]` gains a second, exclusive form: `{id, name?, waitingLineId,
-  markers: [{point, gapTime, headway}, …]}` where `point` is the existing ControlPoint object.
+  vehicleClassIds?, markers: [{point, gapTime, headway, maxSpeed, vehicleClassIds?}, …]}` where
+  `point` is the existing ControlPoint object and an absent `vehicleClassIds` means every type.
   Exactly one of `conflictAreaId` (the existing form) or `waitingLineId` + nonempty `markers`.
 - Refused below the new step at its path (`EDIT_UNSUPPORTED_FIELD`), as every later key; files without the
   form keep their bytes and version. The writer's version choice adds the floor.
@@ -59,7 +73,9 @@ editor gesture and a display. The engine changes only if §8 asks for more than 
 
 - **Stop line tool (`W`).** Ctrl+right-click on a lane with no area downstream now places the line
   and starts a rule instead of being refused; with a line picked, Ctrl+right-click on another lane
-  adds a marker there with §8 Q5's default `gapTime`/`headway`. A marker drags along its path; Delete removes the picked marker, and the
+  adds a marker there with Vissim's defaults: `gapTime` 3.0 s, `headway` 5.0 m and `maxSpeed` at its
+  ceiling (no speed limit on the headway test; Vissim's example uses 10–20 km/h to keep a junction
+  clear, entered per marker). A marker drags along its path; Delete removes the picked marker, and the
   rule with its last marker. Each gesture is one Undo step.
 - **Display.** Shown under the right-of-way tools only (D603): the line as today, each marker as a
   short green bar across its lane with its headway as a faint band upstream on the major lane, and
@@ -81,13 +97,15 @@ editor gesture and a display. The engine changes only if §8 asks for more than 
 | PR8 | Split, drag and lane edits carry the line and markers; a delete cascades in one Undo step |
 | PR9 | Every shipped project, seeds 42–51, is byte-identical (no file uses the form) |
 | PR10 | Same seed, same run: two runs of a rule fixture give identical events |
+| PR11 | `maxSpeed`: a major vehicle inside the headway at 30 km/h holds the line with `maxSpeed` 50 and does not with `maxSpeed` 20 (its gap time is set beyond `gapTime`, so only the headway test decides) |
+| PR12 | Classes: with the line's classes set to cars only, a heavy vehicle passes the line while a car facing the same major vehicle is held; with a marker's classes set to heavy only, a car on the major road does not hold the line and a heavy vehicle does |
+| PR13 | A class id that names no vehicle class is refused at its path; nothing is stored |
 
 ## 7. Out of scope
 
-Calibrated gap times (M6). Vissim's per-marker maximum speed, vehicle-class filters and "look
-beyond red signals" unless §8 asks for them. Converting existing conflict areas to rules.
+Calibrated gap times (M6). Vissim's "look beyond red signals". Converting existing conflict areas to rules.
 
-## 8. The owner's choices (recommended first)
+## 8. The owner's choices — answered 2026-11-20: "1ก 2ข 3ข 4ก 5ข เหมือน vissim" (D606)
 
 1. **Where it lives:** (a) a second exclusive form in the existing `priorityRules` array, at the next schema step;
    (b) a new root array `priorityRuleSets`.
@@ -99,12 +117,14 @@ beyond red signals" unless §8 asks for them. Converting existing conflict areas
 4. **Stop at the line:** (a) a Stop control on the line applies to the rule too (full stop, then the
    gap test), Yield is the rule alone; (b) rules are always Yield-like.
 5. **Default numbers for a new marker:** (a) the shipped give-way default `data/priority-rules/default.json`,
-   3.0 s and 7.0 m (not calibrated), editable per marker; (b) other numbers the owner names.
+   3.0 s and 7.0 m (not calibrated), editable per marker; (b) Vissim's defaults, 3.0 s and 5.0 m.
+
+**Answers:** 1 (a), 2 (b), 3 (b), 4 (a), 5 (b). §3–§6 are written to them.
 
 ## 9. Slices
 
-1. The schema step, codec and compile to `PriorityRule` (PR1, PR2, PR6, PR9), with the runtime rows PR3–PR5
-   and PR10 on a hand-built crossing; no UI.
+1. The schema step, codec and compile to `PriorityRule`, and the engine's `maxSpeed` and class
+   filters (PR1–PR6, PR9–PR13) on a hand-built crossing; no UI.
 2. The Stop line tool's gestures, lifecycle and Undo (PR7, PR8).
 3. Display and the table rows; the owner's look on Windows.
 
