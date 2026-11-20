@@ -35,12 +35,10 @@ Done before it (2026-11-19; history in [the archived NEXT](archive/NEXT-state-20
 ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), [STOP_LINES](reference/STOP_LINES.md) (D591, D594–D595),
 the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas opaque (D592), D587–D590.
 
-- **Next: the owner's attempt 2 of M3.2.7d on Windows** — lines, the Stop line tool (`W`), the stop at
-  the line, and the look at D587 (a row's dialog opened once) and D588 (no white Connector edge).
-  Findings and measured positions are in [OWNER_SITTING](plans/OWNER_SITTING.md) A2.
-- **Ask, before attempt 2:** the owner asked to test only what needs the owner. Proposed: keep steps 1
-  (look), 3–4 (gap/headway, Stop/Yield, engineer's plausibility) and the verdict; steps 2 and 6–7 are
-  covered by `rightofway` round-trip and same-seed replay tests. Changing §3 needs the owner's yes and a D-row.
+- **Next: the owner's attempt 2 of M3.2.7d on Windows** — steps 1, 3–4 and the verdict (D601: step 2
+  and steps 5–7 are automated by the `rightofway_editor` tests and
+  `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed`), plus the Stop line
+  tool (`W`), the stop at the line, D587 and D588. Findings and measured positions: [OWNER_SITTING](plans/OWNER_SITTING.md) A2.
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
@@ -56,11 +54,14 @@ the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas
   `missedExitAfter`) were compiled but never opened.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
-## Owner checks waiting from recent sessions
+## Owner checks on Windows — triaged, one sitting (D602, 2026-11-20)
 
-All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI
-review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
-(random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
+The Windows sheet was cut from about 70 items to 17 for one sitting; its order is at the top of
+[OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md): A2 first, then E32, C15/E33, E34, C14, E35,
+E36, B45, B46 + item 42, B48, item 50, C16, C17/C18, I.5, G1, H1, C12. Thirty-one older looks are carved
+out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (ROADMAP M1.30, M3.2.13, M14) (open, closing nothing); I.1, I.3, I.4, F2, D2, E22 closed.
+A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
+**Start new work only after the sitting, or when the owner picks one.**
 
 **Review waiting (code, not a gate):** D570–D574 on branch `claude/optimistic-bohr-lpfu98`: the
 Macro-set schema rows ([PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md)) and D574,
@@ -121,8 +122,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
   cause is keys or sloppiness, not size.
-- **Owner check (D597, D598):** MSVC Release wall time of the study and of `multra-engine-benchmark 48 900`
-  before and after; Linux callgrind showed the benchmark −32.9 % Ir, the study −0.1 %.
+- **Owner check (D597, D598):** MSVC Release wall time, now part of OWNER_SITTING_WINDOWS C12.
 - **D599:** the build is warning-free on GCC 13; the next GCC 14+ or MSVC `/W4` build may show new ones:
   fix them in the code, never widen the GCC < 14 exemption.
 - **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-19): `closestVehicle`
@@ -165,7 +165,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl
   is unchanged. No timing defaults: all site timing is required. Posted speed is never a cap
   (D381). Macro/Meso freeSpeed and the drawing's HCM inputs remain independent of recipes.
-- Windows appearance remains OWNER_SITTING E24–E32; Linux tests do not close those items.
+- Windows appearance: E24–E31 are carved out to ROADMAP M14 (D602), E32 stays on the sheet; Linux tests do not close those items.
   Watch B29's turn keys, HCM storage and partial-total questions; do not silently settle them.
 
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)

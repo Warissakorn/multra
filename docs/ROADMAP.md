@@ -33,7 +33,7 @@ The smallest thing that is genuinely a traffic simulator, end to end. Every laye
 
 The Vissim modelling surface, natively: links are first class, connectors are real objects, junctions are not something the user places.
 
-**Status:** implemented except **M1.22 and M1.23 (open)**, M1.26's gate (open), M1.28's gate (open) and the M1.29 owner looks (open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
+**Status:** implemented except **M1.22 and M1.23 (open)**, M1.26's gate (open), M1.28's gate (open) and the M1.29 and M1.30 owner looks (open); M1.17 reverted (replaced by M1.18/M1.19, then D80's four-point mouth,
 [CONNECTOR_FOUR_POINT_MOUTH](reference/CONNECTOR_FOUR_POINT_MOUTH.md)). **M1 usability accepted by owner ruling on 2026-09-25 (D49)**, after one timed attempt that did not include turn pockets or
 an aerial image ([M1_ACCEPTANCE](plans/M1_ACCEPTANCE.md)). M0 plausibility accepted by owner ruling (D369). Carve-outs are filed at their number (M1.3.1, M1.5.1, M1.11.1, M1.12.1–M1.12.3).
 
@@ -93,15 +93,9 @@ Contract and rows: [MAP_BACKGROUND](reference/MAP_BACKGROUND.md); plan:
 **Gate remains open:** MAP1–MAP9 automated/platform evidence and MAP10 owner alignment
 and responsiveness on a real study. This does not close M1.23 interchange or any engine gate.
 
-### M1.29 — Owner looks carved out of the sitting (D201)
+### M1.29, M1.30 — Owner looks carved out of the sitting (D201, D602)
 
-**Open, owner.** Carved 2026-10-16 from [OWNER_SITTING](plans/OWNER_SITTING.md) under R4 (b), each
-unanswered for more than 14 days; the full steps are in that sheet's history (`git log -p` on it).
-(1) D83/D84 controls and gestures: chevrons, one Thai/English baseline, 24 px fields, plain left
-click never authors, and is Ctrl+right too slow for heavy route/counter work? (2) PRs #73–#75
-interaction cleanup on curved and overlapping roads. (3) M1.19/M1.20 Connectors: none deleted by a
-Link drag unexpectedly, half a lane width as the "off the Link" distance, lanes meeting middle on
-middle. **Gate:** the owner's yes on each, at 100/150/200 % on Windows. Merged code is not a passed look.
+**Open, owner.** Listed in [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md); each closes on the owner's yes on Windows.
 
 ## M2 — Demand, run, first numbers · **CLOSED** (gate passed, D53; closed by D143)
 
@@ -186,18 +180,9 @@ Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
 | M3.2.9a–h lane correspondence and Connector ends (D73–D80, D106, D107) | Implemented; **owner look of D80 pending** |
 | M3.2.11 lane locks at dead ends (D578): a wait into a standing queue holds the lane to the run's end (study ratchada-latphrao: 82 waiting, longest 3,411 s) | **Done (D582)**; owner chose A then B (B50); LL1 fixed a dead end past the point of no return (D579); A: `entryLanes`, schema 77 (D580); B: `missedExitAfter`, schema 78 (D581); [LANE_LOCKS](reference/LANE_LOCKS.md) |
 
-### M3.2.10 — Owner looks carved out of the sitting (D201)
+### M3.2.10, M3.2.13 — Owner looks carved out of the sitting (D201, D602)
 
-**Open, owner.** Carved 2026-10-16 from [OWNER_SITTING](plans/OWNER_SITTING.md) under R4 (b), each
-unanswered for more than 14 days. (1) D90 cooperative braking on the M2.6 East approach: do
-lane-2/3 left-turners slip into lane 1 with the vehicle behind slowing, not stopping dead? (2) D93
-downstream decision on the four-leg West pocket: changes toward the turn with no LANE_UNSERVED (CLI
-on Windows 118 : 41 : 0)? (3) D86/D72 conflict areas follow a dragged Link and go, with Yield and
-line, when it is dragged clear; Ctrl+Z restores them. (4) D80 four-point mouths at 45–179°, 1–3
-lanes, kerb/median lanes added or dropped; fixed lane-index pairing holds. **Gate:** the owner's yes
-on each. This does not close M3.2, which still closes on M3.2.7d.
-
----
+**Open, owner.** Listed in [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md); they do not close M3.2, which closes on M3.2.7d.
 
 ### M3.2.8a.1 — Remaining moving merge and source-clearance clamps
 
@@ -475,6 +460,8 @@ consistency report. **Done when:** one cut runs at both finer levels with record
 | J6 · J6a | Catalog and Node forms, crossing choice, corridor cross-section rebuild (D409–D414; JT11, JT16); exact endpoint station conversion (D415; JT17), approved at e1eaad8 | — |
 | J7 | Analysis inputs, snapshots, HCM Results, CLI-identical exports (D418; JT12), approved at `fe827c8` | — |
 | U0 · U1–U3 | U0's probe prepared ([UTDF_PROBE](plans/UTDF_PROBE.md)) | The owner's imports and answers; U1–U3 wait on them, no UTDF writer authorized |
+
+**Owner looks carved out (D602):** E24–E31, in [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md#m14).
 
 ---
 

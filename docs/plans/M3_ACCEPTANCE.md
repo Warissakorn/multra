@@ -154,15 +154,14 @@ Keep any failure in the record; fixes receive separate attempts rather than over
 **Recording sheet (M3.2.7d).** Pending until the owner fills it in; no session may fill it.
 
 - **File:** `data/projects/t-junction-priority.traffic.json`, opened in the Windows build.
-- **Steps:**
+- **Steps** (D601: the owner's are 1, 3, 4 and the verdict; numbers are not reused):
   1. Inspect the three areas: *Minor crosses eastbound*, *Minor joins westbound* and *Minor joins
-     eastbound*.
-  2. Flip one priority, then set it back.
-  3. Change `gapTime` and `headway`.
-  4. Set Stop, then Yield.
-  5. Run seed 42, and note the Results rows.
-  6. Save, close, reopen.
-  7. Run seed 42 again, and compare the rows.
+     eastbound*, and their waiting lines.
+  2. *Automated (D601):* flip one priority, then set it back — `rightofway_editor` tests.
+  3. Change `gapTime` and `headway`, run, and watch whether the minor road responds as expected.
+  4. Set Stop, then Yield, and watch the minor vehicles at the line in each.
+  5–7. *Automated (D601):* run seed 42, save, close, reopen, run seed 42 again and compare —
+     `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed`.
 - **Record:** owner, date, Windows version, attempt number, and for each step what was seen, with
   timings. Then the plausibility verdict, and any defect with its steps to reproduce.
 

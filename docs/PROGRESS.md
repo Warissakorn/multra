@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-20 — Windows owner checks triaged before new work (D601, D602)
+
+- **Owner:** "ต้องการ เคลียร์ owner checks บน Windows ก่อนเริ่มงานใหม่"; chose "Triage first", "Yes, cut it"
+  for M3.2.7d, then "Approve as proposed".
+- **D601:** M3.2.7d's owner exercise is steps 1, 3–4 and the verdict. New test
+  `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed` (gap 4 s, headway 9 m,
+  Stop; the reopened file is byte-identical, seed 42's rows equal) covers steps 5–7; step 2 was already in
+  `rightofway_editor`. M3_ACCEPTANCE §3 updated.
+- **D602:** OWNER_SITTING_WINDOWS rewritten as one sitting of 17 items with an order; 31 looks listed more
+  than 14 days ago carved out to the new plans/OWNER_LOOKS_CARVED (ROADMAP M1.30, M3.2.13, M14), which also takes D201's M1.29/M3.2.10 text so ROADMAP stays under 500 lines; I.1, I.3, I.4, F2, D2, E22 closed; merged
+  items say what they took in. No look was passed by the session.
+- **Verified on Linux (headless):** `tjunction` 9/9; `check` 244/244 (in a fresh build directory `cli-consistency` first fails: `check` does not build `multra-consistency-cli-fixture`, a gap that predates this session). Desktop preset and Windows not run; the sitting is the owner's.
+
 ## 2026-11-19 — Optimisation pass: measured, one item per commit (D597–)
 
 - **Owner:** "/optimize-program", all four dimensions, then "ทำตามแนะนำ" (items 1–6 in the recommended order).
