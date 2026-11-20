@@ -77,6 +77,8 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Vissim, SUMO and Aimsun all limit how far a yielding driver sees the major road (a visibility distance), so it
    approaches at a speed from which it can stop; MULTRA sees every major vehicle at any distance and does not slow
    when the gap is clear. Choices V (visibility), D (dwell distribution), I (impatience) or none wait for the owner.
+   *Owner:* 2026-11-20 (verbatim): "V ทำเหมือน vissim เริ่มตัดสินใจเรื่อง gap ทำด้วยหรือไม่". V chosen, as Vissim;
+   the contract waits on the default distance and the reading of "visibility" (asked in chat the same day).
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
