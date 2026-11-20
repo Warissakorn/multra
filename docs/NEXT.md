@@ -35,6 +35,9 @@ Done before it (2026-11-19; history in [the archived NEXT](archive/NEXT-state-20
 ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), [STOP_LINES](reference/STOP_LINES.md) (D591, D594–D595),
 the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas opaque (D592), D587–D590.
 
+- **Ask first (2026-11-20):** the owner asked how other programs approach the line;
+  [line-approach-other-programs](evidence/line-approach-other-programs.md) offers V (visibility distance and
+  approach speed), D (Stop dwell distribution), I (impatience) or none. A pick needs a contract before code.
 - **Next: the owner's attempt 2 of M3.2.7d on Windows** — steps 1, 3–4 and the verdict (D601: step 2
   and steps 5–7 are automated by the `rightofway_editor` tests and
   `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed`), plus the Stop line

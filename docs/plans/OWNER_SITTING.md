@@ -72,6 +72,11 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    *Owner:* 2026-11-20 (verbatim): "ข. และ เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้ Conflict area ก็ได้ ให้สร้าง
    พื้นที่ให้ทางเหมือน vissim", then "ข. Priority rule แบบ Vissim". *Session note:* controlled lines now hide outside
    the right-of-way tools (D603); priority rules are drafted as PRIORITY_RULES (D604), waiting on its §8.
+   *Owner:* 2026-11-20 (verbatim): "ตรวจสอบว่าการวิ่งมาหยุดที่เส้น มีรายละเอียดมากกว่านี้หรือไม่ ลองศึกษาจากโปรแกรมอื่น".
+   *Session note (read, not measured):* [line-approach-other-programs](../evidence/line-approach-other-programs.md):
+   Vissim, SUMO and Aimsun all limit how far a yielding driver sees the major road (a visibility distance), so it
+   approaches at a speed from which it can stop; MULTRA sees every major vehicle at any distance and does not slow
+   when the gap is clear. Choices V (visibility), D (dwell distribution), I (impatience) or none wait for the owner.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
