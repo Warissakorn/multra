@@ -212,12 +212,6 @@ int main(int argc, char** argv) {
                 network().rightOfWay.stopControls.front().waitingLineId == line.id, "Stop was not set on the area's line");
         require(lineMark(w, line.id) == "stop", "The canvas does not mark the Stop line");
         require(table->item(table->currentRow(), 7)->text() == "Stop", "The table does not list the Stop");
-        // D603: a line with Stop shows under the right-of-way tools only, not under Select.
-        c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
-        require(drawn(w) == 0, "A Stop line is drawn outside the right-of-way tools");
-        c->setTool(EditorCanvas::Tool::stopLine); c->redraw(); QApplication::processEvents();
-        require(lineMark(w, line.id) == "stop", "The Stop line tool does not show the Stop line");
-        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         act(w, "editorUndo")->trigger(); QApplication::processEvents();
         require(network().rightOfWay.stopControls.empty() && lineMark(w, line.id).empty(), "Setting Stop was not one Undo step");
         act(w, "editorRedo")->trigger(); QApplication::processEvents();
@@ -246,6 +240,12 @@ int main(int argc, char** argv) {
         require(table->rowCount() == 1 && drawn(w) == shown, "Reopening did not show the same group");
         for (int r = 0; r < table->rowCount(); ++r) require(table->item(r, 6)->text() == "Runs", "A reopened area does not run");
         require(network().rightOfWay.stopControls.size() == 1 && lineMark(w, line.id) == "stop", "Reopening lost the Stop");
+        // D603: a line with Stop shows under the right-of-way tools only, not under Select.
+        c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
+        require(drawn(w) == 0, "A Stop line is drawn outside the right-of-way tools");
+        c->setTool(EditorCanvas::Tool::stopLine); c->redraw(); QApplication::processEvents();
+        require(lineMark(w, line.id) == "stop", "The Stop line tool does not show the Stop line");
+        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         std::cout << "priority canvas tests passed\n";
         return 0;
     } catch (const std::exception& e) {
