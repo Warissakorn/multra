@@ -81,6 +81,7 @@ struct DriverBehaviour {
     bool stopFloor{}; // runtime only, never in a file: set by createSimulation from clampRules.standingStopFloor and amberDeceleration (LINE_APPROACH §7, D258)
     bool standingTarget{}, stopArrival{}; // runtime only, off by default: the M6 sweep's engine levers D and E (M6_SWEEP §4, D546)
     std::optional<double> missedExitAfter; // s at a dead end, then the vehicle gives up its turn (LANE_LOCKS B, D581); absent: never
+    std::optional<double> inattentionDuration, inattentionProbability; // START_UP §3 (D608): a pair; absent: always attentive
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles { double wheelbase{}, frontOverhang{}, rearOverhang{}; bool operator==(const VehicleAxles&) const = default; };
@@ -92,6 +93,7 @@ struct VehicleType {
     SpeedRange desiredSpeed;
     double maxAcceleration{}, comfortableDeceleration{}, maxDeceleration{};
     std::string behaviourId; std::optional<int> kerbLanes; // B-7 (LANE_PREFERENCE, D234): enters on lanes 0..N-1
+    std::vector<AccelerationPoint> accelerationCurve; // START_UP §2 (D608); empty: maxAcceleration at every speed
     // Display kinematics only; traffic following/reservations still use length.
     std::optional<VehicleAxles> axles; std::optional<Pcu> pcu;
     bool operator==(const VehicleType&) const = default;

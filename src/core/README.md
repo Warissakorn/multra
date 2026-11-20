@@ -34,6 +34,7 @@ and then the step is unchanged to the bit.
 | `conflicts.*` | Crossing admission: zones by route distance, right of way, Stop and give-way service, commitment; `tickCap` and `relievedCap` (in `caps.cpp`) | [M3_CONTRACT §4](../../docs/reference/M3_CONTRACT.md), [COMMITMENT](../../docs/reference/COMMITMENT.md), [MERGE_CLAMPS](../../docs/reference/MERGE_CLAMPS.md), [STOP_DWELL](../../docs/reference/STOP_DWELL.md) |
 | `line_state_types.hpp` | Per-vehicle state at a line kept between ticks: `StopService`, the `RedRelease` pairs | [M3_CONTRACT §5](../../docs/reference/M3_CONTRACT.md), [RED_RUNNING §3](../../docs/reference/RED_RUNNING.md) |
 | `red_running.*` | The red-runner draw, `redElapsed`, `letThrough` | [RED_RUNNING](../../docs/reference/RED_RUNNING.md) |
+| `start_up.*` | Acceleration limit by speed (`maxAccelerationAt`) and temporary lack of attention (`inattentive`) | [START_UP](../../docs/reference/START_UP.md) |
 | `join_anticipation.*` | `indexJoins`, `joinEntries`, `anticipateJoin`: a second following law across a join, only with `clampRules.joinAnticipation` | [JOIN_ANTICIPATION](../../docs/reference/JOIN_ANTICIPATION.md) |
 | `perception.*` | Perception keys and ranges, the reaction-time action FIFO, `perceivedLeaders` | [PERCEPTION](../../docs/reference/PERCEPTION.md) |
 | `lateral_types.hpp` | `DrivingSide`, the compiled `SegmentCrossSection` | [LATERAL](../../docs/reference/LATERAL.md) |

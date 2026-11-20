@@ -1,6 +1,7 @@
 #include "missed_exit.hpp"
 #include "text.hpp"
 #include "validate.hpp"
+#include "start_up.hpp"
 #include "conflicts.hpp"
 #include "lanes.hpp"
 #include "parking.hpp"
@@ -288,6 +289,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
         for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
             for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
+            for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
             continue;
         }
@@ -306,6 +308,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         spreadIssues(b, p, issues); // B-4 (D236)
         for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
         for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
+        for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every
@@ -341,6 +344,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         number(t.desiredSpeed.min, p + ".desiredSpeed.min"); number(t.desiredSpeed.max, p + ".desiredSpeed.max");
         if (t.desiredSpeed.max < t.desiredSpeed.min) add("INVALID_RANGE", p + ".desiredSpeed");
         if (t.kerbLanes && (*t.kerbLanes < 1 || *t.kerbLanes > 16)) add("INVALID_KERB_LANES", p + ".kerbLanes"); // B-7 (D234)
+        for (auto& issue : accelerationCurveIssues(t, p)) issues.push_back(std::move(issue)); // D608
         if (t.pcu && (!std::isfinite(t.pcu->value) || t.pcu->value <= 0 || isBlank(t.pcu->source)))
             add("INVALID_PCU", p + ".pcu"); // S1.2 (STUDY_PERIODS §7, D270): positive and cited
         // B-5 (SPEED_DISTRIBUTION §4, D229): a curve from (min, 0) to (max, 1), speeds rising, shares not falling.

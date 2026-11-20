@@ -145,6 +145,9 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         if (key.integer) shared.back().spin->setDecimals(0);
     }
     shared.push_back(optional(perceptionPage, perception, "driverFactorSpread", &either.driverFactorSpread)); // B-4 (D236)
+    // START_UP §3 (D608): a pair; ticking one alone is refused by validation with its path.
+    shared.push_back(optional(perceptionPage, perception, "inattentionDuration", &either.inattentionDuration));
+    shared.push_back(optional(perceptionPage, perception, "inattentionProbability", &either.inattentionProbability));
     shared.push_back(optional(lanePage, lanes, "mandatoryDecelerationOwn", &either.mandatoryDecelerationOwn)); // B-3 (D221)
     shared.push_back(optional(lanePage, lanes, "mandatoryDecelerationTrailingVehicle", &either.mandatoryDecelerationTrailingVehicle));
     auto* lateral = new QCheckBox("lateral", lanePage); lateral->setObjectName("lateralSet"); lateral->setChecked(hasLateral(b.lateral));
@@ -170,6 +173,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         to.stopDwellTime = either.stopDwellTime; to.driverFactorSpread = either.driverFactorSpread;
         to.redRunningShare = either.redRunningShare; to.redRunningTime = either.redRunningTime;
         to.missedExitAfter = either.missedExitAfter; // D581
+        to.inattentionDuration = either.inattentionDuration; to.inattentionProbability = either.inattentionProbability; // D608
         to.lateral = {};
         if (lateral->isChecked()) for (const auto& [key, spin] : lateralKeys) to.lateral.*key->member = spin->value();
     };

@@ -138,9 +138,10 @@ constexpr Field vehicleTypeFields[]={
     {"desiredSpeed",Kind::speedRange,true},{"maxAcceleration",Kind::number,true},
     {"comfortableDeceleration",Kind::number,true},{"maxDeceleration",Kind::number,true},
     {"behaviourId",Kind::text,true},{"axles",Kind::axles},{"kerbLanes",Kind::kerbLanes,false,0,kerbLanesVersion},
-    {"pcu",Kind::pcu,false,0,modeVersion}};
+    {"pcu",Kind::pcu,false,0,modeVersion},{"accelerationCurve",Kind::accelerationCurve,false,0,startUpVersion}};
 constexpr Field speedRangeFields[]={{"min",Kind::number,true},{"max",Kind::number,true},{"curve",Kind::speedCurve,false,0,speedCurveVersion}};
 constexpr Field speedPointFields[]={{"speed",Kind::number,true},{"share",Kind::number,true}};
+constexpr Field accelerationPointFields[]={{"speed",Kind::number,true},{"acceleration",Kind::number,true}}; // D608
 constexpr Field axleFields[]={{"wheelbase",Kind::number,true},{"frontOverhang",Kind::number,true},{"rearOverhang",Kind::number,true}};
 constexpr Field pcuFields[]={{"value",Kind::number,true},{"source",Kind::text,true}};
 // D563 (PROJECT_SCHEMA_DEMAND, behaviour inventory): the two model rows. The parameter keys come
@@ -238,7 +239,8 @@ const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B:
     {"mandatoryDecelerationTrailingVehicle",&B::mandatoryDecelerationTrailingVehicle,mandatoryVersion,true},
     {"stopDwellTime",&B::stopDwellTime,stopDwellVersion,true},{"driverFactorSpread",&B::driverFactorSpread,driverFactorSpreadVersion,true},
     {"redRunningShare",&B::redRunningShare,redRunningVersion,true},{"redRunningTime",&B::redRunningTime,redRunningVersion,true},
-    {"missedExitAfter",&B::missedExitAfter,missedExitVersion,true}};
+    {"missedExitAfter",&B::missedExitAfter,missedExitVersion,true},
+    {"inattentionDuration",&B::inattentionDuration,startUpVersion,true},{"inattentionProbability",&B::inattentionProbability,startUpVersion,true}};
 std::vector<Field> behaviourRow(bool w74) {
     const int notThis=w74?1:0,notOther=w74?0:1;
     std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},
@@ -292,6 +294,7 @@ std::span<const Field> fields(Object object) {
     case Object::vehicleType:return vehicleTypeFields;
     case Object::speedRange:return speedRangeFields;
     case Object::speedPoint:return speedPointFields;
+    case Object::accelerationPoint:return accelerationPointFields;
     case Object::axles:return axleFields;
     case Object::pcu:return pcuFields;
     case Object::behaviour:{static const auto row=behaviourRow(false);return row;}
@@ -351,7 +354,7 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::modeChoiceSet || object==Object::modeChoicePurpose || object==Object::modeChoiceAlternative || object==Object::modeChoiceNest)return false;
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
-    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
+    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint || object==Object::accelerationPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
@@ -425,7 +428,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
     case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:case Kind::modes:
-    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::behaviours:
+    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::accelerationCurve:case Kind::behaviours:
     case Kind::vehicleClasses:case Kind::linkBehaviourTypes:case Kind::behaviourOverrides:
         if(!v.is_array())expected="Expected array: ";
         break;

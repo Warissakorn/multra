@@ -10,7 +10,7 @@ namespace multra::networkCodec {
 enum class Object { network,link,lane,point,connector,reference,signalHead,signalController,signalGroup,signalProgram,signalPhase,definition,
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
-    vehicleType,speedRange,speedPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
+    vehicleType,speedRange,speedPoint,accelerationPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
     rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings,
     tripRateSet,citedSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor,
     modeChoiceSet,modeChoicePurpose,modeChoiceAlternative,modeChoiceNest };
@@ -18,7 +18,7 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
     routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix,
-    compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,axles,kerbLanes,pcu,
+    compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,accelerationCurve,axles,kerbLanes,pcu,
     behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
     zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy,
     studyPeriods,studyArea,nonemptyTexts,flowSource,gateFlows,
@@ -78,7 +78,8 @@ inline constexpr int periodFactorVersion=69;
 // D573: owned mode-choice sets from 70, nests from 71 and distributionCost from 76.
 inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,entryLanesVersion=77,missedExitVersion=78,
     derivedLineVersion=79, // D594 (STOP_LINES): an empty conflict side waitingLineId, rightOfWay.frontStopDistance
-    visibilityVersion=80; // D607 (VISIBILITY): a priority rule's visibility
+    visibilityVersion=80, // D607 (VISIBILITY): a priority rule's visibility
+    startUpVersion=81; // D608 (START_UP): a vehicle type's accelerationCurve, a behaviour's inattention pair
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

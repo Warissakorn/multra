@@ -37,9 +37,10 @@ the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas
 
 - **Visibility done (D607, [VISIBILITY](reference/VISIBILITY.md)):** 100 m default changes no shipped result
   (M0 stays closed); the approach slowdown starts below about 50 m, entered per area in the dialog.
-- **Ask the owner (2026-11-20):** [realism-gaps-vissim-sumo-aimsun](evidence/realism-gaps-vissim-sumo-aimsun.md)
-  proposes G1 (start-up delay at green: M0's start-up lost time is 0.89 s against HCM's 2.0 s) and G2
-  (acceleration falling with speed) for the M0 base, then G3–G9. Each needs a contract before code.
+- **G1/G2 done as Vissim (D608, [START_UP](reference/START_UP.md)):** a type's `accelerationCurve` and a behaviour's
+  attention pair, absent by default (M0 unchanged). Measured on saturated M0: Vissim-like values shorten lost
+  time (1.53 → 0.96 s); a standstill acceleration of 2.0 m/s² gives 2.16 s (HCM 2.0). **Ask the owner:** adopt a
+  curve in shipped data (moves M0, reopens it by D369) or keep it a study choice; next from the realism study: G3.
 - **Next: the owner's attempt 2 of M3.2.7d on Windows** — steps 1, 3–4 and the verdict (D601: step 2
   and steps 5–7 are automated by the `rightofway_editor` tests and
   `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed`), plus the Stop line

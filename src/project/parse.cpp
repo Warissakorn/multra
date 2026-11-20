@@ -177,7 +177,16 @@ VehicleType parseVehicleType(const Json& t) {
         const auto axle=[&](const char* key) { return value(a,Object::axles,key).get<double>(); };
         type.axles=VehicleAxles{axle("wheelbase"),axle("frontOverhang"),axle("rearOverhang")};
     }
-    type.kerbLanes=parseKerbLanes(t); type.pcu=parsePcu(t); return type; // B-7 (D234); S1.2 (D270)
+    type.kerbLanes=parseKerbLanes(t); type.pcu=parsePcu(t); // B-7 (D234); S1.2 (D270)
+    if(t.contains("accelerationCurve")) { // START_UP §2 (D608)
+        const auto& curve=value(t,Object::vehicleType,"accelerationCurve");
+        for(std::size_t k=0;k<curve.size();++k) {
+            networkCodec::knownFields(curve[k],Object::accelerationPoint,"vehicleType.accelerationCurve["+std::to_string(k)+"]",networkCodec::strictVersion);
+            type.accelerationCurve.push_back({value(curve[k],Object::accelerationPoint,"speed").get<double>(),
+                value(curve[k],Object::accelerationPoint,"acceleration").get<double>()});
+        }
+    }
+    return type;
 }
 // D558: the rows read through the field metadata the composed schema is generated from. They are
 // closed at every file version (allowsAdditionalFields), so the version argument is not a gate.

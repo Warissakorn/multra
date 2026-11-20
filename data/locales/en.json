@@ -730,6 +730,8 @@
   "catalogSpeedCurve": "Desired-speed distribution curve",
   "catalogKerbLanes": "Enter only on the kerb-most lanes",
   "catalogCurveSpeed": "speed (m/s)",
+  "catalogAccelerationCurve": "Acceleration by speed",
+  "catalogCurveAcceleration": "acceleration (m/s²)",
   "catalogCurveShare": "cumulative share (%)",
   "catalogCurveAdd": "Add point",
   "catalogCurveRemove": "Remove point",

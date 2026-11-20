@@ -1,5 +1,6 @@
 #include "w74.hpp"
 #include "detail.hpp"
+#include "start_up.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -140,7 +141,7 @@ W74Result w74Acceleration(double speed, double desiredSpeed, const VehicleType& 
             break;
         }
     }
-    a = std::clamp(a, -type.maxDeceleration, type.maxAcceleration);
+    a = std::clamp(a, -type.maxDeceleration, maxAccelerationAt(type, speed)); // D608
     // D105, as in the prototype: a stopped vehicle within the standstill gap waits for room.
     if (speed == 0 && obstacle && obstacle->gap <= t.ax) a = std::min(0.0, a);
     return {a, state, modeOf(state.regime)};

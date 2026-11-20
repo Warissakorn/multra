@@ -9,6 +9,7 @@
 #include "leaders.hpp"
 #include "lateral_motion.hpp"
 #include "parking.hpp"
+#include "start_up.hpp"
 #include "perception.hpp"
 #include "red_running.hpp"
 #include "routing.hpp"
@@ -320,6 +321,9 @@ SimState stepSimulation(SimState&& state, double dt) {
                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
             following = delayedAction(vehicle, delay, following, type, behaviour, current);
         }
+        // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
+        if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]
+            following.acceleration = inattentiveAcceleration(vehicle, following.acceleration, type);
         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
         double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
         double braking = type.comfortableDeceleration;

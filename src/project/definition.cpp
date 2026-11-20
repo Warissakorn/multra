@@ -145,6 +145,10 @@ Json definitionJson(const AuthoringDefinition& d) {
             if(const auto at=d.vehicleTypeNames.find(t.id);at!=d.vehicleTypeNames.end() && !at->second.empty())item["name"]=at->second;
             if(t.axles)item["axles"]={{"wheelbase",t.axles->wheelbase},{"frontOverhang",t.axles->frontOverhang},{"rearOverhang",t.axles->rearOverhang}};
             if(t.kerbLanes)item["kerbLanes"]=*t.kerbLanes; // B-7 (D234)
+            if(!t.accelerationCurve.empty()) { // START_UP §2 (D608)
+                item["accelerationCurve"]=Json::array();
+                for(const auto& p:t.accelerationCurve)item["accelerationCurve"].push_back({{"speed",p.speed},{"acceleration",p.acceleration}});
+            }
             addPcuJson(t,item); // S1.2 (D270)
             j["vehicleTypes"].push_back(std::move(item));
         }
@@ -173,6 +177,8 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.redRunningShare) item["redRunningShare"] = *b.redRunningShare; // B-9 (D238)
             if (b.redRunningTime) item["redRunningTime"] = *b.redRunningTime;
             if (b.missedExitAfter) item["missedExitAfter"] = *b.missedExitAfter; // D581
+            if (b.inattentionDuration) item["inattentionDuration"] = *b.inattentionDuration; // D608
+            if (b.inattentionProbability) item["inattentionProbability"] = *b.inattentionProbability; // D608
         };
         for (const auto& b : d.behaviours) {
             if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model

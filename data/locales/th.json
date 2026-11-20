@@ -730,6 +730,8 @@
   "catalogSpeedCurve": "เส้นการกระจายความเร็วที่ต้องการ",
   "catalogKerbLanes": "เข้าเฉพาะช่องจราจรชิดขอบทาง",
   "catalogCurveSpeed": "ความเร็ว (m/s)",
+  "catalogAccelerationCurve": "อัตราเร่งตามความเร็ว",
+  "catalogCurveAcceleration": "อัตราเร่ง (m/s²)",
   "catalogCurveShare": "สัดส่วนสะสม (%)",
   "catalogCurveAdd": "เพิ่มจุด",
   "catalogCurveRemove": "ลบจุด",

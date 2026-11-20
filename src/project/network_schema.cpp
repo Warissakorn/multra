@@ -44,6 +44,7 @@ class NetworkSchema {
         case Kind::vehicleTypes:rule={{"type","array"},{"items",reference(Object::vehicleType,version)}};break;
         case Kind::speedRange:rule=reference(Object::speedRange,version);break;
         case Kind::speedCurve:rule={{"type","array"},{"items",reference(Object::speedPoint,version)}};break;
+        case Kind::accelerationCurve:rule={{"type","array"},{"items",reference(Object::accelerationPoint,version)}};break;
         case Kind::axles:rule=reference(Object::axles,version);break;
         case Kind::pcu:rule=reference(Object::pcu,version);break;
         case Kind::kerbLanes:rule={{"type","integer"},{"x-multra-nativeType","integer-token"}};break;
@@ -279,6 +280,7 @@ public:
                 case Object::vehicleType:return "vehicleType";
                 case Object::speedRange:return "speedRange";
                 case Object::speedPoint:return "speedPoint";
+                case Object::accelerationPoint:return "accelerationPoint";
                 case Object::axles:return "axles";
                 case Object::pcu:return "pcu";
                 case Object::behaviour:return "behaviour";

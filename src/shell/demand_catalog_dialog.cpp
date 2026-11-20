@@ -70,6 +70,22 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
         addPoint(at+1,(cell(at,0)+cell(next,0))/2,(cell(at,1)+cell(next,1))/2);curve->setCurrentCell(at+1,0);
     });
     QObject::connect(removeRow,&QPushButton::clicked,&dialog,[curve]{if(curve->currentRow()>=0)curve->removeRow(curve->currentRow());});
+    // START_UP §2 (D608): the acceleration limit by speed when ticked; points from speed 0, rising.
+    auto* accelOn=new QCheckBox(text("catalogAccelerationCurve"),&dialog);accelOn->setObjectName("editorCatalogAccelerationCurveOn");
+    accelOn->setChecked(!type.accelerationCurve.empty());form->addRow(accelOn);
+    auto* accel=new QTableWidget(0,2,&dialog);accel->setObjectName("editorCatalogAccelerationCurve");
+    accel->setHorizontalHeaderLabels({text("catalogCurveSpeed"),text("catalogCurveAcceleration")});form->addRow(accel);
+    const auto addAccel=[accel](double speed,double a){const int at=accel->rowCount();accel->insertRow(at);
+        accel->setItem(at,0,new QTableWidgetItem(QString::number(speed,'g',12)));accel->setItem(at,1,new QTableWidgetItem(QString::number(a,'g',12)));};
+    if(type.accelerationCurve.empty()){addAccel(0,type.maxAcceleration);addAccel(22.2,type.maxAcceleration);}
+    for(const auto& p:type.accelerationCurve)addAccel(p.speed,p.acceleration);
+    auto* accelAdd=new QPushButton(text("catalogCurveAdd"),&dialog);accelAdd->setObjectName("editorCatalogAccelerationCurveAdd");
+    auto* accelRemove=new QPushButton(text("catalogCurveRemove"),&dialog);accelRemove->setObjectName("editorCatalogAccelerationCurveRemove");
+    auto* accelButtons=new QHBoxLayout;accelButtons->addWidget(accelAdd);accelButtons->addWidget(accelRemove);form->addRow(accelButtons);
+    QObject::connect(accelAdd,&QPushButton::clicked,&dialog,[accel,addAccel]{ // a point past the last, which the author edits
+        const auto cell=[accel](int r,int c){return accel->item(r,c)?accel->item(r,c)->text().toDouble():0.;};
+        const int last=accel->rowCount()-1;addAccel(last<0?0:cell(last,0)+5,last<0?1:cell(last,1));});
+    QObject::connect(accelRemove,&QPushButton::clicked,&dialog,[accel]{if(accel->currentRow()>=0)accel->removeRow(accel->currentRow());});
     auto* behaviour=new QComboBox(&dialog);behaviour->setObjectName("editorCatalogBehaviour");
     for(const auto& b:behaviours)behaviour->addItem(QString::fromStdString(b.id));
     behaviour->setCurrentIndex(behaviour->findText(QString::fromStdString(staged.behaviourId)));form->addRow(text("catalogBehaviour"),behaviour);
@@ -95,9 +111,10 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
         for(auto* f:{wheelbase,front,rear})f->setEnabled(axles->isChecked());
         for(const auto& f:fields)if(f.destination==&staged.desiredSpeed.min || f.destination==&staged.desiredSpeed.max)f.spin->setEnabled(!curveOn->isChecked());
         for(QWidget* w:std::initializer_list<QWidget*>{curve,addRow,removeRow})w->setEnabled(curveOn->isChecked());
+        for(QWidget* w:std::initializer_list<QWidget*>{accel,accelAdd,accelRemove})w->setEnabled(accelOn->isChecked());
     };
     QObject::connect(axles,&QCheckBox::toggled,&dialog,sync);QObject::connect(curveOn,&QCheckBox::toggled,&dialog,sync);
-    QObject::connect(kerbOn,&QCheckBox::toggled,&dialog,sync);QObject::connect(pcuOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,dialog.layout(),text);
+    QObject::connect(kerbOn,&QCheckBox::toggled,&dialog,sync);QObject::connect(accelOn,&QCheckBox::toggled,&dialog,sync);QObject::connect(pcuOn,&QCheckBox::toggled,&dialog,sync);sync();buttons(dialog,dialog.layout(),text);
     if(dialog.exec()!=QDialog::Accepted)return false;
     for(const auto& f:fields)*f.destination=value(f.spin);
     staged.desiredSpeed.curve.clear();
@@ -105,6 +122,11 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
         const auto cell=[curve](int r,int c){bool ok=false;const double v=curve->item(r,c)?curve->item(r,c)->text().toDouble(&ok):0;return ok?v:NAN;};
         for(int r=0;r<curve->rowCount();++r)staged.desiredSpeed.curve.push_back({cell(r,0),cell(r,1)/100});
         if(!staged.desiredSpeed.curve.empty()){staged.desiredSpeed.min=staged.desiredSpeed.curve.front().speed;staged.desiredSpeed.max=staged.desiredSpeed.curve.back().speed;}
+    }
+    staged.accelerationCurve.clear();
+    if(accelOn->isChecked()) {
+        const auto cell=[accel](int r,int c){bool ok=false;const double v=accel->item(r,c)?accel->item(r,c)->text().toDouble(&ok):0;return ok?v:NAN;};
+        for(int r=0;r<accel->rowCount();++r)staged.accelerationCurve.push_back({cell(r,0),cell(r,1)});
     }
     staged.behaviourId=behaviour->currentText().toStdString();
     staged.kerbLanes=kerbOn->isChecked()?std::optional<int>{kerb->value()}:std::nullopt;

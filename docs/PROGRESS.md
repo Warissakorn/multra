@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-20 — G1 start-up as Vissim: acceleration by speed, lack of attention (D608)
+
+- **Owner (verbatim):** "เริ่ม G1 ทำเหมือน vissim", then "ก+ข".
+- **D608:** a vehicle type's optional `accelerationCurve` and a behaviour's optional `inattentionDuration` /
+  `inattentionProbability` (schema 81); editors in the type dialog and the behaviour editor.
+- **Unchanged without the keys:** `multra-cli 42` on M0 keeps 45 / 31.75870154816726 / 1 clamp.
+- **Measured** on a saturated copy of M0 (START_UP §5): lost time today 1.53 s; Vissim-like values 0.96 s; a
+  2.0 m/s² standstill curve 2.16 s with saturation headway 2.01 s (HCM 2.0 s / 1.9 s). SU9 (benchmark) not measured.
+- **Also:** stop-line tests pinned to their own schema step (79) instead of the newest; `right_of_way.cpp` kept
+  under 500 lines.
+
 ## 2026-11-20 — Visibility at conflict areas (D607); realism study against Vissim, SUMO, Aimsun
 
 - **Owner (verbatim):** "V ทำเหมือน vissim เริ่มตัดสินใจเรื่อง gap ทำด้วยหรือไม่", "1ก 2ก", "ทุกไฟล์"; then "ศึกษาส่วนอื่นที่ต้อง
@@ -128,10 +139,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D587:** a double-click emits `cellDoubleClicked` and `activated` together, and five tables (Conflict areas, Queue counters, Travel-time sections, Zones, OD) had a slot on each, so their dialog opened twice. `openRowOn` connects `activated` alone. New test `row-open-ui` (Conflict areas and Queue counters, double-click and Enter) failed with the old slots and passes.
 - **D588:** an emphasised Connector drops its plain solid outer edges as D460 did for Links; `canvas-layers` and `interaction` tests now expect none.
 - **Not changed:** conflict opacity waits for the owner (screenshots at 35 %, 75 % and 100 % sent; D435). The line approach and M3.2.4e stay in NEXT.
-
-## 2026-11-18 — M3.2.7d attempt 1: step 1 fails on merge waiting lines
-
-- **Owner, on Windows:** conflict areas display correctly; the westbound stop line should be east of its area and the Connector's merge stop lines before the Link. Recorded verbatim in [OWNER_SITTING](plans/OWNER_SITTING.md) A2 and kept as a failure.
-- **Measured in the fixture:** the merge waiting lines (`wait-13/14/17/18`) sit at the D50/D59 one-metre strip at the Connector ends, on the major lanes' centre lines; the crossing's lines are correct. This is the planned M3.2.4e (merge admission over the physical mouth), not a fixture typo: moving the lines alone would leave admission at the strip.
-- No code change; a fill-in sheet for the exercise was given to the owner outside the repo.
-- **2026-11-19, steps 3–4:** gap/headway plausible; conflict washes too faint; the minor creeps to its line and lurches. Measured (seed 42, probes outside the repo): a held minor crawls ~20 s and rests 2–3 m short in `approaching`/`following` (F1a binds only in `braking`); release is 2.5 m/s² in one tick, re-blocking brakes it at up to 3.6 m/s². Screenshots of alpha 80/95 against 180/200 went to the owner. The owner's double click was not reproduced on Linux (every Conflict areas button acted on one click). Nothing changed in code; NEXT holds the three asks.

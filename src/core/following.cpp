@@ -1,5 +1,6 @@
 #include "following.hpp"
 #include "w74.hpp"
+#include "start_up.hpp"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
@@ -10,7 +11,7 @@ FollowingResult followingAcceleration(double speed, double desiredSpeed, double 
     const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader) {
     // Above the target (only after a live retune) free flow slows at the comfortable rate, as W74 (D191).
     const double free = std::clamp((desiredSpeed - speed) / behaviour.followingTime,
-                                   -type.comfortableDeceleration, type.maxAcceleration);
+                                   -type.comfortableDeceleration, maxAccelerationAt(type, speed)); // D608
     double acceleration = free;
     auto mode = FollowingMode::free;
     // LINE_APPROACH §9 (D596): a conflict zone's waiting line is where the front stops, so the law

@@ -100,6 +100,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [MERGE_MOUTH.md](MERGE_MOUTH.md) | M3.2.4e (D593): a taken-over merge covers the measured mouth overlap and waits 1 m short of it; rows MM1–MM7 |
 | [STOP_LINES.md](STOP_LINES.md) | Draft (D591), not implemented: derived waiting positions for conflict areas, a Stop line tool, schema migration and rows SL1–SL8 (M3.2.12) |
 | [VISIBILITY.md](VISIBILITY.md) | How far a yielding driver judges the gap at a conflict area: schema 80, 100 m default, rows VS1–VS8, measured unchanged at 100 m (D607) |
+| [START_UP.md](START_UP.md) | Moving off at green as Vissim: a vehicle type's acceleration curve and a behaviour's temporary lack of attention, schema 81, rows SU1–SU9, measured on saturated M0 (D608) |
 | [PRIORITY_RULES.md](PRIORITY_RULES.md) | Draft (D604), not implemented: Vissim-style priority rules, a stop line with conflict markers and no conflict area, rows PR1–PR10; waits on the owner's choices §8 |
 
 Return to [the task reading map](../README.md#read-by-task).
