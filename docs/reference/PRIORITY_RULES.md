@@ -92,7 +92,9 @@ beyond red signals" unless §8 asks for them. Converting existing conflict areas
 1. **Where it lives:** (a) a second exclusive form in the existing `priorityRules` array, at the next schema step;
    (b) a new root array `priorityRuleSets`.
 2. **Conditions per marker:** (a) gap time and headway only, as the engine has; (b) also Vissim's
-   maximum speed (a major vehicle slower than it does not count), an engine change.
+   maximum speed, which applies to the headway (clearance) test only: a major vehicle inside the
+   headway counts only when its speed is at or below it (PTV's example uses 10–20 km/h to keep a
+   junction clear of queues). An engine change: today every vehicle inside the headway counts.
 3. **Which vehicles stop:** (a) every vehicle crossing the line; (b) per vehicle class, as Vissim.
 4. **Stop at the line:** (a) a Stop control on the line applies to the rule too (full stop, then the
    gap test), Yield is the rule alone; (b) rules are always Yield-like.
@@ -105,3 +107,13 @@ beyond red signals" unless §8 asks for them. Converting existing conflict areas
    and PR10 on a hand-built crossing; no UI.
 2. The Stop line tool's gestures, lifecycle and Undo (PR7, PR8).
 3. Display and the table rows; the owner's look on Windows.
+
+**How Vissim does each (PTV Vissim help, "Creating priority rules" and "Attributes of priority rules",
+versions 2020–2024; read 2026-11-20):** a priority rule is its own network object, one red stop line and
+one or more green conflict markers, not part of a conflict area (Q1). Each marker has a minimum gap time
+(the time the first upstream vehicle needs to reach the marker at its current speed; default 3.0 s), a
+minimum clearance (the distance from the marker to the next vehicle upstream; default 5.0 m) and a
+maximum speed for the clearance test (Q2). Vehicle classes are set on the stop line, applying to all its
+markers, and on each marker; other classes get a second rule at the same position (Q3). A vehicle passes
+without stopping only when every marker's conditions hold (§3). Stop at the line (Q4) is not checked in
+that help; Vissim models a stop sign as a separate object, which this session has not verified.
