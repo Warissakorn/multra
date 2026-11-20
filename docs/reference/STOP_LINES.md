@@ -26,8 +26,8 @@ it, and add a separate tool for stop lines, so the author sees only the lines th
 | Which areas does a placed stop line control? | Every conflict area downstream on its path, up to the end of the junction (the next Link past the Connector chain), unless another placed line comes first. The Conflict areas table shows which line each area uses |
 
 Already done (D590): conflict areas and plain waiting lines show only under the Conflict area tool
-(lines also under the Queue counter tool, which snaps to them). A line carrying Stop or Yield
-always shows.
+(lines also under the Queue counter tool, which snaps to them). Since D603 a line carrying Stop or
+Yield also shows only under the Conflict area, Stop line and Queue counter tools (owner, 2026-11-20).
 
 ## 3. Model
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <QLine>
 #include <QString>
 #include <vector>
 class QAbstractItemView;
@@ -16,4 +17,8 @@ std::vector<int> selectedTableRows(const QAbstractItemView* view);
 // column headers first; the bounding block of the selected cells with unselected cells empty,
 // hidden rows and columns left out, and row labels first when the table names its rows.
 QString tableSelectionText(const QTableView* table);
+// D605 (owner, E35): the outline Excel draws around a selection -- every edge of a selected cell
+// whose neighbour across it is not selected (hidden rows and columns skipped), in viewport pixels.
+// A block gives its perimeter only; the overlay of makeSpreadsheetTable draws these over a tint.
+std::vector<QLine> tableSelectionOutline(const QTableView* table);
 }

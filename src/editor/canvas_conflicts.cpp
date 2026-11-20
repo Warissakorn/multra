@@ -223,9 +223,9 @@ void EditorCanvas::drawConflicts() {
             item->setData(3,QString::fromStdString(id)); // lane-pair identity, independent of group selection
         }
     };
-    // D590 (owner): conflict areas and their plain waiting lines show only under the Conflict area
-    // tool (and the lines under the Queue counter tool, which snaps to them); a line carrying Stop or
-    // Yield is a sign the author placed, and always shows.
+    // D590 (owner): conflict areas show only under the Conflict area tool. D603 (owner, amends D590):
+    // waiting lines, plain or carrying Stop or Yield, show only under the Conflict area, Stop line and
+    // Queue counter tools (the counter snaps to them).
     // D594 slice 3: the Stop line tool shows the areas its lines cover, and every placed line.
     const bool stopTool=tool_==Tool::stopLine,conflictTool=tool_==Tool::conflict,lineTool=conflictTool||stopTool||tool_==Tool::counter;
     if(conflictTool||stopTool)for(const auto& a:n.rightOfWay.conflictAreas)draw(a.id,a.kind,a.priority,a.first,a.second,false,
@@ -262,7 +262,7 @@ void EditorCanvas::drawConflicts() {
         const auto control = std::find_if(n.rightOfWay.stopControls.begin(), n.rightOfWay.stopControls.end(),
                                           [&](const auto& c) { return c.waitingLineId == line.id; });
         const bool controlled = control != n.rightOfWay.stopControls.end();
-        if (!lineTool && !controlled) continue;
+        if (!lineTool) continue; // D603
         const bool stop = controlled && control->mode == StopMode::stop;
         const bool picked = stopTool && line.id == selectedStopLine_;
         QPen pen(dragged || picked ? canvasStyle::active() : line.id==hoverWaitingLine_ ? canvasStyle::hover() : stop ? canvasStyle::error() : canvasStyle::warning(), dragged || stop ? 3 : 2,

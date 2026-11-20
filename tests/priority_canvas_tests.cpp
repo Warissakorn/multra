@@ -212,6 +212,12 @@ int main(int argc, char** argv) {
                 network().rightOfWay.stopControls.front().waitingLineId == line.id, "Stop was not set on the area's line");
         require(lineMark(w, line.id) == "stop", "The canvas does not mark the Stop line");
         require(table->item(table->currentRow(), 7)->text() == "Stop", "The table does not list the Stop");
+        // D603: a line with Stop shows under the right-of-way tools only, not under Select.
+        c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
+        require(drawn(w) == 0, "A Stop line is drawn outside the right-of-way tools");
+        c->setTool(EditorCanvas::Tool::stopLine); c->redraw(); QApplication::processEvents();
+        require(lineMark(w, line.id) == "stop", "The Stop line tool does not show the Stop line");
+        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         act(w, "editorUndo")->trigger(); QApplication::processEvents();
         require(network().rightOfWay.stopControls.empty() && lineMark(w, line.id).empty(), "Setting Stop was not one Undo step");
         act(w, "editorRedo")->trigger(); QApplication::processEvents();

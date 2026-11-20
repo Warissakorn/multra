@@ -8,6 +8,9 @@
 #include <QItemSelectionModel>
 #include <QKeyEvent>
 #include <QLineEdit>
+#include <QPainter>
+#include <QScrollBar>
+#include <QPointer>
 #include <QTableView>
 #include <algorithm>
 #include <set>
@@ -54,14 +57,58 @@ public:
         return false; // the view's own handler selects all
     }
 };
+// D605: drawn over the cells (above the view's own paint), never taking a click.
+class SelectionOutline final : public QWidget {
+public:
+    // A child of the table over its viewport, not of the viewport: the view scrolls the viewport's
+    // children with its pixels.
+    explicit SelectionOutline(QTableView* table):QWidget(table),table_(table) {
+        setAttribute(Qt::WA_TransparentForMouseEvents);setAttribute(Qt::WA_NoSystemBackground);
+        setObjectName(QStringLiteral("editorTableSelectionOutline"));
+        table->viewport()->installEventFilter(this);
+        setGeometry(table->viewport()->geometry());raise();show();
+        if((watched_=table->selectionModel()))connect(watched_,&QItemSelectionModel::selectionChanged,this,[this]{update();});
+        const auto redraw=[this]{update();};
+        connect(table->horizontalScrollBar(),&QScrollBar::valueChanged,this,redraw);
+        connect(table->verticalScrollBar(),&QScrollBar::valueChanged,this,redraw);
+        connect(table->horizontalHeader(),&QHeaderView::sectionResized,this,redraw);
+        connect(table->verticalHeader(),&QHeaderView::sectionResized,this,redraw);
+    }
+    bool eventFilter(QObject*,QEvent* event) override {
+        if(event->type()==QEvent::Resize||event->type()==QEvent::Move){setGeometry(table_->viewport()->geometry());raise();}
+        // A selection change redraws the whole overlay: a block's outline moves off cells the view
+        // does not repaint. The model (and so the selection model) can be replaced; follow it here.
+        if(event->type()==QEvent::Paint&&table_&&table_->selectionModel()!=watched_) {
+            watched_=table_->selectionModel();
+            if(watched_)connect(watched_,&QItemSelectionModel::selectionChanged,this,[this]{update();});
+        }
+        return false;
+    }
+protected:
+    void paintEvent(QPaintEvent*) override {
+        if(!table_||!table_->selectionModel())return;
+        QPainter painter(this);painter.setClipRect(rect());
+        auto tint=palette().color(QPalette::Highlight);tint.setAlpha(48);
+        for(const auto& index:table_->selectionModel()->selectedIndexes())
+            if(!table_->isRowHidden(index.row())&&!table_->isColumnHidden(index.column()))
+                painter.fillRect(table_->visualRect(index),tint);
+        QPen pen(palette().color(QPalette::Highlight),2);pen.setCapStyle(Qt::SquareCap);
+        painter.setPen(pen);
+        for(const auto& line:tableSelectionOutline(table_))painter.drawLine(line);
+    }
+private:
+    QPointer<QTableView> table_;QPointer<QItemSelectionModel> watched_;
+};
 }
 void makeSpreadsheetTable(QTableView* table) {
     if(table->property("editorSpreadsheet").toBool())return;
     table->setProperty("editorSpreadsheet",true);
     // A block of cells only where several things may be selected. A single-selection table picks
     // one object by its row, and Qt's selectRow() is a no-op there in cell mode.
-    if(table->selectionMode()==QAbstractItemView::ExtendedSelection||table->selectionMode()==QAbstractItemView::MultiSelection)
+    if(table->selectionMode()==QAbstractItemView::ExtendedSelection||table->selectionMode()==QAbstractItemView::MultiSelection) {
         table->setSelectionBehavior(QAbstractItemView::SelectItems);
+        new SelectionOutline(table);
+    }
     table->verticalHeader()->setVisible(true);
     table->verticalHeader()->setDefaultAlignment(Qt::AlignCenter);
     table->setCornerButtonEnabled(true);
@@ -105,5 +152,25 @@ QString tableSelectionText(const QTableView* table) {
         lines<<cells.join(QLatin1Char('\t'));
     }
     return lines.join(QLatin1Char('\n'))+QLatin1Char('\n');
+}
+std::vector<QLine> tableSelectionOutline(const QTableView* table) {
+    std::vector<QLine> lines;
+    auto* model=table->model();auto* selection=table->selectionModel();
+    if(!model||!selection)return lines;
+    // The next shown row or column in a direction, or -1 past the edge.
+    const auto nextRow=[&](int row,int step){for(row+=step;row>=0&&row<model->rowCount();row+=step)if(!table->isRowHidden(row))return row;return -1;};
+    const auto nextColumn=[&](int column,int step){for(column+=step;column>=0&&column<model->columnCount();column+=step)if(!table->isColumnHidden(column))return column;return -1;};
+    const auto chosen=[&](int row,int column){return row>=0&&column>=0&&selection->isSelected(model->index(row,column));};
+    for(const auto& index:selection->selectedIndexes()) {
+        const int r=index.row(),c=index.column();
+        if(table->isRowHidden(r)||table->isColumnHidden(c))continue;
+        const auto rect=table->visualRect(index);
+        if(rect.isEmpty())continue;
+        if(!chosen(nextRow(r,-1),c))lines.emplace_back(rect.topLeft(),rect.topRight());
+        if(!chosen(nextRow(r,1),c))lines.emplace_back(rect.bottomLeft(),rect.bottomRight());
+        if(!chosen(r,nextColumn(c,-1)))lines.emplace_back(rect.topLeft(),rect.bottomLeft());
+        if(!chosen(r,nextColumn(c,1)))lines.emplace_back(rect.topRight(),rect.bottomRight());
+    }
+    return lines;
 }
 }

@@ -69,6 +69,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    two lines still drawn are `wait-15` and `wait-17`, each the line of a Yield control (`stop-16`, `stop-18`);
    D590 shows a line carrying Stop or Yield under every tool, and hides only plain lines. Whether a controlled
    line should also hide outside the tool is the owner's choice (it would amend D590).
+   *Owner:* 2026-11-20 (verbatim): "ข. และ เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้ Conflict area ก็ได้ ให้สร้าง
+   พื้นที่ให้ทางเหมือน vissim", then "ข. Priority rule แบบ Vissim". *Session note:* controlled lines now hide outside
+   the right-of-way tools (D603); priority rules are drafted as PRIORITY_RULES (D604), waiting on its §8.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any

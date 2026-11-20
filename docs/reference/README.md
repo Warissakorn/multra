@@ -99,5 +99,6 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [LANE_LOCKS.md](LANE_LOCKS.md) | Draft (D578), not implemented: lane locks at dead ends, the evidence from the ratchada-latphrao study, options A–D, rows LL1–LL8 and the owner's questions (B50) |
 | [MERGE_MOUTH.md](MERGE_MOUTH.md) | M3.2.4e (D593): a taken-over merge covers the measured mouth overlap and waits 1 m short of it; rows MM1–MM7 |
 | [STOP_LINES.md](STOP_LINES.md) | Draft (D591), not implemented: derived waiting positions for conflict areas, a Stop line tool, schema migration and rows SL1–SL8 (M3.2.12) |
+| [PRIORITY_RULES.md](PRIORITY_RULES.md) | Draft (D604), not implemented: Vissim-style priority rules, a stop line with conflict markers and no conflict area, rows PR1–PR10; waits on the owner's choices §8 |
 
 Return to [the task reading map](../README.md#read-by-task).

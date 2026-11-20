@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-20 — Owner's choices on the sitting's findings (D603–D605)
+
+- **Owner (verbatim):** "1 ข. และ เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้ Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim
+  · 2 แก้ตามแนะนำ"; then "ข. Priority rule แบบ Vissim".
+- **D603:** waiting lines carrying Stop or Yield are drawn only under the Conflict area, Stop line and Queue
+  counter tools (amends D590); `priority_canvas_tests` checks a Stop line is gone under Select and marked under
+  the Stop line tool.
+- **D605:** block-selecting tables draw one outline around each selected block over a light tint, from an
+  overlay (`tableSelectionOutline`); `table-grid-ui` checks a 2 × 2 block gives only its eight perimeter edges.
+- **D604:** [PRIORITY_RULES](reference/PRIORITY_RULES.md) drafted: stop line plus conflict markers without a
+  conflict area, compiled to the engine's existing `PriorityRule`; the next schema step proposed, rows PR1–PR10. Five
+  owner choices (§8) come before code.
+- **Verified:** see the end of this entry.
+
 ## 2026-11-20 — Windows sitting, part 1: seven looks answered
 
 - **Owner's words (verbatim, by the numbers of the list sent in chat):** 1 (A2 step 1) "ตอนออกจาก เครื่องมือ
@@ -118,11 +132,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Found and fixed:** D583's rows reused BA179–BA180, held by the weaving lab since D449; renumbered BA209–BA210.
 - **D585 (owner: "ทำการตรวจทั้งสองแบบเลย"):** `multra-check-docs` now fails past twelve PROGRESS entries and when a BA row id names tests in more than one group (self-test fixtures for both; each fails on a deliberate violation in the real tree). It found an older collision: merge clamps' BA158, BA159 and BA162 (MERGE_CLAMPS) and D444's rows of the same ids (DRIVING_BEHAVIOUR §3, `lanechangeduration`). BA30 and BA39 are exempt by their own text. Then (owner: "เปลี่ยนเลย") D444–D448's five rows, the later ones, became BA211–BA215 in DRIVING_BEHAVIOUR §3, RECORD D444–D448, their evidence and test names (bodies unchanged), and the known-collision list was removed; merge clamps keep BA158–BA167. The archive keeps the old numbers as written.
 - **Verified:** `multra-check-docs` and `multra-check-file-sizes` pass. No code change.
-
-## 2026-11-18 — The step reuses insertion's snapshot when it is exact (D584)
-
-- **Pick:** the owner ran the optimisation workflow and chose item 1: "ทำข้อ 1 เลย".
-- **D584:** `insertArrivals` hands its refs, spans and buckets to the step (`detail::Snapshot`, `tick.hpp`); the step takes them when no arrival was inserted, the survivors were already in id order, there is no parking lot and no source route decision was applied, and rebuilds otherwise.
-- **Measured (Release headless, GCC 13.3, seed 42):** study 35,057 → 32,756 M Ir (−6.6 %), wall 2.76 → 2.55 s (medians of 5); M2.6 3,907 → 3,845 M Ir (−1.6 %), wall in noise. Numbers in [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
-- **Same results:** a probe hashing every event (kind, time, vehicle, segment, position, speed, acceleration, route ids) matches before and after for every shipped project and the study at seeds 42 and 43; the study summary is identical.
-- **Verified on Linux (headless):** `check` 241/241. Windows not run (no UI change).

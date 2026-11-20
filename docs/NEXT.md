@@ -62,14 +62,18 @@ A2 steps 3–4 and the verdict, E32, B46 + item 42, B48, item 50, C16, C17/C18, 
 older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
 A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
 
-**Owner findings of 2026-11-20 waiting for the owner's choice (no code yet):**
-- **A2 step 1, lines outside the tool:** the two lines still shown carry Yield, which D590 shows under every
-  tool. Ask: hide controlled lines outside the Conflict area / Stop line tools too (amends D590), or keep.
-- **E35, block selection:** "ตอนครอบ ส่วนที่เลือกครอบไม่มีกรอบการเลือกคุมทั้งหมดคุมแต่ช่องสุดท้าย". Likely cause:
-  `editor_style.cpp`'s `QTableView` uses `palette(mid)` for both `selection-background-color` and
-  `gridline-color`, so a selected block blends into the grid and only the current cell's focus frame shows.
-  Proposed: a distinct selection fill plus one outline around each selected range (as Excel), checked by a
-  `table_grid` UI test; ask before doing.
+**Owner findings of 2026-11-20, decided the same day:** A2's lines outside the tool → D603 (controlled
+lines hidden outside the right-of-way tools); E35's block selection → D605 (one outline per selected
+block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at the next table use.
+
+## Priority rules like Vissim (D604) — draft; ask §8 before any code
+
+[PRIORITY_RULES](reference/PRIORITY_RULES.md): a stop line with conflict markers, no conflict area. The
+engine's `PriorityRule` already does one marker's gap test; the work is the schema step, the compile step,
+the Stop line tool's gestures and the display. **Ask the owner §8's five choices** (where it lives,
+conditions per marker, which vehicles stop, Stop at the line, default numbers), then slice 1 (schema,
+codec, compile, runtime rows PR1–PR6, PR9, PR10, no UI). Read STOP_LINES §5 and `stepSimulation`'s
+"Priority rules" block first.
 
 **Start new work only after the sitting, or when the owner picks one.**
 
