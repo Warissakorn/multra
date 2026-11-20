@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-20 — Windows sitting, part 1: seven looks answered
+
+- **Owner's words (verbatim, by the numbers of the list sent in chat):** 1 (A2 step 1) "ตอนออกจาก เครื่องมือ
+  conflict area แล้วยังมี เส้นหยุดให้เห็นอยู่" · 3 (C15 + E33) "ตรง" · 4 (E34 with F4) "กดถึงได้ตลอด" · 5 (C14)
+  "นิ่ง" · 6 (E35 with C1, C7, E18) "สามารถ copy และวางบน Excel ได้ แต่ตอนครอบ ส่วนที่เลือกครอบไม่มีกรอบการเลือกคุม
+  ทั้งหมดคุมแต่ช่องสุดท้าย" · 7 (E36 with E5, E8) "สามารถทำได้" · 8 (B45 with E13–15) "แยกได้". Item 2 (E32) not yet answered.
+- **Closed and removed from the sheets:** C14, C15, E33, E34, E35, E36, B45 and the items they took in (D602).
+- **Open:** A2 (steps 3–4 and the verdict; the step 1 finding is D590's rule for controlled lines, an owner
+  choice); the E35 selection defect (NEXT). No code changed.
+
 ## 2026-11-20 — Windows owner checks triaged before new work (D601, D602)
 
 - **Owner:** "ต้องการ เคลียร์ owner checks บน Windows ก่อนเริ่มงานใหม่"; chose "Triage first", "Yes, cut it"
@@ -116,11 +126,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Measured (Release headless, GCC 13.3, seed 42):** study 35,057 → 32,756 M Ir (−6.6 %), wall 2.76 → 2.55 s (medians of 5); M2.6 3,907 → 3,845 M Ir (−1.6 %), wall in noise. Numbers in [ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md).
 - **Same results:** a probe hashing every event (kind, time, vehicle, segment, position, speed, acceleration, route ids) matches before and after for every shipped project and the study at seeds 42 and 43; the study summary is identical.
 - **Verified on Linux (headless):** `check` 241/241. Windows not run (no UI change).
-
-## 2026-11-18 — The floor behind a standing vehicle aims at the cap (D583)
-
-- **Pick:** the owner asked for the fix proposed after the trace: "แก้ตามที่เสนอเลย".
-- **D583 (LINE_APPROACH §8):** `standingVehicleFloor` stops a vehicle braking behind a standing vehicle at the standstill gap; a remaining cap hit behind it within the type's maximum is braking (`stopAtLine`), not a clamp. Same scope as D258.
-- **Measured:** study, seed 42: clamps 1 → 0, completed 6,627. Every shipped project, seeds 42–51, and `multra-cli 42` identical except the build commit.
-- **Tests:** `stopfloor.ba209_…` and `stopfloor.ba210_…` (first numbered BA179–BA180, which the weaving lab already held; renumbered the same day), each forcing its clamp with the switch off.
-- **Verified on Linux (headless):** `check` 241/241. The desktop preset and Windows were not run (no UI change).

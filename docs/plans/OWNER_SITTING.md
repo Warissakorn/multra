@@ -64,6 +64,11 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    **Attempt 2 (D601, owner 2026-11-20 "Yes, cut it"):** steps 1, 3 and 4 and the verdict only; step 2 and
    steps 5–7 are automated (M3_ACCEPTANCE §3). Also look at D587 (a row's dialog opens once), D588 (no white
    Connector edge) and the Stop line tool (`W`).
+   *Owner:* 2026-11-20, attempt 2, step 1 (verbatim): "ตอนออกจาก เครื่องมือ conflict area แล้วยังมี เส้นหยุดให้เห็นอยู่".
+   Steps 3–4 and the verdict are not yet given. *Session note (read in the file and the code, no verdict):* the
+   two lines still drawn are `wait-15` and `wait-17`, each the line of a Yield control (`stop-16`, `stop-18`);
+   D590 shows a line carrying Stop or Yield under every tool, and hides only plain lines. Whether a controlled
+   line should also hide outside the tool is the owner's choice (it would amend D590).
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
@@ -176,7 +181,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
    attributes, *Trip-rate sets…* (import `tests/data/trip-generation/trip-rates/example-4-1.json`) and the *Trip generation* page; layout ok?
    M10.3 D2 (D474): *Deterrence sets…*, *Cost matrices…* and the *Trip distribution* page (import `tests/data/trip-distribution/`'s sets). M10.4 E2 (D479): the *Mode choice* page, *Mode choice sets…* (import `tests/data/trip-distribution/mode-choice/hand.json`), *Period factors…* and *Write OD matrices*, then Run Macro on the period. M10.4 N1 (D481): *Mode choice sets…* → *Nests…* (add `foot` with `walk`, φ 0.5; try φ 1.5). D4 (D482): import `deterrence/hand-destination.json` and check the *Trip distribution* note. D485: *Procedure* page: add a procedure in *Procedures…*, run it, turn a step off. *Owner:*
 
-45. **UI review fixes** (listed 2026-11-10, D497–D499; [images](../images/ui-review-d497/)). On Windows: Results by level, *File → Open example*, a batch's tables under its note, Problems' crossing rows; the palette names its tools from 1440 px (D503, [images](../images/palette-d503/)); *File → Open recent* (D504). *Takes in E13–15 (D602):* at 100/150/200 %, English and Thai, can you find the active tool, tell Connect lanes from Routes and Fit from Focus without a tooltip, and read the palette groups and View → icons only? Layout ok? *Owner:*
+45. **UI review fixes:** answered 2026-11-20, "แยกได้"; result in [PROGRESS](../PROGRESS.md).
 
 46. **The Macro example** (listed 2026-11-10, D492). Open `macro-four-step`, run *Procedure*, check
     the Macro links table: do the example's size and story suit a first-time user? *Owner:*

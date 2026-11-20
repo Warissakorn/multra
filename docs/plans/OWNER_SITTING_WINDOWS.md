@@ -6,22 +6,14 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 `git log -p` on this file before D602); I.1, I.3, I.4, F2, D2 and E22 closed. Item names are unchanged
 and never reused; an item that took in an older one says so.
 
-**Order for one sitting** (gates and blockers first): OWNER_SITTING A2 (M3.2.7d attempt 2, steps 1,
-3–4 and the verdict, D601) → E32 → C15 and E33 → E34 → C14 → E35 → E36 → OWNER_SITTING B45, B46 with
-item 42, B48 and item 50 → C16 → C17, C18 → I.5 → G1 → H1 → C12 (optional).
+**Order for one sitting** (gates and blockers first): OWNER_SITTING A2 (M3.2.7d attempt 2, steps 3–4
+and the verdict left, D601) → E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
+I.5 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
+E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15).
 
 ---
 
 ## C — Run view (the 125 % screen)
-
-14. **Run view after D463/D487** (listed 2026-11-07). On Windows, select objects of each kind: does the
-    Properties summary fit its panel? Run, Pause and Step a few times: does the Run/Pause button keep
-    its size and the layout stay still? (`run-presentation-ui` guards the relayout on Windows CI too;
-    a failure there only is a Windows LayoutRequest source.) *Owner:*
-
-15. **Run vehicles, slice C** (listed 2026-11-04, D465/D466; images `docs/images/canvas-run-d465/`,
-    `docs/images/canvas-heads-d466/`). Run four-leg at 100/150/200 %: do the vehicles, their heads
-    and casings read as in the images? Slice D (lane arrows, white stop line) starts only on your go. *Owner:*
 
 16. **Random streams** (listed 2026-11-12, D510). *Run settings → Random streams*: does the list show
     `shared` and `perInput`, a new project `perInput`, and a shipped project `shared`? Compare a
@@ -57,42 +49,6 @@ item 42, B48 and item 50 → C16 → C17, C18 → I.5 → G1 → H1 → C12 (opt
     window; mismatched window/T disables Confirm, Cancel is unchanged, Manual counts labels and
     CSV countsSource are clear. Re-Analyse/reopen requires confirmation again and Save adds no
     field. Are tables, notes, scrollbars and fixed footers readable without clipping? *Owner:*
-
-33. **Editor fixes D427–D431** (listed 2026-11-01). On Windows at 100/150/200 %, Thai and English:
-    run four-leg and drag the view while it runs. Do the roads stay under the vehicles (D427)?
-    Snap starts off (D428). Make a run fail and check the message line is one row, with
-    "and N more", a tooltip and an × button (D429). Zoom in and out on dashed lane lines:
-    do the 3 m dashes keep their length (D430)? Drag the network view by its marker line to another
-    side, double-click it to float it onto a second screen, use it, resize the window, then View →
-    Reset panel layout (D431). *Owner:*
-
-34. **UI audit remediation D432** (listed 2026-11-02). On Windows at 100/150/200 %, English and
-    Thai, open four-leg. At 1366×768 and 1024×768 switch View → Workspace between Drawing,
-    Tables and Results; at 800×600 expand Appearance and scroll Properties. Choose all three
-    UI densities, type seed 4294967295, inspect the named/icons palette and movement/queue
-    names, then open Behaviour Lab. Fit and pan the network: do labels stay inside the view,
-    clear of the HUD, with all twelve input rates after Fit at 1024×768? Submit an invalid
-    Input interval and correct it in the same form; reopen a second-day period without editing.
-    Are text, fields, row selection, scrolling and fixed dialog buttons usable without clipping?
-    Linux coverage and exact repro commands: [ui-audit-fixes](../evidence/ui-audit-fixes.md). *Owner:*
-    *Takes in F4 (D318, [dialog-fit](../evidence/dialog-fit.md)):* at 1366×768 and 150 %, are OK/Cancel of
-    every growing dialog reachable without moving the window?
-
-35. **Tables like Excel** (listed 2026-11-07, D490/D490a). Paste a Links block and a Results table
-    into Excel; check the grid and row header at 100 % and high DPI; open and fold a Results note;
-    check the Tables layout's height and the Thai group picker. Does each paste land as cells? *Owner:*
-    *Takes in C1, C7 and E18:* Results → Run seeds and Compare with… (M2.6 template, seeds 42-51): Cancel
-    part way, run again, Copy, Export; Thai strings; does the comparison read as alternative minus base?
-    Demand catalog, Behaviour library and an OD matrix: figures right-aligned and unclipped, OD rows tall
-    enough to edit, the full-text popup on a cut-off name helpful?
-
-36. **Route tool and marks** (listed 2026-11-11, D507–D509d). Press `R`, click a Link once, then two
-    or three destinations: is the status hint clear and each destination one Undo; does Esc end the
-    origin? Hold `Ctrl`+right on a road and move: does the green (origin) or red (destination) bar
-    follow until release? Check the thin end bars beside inputs, decisions and signal heads, the
-    yellow 50 % tint between the bars and its 0.6 m inset at the road edges. *Owner:*
-    *Takes in E5 and E8:* a Route 2-lane Link → 1-lane Connector → 2-lane Link, end-mounted and mid-body:
-    both lanes shown, nothing upstream of a mid-body arrival; Undo/Redo, Backspace, save/reopen.
 
 ## G — Object interchange
 

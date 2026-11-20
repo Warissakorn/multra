@@ -56,11 +56,21 @@ the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas
 
 ## Owner checks on Windows — triaged, one sitting (D602, 2026-11-20)
 
-The Windows sheet was cut from about 70 items to 17 for one sitting; its order is at the top of
-[OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md): A2 first, then E32, C15/E33, E34, C14, E35,
-E36, B45, B46 + item 42, B48, item 50, C16, C17/C18, I.5, G1, H1, C12. Thirty-one older looks are carved
-out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (ROADMAP M1.30, M3.2.13, M14) (open, closing nothing); I.1, I.3, I.4, F2, D2, E22 closed.
+The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,
+E35, E36, B45 (words in PROGRESS). **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md)):
+A2 steps 3–4 and the verdict, E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, G1, H1, C12. Thirty-one
+older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
 A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
+
+**Owner findings of 2026-11-20 waiting for the owner's choice (no code yet):**
+- **A2 step 1, lines outside the tool:** the two lines still shown carry Yield, which D590 shows under every
+  tool. Ask: hide controlled lines outside the Conflict area / Stop line tools too (amends D590), or keep.
+- **E35, block selection:** "ตอนครอบ ส่วนที่เลือกครอบไม่มีกรอบการเลือกคุมทั้งหมดคุมแต่ช่องสุดท้าย". Likely cause:
+  `editor_style.cpp`'s `QTableView` uses `palette(mid)` for both `selection-background-color` and
+  `gridline-color`, so a selected block blends into the grid and only the current cell's focus frame shows.
+  Proposed: a distinct selection fill plus one outline around each selected range (as Excel), checked by a
+  `table_grid` UI test; ask before doing.
+
 **Start new work only after the sitting, or when the owner picks one.**
 
 **Review waiting (code, not a gate):** D570–D574 on branch `claude/optimistic-bohr-lpfu98`: the
@@ -98,7 +108,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     - **Ask** (D535): is S1's gate S1-a alone, or S1-f and S1-d too?
     - D530 (the S1 diagnostic) and D531 (median and skewness) each need a measurement contract before use.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
-  - The owner's look at D497–D504 is OWNER_SITTING B45.
+  - The owner's look at D497–D504 (B45) passed, 2026-11-20.
   - The Node analysis example uses the pocket template (D513).
   - Not wanted (D505): palette names at 1366 px. No start page (D505): File already has recent files and examples. Reopen only if a real
     user cannot find them.
@@ -108,7 +118,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - Left from D502: milestone status statements ("M10.2 implemented") are still not checked against code;
     the user guide has no Thai edition and no pictures.
 
-## Tables like Excel (D490) — done; owner's look is E35
+## Tables like Excel (D490) — done; E35 passed on paste (2026-11-20), one selection defect above
 
 - Contract: [EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md).
 - **Left from the compactness review:** the Results tab strip still scrolls at 1024 in Thai, and
@@ -118,7 +128,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 ## Optimisation passes (2026-11-07 D487–D489; 2026-11-19 D597–D600) — follow-ups only
 
-- Owner: C14. A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
+- C14 passed (2026-11-20, "นิ่ง"). A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
   source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
   cause is keys or sloppiness, not size.
@@ -134,12 +144,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 - [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill answers and slices A–E; A–C and their
   fixes are D423–D426 and D460–D466. The junction median spikes stay (Q5).
-- **Stop for owner review:** C15 (slice C) and E33/E34 (D427–D432,
-  [remediation evidence](evidence/ui-audit-fixes.md)). Slice D (lane arrows, white stop line)
-  starts only on the owner's go.
-
-## M13 — A9 implemented; stop for owner review
-
+- **Owner review answered 2026-11-20:** C15 (slice C) "ตรง", E33 "ตรง", E34 "กดถึงได้ตลอด". Slice D (lane
+  arrows, white stop line) still starts only on the owner's go.
 - **Stop here; do not start another slice.** A9 (D422, NA24–NA30) awaits the owner's final review;
   B40/B41 are answered and no contract question is pending. Windows/high-DPI appearance is
   [OWNER_SITTING E32](plans/OWNER_SITTING.md).
