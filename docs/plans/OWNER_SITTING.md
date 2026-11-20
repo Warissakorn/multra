@@ -79,6 +79,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    when the gap is clear. Choices V (visibility), D (dwell distribution), I (impatience) or none wait for the owner.
    *Owner:* 2026-11-20 (verbatim): "V ทำเหมือน vissim เริ่มตัดสินใจเรื่อง gap ทำด้วยหรือไม่". V chosen, as Vissim;
    the contract waits on the default distance and the reading of "visibility" (asked in chat the same day).
+   *Owner:* "1ก 2ก", then "ทุกไฟล์". *Session note:* done as D607 ([VISIBILITY](../reference/VISIBILITY.md)); at 100 m no
+   shipped result changes, so on the T-junction attempt 2 looks as before unless a shorter visibility is entered
+   in the area's dialog (20 m: crossing 19.15 → 19.86 s, near turn 9.93 → 11.64 s).
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any

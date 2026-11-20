@@ -122,6 +122,13 @@ void cycleConflictGroupPriority(ProjectDocument& d,const std::string& id,const P
 void setConflictGroupStopControl(ProjectDocument& d,const std::string& id,std::optional<StopMode> mode) {
     atomicGroupEdit(d,[&](auto& candidate){setConflictGroupStopControlImpl(candidate,id,mode);});
 }
+void setConflictGroupVisibility(ProjectDocument& d,const std::string& id,std::optional<double> visibility) {
+    atomicGroupEdit(d,[&](auto& candidate){
+        const auto g=groupOf(candidate.network,id);
+        for(auto& r:candidate.network.rightOfWay.priorityRules)
+            if(std::find(g.areaIds.begin(),g.areaIds.end(),r.conflictAreaId)!=g.areaIds.end())r.visibility=visibility;
+    });
+}
 void removeConflictGroup(ProjectDocument& d,const std::string& id) {
     atomicGroupEdit(d,[&](auto& candidate){removeConflictGroupImpl(candidate,id);});
 }

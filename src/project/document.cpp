@@ -70,8 +70,10 @@ Json rightOfWayJson(const RightOfWay& row) {
     for(const auto& a:row.conflictAreas)
         areas.push_back({{"id",a.id},{"name",a.name},{"kind",conflictKindName(a.kind)},{"first",side(a.first)},
                          {"second",side(a.second)},{"priority",conflictPriorityName(a.priority)}}),generated(areas,a.generated);
-    for(const auto& r:row.priorityRules)
+    for(const auto& r:row.priorityRules) {
         rules.push_back({{"id",r.id},{"name",r.name},{"conflictAreaId",r.conflictAreaId},{"gapTime",r.gapTime},{"headway",r.headway}}),generated(rules,r.generated);
+        if(r.visibility)rules.back()["visibility"]=*r.visibility; // D607, schema 80
+    }
     Json result={{"waitingLines",lines},{"conflictAreas",areas},{"priorityRules",rules}};
     // D594, schema 79: only when it is not the default, so other files keep their keys.
     if(row.frontStopDistance!=RightOfWay::kDefaultFrontStopDistance)result["frontStopDistance"]=row.frontStopDistance;
@@ -111,7 +113,8 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const auto& row=d.network.rightOfWay;
     const bool derivedLines=row.frontStopDistance!=RightOfWay::kDefaultFrontStopDistance ||
         std::any_of(row.conflictAreas.begin(),row.conflictAreas.end(),[](const auto& a){return a.first.waitingLineId.empty() || a.second.waitingLineId.empty();});
-    return derivedLines ? networkCodec::derivedLineVersion : ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    const bool visibility=std::any_of(row.priorityRules.begin(),row.priorityRules.end(),[](const auto& r){return r.visibility.has_value();}); // D607
+    return visibility ? networkCodec::visibilityVersion : derivedLines ? networkCodec::derivedLineVersion : ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :

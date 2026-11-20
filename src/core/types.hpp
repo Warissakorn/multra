@@ -7,6 +7,7 @@
 #include "random_streams.hpp"
 #include "speed_decision_types.hpp"
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -183,6 +184,9 @@ struct ConflictZone {
     double gapTime{};      // seconds, as PriorityRule
     double headway{};      // metres, as PriorityRule
     ZoneControl control{ZoneControl::yield};
+    // VISIBILITY (D607): metres short of its waiting line within which a minor driver judges the gap;
+    // farther out the area counts as blocked, so it plans to stop at the line. Infinite: no limit.
+    double visibility{std::numeric_limits<double>::infinity()};
     bool operator==(const ConflictZone&) const = default;
 };
 // M3.2.8b (docs/reference/M3_8_CONTRACT.md §2). A vehicle on route `fromRouteId` whose rear is at or past

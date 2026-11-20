@@ -90,7 +90,8 @@ constexpr Field conflictSideFields[]={
     {"waitingLineId",Kind::text,true}};
 constexpr Field priorityRuleFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"conflictAreaId",Kind::text,true},
-    {"gapTime",Kind::number,true},{"headway",Kind::number,true},{"generated",Kind::generated,false,generatedVersion}};
+    {"gapTime",Kind::number,true},{"headway",Kind::number,true},{"generated",Kind::generated,false,generatedVersion},
+    {"visibility",Kind::number,false,visibilityVersion}};
 constexpr Field stopControlFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"waitingLineId",Kind::text,true},
     {"mode",Kind::stopMode,true},{"conflictAreaIds",Kind::texts,true},{"generated",Kind::generated,false,generatedVersion}};

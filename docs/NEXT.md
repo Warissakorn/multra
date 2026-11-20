@@ -35,10 +35,11 @@ Done before it (2026-11-19; history in [the archived NEXT](archive/NEXT-state-20
 ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), [STOP_LINES](reference/STOP_LINES.md) (D591, D594–D595),
 the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas opaque (D592), D587–D590.
 
-- **V chosen (2026-11-20, "V ทำเหมือน vissim"):** a visibility distance per conflict area side, as Vissim
-  ([line-approach-other-programs](evidence/line-approach-other-programs.md)). Before the contract: the owner's
-  default distance (Vissim's current help gives none; 100 m appears only in older help's front-gap text) and
-  whether an unseen stretch counts as possibly occupied. Then write the contract, measure minor delay before/after.
+- **Visibility done (D607, [VISIBILITY](reference/VISIBILITY.md)):** 100 m default changes no shipped result
+  (M0 stays closed); the approach slowdown starts below about 50 m, entered per area in the dialog.
+- **Ask the owner (2026-11-20):** [realism-gaps-vissim-sumo-aimsun](evidence/realism-gaps-vissim-sumo-aimsun.md)
+  proposes G1 (start-up delay at green: M0's start-up lost time is 0.89 s against HCM's 2.0 s) and G2
+  (acceleration falling with speed) for the M0 base, then G3–G9. Each needs a contract before code.
 - **Next: the owner's attempt 2 of M3.2.7d on Windows** — steps 1, 3–4 and the verdict (D601: step 2
   and steps 5–7 are automated by the `rightofway_editor` tests and
   `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed`), plus the Stop line

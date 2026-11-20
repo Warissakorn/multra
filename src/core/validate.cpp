@@ -177,6 +177,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             if (has(zone.minor.segmentIds, id)) add("INVALID_RANGE", p + ".minor.segmentIds");
         if (!std::isfinite(zone.waitPosition) || zone.waitPosition > zone.minor.entry || zone.minor.segmentIds.empty() ||
             zone.waitPosition < -singleApproach(zone.minor.segmentIds.front())) add("INVALID_POSITION", p + ".waitPosition");
+        if (!(zone.visibility > 1)) add("INVALID_RANGE", p + ".visibility"); // D607: (1, inf]; NaN refused
     }
     // Per route, through the same incidence the run uses (conflicts.hpp).
     // `holds` is the waits-for graph between zones: a route that can hold zone M while waiting as

@@ -57,6 +57,7 @@ RightOfWay readRightOfWay(const Json& j,int version) {
         row.priorityRules.push_back({field("id").get<std::string>(),present(r,"name")?field("name").get<std::string>():"",
             field("conflictAreaId").get<std::string>(),field("gapTime").get<double>(),field("headway").get<double>()});
         row.priorityRules.back().generated=generatedFlag(r,path,version);
+        if(present(r,"visibility"))row.priorityRules.back().visibility=field("visibility").get<double>(); // D607
     }
     if(version>=15 && present(j,"stopControls"))for(const auto& c:value(j,Object::rightOfWay,"stopControls")) {
         const auto path="rightOfWay.stopControls["+std::to_string(row.stopControls.size())+"]";

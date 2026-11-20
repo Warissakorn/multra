@@ -77,7 +77,8 @@ inline constexpr int distributionVersion=67,constraintVersion=68,destinationCons
 inline constexpr int periodFactorVersion=69;
 // D573: owned mode-choice sets from 70, nests from 71 and distributionCost from 76.
 inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,entryLanesVersion=77,missedExitVersion=78,
-    derivedLineVersion=79; // D594 (STOP_LINES): an empty conflict side waitingLineId, rightOfWay.frontStopDistance
+    derivedLineVersion=79, // D594 (STOP_LINES): an empty conflict side waitingLineId, rightOfWay.frontStopDistance
+    visibilityVersion=80; // D607 (VISIBILITY): a priority rule's visibility
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

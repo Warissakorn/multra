@@ -135,7 +135,10 @@ std::optional<double> zoneHold(const Scenario& scenario, const ScenarioIndex& in
             // D596: one resting at its line (LINE_APPROACH §9) with a residue of speed from the stop
             // that ended there has not "failed to stop": it is stopped.
             const bool resting = gap <= kPast && vehicle.speed < kStoppedSpeed;
-            const bool blocked = !resting && committed(vehicle.speed, std::max(0.0, gap), type, behaviour) ? state.majorInside : state.majorBlocks;
+            // VISIBILITY (D607): beyond its visibility the driver cannot judge the gap, so the area counts
+            // as blocked (an unseen stretch may hold a major vehicle); commitment is unchanged.
+            const bool unseen = gap > scenario.conflictZones[rz.zoneIndex].visibility + kPast;
+            const bool blocked = !resting && committed(vehicle.speed, std::max(0.0, gap), type, behaviour) ? state.majorInside : state.majorBlocks || unseen;
             if (!unserved && !blocked && !exitTaken) continue;
         } else {
             gap = rz.entryAt - vehicle.distance;

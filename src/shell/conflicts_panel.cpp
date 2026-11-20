@@ -9,6 +9,7 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QDoubleSpinBox>
+#include <cmath>
 #include <QFormLayout>
 #include <QHeaderView>
 #include <QKeySequence>
@@ -241,6 +242,10 @@ void ConflictsPanel::edit(const std::string& id) {
     auto* headway = new QDoubleSpinBox(&dialog); headway->setObjectName("editorConflictHeadway");
     headway->setRange(0.1, 500); headway->setDecimals(1); headway->setSuffix(" m");
     headway->setValue(rule != row.priorityRules.end() ? rule->headway : std::max(0.1, defaults.headway));
+    // VISIBILITY (D607): how far short of its line the yielding driver judges the gap; 100 m when unset.
+    auto* visibility = new QDoubleSpinBox(&dialog); visibility->setObjectName("editorConflictVisibility");
+    visibility->setRange(1.1, 1000); visibility->setDecimals(1); visibility->setSuffix(" m");
+    visibility->setValue(rule != row.priorityRules.end() && rule->visibility ? *rule->visibility : AuthoredPriorityRule::kDefaultVisibility);
     std::size_t pairCount=1;
     bool hasBranching=false;
     for(const auto& g:conflictGroups(context_.document().network,automatic_))if(conflictGroupContains(g,id)) {
@@ -255,6 +260,7 @@ void ConflictsPanel::edit(const std::string& id) {
     form->addRow(text("editorConflictPriority"), priority);
     form->addRow("gapTime", gap);
     form->addRow("headway", headway);
+    form->addRow("visibility", visibility);
     // What a driver does at the line where the area gives way (M3.2.5b). The mode belongs to the
     // line, so it also applies to the other areas behind that line. Nothing to set while no side
     // gives way.
@@ -280,6 +286,8 @@ void ConflictsPanel::edit(const std::string& id) {
     const int mode = control->currentData().toInt();
     context_.execute("editorEditConflict", [&](auto& d) {
         setConflictGroupControl(d, id, name->text().toStdString(), chosen, gap->value(), headway->value());
+        const double seen = visibility->value(); // the key is written only when it is not the default
+        setConflictGroupVisibility(d, id, std::abs(seen - AuthoredPriorityRule::kDefaultVisibility) < 1e-9 ? std::nullopt : std::optional{seen});
         if (chosen != ConflictPriority::undetermined)
             setConflictGroupStopControl(d, id, mode < 0 ? std::nullopt : std::optional{static_cast<StopMode>(mode)});
     });

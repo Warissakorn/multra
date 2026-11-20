@@ -48,6 +48,10 @@ struct ConflictArea {
 // At most one per area. Direction comes from the area, never a second copy here.
 struct AuthoredPriorityRule {
     std::string id, name, conflictAreaId; double gapTime{}, headway{}; bool generated{};
+    // VISIBILITY (D607), schema 80: metres short of the waiting line within which the yielding driver
+    // judges the gap; absent is kDefaultVisibility. Written only when set.
+    std::optional<double> visibility;
+    static constexpr double kDefaultVisibility = 100.0;
     bool operator==(const AuthoredPriorityRule&) const = default;
 };
 // M3.2.5 (contract §1, §5): what a driver must do at one waiting line before crossing the areas

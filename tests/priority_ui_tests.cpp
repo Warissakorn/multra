@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 #include <QAction>
 #include <QApplication>
+#include <cmath>
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -109,8 +110,11 @@ int main(int argc, char** argv) {
         onDialog("editorConflictDialog", [&](QDialog* dialog) {
             auto* priority = dialog->findChild<QComboBox*>("editorConflictPriority");
             auto* gap = dialog->findChild<QDoubleSpinBox*>("editorConflictGap");
-            require(priority && gap, "Conflict dialog lost a field");
-            priority->setCurrentIndex(0); gap->setValue(5.5);
+            auto* visibility = dialog->findChild<QDoubleSpinBox*>("editorConflictVisibility");
+            require(priority && gap && visibility, "Conflict dialog lost a field");
+            // VS7 (D607): an area without the key shows the 100 m default.
+            require(std::abs(visibility->value() - 100) < 1e-9, "Visibility does not default to 100 m");
+            priority->setCurrentIndex(0); gap->setValue(5.5); visibility->setValue(40);
             dialog->accept();
         }, ran);
         QTest::keyClick(table, Qt::Key_Return); QApplication::processEvents();
@@ -120,9 +124,11 @@ int main(int argc, char** argv) {
         require(row.priorityRules.front().gapTime == 5.5, "gapTime was not committed");
         for(const auto& a:row.conflictAreas)require(a.priority==ConflictPriority::firstYields,"The edit missed a grouped pair");
         for(const auto& r:row.priorityRules)require(r.gapTime==5.5,"The edit missed a grouped rule");
+        for(const auto& r:row.priorityRules)require(r.visibility==std::optional<double>(40),"Visibility missed a grouped rule");
         act(w, "editorUndo")->trigger(); QApplication::processEvents();
         require(w.history().revision() == revision, "The edit was not one Undo step");
         require(w.history().document().network.rightOfWay.priorityRules.front().gapTime != 5.5, "Undo did not restore gapTime");
+        require(!w.history().document().network.rightOfWay.priorityRules.front().visibility, "Undo did not restore visibility in the same step");
 
         // Take over the merge from its Connector, then hand it back.
         w.canvas()->select(join); QApplication::processEvents();

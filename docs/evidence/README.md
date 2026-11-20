@@ -94,6 +94,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [join-anticipation.md](join-anticipation.md) | M3.2.8a.1b: anticipation across a join, eight prototype variants measured; the off-by-default switch implemented — 2026-10-19 | D253, D255 |
 | [line-approach.md](line-approach.md) | M3.2.8a.1c: stopping cleanly at a line and behind a hard stop, eleven prototype variants measured; the switch implemented — 2026-10-19 | D256, D258 |
 | [line-approach-other-programs.md](line-approach-other-programs.md) | Approaching and stopping at a give-way line in Vissim, SUMO and Aimsun against MULTRA: visibility, stop dwell, impatience; choices V/D/I for the owner — 2026-11-20 | D596 |
+| [realism-gaps-vissim-sumo-aimsun.md](realism-gaps-vissim-sumo-aimsun.md) | What Vissim, SUMO and Aimsun model that MULTRA lacks, ordered for M0 first: start-up delay at green (M0's lost time 0.89 s against HCM 2.0 s), speed-dependent acceleration, stuck vehicles, lane-change cooperation — 2026-11-20 | D607 |
 | [merge-clamps.md](merge-clamps.md) | M3.2.8a.1: M2.6's 41 clamps traced and seven options measured with temporary prototypes — 2026-10-18 | D249, D251, D252 |
 | [red-running.md](red-running.md) | B-9: red-light running share — 2026-10-18; M2.6's added clamps traced; the owner's answers measured | D237, D238, D241, D247 |
 | [driver-factor-spread.md](driver-factor-spread.md) | B-4: driver-factor spread — 2026-10-18 | D235, D236 |
