@@ -82,6 +82,9 @@ TEST(lanechange, without_missed_exit_after_or_an_onward_route_the_vehicle_keeps_
     auto bad = lanes(); bad.behaviours.front().missedExitAfter = 0;
     const auto issues = validateScenario(bad);
     CHECK(std::any_of(issues.begin(), issues.end(), [](const auto& i) { return i.path.ends_with(".missedExitAfter"); }));
+    bad.behaviours.front().w74 = W74Parameters{}; // the W74 branch reports it once too
+    const auto w74 = validateScenario(bad);
+    CHECK(std::count_if(w74.begin(), w74.end(), [](const auto& i) { return i.path.ends_with(".missedExitAfter"); }) == 1);
 }
 TEST(lanechange, missed_exit_after_round_trips_at_schema_78_and_reaches_the_run) { // D581
     std::ifstream file(test::root() / "data/projects/four-leg-signalised.traffic.json"); Json j0; file >> j0;

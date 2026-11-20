@@ -86,3 +86,9 @@ curve raises that to 10–18, to be looked at before any shipped value changes.
 
 **SU9 not measured.** No before binary of `multra-engine-benchmark` was built in this session. Without
 the keys the added work is one empty-curve test per limit and one absent-key test per vehicle and tick.
+
+## 6. Shipped data (D609)
+
+The owner, 2026-11-20 (verbatim): "ตามแนะนำ". No file under `data/` carries `accelerationCurve` or the
+attention pair; a study enters them in its own project (the type dialog, the behaviour editor). M0 stays
+closed. Reopens when a study's calibration gives a curve that holds on local data without more clamps.

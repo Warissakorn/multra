@@ -39,8 +39,8 @@ the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas
   (M0 stays closed); the approach slowdown starts below about 50 m, entered per area in the dialog.
 - **G1/G2 done as Vissim (D608, [START_UP](reference/START_UP.md)):** a type's `accelerationCurve` and a behaviour's
   attention pair, absent by default (M0 unchanged). Measured on saturated M0: Vissim-like values shorten lost
-  time (1.53 → 0.96 s); a standstill acceleration of 2.0 m/s² gives 2.16 s (HCM 2.0). **Ask the owner:** adopt a
-  curve in shipped data (moves M0, reopens it by D369) or keep it a study choice; next from the realism study: G3.
+  time (1.53 → 0.96 s); a standstill acceleration of 2.0 m/s² gives 2.16 s (HCM 2.0). Owner, "ตามแนะนำ" (D609):
+  no shipped curve, each study sets it; order: A2 attempt 2, then G3, then PRIORITY_RULES slice 1.
 - **Next: the owner's attempt 2 of M3.2.7d on Windows** — steps 1, 3–4 and the verdict (D601: step 2
   and steps 5–7 are automated by the `rightofway_editor` tests and
   `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed`), plus the Stop line
