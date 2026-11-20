@@ -17,7 +17,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D604:** [PRIORITY_RULES](reference/PRIORITY_RULES.md) drafted: stop line plus conflict markers without a
   conflict area, compiled to the engine's existing `PriorityRule`; the next schema step proposed, rows PR1–PR10. Five
   owner choices (§8) come before code.
-- **Verified on Linux (desktop, offscreen):** `table-grid-ui`, `priority-canvas` and `stop-line-ui` pass; the full desktop suite was running at this commit. Windows not run.
+- **Verified on Linux (desktop, offscreen):** `table-grid-ui`, `priority-canvas` and `stop-line-ui` pass; full desktop suite 361/361. Windows not run.
 
 ## 2026-11-20 — Windows sitting, part 1: seven looks answered
 
