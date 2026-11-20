@@ -142,7 +142,7 @@ int main(int argc,char** argv){
             modal([&]{item<QPushButton>(parent,"editorCatalogTypescatalogEdit")->click();},[&](QDialog& child){
                 item<QCheckBox>(child,"editorCatalogAccelerationCurveOn")->setChecked(on);
                 auto* table=item<QTableWidget>(child,"editorCatalogAccelerationCurve");require(table->isEnabled()==on,"Curve table not tied to its box");
-                if(on){table->item(0,1)->setText("2");table->item(1,1)->setText("1.5");}
+                if(on){table->item(0,1)->setText("1.5");table->item(1,1)->setText("1");} // under the 1.75 set above
                 confirm(child);
             });
             confirm(parent);
@@ -150,7 +150,7 @@ int main(int argc,char** argv){
         const auto carCurve=[&]{for(const auto& t:w.history().document().definition->vehicleTypes)if(t.id=="car")return t.accelerationCurve;return std::vector<AccelerationPoint>{};};
         const auto beforeCurve=w.history().document().revision;
         accelerating(true);
-        require(carCurve()==std::vector<AccelerationPoint>{{0,2},{22.2,1.5}},"Acceleration curve not written");
+        require(carCurve()==std::vector<AccelerationPoint>{{0,1.5},{22.2,1}},"Acceleration curve not written");
         require(w.history().document().revision==beforeCurve+1,"Acceleration curve is not one step");
         accelerating(false);require(carCurve().empty(),"Unticking did not remove the acceleration curve");
         // BA130 (LANE_PREFERENCE §4, D234): the kerb-lanes row writes kerbLanes; unticking removes it.

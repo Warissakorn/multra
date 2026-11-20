@@ -17,6 +17,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Fixed after the commit:** the `visibility` and `startup` groups joined `all-model-tests`; the W74 branch of
   `validate.cpp` no longer reports `missedExitAfter` twice (a check in `lanechange`, failing before the fix).
   Headless `check` green, 246 tests, before that fix; `lanechange` 28/28 and the docs check after it.
+- **SU8 run on desktop:** the type dialog's curve used 2 m/s² above the 1.75 the same test set, so the dialog
+  (rightly) refused it and the test hung; values now under it. The behaviour editor's attention pair joins the
+  library UI test (its file now saves at 81). Desktop `check` green, 363 tests.
 - **Also:** stop-line tests pinned to their own schema step (79) instead of the newest; `right_of_way.cpp` kept
   under 500 lines.
 
