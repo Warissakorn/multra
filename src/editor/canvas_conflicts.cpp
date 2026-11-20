@@ -200,7 +200,9 @@ void EditorCanvas::drawConflicts() {
             const bool undecided=priority==ConflictPriority::undetermined;
             const bool yields=(side==&first)==(priority==ConflictPriority::firstYields);
             const bool lit=key==highlightedConflict_,hover=key==hoverConflict_ || key==hoverAutomatic_;
-            QColor tint=branching?canvasStyle::error():undecided?(automatic?canvasStyle::ink():canvasStyle::warning()):yields?canvasStyle::error():canvasStyle::ok();
+            // D610 (owner): right of way green, yields red, undecided olive; a refused branching stays the dark error ink.
+            QColor tint=branching?canvasStyle::error():undecided?(automatic?canvasStyle::ink():canvasStyle::conflictPassive())
+                :yields?canvasStyle::conflictYield():canvasStyle::conflictPriority();
             // D435 as amended by D592 (owner, 2026-11-19): a flat fill with no hatching or outline at
             // rest, fully opaque so the area reads on any road; the waiting lines stay above it (z 7).
             // Only an automatic candidate nobody has decided stays a faint wash. Hover and the

@@ -2,6 +2,13 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-19 — Row dialogs open once (D587); no white Connector edge (D588)
+
+- **Owner, on Windows (M3.2.7d attempt 1):** Confirm and the close box of the Conflict area dialog each needed two clicks; a selected or hovered Connector still shows a white border; would 100 % opaque areas be better.
+- **D587:** a double-click emits `cellDoubleClicked` and `activated` together, and five tables (Conflict areas, Queue counters, Travel-time sections, Zones, OD) had a slot on each, so their dialog opened twice. `openRowOn` connects `activated` alone. New test `row-open-ui` (Conflict areas and Queue counters, double-click and Enter) failed with the old slots and passes.
+- **D588:** an emphasised Connector drops its plain solid outer edges as D460 did for Links; `canvas-layers` and `interaction` tests now expect none.
+- **Not changed:** conflict opacity waits for the owner (screenshots at 35 %, 75 % and 100 % sent; D435). The line approach and M3.2.4e stay in NEXT.
+
 ## 2026-11-18 — M3.2.7d attempt 1: step 1 fails on merge waiting lines
 
 - **Owner, on Windows:** conflict areas display correctly; the westbound stop line should be east of its area and the Connector's merge stop lines before the Link. Recorded verbatim in [OWNER_SITTING](../plans/OWNER_SITTING.md) A2 and kept as a failure.

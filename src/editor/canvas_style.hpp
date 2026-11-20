@@ -19,6 +19,11 @@ inline QColor ok() { return editorDesign::semantic(editorDesign::Semantic::ok); 
 // D509: a route's origin and destination bars and its surface tint (no QPalette role is free).
 inline QColor routeStart() { return QColor(editorDesign::routeStartHex); }
 inline QColor routeEnd() { return QColor(editorDesign::routeEndHex); }
+// D610: a conflict area's sides, as the owner's picture (Vissim's colours).
+inline QColor conflictPriority() { return QColor(editorDesign::conflictPriorityHex); }
+inline QColor conflictYield() { return QColor(editorDesign::conflictYieldHex); }
+inline QColor conflictPassive() { return QColor(editorDesign::conflictPassiveHex); }
+inline QColor directionEdge() { return QColor(editorDesign::directionEdgeHex); }
 // D509c: 50 % stored, 35 % preview: 2.25:1 on the road, and the lane marks read through it at 2.3:1.
 inline QColor routeTint(bool preview) { QColor c(editorDesign::routeTintHex); c.setAlpha(preview ? 89 : 128); return c; }
 // Neutral overlay ink: linework a tool draws that is not state (draft, band, waiting line).

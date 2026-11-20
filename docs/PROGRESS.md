@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-20 — Conflict areas in Vissim's colours; direction arrows on every edge (D610)
+
+- **Owner, A2 attempt 2 step 3 (verbatim, with a picture):** "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง conflict
+  area ให้มีสีแบบในรูปและลูดศรชี้ตามทิศทาง ลักษณะคล้ายในรูป". In chat: arrows on every edge under the tool, no A/B
+  labels, colours as bright as the picture.
+- **D610:** sides with right of way `#00FF00`, yielding `#FF0000`, undecided `#C0C000` (canvas-only tokens);
+  branching keeps the dark error ink, an automatic candidate its faint wash. Under the Conflict area and Stop line
+  tools every Link and Connector edge is a near-black line (`#1F1F1F`) with arrowheads along travel.
+- **Tests:** `priority-canvas` checks the three colours and arrows on every Link and Connector under both tools,
+  pointing the digitised way, and no unselected edge under Select; it failed before the change. Desktop `check`
+  green, 363 tests. Step 4 and the verdict are still the owner's.
+
 ## 2026-11-20 — G1 start-up as Vissim: acceleration by speed, lack of attention (D608)
 
 - **Owner (verbatim):** "เริ่ม G1 ทำเหมือน vissim", then "ก+ข".
@@ -139,10 +151,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D590:** areas and plain waiting lines draw only under the Conflict area tool (lines also under Queue counter); Stop/Yield lines always.
 - **D591:** [STOP_LINES](reference/STOP_LINES.md), a draft for the owner; nothing switched on before M3.2.4e.
 - **Verified on Linux (desktop preset, Debug):** full `ctest` 357/357 after updating `editor-gestures`, `priority-ui` and `priority-canvas` to D588/D590; changed units build without the PCH. Windows not run.
-
-## 2026-11-19 — Row dialogs open once (D587); no white Connector edge (D588)
-
-- **Owner, on Windows (M3.2.7d attempt 1):** Confirm and the close box of the Conflict area dialog each needed two clicks; a selected or hovered Connector still shows a white border; would 100 % opaque areas be better.
-- **D587:** a double-click emits `cellDoubleClicked` and `activated` together, and five tables (Conflict areas, Queue counters, Travel-time sections, Zones, OD) had a slot on each, so their dialog opened twice. `openRowOn` connects `activated` alone. New test `row-open-ui` (Conflict areas and Queue counters, double-click and Enter) failed with the old slots and passes.
-- **D588:** an emphasised Connector drops its plain solid outer edges as D460 did for Links; `canvas-layers` and `interaction` tests now expect none.
-- **Not changed:** conflict opacity waits for the owner (screenshots at 35 %, 75 % and 100 % sent; D435). The line approach and M3.2.4e stay in NEXT.

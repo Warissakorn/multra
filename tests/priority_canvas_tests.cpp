@@ -10,6 +10,7 @@
 #include <QDialog>
 #include <QFile>
 #include <QGraphicsPathItem>
+#include <QGraphicsPolygonItem>
 #include <QListWidget>
 #include <QStandardPaths>
 #include <QTabWidget>
@@ -245,6 +246,47 @@ int main(int argc, char** argv) {
         require(drawn(w) == 0, "A Stop line is drawn outside the right-of-way tools");
         c->setTool(EditorCanvas::Tool::stopLine); c->redraw(); QApplication::processEvents();
         require(lineMark(w, line.id) == "stop", "The Stop line tool does not show the Stop line");
+        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
+        // D610 (owner, A2 attempt 2 step 3): areas in the picture's colours -- the side with right of way
+        // #00FF00, the yielding side #FF0000, an undecided area #C0C000 -- and every edge carries arrows.
+        const auto tints = [&] {
+            std::vector<QString> found;
+            for (auto* i : c->scene()->items()) if (i->data(0).toString() == "conflict-area")
+                if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) found.push_back(path->brush().color().name(QColor::HexRgb).toUpper());
+            std::sort(found.begin(), found.end()); found.erase(std::unique(found.begin(), found.end()), found.end()); return found;
+        };
+        require(tints() == std::vector<QString>{"#00FF00", "#FF0000"}, "Areas are not drawn in priority green and yield red");
+        {
+            auto undecided = w.history().document();
+            for (auto& a : undecided.network.rightOfWay.conflictAreas) a.priority = ConflictPriority::undetermined;
+            undecided.network.rightOfWay.stopControls.clear();
+            const QString passive = temp.filePath("passive.traffic.json"); write(passive, undecided);
+            w.openFile(passive); c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
+            require(tints() == std::vector<QString>{"#C0C000"}, "An undecided area is not drawn olive yellow");
+            w.openFile(file); QApplication::processEvents();
+        }
+        const auto arrowsOn = [&](const std::string& id) {
+            std::vector<QPolygonF> found;
+            for (auto* i : c->scene()->items()) if (i->data(0).toString() == "direction-arrow" && i->data(1).toString().toStdString() == id)
+                if (auto* poly = dynamic_cast<QGraphicsPolygonItem*>(i)) found.push_back(poly->polygon());
+            return found;
+        };
+        for (const auto tool : {EditorCanvas::Tool::conflict, EditorCanvas::Tool::stopLine}) {
+            c->setTool(tool); c->redraw(); QApplication::processEvents();
+            for (const auto& link : network().links) {
+                const auto arrows = arrowsOn(link.id);
+                require(!arrows.empty(), "A Link has no direction arrows under a right-of-way tool");
+                // The tip (first vertex) lies further along the Link's digitised direction than the base.
+                const QPointF along(link.geometry.back().x - link.geometry.front().x, link.geometry.back().y - link.geometry.front().y);
+                const auto dot = [&](QPointF p) { return p.x() * along.x() + p.y() * along.y(); };
+                for (const auto& a : arrows) require(dot(a[0]) > dot((a[1] + a[2]) / 2), "An arrow points against the Link");
+            }
+            for (const auto& connector : network().connectors)
+                require(!arrowsOn(connector.id).empty(), "A Connector has no direction arrows under a right-of-way tool");
+        }
+        c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
+        int edges = 0; for (auto* i : c->scene()->items()) edges += i->data(0).toString() == "direction-edge";
+        require(edges == 0, "Unselected edges carry arrows under Select");
         c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         std::cout << "priority canvas tests passed\n";
         return 0;

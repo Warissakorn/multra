@@ -18,6 +18,7 @@
 #include "map_provider.hpp"
 class QLabel;
 class QImage;
+class QGraphicsPolygonItem;
 
 namespace multra {
 class MapLayer;
@@ -424,6 +425,9 @@ private:
     // direction on them as arrowheads, not in the middle of the road.
     void drawObjectFeedback(const std::string&, const QPainterPath&, double z,
                             const std::vector<std::vector<Point>>& edges = {});
+    void drawDirectionArrows(const std::string&, const std::vector<std::vector<Point>>& edges, QColor, double z);
+    // D610: unselected edges as ink lines with arrows, under the Conflict area and Stop line tools only.
+    void drawDirectionEdges(const std::string&, const std::vector<std::vector<Point>>& edges, double z);
     void drawGeometryHandles(const std::string&, const std::vector<Point>&, bool connector);
     // Wireframe: a centre line `pixels` wide on screen as a region, and the drawn line itself
     // (tagged "centre-line") with its selection feedback riding it.
@@ -437,7 +441,7 @@ private:
     std::vector<bool> placeLaneLabels(const QTransform& toScreen, std::vector<QRectF>& placed); // D460
     std::vector<CanvasLabel*> labels_;
     // A filled arrowhead of constant screen size, centred on `at` and pointing along `angle`.
-    void addArrowhead(Point at, double angle, double pixels, QColor, double z, const QString& tag);
+    QGraphicsPolygonItem* addArrowhead(Point at, double angle, double pixels, QColor, double z, const QString& tag);
     // True once a move is visibly under way: the lane tabs, which follow the committed document,
     // are hidden until it is released rather than left behind at the old place.
     bool movingGeometry() const;

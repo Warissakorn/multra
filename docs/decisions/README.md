@@ -103,3 +103,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D607](RECORD.md#d607) — a conflict area's visibility, 100 m by default; unchanged results at 100 m.
 [D608](RECORD.md#d608) — acceleration by speed and temporary lack of attention, as Vissim; absent by default; lost time follows the standstill acceleration.
 [D609](RECORD.md#d609) — no shipped acceleration curve: each study sets it; next A2, then G3, then priority rules.
+[D610](RECORD.md#d610) — conflict areas green, red and olive as Vissim; arrows on every edge under the right-of-way tools.

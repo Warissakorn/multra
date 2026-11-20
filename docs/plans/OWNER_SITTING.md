@@ -82,6 +82,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    *Owner:* "1ก 2ก", then "ทุกไฟล์". *Session note:* done as D607 ([VISIBILITY](../reference/VISIBILITY.md)); at 100 m no
    shipped result changes, so on the T-junction attempt 2 looks as before unless a shorter visibility is entered
    in the area's dialog (20 m: crossing 19.15 → 19.86 s, near turn 9.93 → 11.64 s).
+   *Owner:* 2026-11-20, attempt 2, step 3 (verbatim, with a picture): "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง
+   conflict area ให้มีสีแบบในรูปและลูดศรชี้ตามทิศทาง ลักษณะคล้ายในรูป". *Session note:* done as D610 (green, red and
+   olive areas; arrows on every edge under the Conflict area and Stop line tools). Step 4 and the verdict remain.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any

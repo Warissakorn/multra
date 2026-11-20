@@ -88,8 +88,11 @@ void EditorCanvas::drawObjectFeedback(const std::string& id, const QPainterPath&
     item->setData(0, QStringLiteral("object-feedback")); item->setData(1, QString::fromStdString(id));
     item->setData(2, chosen ? QStringLiteral("selected") : QStringLiteral("hover"));
     if (!chosen) return;
-    // The direction of travel rides the selection outline's long edges: a solid line with an
-    // arrowhead every so many screen pixels, and one at the middle of an edge too short for two.
+    drawDirectionArrows(id, edges, colour, z + .01);
+}
+void EditorCanvas::drawDirectionArrows(const std::string& id, const std::vector<std::vector<Point>>& edges, QColor colour, double z) {
+    // The direction of travel rides the long edges: an arrowhead every so many screen pixels, and
+    // one at the middle of an edge too short for two.
     const double scale = viewScale(), spacing = 72 / scale;
     for (const auto& edge : edges) {
         const double length = polylineLength(edge);
@@ -100,9 +103,26 @@ void EditorCanvas::drawObjectFeedback(const std::string& id, const QPainterPath&
             const double station = step * (i + .5);
             const auto at = pointAlong(edge, station);
             const auto ahead = directionAlong(edge, station, false);
-            addArrowhead(at, std::atan2(ahead.y, ahead.x), 5, colour, z + .01, QStringLiteral("direction-arrow"));
+            addArrowhead(at, std::atan2(ahead.y, ahead.x), 5, colour, z, QStringLiteral("direction-arrow"))
+                ->setData(1, QString::fromStdString(id));
         }
     }
+}
+void EditorCanvas::drawDirectionEdges(const std::string& id, const std::vector<std::vector<Point>>& edges, double z) {
+    // D610 (owner, with a picture): under the Conflict area and Stop line tools every Link and
+    // Connector shows its edges as thin ink lines carrying the direction of travel; a selected one
+    // already carries it in the selection colour.
+    if ((tool_ != Tool::conflict && tool_ != Tool::stopLine) || isSelected(id)) return;
+    const QColor ink = canvasStyle::directionEdge();
+    QPen pen(ink, 1.5); pen.setCosmetic(true); pen.setJoinStyle(Qt::RoundJoin);
+    for (const auto& edge : edges) {
+        if (edge.size() < 2) continue;
+        QPainterPath line; line.moveTo(edge.front().x, edge.front().y);
+        for (std::size_t i = 1; i < edge.size(); ++i) line.lineTo(edge[i].x, edge[i].y);
+        auto* item = scene_.addPath(line, pen); item->setZValue(z);
+        item->setData(0, QStringLiteral("direction-edge")); item->setData(1, QString::fromStdString(id));
+    }
+    drawDirectionArrows(id, edges, ink, z + .01);
 }
 QPainterPath EditorCanvas::centreStroke(const std::vector<Point>& line, double pixels) const {
     if (line.size() < 2) return {};
@@ -123,12 +143,13 @@ void EditorCanvas::drawCentreLine(const std::string& id, const std::vector<Point
     // The highlight is a band a few pixels either side, so a selected line still reads as one.
     drawObjectFeedback(id, centreStroke(line, 8), z + .5, {line});
 }
-void EditorCanvas::addArrowhead(Point at, double angle, double pixels, QColor colour, double z, const QString& tag) {
+QGraphicsPolygonItem* EditorCanvas::addArrowhead(Point at, double angle, double pixels, QColor colour, double z, const QString& tag) {
     const double r = pixels / viewScale();
     QPolygonF arrow;
     for (double offset : {0.0, 2.5, -2.5}) arrow << QPointF(at.x + r*std::cos(angle+offset), at.y + r*std::sin(angle+offset));
     auto* item = scene_.addPolygon(arrow, QPen(Qt::NoPen), QBrush(colour));
     item->setZValue(z); item->setData(0, tag);
+    return item;
 }
 void EditorCanvas::drawGeometryHandles(const std::string& id, const std::vector<Point>& points, bool connector) {
     if (tool_ != Tool::select || selection_.size() != 1 || id != selected() || movingBody() || rotationPivot_) return;

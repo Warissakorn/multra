@@ -160,6 +160,7 @@ void EditorCanvas::redraw() {
         }
         // Direction of travel is shown on the selection outline (drawObjectFeedback), not mid-road.
         drawObjectFeedback(link.id,surface,z+2.5,{left,right});
+        drawDirectionEdges(link.id,{left,right},z+2.5);
         drawGeometryHandles(link.id,road,false);
     }
     drawConnectors();
