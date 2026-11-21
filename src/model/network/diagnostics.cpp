@@ -125,6 +125,8 @@ std::vector<Diagnostic> runtimeDiagnostics(const Network& network, const Scenari
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
     for(const auto& issue:streetSegmentThroughNodeIssues(network)) // S3.6a (STREET_SEGMENTS §6)
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
+    for(const auto& issue:unreachedPriorityMarkers(network,definition.routes)) // D617
+        result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
     for(const auto& issue:routeAmbiguityIssues(network,definition))
         result.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
     try {

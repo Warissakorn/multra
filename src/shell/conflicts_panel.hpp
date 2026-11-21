@@ -34,6 +34,11 @@ public:
 private:
     void edit(const std::string& id);
     void addCrossings();
+    // D617 (PRIORITY_RULES slice 3, conflicts_panel_rules.cpp): marker-form rules as rows after the areas.
+    bool isRule(const std::string& id) const;
+    std::size_t ruleCount() const;
+    void fillRuleRows(int first, const std::string& keep);
+    void editRule(const std::string& id);
     ConflictsHooks hooks_;
     std::vector<AutomaticConflict> automatic_;
     std::uint64_t automaticRevision_{UINT64_MAX};

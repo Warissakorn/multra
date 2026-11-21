@@ -2,6 +2,16 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-20 — Windows sitting, part 1: seven looks answered
+
+- **Owner's words (verbatim, by the numbers of the list sent in chat):** 1 (A2 step 1) "ตอนออกจาก เครื่องมือ
+  conflict area แล้วยังมี เส้นหยุดให้เห็นอยู่" · 3 (C15 + E33) "ตรง" · 4 (E34 with F4) "กดถึงได้ตลอด" · 5 (C14)
+  "นิ่ง" · 6 (E35 with C1, C7, E18) "สามารถ copy และวางบน Excel ได้ แต่ตอนครอบ ส่วนที่เลือกครอบไม่มีกรอบการเลือกคุม
+  ทั้งหมดคุมแต่ช่องสุดท้าย" · 7 (E36 with E5, E8) "สามารถทำได้" · 8 (B45 with E13–15) "แยกได้". Item 2 (E32) not yet answered.
+- **Closed and removed from the sheets:** C14, C15, E33, E34, E35, E36, B45 and the items they took in (D602).
+- **Open:** A2 (steps 3–4 and the verdict; the step 1 finding is D590's rule for controlled lines, an owner
+  choice); the E35 selection defect (NEXT). No code changed.
+
 ## 2026-11-20 — Windows owner checks triaged before new work (D601, D602)
 
 - **Owner:** "ต้องการ เคลียร์ owner checks บน Windows ก่อนเริ่มงานใหม่"; chose "Triage first", "Yes, cut it"

@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — PRIORITY_RULES slice 3: display, table rows and the unreached-marker row (D617)
+
+- **Owner:** "ทำส่วนที่ 3 เลย".
+- **D617:** each marker's headway shows as a faint green band upstream; a picked rule (line, marker or row) links its
+  line to each marker. The Conflict areas tab lists the rules after the areas; the row's dialog edits the name, the
+  line's Stop/Yield and classes, and each marker's gapTime, headway, maxSpeed (0 = no limit) and classes in one Undo
+  step (`setPriorityRule`); Delete keeps the line (`removePriorityRule`). A marker no route reaches is an advisory
+  (`PRIORITY_MARKER_UNREACHED`). Classes are typed as ids for now.
+- **Fixed on the way:** the table's group loop ran to the new row count and read past the groups (caught by
+  `stop-line-ui` and `priority-ui` as a SEGFAULT before commit).
+- **Rows:** `priority_marker` (dialog command, refusals, Delete, advisory), `priority-ui` (rows, canvas pick, dialog,
+  Undo, Delete on the lab), `priority-canvas` unchanged.
+
 ## 2026-11-21 — The priority-rule lab for the owner's Windows look (item 51)
 
 - **Owner (verbatim):** "สร้าง Project สำหรับทดสอบเช็ค บน Window", then "สร้างเสร็จแล้ว pack binary เลย".
@@ -147,13 +160,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   conflict area, compiled to the engine's existing `PriorityRule`; the next schema step proposed, rows PR1–PR10. Five
   owner choices (§8) come before code.
 - **Verified on Linux (desktop, offscreen):** `table-grid-ui`, `priority-canvas` and `stop-line-ui` pass; full desktop suite 361/361. Windows not run.
-
-## 2026-11-20 — Windows sitting, part 1: seven looks answered
-
-- **Owner's words (verbatim, by the numbers of the list sent in chat):** 1 (A2 step 1) "ตอนออกจาก เครื่องมือ
-  conflict area แล้วยังมี เส้นหยุดให้เห็นอยู่" · 3 (C15 + E33) "ตรง" · 4 (E34 with F4) "กดถึงได้ตลอด" · 5 (C14)
-  "นิ่ง" · 6 (E35 with C1, C7, E18) "สามารถ copy และวางบน Excel ได้ แต่ตอนครอบ ส่วนที่เลือกครอบไม่มีกรอบการเลือกคุม
-  ทั้งหมดคุมแต่ช่องสุดท้าย" · 7 (E36 with E5, E8) "สามารถทำได้" · 8 (B45 with E13–15) "แยกได้". Item 2 (E32) not yet answered.
-- **Closed and removed from the sheets:** C14, C15, E33, E34, E35, E36, B45 and the items they took in (D602).
-- **Open:** A2 (steps 3–4 and the verdict; the step 1 finding is D590's rule for controlled lines, an owner
-  choice); the E35 selection defect (NEXT). No code changed.

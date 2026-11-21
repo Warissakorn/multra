@@ -14,4 +14,14 @@ std::string addPriorityMarker(ProjectDocument&, const std::string& lineId, const
 void movePriorityMarker(ProjectDocument&, const std::string& ruleId, std::size_t k, double station);
 // Removes marker `k`; the rule goes with its last marker, and a Stop with no area with the rule.
 void removePriorityMarker(ProjectDocument&, const std::string& ruleId, std::size_t k);
+// D617 (slice 3): the rule's dialog. Numbers for each marker in order (a count mismatch is
+// EDIT_UNKNOWN_OBJECT); `control` is the line's Stop/Yield, none removing a control that names no area.
+struct MarkerNumbers {
+    double gapTime{}, headway{}; std::optional<double> maxSpeed; std::vector<std::string> vehicleClassIds;
+};
+void setPriorityRule(ProjectDocument&, const std::string& ruleId, const std::string& name,
+                     const std::vector<std::string>& lineClassIds, const std::vector<MarkerNumbers>&,
+                     std::optional<StopMode> control);
+// Removes the rule; its line stays, alone, and a Stop with no area goes with the rule.
+void removePriorityRule(ProjectDocument&, const std::string& ruleId);
 }

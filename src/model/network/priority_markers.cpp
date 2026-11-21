@@ -69,4 +69,17 @@ PriorityMarkerResolution resolvePriorityMarkers(const Network& n, const RuntimeS
     }
     return result;
 }
+std::vector<ValidationIssue> unreachedPriorityMarkers(const Network& n, const std::vector<Route>& routes) {
+    std::vector<ValidationIssue> issues;
+    const auto& rules = n.rightOfWay.priorityRules;
+    for (std::size_t i = 0; i < rules.size(); ++i)
+        for (std::size_t k = 0; k < rules[i].markers.size(); ++k) {
+            const auto& path = rules[i].markers[k].point.path;
+            const auto& owner = path.connectorId.empty() ? path.linkId : path.connectorId;
+            if (std::none_of(routes.begin(), routes.end(), [&](const auto& r) {
+                    return std::find(r.segmentIds.begin(), r.segmentIds.end(), owner) != r.segmentIds.end(); }))
+                issues.push_back({"PRIORITY_MARKER_UNREACHED", "rightOfWay.priorityRules[" + std::to_string(i) + "].markers[" + std::to_string(k) + "]"});
+        }
+    return issues;
+}
 }

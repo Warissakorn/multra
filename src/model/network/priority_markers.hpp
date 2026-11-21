@@ -21,4 +21,7 @@ struct PriorityMarkerResolution {
     std::vector<ValidationIssue> issues;
 };
 PriorityMarkerResolution resolvePriorityMarkers(const Network&, const RuntimeSections&);
+// D617 (§3): an advisory for each marker whose Link or Connector no route lists
+// (PRIORITY_MARKER_UNREACHED at rightOfWay.priorityRules[i].markers[k]); it never blocks Run.
+std::vector<ValidationIssue> unreachedPriorityMarkers(const Network&, const std::vector<Route>& routes);
 }

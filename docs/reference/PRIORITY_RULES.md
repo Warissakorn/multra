@@ -1,7 +1,7 @@
 # PRIORITY_RULES — a stop line with conflict markers, without a conflict area (draft, D604)
 
-**Slices 1, 1b and 2 implemented (D614–D616, 2026-11-21: schema 83, codec, compile, engine, Stop at the line,
-the Stop line tool's marker gestures and lifecycle); slice 3 (display, table, owner's look) open. The owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
+**Slices 1–3 implemented (D614–D617, 2026-11-21: schema 83, codec, compile, engine, Stop at the line, the Stop
+line tool's marker gestures and lifecycle, display, table and Problems row); the owner's look (item 51) open. The owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
 Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim", then the choice "ข. Priority rule แบบ Vissim" over
 taking over the automatic candidates. Written before code; rows PR1–PR10 fail first. Section 8 holds
 the owner's choices, answered as Vissim does it (D606).
@@ -141,7 +141,9 @@ Calibrated gap times (M6). Vissim's "look beyond red signals". Converting existi
    `priority_marker_commands.cpp`, markers drawn as green bars (`canvas_markers.cpp`); tests
    `priority_marker` and `stop-line-ui`. A copy keeps a rule when its line is copied, with the markers
    whose roads were copied; a study-area cut does the same.
-3. Display and the table rows; the owner's look on Windows: [OWNER_SITTING_WINDOWS item 51](../plans/OWNER_SITTING_WINDOWS.md),
+3. **Done (D617):** display (headway bands `priority-headway`, the picked rule's links `priority-link`), the table
+   rows and dialog (`conflicts_panel_rules.cpp`, `setPriorityRule`, `removePriorityRule`) and the advisory
+   `PRIORITY_MARKER_UNREACHED`; tests `priority_marker`, `priority-ui`. The owner's look on Windows: [OWNER_SITTING_WINDOWS item 51](../plans/OWNER_SITTING_WINDOWS.md),
    on `data/projects/priority-rule-lab.traffic.json` (Open example → Priority rule lab).
 
 **How Vissim does each (PTV Vissim help, "Creating priority rules" and "Attributes of priority rules",

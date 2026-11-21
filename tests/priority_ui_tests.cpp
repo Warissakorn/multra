@@ -21,6 +21,8 @@
 #include <QTest>
 #include <QTimer>
 #include <iostream>
+#include <filesystem>
+#include <algorithm>
 using namespace multra;
 // M3.2.4: the Conflict areas tab (A24). Keyboard and pointer reach the same commands; each
 // edit is one Undo step; Problems rows lead to the area; the Run UI says what is protected.
@@ -170,6 +172,56 @@ int main(int argc, char** argv) {
         language->setCurrentIndex(1); QApplication::processEvents();
         require(tabs->tabText(tabs->indexOf(test::tabPage(tabs,table))) != "Conflict areas" && !tabs->tabText(tabs->indexOf(test::tabPage(tabs,table))).isEmpty(), "The tab was not translated");
         require(act(w, "editorAddCrossing")->text() != "Add crossing areas", "The action was not translated");
+        // D617 (PRIORITY_RULES slice 3) on the lab: rule rows after the areas, a canvas pick lights the row,
+        // the dialog edits marker numbers and the line's Stop in one Undo step, Delete keeps the line.
+        w.openFile(QString::fromStdString((std::filesystem::path(argv[1]) / "projects" / "priority-rule-lab.traffic.json").string()));
+        QApplication::processEvents(); w.canvas()->fitNetwork(); QApplication::processEvents();
+        const auto chooseTool = [&](EditorCanvas::Tool t) {
+            w.findChild<QComboBox*>("editorTool")->setCurrentIndex(static_cast<int>(t)); QApplication::processEvents();
+            w.canvas()->redraw(); QApplication::processEvents(); };
+        chooseTool(EditorCanvas::Tool::stopLine); // shows the Conflict areas tab
+        const auto& lab = [&]() -> const RightOfWay& { return w.history().document().network.rightOfWay; };
+        int ruleRows = 0, rightRow = -1;
+        std::string rightRule;
+        for (const auto& r : lab().priorityRules) if (r.markers.size() == 2) rightRule = r.id;
+        for (int r = 0; r < table->rowCount(); ++r) {
+            const auto id = table->item(r, 0)->data(Qt::UserRole).toString().toStdString();
+            if (std::any_of(lab().priorityRules.begin(), lab().priorityRules.end(), [&](const auto& x) { return x.id == id; })) { ++ruleRows; if (id == rightRule) rightRow = r; }
+        }
+        require(ruleRows == 2 && rightRow == table->rowCount() - 2, "The two priority rules are not rows after the areas");
+        // A canvas pick of the right-turn line lights its rule's row, and the canvas links the line to its markers.
+        require(items(w, "priority-headway") == 3, "A marker shows no headway band");
+        require(items(w, "priority-link") == 0, "A rule is linked while nothing is picked");
+        const auto rightLine = std::find_if(lab().priorityRules.begin(), lab().priorityRules.end(), [&](const auto& x) { return x.id == rightRule; })->waitingLineId;
+        w.canvas()->selectStopLine(rightLine); w.canvas()->stopLinePicked(rightLine); QApplication::processEvents();
+        require(table->currentRow() == rightRow, "Picking the line did not select its rule's row");
+        require(items(w, "priority-link") == 2, "The picked rule does not link its line to its two markers");
+        chooseTool(EditorCanvas::Tool::select);
+        require(items(w, "priority-headway") == 0 && items(w, "priority-marker") == 0, "Markers show under Select (D603)");
+        chooseTool(EditorCanvas::Tool::stopLine);
+        const auto labBefore = w.history().document();
+        table->setFocus(); table->selectRow(rightRow); QApplication::processEvents();
+        require(!act(w, "editorCyclePriority")->isEnabled() && act(w, "editorEditConflict")->isEnabled(), "A rule row offers the wrong actions");
+        ran = false;
+        onDialog("editorPriorityRuleDialog", [&](QDialog* dialog) {
+            auto* gap = dialog->findChild<QDoubleSpinBox*>("editorPriorityMarkerGap0");
+            auto* speed = dialog->findChild<QDoubleSpinBox*>("editorPriorityMarkerSpeed0");
+            auto* control = dialog->findChild<QComboBox*>("editorPriorityRuleControl");
+            require(gap && speed && control && dialog->findChild<QDoubleSpinBox*>("editorPriorityMarkerGap1"), "The rule dialog lost a field");
+            require(std::abs(gap->value() - 3) < 1e-9 && speed->value() == 0, "The dialog does not show Vissim's defaults");
+            gap->setValue(4); speed->setValue(20); control->setCurrentIndex(control->findData(static_cast<int>(StopMode::stop)));
+            dialog->accept();
+        }, ran);
+        QTest::keyClick(table, Qt::Key_Return); QApplication::processEvents();
+        require(ran, "Enter on a rule row did not open its dialog");
+        const auto& edited = *std::find_if(lab().priorityRules.begin(), lab().priorityRules.end(), [&](const auto& x) { return x.id == rightRule; });
+        require(edited.markers[0].gapTime == 4 && edited.markers[0].maxSpeed == 20.0 && edited.markers[1].gapTime == 3, "The dialog did not set marker 0 alone");
+        require(std::any_of(lab().stopControls.begin(), lab().stopControls.end(), [&](const auto& c) { return c.waitingLineId == rightLine && c.mode == StopMode::stop; }), "The dialog did not put a Stop on the line");
+        act(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(w.history().document() == labBefore, "The rule dialog was not one Undo step");
+        table->selectRow(rightRow); QApplication::processEvents();
+        act(w, "editorDeleteConflict")->trigger(); QApplication::processEvents();
+        require(lab().priorityRules.size() == 1 && lab().waitingLines.size() == 2, "Delete on a rule row did not keep its line");
         std::cout << "priority UI tests passed\n";
         return 0;
     } catch (const std::exception& e) {

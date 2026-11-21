@@ -75,15 +75,16 @@ A session prepares the build and records the owner's words; Linux tests close no
 lines hidden outside the right-of-way tools); E35's block selection → D605 (one outline per selected
 block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at the next table use.
 
-## Priority rules like Vissim (D604, D606, D614–D616) — slices 1, 1b and 2 done; slice 3 next
+## Priority rules like Vissim (D604, D606, D614–D617) — all slices done; the owner's look next
 
 [PRIORITY_RULES](reference/PRIORITY_RULES.md): a stop line with conflict markers, no conflict area. **Slice 1
 done (D614):** schema 83 marker form, compile per marker to the core `PriorityRule`, `maxSpeed` and class
 filters in the engine; rows `priority_rule` PR1–PR6, PR10–PR13; M0 unchanged. **Slice 1b done (D615):** a Stop control
 on the line (it may name no area) is a full stop before the gap test (PR14–PR16). **Slice 2 done (D616):** with a line picked,
 Ctrl+right-click on another lane adds a marker; drag and Delete; markers follow their roads (PR7, PR8). **For the owner:** [OWNER_SITTING_WINDOWS item 51](plans/OWNER_SITTING_WINDOWS.md) on the new
-`priority-rule-lab` example (first in the sitting). **Next: slice 3** (display, table, the
-unreached-marker Problems row; the owner's look on Windows).
+`priority-rule-lab` example (first in the sitting). **Slice 3 done (D617):** headway bands, links
+while picked, table rows with a dialog, the unreached-marker advisory. **Left:** the owner's look (item 51); a class
+picker in place of typed class ids if the owner asks.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 

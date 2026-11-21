@@ -197,3 +197,47 @@ TEST(priority_marker, lab_run_holds_both_turns_at_their_lines) {
     while (again.tick < totalTicks(s)) { again = stepSimulation(again); second.insert(second.end(), again.events.begin(), again.events.end()); }
     CHECK(events == second);
 }
+// D617 (slice 3): the rule's dialog command, Delete on its row, and the unreached-marker advisory.
+TEST(priority_marker, d617_set_rule_is_one_step_and_refuses_bad_values) {
+    const auto lab = fixture::priorityRuleLab();
+    History h; h.reset(lab.document);
+    const auto before = documentJson(h.document());
+    std::vector<MarkerNumbers> numbers{{4.0, 6.0, 20.0, {}}, {2.5, 0, std::nullopt, {}}};
+    CHECK(h.execute("edit", [&](auto& d) { setPriorityRule(d, lab.rightRule, "Right", {}, numbers, StopMode::stop); }));
+    const auto& row = h.document().network.rightOfWay;
+    const auto* r = &*std::find_if(row.priorityRules.begin(), row.priorityRules.end(), [&](const auto& x) { return x.id == lab.rightRule; });
+    CHECK(r->name == "Right" && r->markers[0].gapTime == 4.0 && r->markers[0].headway == 6.0 && r->markers[0].maxSpeed == 20.0);
+    CHECK(r->markers[1].gapTime == 2.5 && r->markers[1].headway == 0 && !r->markers[1].maxSpeed);
+    CHECK(std::any_of(row.stopControls.begin(), row.stopControls.end(), [&](const auto& c) { return c.waitingLineId == lab.rightLine && c.mode == StopMode::stop; }));
+    h.undo(); CHECK(documentJson(h.document()) == before);
+    // An unknown class or a zero gap time is refused and nothing changes.
+    test::throws([&] { h.execute("bad", [&](auto& d) { setPriorityRule(d, lab.rightRule, "", {"buses"}, {{3, 5, {}, {}}, {3, 5, {}, {}}}, std::nullopt); }); }, "UNKNOWN_VEHICLE_CLASS");
+    test::throws([&] { h.execute("bad", [&](auto& d) { setPriorityRule(d, lab.rightRule, "", {}, {{0, 5, {}, {}}, {3, 5, {}, {}}}, std::nullopt); }); }, "INVALID_PRIORITY_RULE");
+    test::throws([&] { h.execute("bad", [&](auto& d) { setPriorityRule(d, lab.rightRule, "", {}, {{3, 5, {}, {}}}, std::nullopt); }); }, "EDIT_UNKNOWN_OBJECT");
+    CHECK(documentJson(h.document()) == before);
+    // None removes a control with no area; the Stop on the left line goes, the line stays.
+    const auto& left = *std::find_if(row.priorityRules.begin(), row.priorityRules.end(), [&](const auto& x) { return x.id == lab.leftRule; });
+    CHECK(h.execute("yield", [&](auto& d) { setPriorityRule(d, lab.leftRule, left.name, {}, {{3, 5, {}, {}}}, std::nullopt); }));
+    CHECK(std::none_of(row.stopControls.begin(), row.stopControls.end(), [&](const auto& c) { return c.waitingLineId == lab.leftLine; }));
+}
+TEST(priority_marker, d617_delete_rule_keeps_its_line) {
+    const auto lab = fixture::priorityRuleLab();
+    History h; h.reset(lab.document);
+    CHECK(h.execute("delete", [&](auto& d) { removePriorityRule(d, lab.leftRule); }));
+    const auto& row = h.document().network.rightOfWay;
+    CHECK(row.priorityRules.size() == 1 && row.waitingLines.size() == 2 && row.stopControls.empty());
+    h.undo(); CHECK(h.document().network.rightOfWay.priorityRules.size() == 2);
+}
+TEST(priority_marker, d617_a_marker_no_route_reaches_is_an_advisory) {
+    const auto lab = fixture::priorityRuleLab();
+    CHECK(runDiagnostics(lab.document, test::root() / "data").empty());
+    auto d = lab.document;
+    const auto lone = addLink(d, {{-100, 60}, {100, 60}}, 1, 3.5); // a road no route uses
+    for (auto& r : d.network.rightOfWay.priorityRules)
+        if (r.id == lab.leftRule) r.markers[0].point = {{lone, d.network.links.back().lanes[0].id}, 100};
+    validateDocument(d);
+    const auto rows = runDiagnostics(d, test::root() / "data");
+    CHECK(rows.size() == 1 && rows[0].code == "PRIORITY_MARKER_UNREACHED" && rows[0].severity == DiagnosticSeverity::advisory);
+    CHECK(rows[0].path.ends_with(".markers[0]"));
+    compileDocument(d, test::root() / "data"); // it never blocks Run
+}
