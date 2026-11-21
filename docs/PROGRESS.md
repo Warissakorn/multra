@@ -13,6 +13,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   then the gap test applies, as a Stop zone does. Such a control may name no area (no schema step). Yield is the
   rule alone.
 - **Rows:** `priority_rule` PR14–PR16 and PR10 with a Stop (13 tests). Without the hold PR14 fails.
+- **Checks:** `multra-cli 42` keeps 45 / 31.75870154816726 / 1; `check` desktop 365/365, headless 248/248. Windows not run.
 
 ## 2026-11-21 — PRIORITY_RULES slice 1: a stop line with conflict markers, no area (D614)
 
