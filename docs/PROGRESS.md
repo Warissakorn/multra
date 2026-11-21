@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — Pointing shows a road's direction; a selected conflict area shows its roads (D611)
+
+- **Owner (verbatim):** "ปรับให้การชี้ที่ Link และ connector แสดงเส้นขอบที่มีลูกศรสีดำ ส่วนการเลือกให้เป็นเป็นสีฟ้า
+  แล้วปรับให้การเลือก conflict area ทำให้ link และ connector ขึ้นสถานะถูกชี้", then "ไม่ปรับสีถนน เพิ่มแค่ข้อ 2"
+  (the rule in every tool; not hovering an area, no road colour change).
+- **D611:** a hovered Link or Connector shows its long edges near-black (`#1F1F1F`) with arrowheads; a selected one
+  stays the accent blue with blue arrows; under the Conflict area tool, the Links and Connectors a selected area
+  runs on are drawn as hovered. D610's arrows on every edge under the right-of-way tools are withdrawn.
+- **Tests:** `priority-canvas` (no arrows with nothing pointed at or selected; the selected area's Links black
+  and pointing downstream; a selected Link blue) and `editor-interaction-ui` (hover black, selection blue; its old
+  "hover draws no arrows" check reversed). Desktop `check` green, 363 tests.
+
 ## 2026-11-20 — Conflict areas in Vissim's colours; direction arrows on every edge (D610)
 
 - **Owner, A2 attempt 2 step 3 (verbatim, with a picture):** "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง conflict
@@ -146,11 +158,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D593:** [MERGE_MOUTH](reference/MERGE_MOUTH.md). `mergeMouth` gives a taken-over merge the measured overlap (first overlapping station on the joining segment to the join) and each side a line 1 m short of it; used by Take over merge, automatic candidates and D86's follow. Rows MM1–MM4 failed first (MM4: 266 ticks with a minor and a major body in one mouth, seed 42) and pass; MM5–MM6 guards. The T-junction file regenerated (`wait-14` 26.23 → 12.31 m, `wait-18` 24.01 → 6.99 m, `wait-13` 169 → 154.65 m, `wait-17` 169 → 151.36 m). Five tests that pinned the strip were updated to the new rule (`rightofway` ×3, `rightofway_runtime`, `tjunction`); D54 amended.
 - **Not changed:** derived merges and the solver; stored files are not migrated.
 - **Verified on Linux (desktop preset, Debug):** full `ctest` 357/357 passed except the group list, then `mergemouth` and `all-model-tests` pass after listing the group (358 tests); changed units build without the PCH. Windows not run.
-
-## 2026-11-19 — Intermediate points (D589), areas under their tool (D590), STOP_LINES draft (D591)
-
-- **Owner (2026-11-19):** the Intermediate points field was always red and a higher count did not round the Connector; wanted the field in the Connect dialog (default 0, a suitable value chosen); conflict areas only under the Conflict area tool; "ตามแนะนำ" to derived stop positions and a Stop line tool.
-- **D589:** a spin box sets its own text with signals blocked, so the inspector's check never saw a value it put in (measured `validationState=invalid` at 3); the inspector now rechecks on refresh and a disabled field is never invalid. A Connector on its default curve is laid on the curve again at the new count (test `raising_the_count_on_a_default_connector_rounds_it`); a bent one keeps its line. The Connect dialog's field: 0 = automatic, the fewest points within 0.10 m of the curve.
-- **D590:** areas and plain waiting lines draw only under the Conflict area tool (lines also under Queue counter); Stop/Yield lines always.
-- **D591:** [STOP_LINES](reference/STOP_LINES.md), a draft for the owner; nothing switched on before M3.2.4e.
-- **Verified on Linux (desktop preset, Debug):** full `ctest` 357/357 after updating `editor-gestures`, `priority-ui` and `priority-canvas` to D588/D590; changed units build without the PCH. Windows not run.

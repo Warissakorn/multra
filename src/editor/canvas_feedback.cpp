@@ -78,17 +78,34 @@ void EditorCanvas::leaveEvent(QEvent* event) {
 }
 void EditorCanvas::drawObjectFeedback(const std::string& id, const QPainterPath& shape, double z,
                                       const std::vector<std::vector<Point>>& edges) {
-    const bool chosen = isSelected(id), hovered = id == hoverObject_;
+    // D611 (owner): a selected object is outlined in the accent blue with its arrows; a hovered one,
+    // or one a selected conflict area runs on, shows its long edges in near-black with arrows.
+    const bool chosen = isSelected(id), hovered = id == hoverObject_ || conflictRelated_.contains(id);
     if ((!chosen && !hovered) || shape.isEmpty()) return;
-    const bool primary = id == selected();
-    const QColor colour = chosen ? canvasStyle::selection() : canvasStyle::hover();
-    QPen pen(colour, chosen && primary ? 2 : 1.5); pen.setCosmetic(true); pen.setJoinStyle(Qt::RoundJoin);
-    QColor fill = colour; fill.setAlpha(chosen ? 32 : 16);
-    auto* item = scene_.addPath(shape, pen, QBrush(fill)); item->setZValue(z);
+    if (chosen) {
+        const bool primary = id == selected();
+        const QColor colour = canvasStyle::selection();
+        QPen pen(colour, primary ? 2 : 1.5); pen.setCosmetic(true); pen.setJoinStyle(Qt::RoundJoin);
+        QColor fill = colour; fill.setAlpha(32);
+        auto* item = scene_.addPath(shape, pen, QBrush(fill)); item->setZValue(z);
+        item->setData(0, QStringLiteral("object-feedback")); item->setData(1, QString::fromStdString(id));
+        item->setData(2, QStringLiteral("selected"));
+        drawDirectionArrows(id, edges, colour, z + .01);
+        return;
+    }
+    const QColor ink = canvasStyle::directionEdge();
+    QPen pen(ink, 1.5); pen.setCosmetic(true); pen.setJoinStyle(Qt::RoundJoin);
+    QPainterPath lines;
+    for (const auto& edge : edges) {
+        if (edge.size() < 2) continue;
+        lines.moveTo(edge.front().x, edge.front().y);
+        for (std::size_t i = 1; i < edge.size(); ++i) lines.lineTo(edge[i].x, edge[i].y);
+    }
+    auto* item = lines.isEmpty() ? scene_.addPath(shape, pen) : scene_.addPath(lines, pen);
+    item->setZValue(z);
     item->setData(0, QStringLiteral("object-feedback")); item->setData(1, QString::fromStdString(id));
-    item->setData(2, chosen ? QStringLiteral("selected") : QStringLiteral("hover"));
-    if (!chosen) return;
-    drawDirectionArrows(id, edges, colour, z + .01);
+    item->setData(2, QStringLiteral("hover"));
+    drawDirectionArrows(id, edges, ink, z + .01);
 }
 void EditorCanvas::drawDirectionArrows(const std::string& id, const std::vector<std::vector<Point>>& edges, QColor colour, double z) {
     // The direction of travel rides the long edges: an arrowhead every so many screen pixels, and
@@ -107,22 +124,6 @@ void EditorCanvas::drawDirectionArrows(const std::string& id, const std::vector<
                 ->setData(1, QString::fromStdString(id));
         }
     }
-}
-void EditorCanvas::drawDirectionEdges(const std::string& id, const std::vector<std::vector<Point>>& edges, double z) {
-    // D610 (owner, with a picture): under the Conflict area and Stop line tools every Link and
-    // Connector shows its edges as thin ink lines carrying the direction of travel; a selected one
-    // already carries it in the selection colour.
-    if ((tool_ != Tool::conflict && tool_ != Tool::stopLine) || isSelected(id)) return;
-    const QColor ink = canvasStyle::directionEdge();
-    QPen pen(ink, 1.5); pen.setCosmetic(true); pen.setJoinStyle(Qt::RoundJoin);
-    for (const auto& edge : edges) {
-        if (edge.size() < 2) continue;
-        QPainterPath line; line.moveTo(edge.front().x, edge.front().y);
-        for (std::size_t i = 1; i < edge.size(); ++i) line.lineTo(edge[i].x, edge[i].y);
-        auto* item = scene_.addPath(line, pen); item->setZValue(z);
-        item->setData(0, QStringLiteral("direction-edge")); item->setData(1, QString::fromStdString(id));
-    }
-    drawDirectionArrows(id, edges, ink, z + .01);
 }
 QPainterPath EditorCanvas::centreStroke(const std::vector<Point>& line, double pixels) const {
     if (line.size() < 2) return {};

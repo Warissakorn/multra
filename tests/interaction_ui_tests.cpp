@@ -58,7 +58,12 @@ void selectionWorkflow(EditorCanvas& c) {
     c.selectionCleared=[&]{++clears;};
     QTest::mouseMove(c.viewport(),pixel(c,{-65,0}));
     require(feedback(c,"a","hover"),"Select hover has no feedback");
+    // D611 (owner): pointing shows the edges with near-black arrows; selecting turns them the selection blue.
+    const auto arrowIn=[&](const QColor& colour){for(auto* i:c.scene()->items())if(i->data(0).toString()=="direction-arrow" && i->data(1).toString()=="a")
+        if(auto* p=dynamic_cast<QGraphicsPolygonItem*>(i);p && p->brush().color()==colour)return true;return false;};
+    require(arrowIn(canvasStyle::directionEdge()),"Hover has no near-black direction arrows");
     click(c,{-65,0});require(c.selected()=="a" && feedback(c,"a","selected"),"Click did not select hovered road");
+    require(arrowIn(canvasStyle::selection()) && !arrowIn(canvasStyle::directionEdge()),"Selection arrows are not the selection blue");
     require(count(c,"geometry-point")==3 && count(c,"lane-resize")==6,"Single selection controls missing");
     for(auto* item:c.scene()->items())if(item->data(0).toString()=="geometry-point" ||
         item->data(0).toString()=="connector-end") {
@@ -115,7 +120,7 @@ void moveFeedback(EditorCanvas& c) {
     // Pointing at a road is still pointing: the arrow, never a hand.
     QTest::mouseMove(c.viewport(),pixel(c,{-65,0}));
     require(feedback(c,"a","hover") && c.cursor().shape()==Qt::ArrowCursor,"Hovering a road changed the pointer");
-    require(count(c,"direction-arrow")==0,"Hover alone drew direction arrows");
+    require(count(c,"direction-arrow")>0,"Hover drew no direction arrows (D611)");
     click(c,{-65,0});require(c.selected()=="a","Fixture selection failed");
     // Direction rides the selection outline: arrowheads on both long edges, pointing +x here.
     int arrows=0;

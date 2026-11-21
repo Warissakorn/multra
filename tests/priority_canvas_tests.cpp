@@ -1,6 +1,7 @@
 #include "tab_page_helpers.hpp"
 #include "ui_test_storage.hpp"
 #include "../src/shell/editor_window.hpp"
+#include "../src/editor/canvas_style.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/model/network/right_of_way.hpp"
 #include <nlohmann/json.hpp>
@@ -271,19 +272,34 @@ int main(int argc, char** argv) {
                 if (auto* poly = dynamic_cast<QGraphicsPolygonItem*>(i)) found.push_back(poly->polygon());
             return found;
         };
-        for (const auto tool : {EditorCanvas::Tool::conflict, EditorCanvas::Tool::stopLine}) {
+        const auto arrowColour = [&](const std::string& id) {
+            QColor colour;
+            for (auto* i : c->scene()->items()) if (i->data(0).toString() == "direction-arrow" && i->data(1).toString().toStdString() == id)
+                if (auto* poly = dynamic_cast<QGraphicsPolygonItem*>(i)) colour = poly->brush().color();
+            return colour.name(QColor::HexRgb).toUpper();
+        };
+        const auto anyArrow = [&] { for (auto* i : c->scene()->items()) if (i->data(0).toString() == "direction-arrow") return true; return false; };
+        // D611 (owner): no edge arrows until something is pointed at or selected.
+        c->clearSelection(); c->setHighlightedConflict({});
+        for (const auto tool : {EditorCanvas::Tool::conflict, EditorCanvas::Tool::stopLine, EditorCanvas::Tool::select}) {
             c->setTool(tool); c->redraw(); QApplication::processEvents();
-            for (const auto& link : network().links) {
-                const auto arrows = arrowsOn(link.id);
-                require(!arrows.empty(), "A Link has no direction arrows under a right-of-way tool");
-                // The tip (first vertex) lies further along the Link's digitised direction than the base.
-                const QPointF along(link.geometry.back().x - link.geometry.front().x, link.geometry.back().y - link.geometry.front().y);
-                const auto dot = [&](QPointF p) { return p.x() * along.x() + p.y() * along.y(); };
-                for (const auto& a : arrows) require(dot(a[0]) > dot((a[1] + a[2]) / 2), "An arrow points against the Link");
-            }
-            for (const auto& connector : network().connectors)
-                require(!arrowsOn(connector.id).empty(), "A Connector has no direction arrows under a right-of-way tool");
+            require(!anyArrow(), "Edges carry arrows with nothing pointed at or selected");
         }
+        // Selecting a conflict area shows the Links it runs on as hovered: near-black edges with arrows.
+        c->setTool(EditorCanvas::Tool::conflict); c->setHighlightedConflict(group.key); c->redraw(); QApplication::processEvents();
+        for (const auto& link : network().links) {
+            const auto arrows = arrowsOn(link.id);
+            require(!arrows.empty(), "A Link of the selected conflict area has no direction arrows");
+            require(arrowColour(link.id) == "#1F1F1F", "A Link of the selected conflict area is not drawn as hovered");
+            // The tip (first vertex) lies further along the Link's digitised direction than the base.
+            const QPointF along(link.geometry.back().x - link.geometry.front().x, link.geometry.back().y - link.geometry.front().y);
+            const auto dot = [&](QPointF p) { return p.x() * along.x() + p.y() * along.y(); };
+            for (const auto& a : arrows) require(dot(a[0]) > dot((a[1] + a[2]) / 2), "An arrow points against the Link");
+        }
+        // A selected Link is blue, and it stays blue while its area is selected.
+        c->select(network().links.front().id); c->redraw(); QApplication::processEvents();
+        require(arrowColour(network().links.front().id) == canvasStyle::selection().name(QColor::HexRgb).toUpper(), "A selected Link's arrows are not the selection blue");
+        c->clearSelection(); c->setHighlightedConflict(group.key); c->redraw(); QApplication::processEvents();
         // D610 (b), owner: each conflicting path carries a dark centre line with an arrowhead at its exit end.
         c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         {
@@ -306,8 +322,8 @@ int main(int argc, char** argv) {
             }
         }
         c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
-        int edges = 0; for (auto* i : c->scene()->items()) edges += i->data(0).toString() == "direction-edge" || i->data(0).toString() == "conflict-arrow";
-        require(edges == 0, "Unselected edges or conflict bands carry arrows under Select");
+        int edges = 0; for (auto* i : c->scene()->items()) edges += i->data(0).toString() == "conflict-arrow";
+        require(edges == 0 && !anyArrow(), "Edges or conflict bands carry arrows under Select with nothing selected");
         c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         std::cout << "priority canvas tests passed\n";
         return 0;

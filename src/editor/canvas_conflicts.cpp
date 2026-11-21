@@ -184,6 +184,19 @@ std::string EditorCanvas::automaticAt(Point p) const {
     }
     return {};
 }
+void EditorCanvas::updateConflictRelated() {
+    // D611 (owner): selecting a conflict area shows the Links and Connectors it runs on as hovered.
+    conflictRelated_.clear();
+    if (!document_ || tool_ != Tool::conflict || highlightedConflict_.empty()) return;
+    const auto& n = document_->network;
+    const auto groups = conflictGroups(n, automatic_);
+    const auto group = std::find_if(groups.begin(), groups.end(), [&](const auto& g) { return g.key == highlightedConflict_; });
+    const auto member = [&](const std::string& id) { return id == highlightedConflict_ || (group != groups.end() && conflictGroupContains(*group, id)); };
+    for (const auto& a : n.rightOfWay.conflictAreas) if (member(a.id))
+        for (const auto* side : {&a.first, &a.second}) conflictRelated_.insert(conflictOwner(side->path));
+    for (const auto& a : automatic_) if (member(a.key))
+        for (const auto* side : {&a.first, &a.second}) conflictRelated_.insert(conflictOwner(side->path));
+}
 void EditorCanvas::drawConflicts() {
     if (!document_) return;
     const auto& n = document_->network;

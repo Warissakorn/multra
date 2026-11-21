@@ -179,7 +179,6 @@ void EditorCanvas::drawConnectors() {
         std::vector<std::vector<Point>> edges;
         if(drawing.boundaries.size()>=2)edges={drawing.boundaries.front(),drawing.boundaries.back()};
         drawObjectFeedback(c.id,drawing.outline.empty()?connectorShape(c):surface,z+4.75,edges);
-        drawDirectionEdges(c.id,edges,z+4.75);
         if(c.id==primary && tool_==Tool::select && selection_.size()==1)
             drawGeometryHandles(c.id,connectorGrips(document_->network,preview),true);
     }

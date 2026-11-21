@@ -87,6 +87,9 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    olive areas; arrows on every edge under the Conflict area and Stop line tools). Step 4 and the verdict remain.
    *Owner:* 2026-11-21 (verbatim): "เหลือลูกที่กึ่งแล้วแนวที่เกิด conflict แต่ละแนว"; in chat: a centre line with the
    arrowhead at its exit end. *Session note:* D610 (b), each band now carries one.
+   *Owner:* 2026-11-21 (verbatim): "ปรับให้การชี้ที่ Link และ connector แสดงเส้นขอบที่มีลูกศรสีดำ ส่วนการเลือกให้เป็นเป็นสีฟ้า
+   แล้วปรับให้การเลือก conflict area ทำให้ link และ connector ขึ้นสถานะถูกชี้", then "ไม่ปรับสีถนน เพิ่มแค่ข้อ 2". *Session
+   note:* D611.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any

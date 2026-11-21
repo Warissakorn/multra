@@ -14,6 +14,7 @@
 #include <functional>
 #include <optional>
 #include <map>
+#include <set>
 #include <QTimer>
 #include "map_provider.hpp"
 class QLabel;
@@ -426,8 +427,9 @@ private:
     void drawObjectFeedback(const std::string&, const QPainterPath&, double z,
                             const std::vector<std::vector<Point>>& edges = {});
     void drawDirectionArrows(const std::string&, const std::vector<std::vector<Point>>& edges, QColor, double z);
-    // D610: unselected edges as ink lines with arrows, under the Conflict area and Stop line tools only.
-    void drawDirectionEdges(const std::string&, const std::vector<std::vector<Point>>& edges, double z);
+    // D611: the Links and Connectors the selected conflict area runs on; drawn as hovered.
+    std::set<std::string> conflictRelated_;
+    void updateConflictRelated();
     void drawGeometryHandles(const std::string&, const std::vector<Point>&, bool connector);
     // Wireframe: a centre line `pixels` wide on screen as a region, and the drawn line itself
     // (tagged "centre-line") with its selection feedback riding it.
