@@ -15,7 +15,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Measured** on the study's spread probe, seeds 42–45: at 60 s, 165 removed, completed 4,501 → 5,010.
 - **Checks:** `diffusion` 6/6; headless `check` 247/247. Desktop `check` alone failed `behaviour-lab-ui`
   (SIGSEGV in `~DriverBehaviour`) and `cli-consistency`: both binaries were never `check` dependencies and ran
-  stale. `cmake/check_builds_all.cmake` now makes `check` depend on every executable.
+  stale. `cmake/check_builds_all.cmake` now makes `check` depend on every executable. Verified: after touching
+  `types.hpp`, `check` alone gives desktop 364/364 and headless 247/247.
 
 ## 2026-11-21 — M3.2.7d passes on attempt 2 (D612)
 
