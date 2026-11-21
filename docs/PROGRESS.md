@@ -14,6 +14,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Markers follow their roads (split, delete, copy, study-area cut) and show as green bars (`canvas_markers.cpp`).
 - **Rows:** `priority_marker` PR7, PR8 (5 tests); `stop-line-ui` extended (place alone, add, drag, Delete, Undo);
   `stoplines` SL4 updated for the lone line.
+- **Checks:** `multra-cli 42` keeps 45 / 31.75870154816726 / 1; `check` desktop 366/366, headless 249/249; 677 units
+  build without the PCH. Windows not run.
 
 ## 2026-11-21 — PRIORITY_RULES slice 1b: a Stop on a priority rule's line (D615)
 
