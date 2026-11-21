@@ -16,6 +16,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Tests:** `priority-canvas` checks the three colours and arrows on every Link and Connector under both tools,
   pointing the digitised way, and no unselected edge under Select; it failed before the change. Desktop `check`
   green, 363 tests. Step 4 and the verdict are still the owner's.
+- **D610 (b), 2026-11-21:** owner (verbatim) "เหลือลูกที่กึ่งแล้วแนวที่เกิด conflict แต่ละแนว": each band carries a
+  dark centre line with an arrowhead at its exit end; `priority-canvas` checks every band has one, the major
+  road's point downstream, and none under Select (failed before).
 
 ## 2026-11-20 — G1 start-up as Vissim: acceleration by speed, lack of attention (D608)
 

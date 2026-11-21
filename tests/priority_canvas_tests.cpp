@@ -284,9 +284,30 @@ int main(int argc, char** argv) {
             for (const auto& connector : network().connectors)
                 require(!arrowsOn(connector.id).empty(), "A Connector has no direction arrows under a right-of-way tool");
         }
+        // D610 (b), owner: each conflicting path carries a dark centre line with an arrowhead at its exit end.
+        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
+        {
+            std::vector<std::string> pairs; int heads = 0;
+            for (auto* i : c->scene()->items()) {
+                if (i->data(0).toString() == "conflict-area") pairs.push_back(i->data(3).toString().toStdString());
+                if (i->data(0).toString() != "conflict-arrow") continue;
+                auto* poly = dynamic_cast<QGraphicsPolygonItem*>(i);
+                if (!poly) continue;
+                const auto q = poly->polygon(); ++heads;
+                // On link a (x 0 -> 200, y 0) the tip is the arrow's furthest point downstream.
+                if (std::abs(q[0].y() - q[1].y()) < 2 && std::abs(q[0].y()) < 4 && std::abs(q[1].y()) < 4)
+                    require(q[0].x() > q[1].x() && q[0].x() > q[2].x(), "A centre arrow on the major road points upstream");
+            }
+            require(heads > 0, "No centre arrow is drawn on the conflict bands");
+            for (const auto& id : pairs) {
+                bool found = false;
+                for (auto* i : c->scene()->items()) found = found || (i->data(0).toString() == "conflict-arrow" && i->data(3).toString().toStdString() == id);
+                require(found, "A conflict band has no centre arrow");
+            }
+        }
         c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
-        int edges = 0; for (auto* i : c->scene()->items()) edges += i->data(0).toString() == "direction-edge";
-        require(edges == 0, "Unselected edges carry arrows under Select");
+        int edges = 0; for (auto* i : c->scene()->items()) edges += i->data(0).toString() == "direction-edge" || i->data(0).toString() == "conflict-arrow";
+        require(edges == 0, "Unselected edges or conflict bands carry arrows under Select");
         c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         std::cout << "priority canvas tests passed\n";
         return 0;

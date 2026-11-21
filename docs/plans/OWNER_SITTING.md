@@ -85,6 +85,8 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    *Owner:* 2026-11-20, attempt 2, step 3 (verbatim, with a picture): "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง
    conflict area ให้มีสีแบบในรูปและลูดศรชี้ตามทิศทาง ลักษณะคล้ายในรูป". *Session note:* done as D610 (green, red and
    olive areas; arrows on every edge under the Conflict area and Stop line tools). Step 4 and the verdict remain.
+   *Owner:* 2026-11-21 (verbatim): "เหลือลูกที่กึ่งแล้วแนวที่เกิด conflict แต่ละแนว"; in chat: a centre line with the
+   arrowhead at its exit end. *Session note:* D610 (b), each band now carries one.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any

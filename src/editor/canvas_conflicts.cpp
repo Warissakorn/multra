@@ -5,6 +5,7 @@
 #include "../model/network/conflict_surface.hpp"
 #include <QApplication>
 #include <QGraphicsPathItem>
+#include <QGraphicsPolygonItem>
 #include <QMouseEvent>
 #include <QPen>
 #include <algorithm>
@@ -223,6 +224,29 @@ void EditorCanvas::drawConflicts() {
             item->setData(4,QString::fromLatin1(branching?"branching":geometryKind==ConflictGeometryKind::merge?"merge":"crossing"));
             item->setData(5,QString::fromStdString(conflictOwner(side->path))); // directional participant
             item->setData(3,QString::fromStdString(id)); // lane-pair identity, independent of group selection
+            // D610 (b), owner: each conflicting path carries a dark centre line, arrowhead at its exit end.
+            if(automatic && undecided)continue; // a faint candidate stays faint
+            QColor mark=tint.darker(170);mark.setAlpha(255);
+            QPen centre(mark,1.5);centre.setCosmetic(true);centre.setCapStyle(Qt::FlatCap);
+            const auto spans=side==&first?geometry.first:geometry.second;
+            const auto& mouths=side==&first?geometry.firstMouth:geometry.secondMouth;
+            std::vector<ConflictSide> lanes(spans.begin(),spans.end());for(const auto& m:mouths)lanes.push_back(m.lane);
+            for(const auto& span:lanes) {
+                std::vector<Point> line;
+                try{line=polylineSpan(controlPathPolyline(n,span.path),std::min(span.entryStation,span.exitStation),std::max(span.entryStation,span.exitStation));}
+                catch(const std::exception&){continue;}
+                const double length=line.size()<2?0:polylineLength(line);
+                if(!(length>=.5) || !std::isfinite(length))continue;
+                const double z=item->zValue()+.05;
+                QPainterPath stroke(QPointF(line.front().x,line.front().y));for(std::size_t i=1;i<line.size();++i)stroke.lineTo(line[i].x,line[i].y);
+                auto* mid=scene_.addPath(stroke,centre);mid->setZValue(z);
+                const double inset=std::min(length/2,6/viewScale());
+                const auto ahead=directionAlong(line,length-inset,false);
+                auto* head=addArrowhead(pointAlong(line,length-inset),std::atan2(ahead.y,ahead.x),6,mark,z+.01,QStringLiteral("conflict-arrow"));
+                for(auto* part:{static_cast<QGraphicsItem*>(mid),static_cast<QGraphicsItem*>(head)}) {
+                    part->setData(0,QStringLiteral("conflict-arrow"));part->setData(1,QString::fromStdString(key));part->setData(3,QString::fromStdString(id));
+                }
+            }
         }
     };
     // D590 (owner): conflict areas show only under the Conflict area tool. D603 (owner, amends D590):
