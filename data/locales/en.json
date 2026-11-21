@@ -1825,6 +1825,7 @@
   "editorPriorityMarkerClasses": "Classes that block",
   "editorPriorityMarkerTitle": "Marker %1 on %2",
   "editorPriorityNoLimit": "No limit",
+  "editorGapReduction": "Gap reduction while waiting (Aimsun)",
   "editorPriorityEveryType": "Every type (class ids, comma-separated)",
   "PRIORITY_MARKER_UNREACHED": "No route passes this conflict marker's road, so it holds no one.",
   "PRIORITY_MARKER_ON_OWN_PATH": "A conflict marker cannot be on its stop line's own lane.",

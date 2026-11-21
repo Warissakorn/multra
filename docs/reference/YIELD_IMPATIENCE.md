@@ -91,9 +91,30 @@ The owner's choices, 2026-11-21, on [realism-gaps-vissim-sumo-aimsun](../evidenc
 | YI7 | A major vehicle standing 2 m short of the area holds the minor driver without impatience and not with 0.1; a 14 m/s one 10 m away still holds |
 | YI8 | With `yieldTime` set but no place reducing, every vehicle's motion is identical tick for tick |
 | YI9 | A marker's reduction round-trips at 84, reaches exactly its runtime rule, and above its gapTime is refused |
+| YI10 | `priority-ui`: the area dialog's gap reduction is off until checked, applies to every grouped rule and undoes with the edit |
+| YI11 | `priority-ui`: a marker's gap reduction in the rule dialog is set for that marker alone |
+| YI12 | The lab file is its builder's output; on its run both minor movements wait less than without the keys and the crossing stays exclusive |
 
-## 6. Left
+## 6. Editor and lab (slice 2, D619)
 
-- The rule dialog and the conflict-area dialog have no fields for the place keys yet. They are file-only until
-  slice 2. The behaviour editor has the six behaviour keys.
-- No measured effect on a study. The owner's look comes with slice 2's fields.
+- **Dialogs.** The area's dialog and each marker in the rule's dialog have *Gap reduction while waiting (Aimsun)*: a
+  checkbox (off: the keys absent) with `finalGapTime` (0–60 s, 1 s when first checked), `gapReductionStart` (0–99.9 ×, 1)
+  and `gapReductionEnd` (0.1–100 ×, 2). Out of range against the place's gapTime is refused by the document check and
+  the dialog changes nothing. The area's reduction applies to every rule of its group, in the same Undo step as its
+  other numbers (`setConflictGroupGapReduction`). The behaviour editor's Junctions page has the six behaviour keys.
+- **Lab** (`yield-impatience-lab.traffic.json`, `tools/yield_impatience_network.hpp`). The T-junction at 700 veh/h each way
+  on the major road. Every area's gap falls from 5 s to 2 s over 1–2 × the yield time; every behaviour has a 20 s yield
+  time (deviation 5, within 5–40 s) and impatience 0.2. These are lab placeholders.
+- **Measured once** (seed 42, Linux), not validated, against the same lab without the keys:
+
+  | Movement | Mean delay without the keys | With the keys |
+  |---|---|---|
+  | Minor → westbound | 60.9 s | 24.7 s |
+  | Minor → eastbound | 38.7 s | 12.8 s |
+  | Major eastbound | 4.59 s | 4.87 s |
+  | Major westbound | 5.20 s | 5.34 s |
+
+  The crossing is never held by both sides, and there are no clamps.
+- **Left:**
+  - the owner's look (OWNER_SITTING_WINDOWS item 52);
+  - Aimsun's default factors, which are not in the manual read.

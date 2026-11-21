@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — G7 slice 2: the gap reduction in the dialogs, and the waiting-acceptance lab (D619)
+
+- **Owner:** "ทำต่อ".
+- **D619:** the area dialog and each marker in the rule dialog have *Gap reduction while waiting (Aimsun)*. The
+  [lab](../data/projects/README.md) `yield-impatience-lab` ships for OWNER_SITTING_WINDOWS item 52. Seed 42: the minor
+  delays fall from 60.9 to 24.7 s and 38.7 to 12.8 s, the major ones rise 0.14–0.29 s; no clamp, no overlap.
+- **Verified (Linux, offscreen):** desktop 367/367, headless 250/250 (YI1–YI12 pass), docs and sizes pass; `multra-cli 42`
+  keeps 45 / 31.75870154816726 / 1. The no-PCH check and Windows wait for the package build.
+
 ## 2026-11-21 — G7 slice 1: a waiting driver accepts less, Aimsun's gap reduction and SUMO's impatience (D618)
 
 - **Owner (verbatim):** "G7 ทำแบบ Aimsun"; on the follow-on, "ในสถานะการที่รถทางรองออกแล้วรถทางหลักหยุด แล้วรถทางรองคันถัดไป
@@ -148,16 +157,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   library UI test (its file now saves at 81). Desktop `check` green, 363 tests.
 - **Also:** stop-line tests pinned to their own schema step (79) instead of the newest; `right_of_way.cpp` kept
   under 500 lines.
-
-## 2026-11-20 — Visibility at conflict areas (D607); realism study against Vissim, SUMO, Aimsun
-
-- **Owner (verbatim):** "V ทำเหมือน vissim เริ่มตัดสินใจเรื่อง gap ทำด้วยหรือไม่", "1ก 2ก", "ทุกไฟล์"; then "ศึกษาส่วนอื่นที่ต้อง
-  เพิ่มอย่างละเอียด เพื่อให้ ฐาน M0 สมบูรที่สุดด้วย" and "ลองศึกษาจาก Vissim SUMO Aimsun มาต่อยอดเพื่อให้พฤติกรรมสมจริงและมี
-  ประสิทธิภาพมากที่สุด".
-- **D607:** a priority rule's `visibility` (schema 80, absent = 100 m); beyond it the yielding driver plans to
-  stop at its line, within it the gap test decides; commitment unchanged. Dialog field per group, one Undo.
-- **Measured:** at 100 m every shipped project and the study are identical (batch means, seeds 42–51;
-  single-seed reports, 42–43), so M0 does not move; below about 50 m minor delay rises (VISIBILITY §4).
-- **Study:** [realism-gaps-vissim-sumo-aimsun](evidence/realism-gaps-vissim-sumo-aimsun.md): G1 start-up delay
-  (M0's lost time 0.89 s against HCM 2.0 s) and G2 speed-dependent acceleration proposed first. No code.
-- **Verified:** see the commit; Windows not run.

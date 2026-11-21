@@ -1,5 +1,6 @@
 #include "table_layout.hpp"
 #include "conflicts_panel.hpp"
+#include "gap_reduction_fields.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/priority_marker_commands.hpp"
 #include "../model/network/priority_markers.hpp"
@@ -103,7 +104,7 @@ void ConflictsPanel::editRule(const std::string& id) {
     form->addRow(text("editorConflictControl"), control);
     form->addRow(text("editorPriorityRuleClasses"), classes);
     // Parameter names stay as the file spells them, as in the area dialog.
-    struct Row { QDoubleSpinBox *gap, *headway, *speed; QLineEdit* classes; };
+    struct Row { QDoubleSpinBox *gap, *headway, *speed; QLineEdit* classes; GapReductionFields reduction; };
     std::vector<Row> rows;
     for (std::size_t k = 0; k < rule->markers.size(); ++k) {
         const auto& m = rule->markers[k];
@@ -121,6 +122,7 @@ void ConflictsPanel::editRule(const std::string& id) {
         form->addRow("headway", row.headway);
         form->addRow("maxSpeed", row.speed);
         form->addRow(text("editorPriorityMarkerClasses"), row.classes);
+        row.reduction = gapReductionFields(&dialog, form, m.gapReduction, text("editorGapReduction"), suffix); // D618
         rows.push_back(row);
     }
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
@@ -133,7 +135,7 @@ void ConflictsPanel::editRule(const std::string& id) {
     std::vector<MarkerNumbers> numbers;
     for (const auto& row : rows)
         numbers.push_back({row.gap->value(), row.headway->value(),
-                           row.speed->value() > 0 ? std::optional{row.speed->value()} : std::nullopt, split(row.classes->text())});
+                           row.speed->value() > 0 ? std::optional{row.speed->value()} : std::nullopt, split(row.classes->text()), row.reduction.value()});
     const int mode = control->currentData().toInt();
     context_.execute("editorEditPriorityRule", [&](auto& d) {
         setPriorityRule(d, id, name->text().toStdString(), split(classes->text()), numbers,

@@ -1825,6 +1825,7 @@
   "editorPriorityMarkerClasses": "ประเภทรถที่ทำให้ต้องรอ",
   "editorPriorityMarkerTitle": "เครื่องหมาย %1 บน %2",
   "editorPriorityNoLimit": "ไม่จำกัด",
+  "editorGapReduction": "ลด gap ตามเวลารอ (แบบ Aimsun)",
   "editorPriorityEveryType": "ทุกประเภท (รหัส class คั่นด้วยจุลภาค)",
   "PRIORITY_MARKER_UNREACHED": "ไม่มีเส้นทางใดผ่านถนนของเครื่องหมายจุดขัดแย้งนี้ จึงไม่มีรถคันใดต้องรอ",
   "PRIORITY_MARKER_ON_OWN_PATH": "วางเครื่องหมายจุดขัดแย้งบนช่องจราจรเดียวกับเส้นหยุดของมันไม่ได้",

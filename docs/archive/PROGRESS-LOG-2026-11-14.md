@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-20 — Visibility at conflict areas (D607); realism study against Vissim, SUMO, Aimsun
+
+- **Owner (verbatim):** "V ทำเหมือน vissim เริ่มตัดสินใจเรื่อง gap ทำด้วยหรือไม่", "1ก 2ก", "ทุกไฟล์"; then "ศึกษาส่วนอื่นที่ต้อง
+  เพิ่มอย่างละเอียด เพื่อให้ ฐาน M0 สมบูรที่สุดด้วย" and "ลองศึกษาจาก Vissim SUMO Aimsun มาต่อยอดเพื่อให้พฤติกรรมสมจริงและมี
+  ประสิทธิภาพมากที่สุด".
+- **D607:** a priority rule's `visibility` (schema 80, absent = 100 m); beyond it the yielding driver plans to
+  stop at its line, within it the gap test decides; commitment unchanged. Dialog field per group, one Undo.
+- **Measured:** at 100 m every shipped project and the study are identical (batch means, seeds 42–51;
+  single-seed reports, 42–43), so M0 does not move; below about 50 m minor delay rises (VISIBILITY §4).
+- **Study:** [realism-gaps-vissim-sumo-aimsun](../evidence/realism-gaps-vissim-sumo-aimsun.md): G1 start-up delay
+  (M0's lost time 0.89 s against HCM 2.0 s) and G2 speed-dependent acceleration proposed first. No code.
+- **Verified:** see the commit; Windows not run.
+
 ## 2026-11-20 — Owner's choices on the sitting's findings (D603–D605)
 
 - **Owner (verbatim):** "1 ข. และ เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้ Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim

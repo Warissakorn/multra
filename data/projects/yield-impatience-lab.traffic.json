@@ -1,0 +1,629 @@
+{
+  "background": {
+    "metresPerPixel": 1.0,
+    "opacity": 0.5,
+    "pngBase64": "",
+    "rotation": 0.0,
+    "x": 0.0,
+    "y": 0.0
+  },
+  "definition": {
+    "behaviours": [
+      {
+        "additiveSafetyDistance": 2.0,
+        "amberDeceleration": 3.0,
+        "followingTime": 1.5,
+        "id": "wiedemann-inspired-prototype",
+        "impatience": 0.2,
+        "maxDecelerationCooperativeBraking": 3.0,
+        "model": "prototype",
+        "multiplicativeSafetyDistance": 3.0,
+        "speedThreshold": 0.2,
+        "standstillDistance": 2.0,
+        "yieldTime": 20.0,
+        "yieldTimeDeviation": 5.0,
+        "yieldTimeMaximum": 40.0,
+        "yieldTimeMinimum": 5.0
+      }
+    ],
+    "compositions": [
+      {
+        "id": "car-only",
+        "types": [
+          {
+            "share": 1.0,
+            "vehicleTypeId": "car"
+          }
+        ]
+      },
+      {
+        "id": "urban-diverse",
+        "name": "Urban diverse (illustrative)",
+        "types": [
+          {
+            "share": 0.45,
+            "vehicleTypeId": "car"
+          },
+          {
+            "share": 0.2,
+            "vehicleTypeId": "motorcycle"
+          },
+          {
+            "share": 0.15,
+            "vehicleTypeId": "pickup"
+          },
+          {
+            "share": 0.08,
+            "vehicleTypeId": "van"
+          },
+          {
+            "share": 0.04,
+            "vehicleTypeId": "bus"
+          },
+          {
+            "share": 0.05,
+            "vehicleTypeId": "rigid-truck"
+          },
+          {
+            "share": 0.03,
+            "vehicleTypeId": "heavy-vehicle"
+          }
+        ]
+      },
+      {
+        "id": "urban-mixed",
+        "types": [
+          {
+            "share": 0.95,
+            "vehicleTypeId": "car"
+          },
+          {
+            "share": 0.05,
+            "vehicleTypeId": "heavy-vehicle"
+          }
+        ]
+      }
+    ],
+    "duration": 1500.0,
+    "inputs": [
+      {
+        "endTime": 900.0,
+        "id": "input-24",
+        "routeId": "route-20",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 700.0
+      },
+      {
+        "endTime": 900.0,
+        "id": "input-25",
+        "routeId": "route-21",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 700.0
+      },
+      {
+        "endTime": 900.0,
+        "id": "input-26",
+        "routeId": "route-22",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 100.0
+      },
+      {
+        "endTime": 900.0,
+        "id": "input-27",
+        "routeId": "route-23",
+        "startTime": 0.0,
+        "vehicleTypeId": "car",
+        "vehiclesPerHour": 100.0
+      }
+    ],
+    "routes": [
+      {
+        "id": "route-20",
+        "segmentIds": [
+          "link-1"
+        ]
+      },
+      {
+        "id": "route-21",
+        "segmentIds": [
+          "link-3"
+        ]
+      },
+      {
+        "id": "route-22",
+        "segmentIds": [
+          "link-5",
+          "connector-7",
+          "link-3"
+        ]
+      },
+      {
+        "id": "route-23",
+        "segmentIds": [
+          "link-5",
+          "connector-8",
+          "link-1"
+        ]
+      }
+    ],
+    "signalPrograms": [],
+    "timeStep": 0.1,
+    "vehicleTypes": [
+      {
+        "axles": {
+          "frontOverhang": 2.7,
+          "rearOverhang": 3.3,
+          "wheelbase": 6.0
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 1.3,
+        "desiredSpeed": {
+          "max": 13.89,
+          "min": 8.33
+        },
+        "id": "bus",
+        "length": 12.0,
+        "maxAcceleration": 1.0,
+        "maxDeceleration": 6.0,
+        "name": "Bus",
+        "width": 2.5
+      },
+      {
+        "axles": {
+          "frontOverhang": 0.9,
+          "rearOverhang": 0.9,
+          "wheelbase": 2.7
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 2.0,
+        "desiredSpeed": {
+          "max": 16.67,
+          "min": 11.11
+        },
+        "id": "car",
+        "length": 4.5,
+        "maxAcceleration": 2.5,
+        "maxDeceleration": 8.0,
+        "width": 1.8
+      },
+      {
+        "axles": {
+          "frontOverhang": 2.0,
+          "rearOverhang": 4.0,
+          "wheelbase": 6.0
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 1.5,
+        "desiredSpeed": {
+          "max": 13.89,
+          "min": 11.11
+        },
+        "id": "heavy-vehicle",
+        "length": 12.0,
+        "maxAcceleration": 1.0,
+        "maxDeceleration": 6.0,
+        "width": 2.5
+      },
+      {
+        "axles": {
+          "frontOverhang": 0.3,
+          "rearOverhang": 0.4,
+          "wheelbase": 1.4
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 2.5,
+        "desiredSpeed": {
+          "max": 16.67,
+          "min": 11.11
+        },
+        "id": "motorcycle",
+        "length": 2.1,
+        "maxAcceleration": 3.0,
+        "maxDeceleration": 8.0,
+        "name": "Motorcycle",
+        "width": 0.8
+      },
+      {
+        "axles": {
+          "frontOverhang": 0.9,
+          "rearOverhang": 1.3,
+          "wheelbase": 3.1
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 2.0,
+        "desiredSpeed": {
+          "max": 16.67,
+          "min": 11.11
+        },
+        "id": "pickup",
+        "length": 5.3,
+        "maxAcceleration": 2.2,
+        "maxDeceleration": 7.5,
+        "name": "Pickup",
+        "width": 1.9
+      },
+      {
+        "axles": {
+          "frontOverhang": 1.3,
+          "rearOverhang": 2.4,
+          "wheelbase": 4.8
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 1.5,
+        "desiredSpeed": {
+          "max": 13.89,
+          "min": 8.33
+        },
+        "id": "rigid-truck",
+        "length": 8.5,
+        "maxAcceleration": 1.2,
+        "maxDeceleration": 6.0,
+        "name": "Rigid truck",
+        "width": 2.5
+      },
+      {
+        "axles": {
+          "frontOverhang": 1.0,
+          "rearOverhang": 1.3,
+          "wheelbase": 3.2
+        },
+        "behaviourId": "wiedemann-inspired-prototype",
+        "comfortableDeceleration": 1.8,
+        "desiredSpeed": {
+          "max": 15.28,
+          "min": 11.11
+        },
+        "id": "van",
+        "length": 5.5,
+        "maxAcceleration": 1.8,
+        "maxDeceleration": 7.0,
+        "name": "Van",
+        "width": 2.0
+      }
+    ]
+  },
+  "format": "TrafficSim",
+  "network": {
+    "connectors": [
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-6",
+          "linkId": "link-5"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 0.0,
+            "y": -12.0
+          },
+          {
+            "x": -1.8561378788382417,
+            "y": -5.4028372996150535
+          },
+          {
+            "x": -6.6163676769019775,
+            "y": -0.99002204410227
+          },
+          {
+            "x": -13.068413636514725,
+            "y": 1.480304233461649
+          },
+          {
+            "x": -20.0,
+            "y": 2.25
+          }
+        ],
+        "id": "connector-7",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "Minor crossing turn",
+        "to": {
+          "laneId": "lane-4",
+          "linkId": "link-3",
+          "station": 170.0
+        },
+        "toLaneCount": 1
+      },
+      {
+        "displayType": "default",
+        "from": {
+          "laneId": "lane-6",
+          "linkId": "link-5"
+        },
+        "fromLaneCount": 1,
+        "geometry": [
+          {
+            "x": 0.0,
+            "y": -12.0
+          },
+          {
+            "x": 2.0264885355029585,
+            "y": -6.12542724609375
+          },
+          {
+            "x": 7.070636094674557,
+            "y": -3.2573242187500004
+          },
+          {
+            "x": 13.579465606508876,
+            "y": -2.32305908203125
+          },
+          {
+            "x": 20.0,
+            "y": -2.25
+          }
+        ],
+        "id": "connector-8",
+        "laneBlend": [],
+        "laneMarkings": [],
+        "laneWidths": [],
+        "level": 0,
+        "name": "Minor near turn",
+        "to": {
+          "laneId": "lane-2",
+          "linkId": "link-1",
+          "station": 170.0
+        },
+        "toLaneCount": 1
+      }
+    ],
+    "drivingSide": "right",
+    "id": "yield-impatience-lab",
+    "links": [
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": -150.0,
+            "y": -2.25
+          },
+          {
+            "x": 150.0,
+            "y": -2.25
+          }
+        ],
+        "id": "link-1",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-2",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "Major eastbound"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 150.0,
+            "y": 2.25
+          },
+          {
+            "x": -150.0,
+            "y": 2.25
+          }
+        ],
+        "id": "link-3",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-4",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "Major westbound"
+      },
+      {
+        "boundaryMarkings": [],
+        "displayType": "default",
+        "geometry": [
+          {
+            "x": 0.0,
+            "y": -150.0
+          },
+          {
+            "x": 0.0,
+            "y": -12.0
+          }
+        ],
+        "id": "link-5",
+        "laneOffset": 0.0,
+        "lanes": [
+          {
+            "id": "lane-6",
+            "width": 3.5
+          }
+        ],
+        "level": 0,
+        "name": "Minor approach"
+      }
+    ],
+    "queueCounters": [
+      {
+        "id": "counter-19",
+        "lines": [
+          {
+            "referenceId": "wait-15"
+          },
+          {
+            "referenceId": "wait-17"
+          }
+        ],
+        "name": "Minor approach queue"
+      }
+    ],
+    "rightOfWay": {
+      "conflictAreas": [
+        {
+          "first": {
+            "entryStation": 7.5792212653785525,
+            "exitStation": 19.45769068088689,
+            "path": {
+              "connectorId": "connector-7",
+              "fromLaneId": "lane-6",
+              "toLaneId": "lane-4"
+            },
+            "waitingLineId": "wait-15"
+          },
+          "id": "conflict-9",
+          "kind": "crossing",
+          "name": "Minor crosses eastbound",
+          "priority": "firstYields",
+          "second": {
+            "entryStation": 137.23873476704452,
+            "exitStation": 149.1232224375268,
+            "path": {
+              "laneId": "lane-2",
+              "linkId": "link-1"
+            },
+            "waitingLineId": ""
+          }
+        },
+        {
+          "first": {
+            "entryStation": 13.314884945252704,
+            "exitStation": 27.2272604864502,
+            "path": {
+              "connectorId": "connector-7",
+              "fromLaneId": "lane-6",
+              "toLaneId": "lane-4"
+            },
+            "waitingLineId": "wait-15"
+          },
+          "id": "conflict-11",
+          "kind": "merge",
+          "name": "Minor joins westbound",
+          "priority": "firstYields",
+          "second": {
+            "entryStation": 155.65018672233523,
+            "exitStation": 170.0,
+            "path": {
+              "laneId": "lane-4",
+              "linkId": "link-3"
+            },
+            "waitingLineId": ""
+          }
+        },
+        {
+          "first": {
+            "entryStation": 7.990501931530556,
+            "exitStation": 25.013305159865943,
+            "path": {
+              "connectorId": "connector-8",
+              "fromLaneId": "lane-6",
+              "toLaneId": "lane-2"
+            },
+            "waitingLineId": "wait-17"
+          },
+          "id": "conflict-13",
+          "kind": "merge",
+          "name": "Minor joins eastbound",
+          "priority": "firstYields",
+          "second": {
+            "entryStation": 152.36185107916148,
+            "exitStation": 170.0,
+            "path": {
+              "laneId": "lane-2",
+              "linkId": "link-1"
+            },
+            "waitingLineId": ""
+          }
+        }
+      ],
+      "priorityRules": [
+        {
+          "conflictAreaId": "conflict-9",
+          "finalGapTime": 2.0,
+          "gapReductionEnd": 2.0,
+          "gapReductionStart": 1.0,
+          "gapTime": 5.0,
+          "headway": 7.0,
+          "id": "rule-10",
+          "name": ""
+        },
+        {
+          "conflictAreaId": "conflict-11",
+          "finalGapTime": 2.0,
+          "gapReductionEnd": 2.0,
+          "gapReductionStart": 1.0,
+          "gapTime": 5.0,
+          "headway": 7.0,
+          "id": "rule-12",
+          "name": ""
+        },
+        {
+          "conflictAreaId": "conflict-13",
+          "finalGapTime": 2.0,
+          "gapReductionEnd": 2.0,
+          "gapReductionStart": 1.0,
+          "gapTime": 5.0,
+          "headway": 7.0,
+          "id": "rule-14",
+          "name": ""
+        }
+      ],
+      "stopControls": [
+        {
+          "conflictAreaIds": [
+            "conflict-9",
+            "conflict-11"
+          ],
+          "id": "stop-16",
+          "mode": "yield",
+          "name": "",
+          "waitingLineId": "wait-15"
+        },
+        {
+          "conflictAreaIds": [
+            "conflict-13"
+          ],
+          "id": "stop-18",
+          "mode": "yield",
+          "name": "",
+          "waitingLineId": "wait-17"
+        }
+      ],
+      "waitingLines": [
+        {
+          "id": "wait-15",
+          "name": "",
+          "point": {
+            "path": {
+              "connectorId": "connector-7",
+              "fromLaneId": "lane-6",
+              "toLaneId": "lane-4"
+            },
+            "station": 6.5792212653785525
+          }
+        },
+        {
+          "id": "wait-17",
+          "name": "",
+          "point": {
+            "path": {
+              "connectorId": "connector-8",
+              "fromLaneId": "lane-6",
+              "toLaneId": "lane-2"
+            },
+            "station": 6.990501931530556
+          }
+        }
+      ]
+    },
+    "signalHeads": []
+  },
+  "nextId": 28,
+  "revision": 0,
+  "schemaVersion": 84
+}

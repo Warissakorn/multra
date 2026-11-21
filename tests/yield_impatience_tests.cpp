@@ -1,10 +1,14 @@
 #include "t_junction_support.hpp"
 #include "../tools/priority_rule_network.hpp"
+#include "../tools/yield_impatience_network.hpp"
 #include "../src/core/yield_time.hpp"
 #include "../src/project/document.hpp"
 #include <cmath>
 #include <functional>
 #include <set>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 using namespace multra;
 using namespace tjunction;
 // YIELD_IMPATIENCE (D618), rows YI1-YI9 of docs/reference/YIELD_IMPATIENCE.md: a waiting minor driver
@@ -170,4 +174,35 @@ TEST(yield_impatience, yi9_a_markers_reduction_round_trips_and_reaches_its_runti
     CHECK(std::count_if(s.priorityRules.begin(), s.priorityRules.end(), [](const auto& r) { return r.gapReduction.has_value(); }) == 1);
     rule.markers.front().gapReduction = GapReduction{9, 0.5, 1.5}; // above the marker's gapTime
     test::throws([&] { validateDocument(lab.document); });
+}
+// The lab (data/projects/yield-impatience-lab.traffic.json, the owner's look): the committed file is its
+// builder's output, and on a run the waiting minor drivers take shorter gaps without the two sides ever
+// inside the crossing at once.
+namespace {
+const std::string kLabCrossing = "Minor approach → Major westbound", kLabNear = "Minor approach → Major eastbound";
+}
+TEST(yield_impatience, lab_committed_file_is_the_builder_output) {
+    std::ifstream f(test::root() / "data/projects/yield-impatience-lab.traffic.json");
+    std::stringstream text; text << f.rdbuf();
+    CHECK(text.str() == documentJson(fixture::yieldImpatienceLab(test::root() / "data").document).dump(2) + "\n");
+}
+TEST(yield_impatience, lab_run_shortens_the_minor_delay_and_keeps_the_crossing_exclusive) {
+    const auto lab = fixture::yieldImpatienceLab(test::root() / "data");
+    auto plain = lab.document; // the forcing: the same lab without any of the keys
+    for (auto& r : plain.network.rightOfWay.priorityRules) r.gapReduction.reset();
+    for (auto& b : plain.definition->behaviours) {
+        b.yieldTime.reset(); b.yieldTimeDeviation.reset(); b.yieldTimeMinimum.reset(); b.yieldTimeMaximum.reset(); b.impatience.reset();
+    }
+    const auto keyed = run(lab.document, lab.roads), base = run(plain, lab.roads);
+    CHECK(!keyed.bothSidesInside && !base.bothSidesInside);
+    for (std::size_t i = 0; i < keyed.report.movements.size(); ++i) // the major road's cost, for the record (D618)
+        std::cout << keyed.report.movements[i].name << ": " << base.report.movements[i].meanDelay.value_or(-1) << " -> "
+                  << keyed.report.movements[i].meanDelay.value_or(-1) << " s\n";
+    std::cout << "clamps major " << base.majorClamps << " -> " << keyed.majorClamps << ", minor " << base.minorClamps << " -> " << keyed.minorClamps << "\n";
+    for (const auto& name : {kLabCrossing, kLabNear}) {
+        const auto& k = movement(keyed.report, name); const auto& b = movement(base.report, name);
+        std::cout << name << ": delay " << b.meanDelay.value_or(-1) << " -> " << k.meanDelay.value_or(-1)
+                  << " s, vehicles " << b.vehicles << " -> " << k.vehicles << "\n";
+        CHECK(k.meanDelay && b.meanDelay && *k.meanDelay < *b.meanDelay);
+    }
 }

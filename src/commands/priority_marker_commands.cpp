@@ -37,7 +37,7 @@ void setPriorityRule(ProjectDocument& d, const std::string& ruleId, const std::s
     for (std::size_t k = 0; k < numbers.size(); ++k) {
         auto& m = r.markers[k];
         m.gapTime = numbers[k].gapTime; m.headway = numbers[k].headway;
-        m.maxSpeed = numbers[k].maxSpeed; m.vehicleClassIds = numbers[k].vehicleClassIds;
+        m.maxSpeed = numbers[k].maxSpeed; m.vehicleClassIds = numbers[k].vehicleClassIds; m.gapReduction = numbers[k].gapReduction;
     }
     // The control is the line's (D62): one that names areas keeps them and changes mode; one with
     // none is put or removed (D615).

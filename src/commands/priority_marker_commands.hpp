@@ -18,6 +18,7 @@ void removePriorityMarker(ProjectDocument&, const std::string& ruleId, std::size
 // EDIT_UNKNOWN_OBJECT); `control` is the line's Stop/Yield, none removing a control that names no area.
 struct MarkerNumbers {
     double gapTime{}, headway{}; std::optional<double> maxSpeed; std::vector<std::string> vehicleClassIds;
+    std::optional<GapReduction> gapReduction; // D618
 };
 void setPriorityRule(ProjectDocument&, const std::string& ruleId, const std::string& name,
                      const std::vector<std::string>& lineClassIds, const std::vector<MarkerNumbers>&,

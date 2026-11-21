@@ -7,3 +7,7 @@ target_precompile_headers(multra-t-junction-fixture REUSE_FROM multra-four-leg-f
 add_executable(multra-priority-rule-fixture tools/priority_rule_fixture.cpp)
 target_link_libraries(multra-priority-rule-fixture PRIVATE multra_commands multra_options)
 target_precompile_headers(multra-priority-rule-fixture REUSE_FROM multra-four-leg-fixture)
+# Regenerates the YIELD_IMPATIENCE lab (D618) from tools/yield_impatience_network.hpp.
+add_executable(multra-yield-impatience-fixture tools/yield_impatience_fixture.cpp)
+target_link_libraries(multra-yield-impatience-fixture PRIVATE multra_commands multra_options)
+target_precompile_headers(multra-yield-impatience-fixture REUSE_FROM multra-four-leg-fixture)

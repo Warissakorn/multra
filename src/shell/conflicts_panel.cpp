@@ -1,6 +1,7 @@
 #include "table_layout.hpp"
 #include "editor_interaction.hpp"
 #include "conflicts_panel.hpp"
+#include "gap_reduction_fields.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/right_of_way_commands.hpp"
 #include "../commands/priority_marker_commands.hpp"
@@ -270,6 +271,7 @@ void ConflictsPanel::edit(const std::string& id) {
     form->addRow("gapTime", gap);
     form->addRow("headway", headway);
     form->addRow("visibility", visibility);
+    const auto reduction = gapReductionFields(&dialog, form, rule != row.priorityRules.end() ? rule->gapReduction : std::nullopt, text("editorGapReduction"), ""); // D618
     // What a driver does at the line where the area gives way (M3.2.5b). The mode belongs to the
     // line, so it also applies to the other areas behind that line. Nothing to set while no side
     // gives way.
@@ -297,6 +299,7 @@ void ConflictsPanel::edit(const std::string& id) {
         setConflictGroupControl(d, id, name->text().toStdString(), chosen, gap->value(), headway->value());
         const double seen = visibility->value(); // the key is written only when it is not the default
         setConflictGroupVisibility(d, id, std::abs(seen - AuthoredPriorityRule::kDefaultVisibility) < 1e-9 ? std::nullopt : std::optional{seen});
+        setConflictGroupGapReduction(d, id, reduction.value());
         if (chosen != ConflictPriority::undetermined)
             setConflictGroupStopControl(d, id, mode < 0 ? std::nullopt : std::optional{static_cast<StopMode>(mode)});
     });

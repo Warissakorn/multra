@@ -49,6 +49,7 @@ The other headers:
 | `street_segments_panel.*` | `StreetSegmentsPanel`: the Street segments object tab, its template combo and dialog, and the Street segment tool's preview and commit (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
 | `nodes_panel.*` | `NodesPanel`: the Nodes object tab, its rename dialog, actions and the Node tool's commit; window parts reached through `NodesHooks` (D523) | [NODES](../../docs/reference/NODES.md) |
 | `conflicts_panel.*` | `ConflictsPanel`: the Conflict areas object tab, its dialogs (priority-rule rows and dialog in `conflicts_panel_rules.cpp`, D617), priority actions and the automatic areas; window parts reached through `ConflictsHooks` (D523) | [M3_PLAN](../../docs/plans/M3_PLAN.md) |
+| `gap_reduction_fields.hpp` | The checkbox and three numbers of a place's gap reduction in the area and rule dialogs (D618) | [YIELD_IMPATIENCE](../../docs/reference/YIELD_IMPATIENCE.md) §3 |
 | `cross_sections_panel.*` | `CrossSectionsPanel`: the Cross-sections object tab and its dialog (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
 | `zones_panel.*` | `ZonesPanel`: the Zones object tab, its connectors, dialogs and the Zone tool's commit (D521) | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
 | `link_types_panel.*` | `LinkTypesPanel`: the Link types object tab and its dialog; `linkTypeRowsOf` for the Link's type field (D521) | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md) |

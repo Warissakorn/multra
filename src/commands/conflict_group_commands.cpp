@@ -129,6 +129,13 @@ void setConflictGroupVisibility(ProjectDocument& d,const std::string& id,std::op
             if(std::find(g.areaIds.begin(),g.areaIds.end(),r.conflictAreaId)!=g.areaIds.end())r.visibility=visibility;
     });
 }
+void setConflictGroupGapReduction(ProjectDocument& d,const std::string& id,std::optional<GapReduction> reduction) {
+    atomicGroupEdit(d,[&](auto& candidate){
+        const auto g=groupOf(candidate.network,id);
+        for(auto& r:candidate.network.rightOfWay.priorityRules)
+            if(std::find(g.areaIds.begin(),g.areaIds.end(),r.conflictAreaId)!=g.areaIds.end())r.gapReduction=reduction;
+    });
+}
 void removeConflictGroup(ProjectDocument& d,const std::string& id) {
     atomicGroupEdit(d,[&](auto& candidate){removeConflictGroupImpl(candidate,id);});
 }
