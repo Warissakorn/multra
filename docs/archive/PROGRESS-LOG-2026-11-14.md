@@ -2,6 +2,14 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-19 — Opaque conflict areas (D592); M3.2.4e merge admission over the mouth (D593)
+
+- **Owner (2026-11-19):** "ความทึบ 100%  และเริ่ม M3.2.4e ได้เลย".
+- **D592:** areas draw at alpha 255; an undecided automatic candidate stays faint. Waiting lines stay above.
+- **D593:** [MERGE_MOUTH](../reference/MERGE_MOUTH.md). `mergeMouth` gives a taken-over merge the measured overlap (first overlapping station on the joining segment to the join) and each side a line 1 m short of it; used by Take over merge, automatic candidates and D86's follow. Rows MM1–MM4 failed first (MM4: 266 ticks with a minor and a major body in one mouth, seed 42) and pass; MM5–MM6 guards. The T-junction file regenerated (`wait-14` 26.23 → 12.31 m, `wait-18` 24.01 → 6.99 m, `wait-13` 169 → 154.65 m, `wait-17` 169 → 151.36 m). Five tests that pinned the strip were updated to the new rule (`rightofway` ×3, `rightofway_runtime`, `tjunction`); D54 amended.
+- **Not changed:** derived merges and the solver; stored files are not migrated.
+- **Verified on Linux (desktop preset, Debug):** full `ctest` 357/357 passed except the group list, then `mergemouth` and `all-model-tests` pass after listing the group (358 tests); changed units build without the PCH. Windows not run.
+
 ## 2026-11-19 — Intermediate points (D589), areas under their tool (D590), STOP_LINES draft (D591)
 
 - **Owner (2026-11-19):** the Intermediate points field was always red and a higher count did not round the Connector; wanted the field in the Connect dialog (default 0, a suitable value chosen); conflict areas only under the Conflict area tool; "ตามแนะนำ" to derived stop positions and a Stop line tool.

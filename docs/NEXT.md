@@ -29,7 +29,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2.7d — the owner's attempt 2 on Windows is next
+## M3.2.7d passed on attempt 2 (D612); next G3
 
 Done before it (2026-11-19; history in [the archived NEXT](archive/NEXT-state-2026-11-19.md)): M3.2.4e
 ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), [STOP_LINES](reference/STOP_LINES.md) (D591, D594–D595),
@@ -43,10 +43,10 @@ the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas
   no shipped curve, each study sets it; order: A2 attempt 2, then G3, then PRIORITY_RULES slice 1.
 - **A2 step 3 answered (D610, D611):** gap/headway plausible; areas green, red and olive as Vissim with a centre
   arrow; pointing shows a road's edges in black with arrows, selection in blue, a selected area its roads.
-- **Next: the owner's attempt 2 of M3.2.7d on Windows** — step 4 and the verdict remain (D601: step 2
-  and steps 5–7 are automated by the `rightofway_editor` tests and
-  `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed`), plus the Stop line
-  tool (`W`), the stop at the line, D587 and D588. Findings and measured positions: [OWNER_SITTING](plans/OWNER_SITTING.md) A2.
+- **M3.2.7d passed (D612):** step 4 and the verdict, owner (verbatim): "ทดลองแล้วสมจริง". M3.2 still closes only with
+  its diverge acceptance-fixture row (ROADMAP M3.2). **Next (D609's order): G3 stuck vehicles**
+  ([realism-gaps](evidence/realism-gaps-vissim-sumo-aimsun.md)), then PRIORITY_RULES slice 1; the owner's
+  remaining Windows items are in [OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md).
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 

@@ -174,7 +174,7 @@ Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
 | M3.2.4a–c conflict-area editor and automatic areas (D60, D61, D68, D72, D84, D86) · M3.2.4d/f measured overlaps and mouth continuation (D115, D117, D118) | Implemented; **owner look pending** |
 | M3.2.4e merge admission over the full mouth overlap ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), then M3.2.12 derived stop positions and a Stop line tool ([STOP_LINES](reference/STOP_LINES.md), D591) | M3.2.4e **implemented** (MM1–MM7); M3.2.12 **implemented** (D594–D595, SL1–SL8); Linux only, the owner's look on Windows pending |
 | M3.2.7a–c T-junction evidence (D66, D67) | Implemented |
-| M3.2.7d owner exercise (§3, Windows) | **Pending, owner**; attempt 1 (2026-11-18) failed at step 1: merge waiting lines inside the joined lane (M3.2.4e), [OWNER_SITTING](plans/OWNER_SITTING.md) A2 |
+| M3.2.7d owner exercise (§3, Windows) | **Passed on attempt 2 (owner, 2026-11-21, D612)**; attempt 1 (2026-11-18) failed at step 1: merge waiting lines inside the joined lane (M3.2.4e), [OWNER_SITTING](plans/OWNER_SITTING.md) A2 |
 | M3.2.8a commitment (D69) · M3.2.8b mandatory lane change (D71) · M3.2.8c routing-decision changes (D93) and cooperative braking (D90) | Implemented |
 | M3.2.8c discretionary changes (D95) and hold (D101) | Implemented and **off** (D102); remainder moved to M3.4 |
 | M3.2.9a–h lane correspondence and Connector ends (D73–D80, D106, D107) | Implemented; **owner look of D80 pending** |

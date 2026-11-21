@@ -6,8 +6,7 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 `git log -p` on this file before D602); I.1, I.3, I.4, F2, D2 and E22 closed. Item names are unchanged
 and never reused; an item that took in an older one says so.
 
-**Order for one sitting** (gates and blockers first): OWNER_SITTING A2 (M3.2.7d attempt 2, steps 3–4
-and the verdict left, D601) → E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
+**Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
 I.5 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15).
 

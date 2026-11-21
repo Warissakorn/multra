@@ -1,6 +1,6 @@
 # M3 acceptance design and evidence record
 
-**Status: automated rows recorded through A46 (M3.2.8c, §4); A47–A58 implemented and off (D102); owner exercise M3.2.7d not performed.** This is a prepared engineering test matrix and owner exercise,
+**Status: automated rows recorded through A46 (M3.2.8c, §4); A47–A58 implemented and off (D102); owner exercise M3.2.7d passed on attempt 2 (owner, 2026-11-21, D612).** This is a prepared engineering test matrix and owner exercise,
 not a passed gate or a scientific validation result. The M2 gate passed 2026-09-25 (D53). [M3_CONTRACT.md](../reference/M3_CONTRACT.md) defines the proposed behavior;
 [M3_PLAN.md](M3_PLAN.md) names the slices. New tests and runnable fixtures are not added by
 this documentation change. Record actual evidence below as each slice is implemented.
@@ -151,7 +151,13 @@ observations and defects. This operationalizes ROADMAP's existing M3 done-condit
 no fabricated delay tolerance or Vissim-equivalence test. A green CI run is not this exercise.
 Keep any failure in the record; fixes receive separate attempts rather than overwriting it.
 
-**Recording sheet (M3.2.7d).** Pending until the owner fills it in; no session may fill it.
+**Recording sheet (M3.2.7d).** Filled only with the owner's words; no session may fill it otherwise.
+
+- **Attempt 1** (2026-11-18): failed at step 1 (merge waiting lines inside the joined lane), OWNER_SITTING A2.
+- **Attempt 2** (2026-11-19 to 2026-11-21), the owner's words verbatim (OWNER_SITTING A2): step 1, "ตอนออกจาก
+  เครื่องมือ conflict area แล้วยังมี เส้นหยุดให้เห็นอยู่" (fixed, D603); step 3, "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง
+  conflict area ให้มีสีแบบในรูป…" (display fixed, D610, D611); step 4 and the verdict, "ทดลองแล้วสมจริง".
+  **Verdict: plausible (D612).** Windows version and timings were not given.
 
 - **File:** `data/projects/t-junction-priority.traffic.json`, opened in the Windows build.
 - **Steps** (D601: the owner's are 1, 3, 4 and the verdict; numbers are not reused):

@@ -5,6 +5,14 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — M3.2.7d passes on attempt 2 (D612)
+
+- **Owner, step 4 and the verdict (verbatim):** "ทดลองแล้วสมจริง", after Stop and Yield were explained here and in
+  SUMO and Aimsun.
+- Recorded in OWNER_SITTING A2 and the M3_ACCEPTANCE sheet; ROADMAP's M3.2.7d row passed. M3.2 stays open on its
+  diverge acceptance-fixture row. Windows version and timings were not given. No code change.
+- **Next (D609):** G3 stuck vehicles, then PRIORITY_RULES slice 1.
+
 ## 2026-11-21 — Pointing shows a road's direction; a selected conflict area shows its roads (D611)
 
 - **Owner (verbatim):** "ปรับให้การชี้ที่ Link และ connector แสดงเส้นขอบที่มีลูกศรสีดำ ส่วนการเลือกให้เป็นเป็นสีฟ้า
@@ -150,11 +158,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows:** `stoplines` SL1–SL3, SL5, SL6 (stored and derived at the same places: equal zones, same seed-42 run), SL8. The T-junction regenerated: two sign lines (`wait-15`, `wait-17`) instead of six. Updated tests are listed in STOP_LINES §9.
 - **Not yet:** the Stop line tool, coverage as a derived rule, faint derived lines on hover (slice 3). A derived line is not drawn at all today.
 - **Verified on Linux (desktop preset, Debug):** full `ctest` 359/359; the 32 changed `.cpp` units build without the PCH. Windows not run.
-
-## 2026-11-19 — Opaque conflict areas (D592); M3.2.4e merge admission over the mouth (D593)
-
-- **Owner (2026-11-19):** "ความทึบ 100%  และเริ่ม M3.2.4e ได้เลย".
-- **D592:** areas draw at alpha 255; an undecided automatic candidate stays faint. Waiting lines stay above.
-- **D593:** [MERGE_MOUTH](reference/MERGE_MOUTH.md). `mergeMouth` gives a taken-over merge the measured overlap (first overlapping station on the joining segment to the join) and each side a line 1 m short of it; used by Take over merge, automatic candidates and D86's follow. Rows MM1–MM4 failed first (MM4: 266 ticks with a minor and a major body in one mouth, seed 42) and pass; MM5–MM6 guards. The T-junction file regenerated (`wait-14` 26.23 → 12.31 m, `wait-18` 24.01 → 6.99 m, `wait-13` 169 → 154.65 m, `wait-17` 169 → 151.36 m). Five tests that pinned the strip were updated to the new rule (`rightofway` ×3, `rightofway_runtime`, `tjunction`); D54 amended.
-- **Not changed:** derived merges and the solver; stored files are not migrated.
-- **Verified on Linux (desktop preset, Debug):** full `ctest` 357/357 passed except the group list, then `mergemouth` and `all-model-tests` pass after listing the group (358 tests); changed units build without the PCH. Windows not run.
