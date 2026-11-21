@@ -288,6 +288,7 @@ void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
             index.diffusionTicks[b] = std::max<std::uint64_t>(1, static_cast<std::uint64_t>(std::ceil(*after / s.timeStep - 1e-9)));
     index.diffusions = !s.routeDeadEnds.empty() &&
         std::any_of(index.diffusionTicks.begin(), index.diffusionTicks.end(), [](auto n) { return n > 0; });
+    index.yields = std::any_of(s.behaviours.begin(), s.behaviours.end(), [](const auto& b) { return b.yieldTime || b.impatience; }); // D618
     for (const auto& dead : s.routeDeadEnds)
         if (const auto r = slotOf(s, dead.routeId); r < s.routes.size()) index.deadEndOfRoute[r] = dead.at;
     index.discretionaryOfRoute.assign(s.routes.size(), {});

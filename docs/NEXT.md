@@ -86,6 +86,16 @@ Ctrl+right-click on another lane adds a marker; drag and Delete; markers follow 
 while picked, table rows with a dialog, the unreached-marker advisory. **Left:** the owner's look (item 51); a class
 picker in place of typed class ids if the owner asks.
 
+## G7 waiting acceptance (D618) — slice 1 done; slice 2 next
+
+[YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md): Aimsun's gap reduction (a behaviour's per-vehicle `yieldTime`; a
+rule's or marker's `finalGapTime`, `gapReductionStart`, `gapReductionEnd`) and SUMO's impatience at conflict areas (the
+follow-on behind a standing major vehicle), schema 84, rows YI1–YI9; off by default, M0 unchanged. **Slice 2:** the three
+place keys in the Conflict area dialog and the priority-rule dialog (`conflicts_panel_rules.cpp`), a lab scene for the
+owner's look (the follow-on), then an OWNER_SITTING_WINDOWS item. The behaviour editor already has the six behaviour keys.
+**The other realism gaps** ([evidence](evidence/realism-gaps-vissim-sumo-aimsun.md)): G8 needs nothing (matches all
+three programs); G4, G5, G6 are named in ROADMAP M3.4; G9 is M3.3.3b.
+
 ## Review of 2026-11-10 — queued proposals (D493)
 
 The first review's proposals are done (D493, [PROGRESS](PROGRESS.md)). The rest wait here in review

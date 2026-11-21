@@ -1,4 +1,5 @@
 #include "conflicts.hpp"
+#include "yield_time.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -11,12 +12,23 @@ constexpr double kLineReach = 0.1;      // m: beyond the standstill distance, st
 const ZoneSide& sideOf(const ConflictZone& z, ZoneRole role) { return role == ZoneRole::major ? z.major : z.minor; }
 // One major body against its area: `d` is its front's distance short of entry (negative inside),
 // `rearInside` its rear not yet clear of the exit. Route positions and spans (D202) share it.
-void blockMajor(ZoneState& state, const ConflictZone& zone, double d, bool rearInside, double speed) {
+void blockMajor(ZoneState& state, const ConflictZone& zone, double d, bool rearInside, double speed, const double* maxDeceleration = nullptr) {
+    if (maxDeceleration && d >= 0) state.approaching.push_back({d, speed, *maxDeceleration}); // D618
     if (d < 0) { if (rearInside) state.majorBlocks = state.majorInside = true; }
     else if (d <= zone.headway) state.majorBlocks = true;
     // Equality satisfies the time threshold (contract §4); a standing vehicle beyond the
     // headway is a gap, not a block -- it cannot enter while a minor vehicle holds anyway.
     else if (speed > 0 && d / speed < zone.gapTime) state.majorBlocks = true;
+}
+// D618: the zone's test with the minor driver's own gap and impatience; with gapTime and no
+// impatience it is exactly majorBlocks (contract §4).
+bool blocksFor(const ZoneState& state, const ConflictZone& zone, double gap, double impatience) {
+    if (state.majorInside) return true;
+    for (const auto& m : state.approaching) {
+        if (majorCanYield(impatience, m.distance, m.speed, m.maxDeceleration)) continue;
+        if (m.distance <= zone.headway || (m.speed > 0 && m.distance / m.speed < gap)) return true;
+    }
+    return false;
 }
 // LATERAL §5 (D202): the spans a body casts on lanes other than its route's, with the switch on.
 bool scansSpans(const ScenarioIndex& index) { return index.lateral.on && !index.lateral.zoneSides.empty(); }
@@ -93,7 +105,8 @@ std::vector<ZoneState> summarizeZones(const Scenario& scenario, const ScenarioIn
                 if (vehicle.distance - rz.waitAt > kPast && rear < rz.exitAt) state.holders.push_back(vehicle.id);
                 continue;
             }
-            blockMajor(state, zone, rz.entryAt - vehicle.distance, rear < rz.exitAt, vehicle.speed);
+            const double decel = scenario.vehicleTypes[refs[v].type].maxDeceleration;
+            blockMajor(state, zone, rz.entryAt - vehicle.distance, rear < rz.exitAt, vehicle.speed, index.yields ? &decel : nullptr);
         }
     }
     if (!scansSpans(index)) return zones;
@@ -106,7 +119,14 @@ std::vector<ZoneState> summarizeZones(const Scenario& scenario, const ScenarioIn
             auto& state = zones[side.zone];
             const double d = side.lo - span.front;
             if (!side.major) { if (d < 0 && span.rear < side.hi) state.holders.push_back(span.vehicleId); }
-            else if (side.first || d < 0) blockMajor(state, scenario.conflictZones[side.zone], d, span.rear < side.hi, span.speed);
+            else if (side.first || d < 0) {
+                double decel = 0; // D618: the straddler's own type, found by id (vehicles are in id order)
+                if (index.yields) {
+                    const auto at = std::lower_bound(vehicles.begin(), vehicles.end(), span.vehicleId, [](const auto& x, std::uint64_t id) { return x.id < id; });
+                    if (at != vehicles.end() && at->id == span.vehicleId) decel = scenario.vehicleTypes[refs[static_cast<std::size_t>(at - vehicles.begin())].type].maxDeceleration;
+                }
+                blockMajor(state, scenario.conflictZones[side.zone], d, span.rear < side.hi, span.speed, index.yields ? &decel : nullptr);
+            }
         }
     }
     return zones;
@@ -114,7 +134,7 @@ std::vector<ZoneState> summarizeZones(const Scenario& scenario, const ScenarioIn
 std::optional<double> zoneHold(const Scenario& scenario, const ScenarioIndex& index,
                                const std::vector<ZoneState>& zones, const Vehicle& vehicle,
                                const VehicleRefs& refs, const std::optional<Leader>& leader,
-                               const StopService* service, std::uint64_t tick) {
+                               const StopService* service, std::uint64_t tick, std::uint32_t seed) {
     std::optional<double> hold;
     const auto& type = scenario.vehicleTypes[refs.type];
     const auto& behaviour = scenario.behaviours[refs.behaviour];
@@ -138,7 +158,11 @@ std::optional<double> zoneHold(const Scenario& scenario, const ScenarioIndex& in
             // VISIBILITY (D607): beyond its visibility the driver cannot judge the gap, so the area counts
             // as blocked (an unseen stretch may hold a major vehicle); commitment is unchanged.
             const bool unseen = gap > scenario.conflictZones[rz.zoneIndex].visibility + kPast;
-            const bool blocked = !resting && committed(vehicle.speed, std::max(0.0, gap), type, behaviour) ? state.majorInside : state.majorBlocks || unseen;
+            const auto& zone = scenario.conflictZones[rz.zoneIndex];
+            const double waited = static_cast<double>(vehicle.standstillTicks) * scenario.timeStep; // D618
+            const bool majorBlocks = !index.yields ? state.majorBlocks
+                : blocksFor(state, zone, requiredGap(zone.gapTime, zone.gapReduction, behaviour, seed, vehicle, waited), impatienceAfter(behaviour, waited));
+            const bool blocked = !resting && committed(vehicle.speed, std::max(0.0, gap), type, behaviour) ? state.majorInside : majorBlocks || unseen;
             if (!unserved && !blocked && !exitTaken) continue;
         } else {
             gap = rz.entryAt - vehicle.distance;

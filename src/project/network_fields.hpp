@@ -81,7 +81,8 @@ inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,en
     visibilityVersion=80, // D607 (VISIBILITY): a priority rule's visibility
     startUpVersion=81, // D608 (START_UP): a vehicle type's accelerationCurve, a behaviour's inattention pair
     diffusionVersion=82, // D613 (DIFFUSION): a behaviour's diffusionTime
-    priorityMarkerVersion=83; // D606 (PRIORITY_RULES): a priority rule's waitingLineId, vehicleClassIds and markers
+    priorityMarkerVersion=83, // D606 (PRIORITY_RULES): a priority rule's waitingLineId, vehicleClassIds and markers
+    yieldVersion=84; // D618 (YIELD_IMPATIENCE): gap reduction on a rule or marker, a behaviour's yield time and impatience
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

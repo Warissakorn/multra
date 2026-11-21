@@ -178,6 +178,9 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.redRunningTime) item["redRunningTime"] = *b.redRunningTime;
             if (b.missedExitAfter) item["missedExitAfter"] = *b.missedExitAfter; // D581
             if (b.diffusionTime) item["diffusionTime"] = *b.diffusionTime; // D613
+            for (const auto& [key, value] : {std::pair{"yieldTime", &b.yieldTime}, {"yieldTimeDeviation", &b.yieldTimeDeviation}, // D618
+                     {"yieldTimeMinimum", &b.yieldTimeMinimum}, {"yieldTimeMaximum", &b.yieldTimeMaximum}, {"impatience", &b.impatience}, {"timeToImpatience", &b.timeToImpatience}})
+                if (*value) item[key] = **value;
             if (b.inattentionDuration) item["inattentionDuration"] = *b.inattentionDuration; // D608
             if (b.inattentionProbability) item["inattentionProbability"] = *b.inattentionProbability; // D608
         };

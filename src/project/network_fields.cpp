@@ -96,10 +96,12 @@ constexpr Field priorityRuleFields[]={
     {"generated",Kind::generated,false,generatedVersion},{"visibility",Kind::number,false,visibilityVersion},
     {.name="waitingLineId",.kind=Kind::text,.required=true,.knownFrom=priorityMarkerVersion,.unless="conflictAreaId"},
     {.name="vehicleClassIds",.kind=Kind::texts,.knownFrom=priorityMarkerVersion},
-    {.name="markers",.kind=Kind::priorityMarkers,.required=true,.knownFrom=priorityMarkerVersion,.unless="conflictAreaId"}};
+    {.name="markers",.kind=Kind::priorityMarkers,.required=true,.knownFrom=priorityMarkerVersion,.unless="conflictAreaId"},
+    {"finalGapTime",Kind::number,false,yieldVersion},{"gapReductionStart",Kind::number,false,yieldVersion},{"gapReductionEnd",Kind::number,false,yieldVersion}}; // D618
 constexpr Field priorityMarkerFields[]={
     {"point",Kind::controlPoint,true},{"gapTime",Kind::number,true},{"headway",Kind::number,true},
-    {"maxSpeed",Kind::number,false},{"vehicleClassIds",Kind::texts,false}};
+    {"maxSpeed",Kind::number,false},{"vehicleClassIds",Kind::texts,false},
+    {"finalGapTime",Kind::number,false,yieldVersion},{"gapReductionStart",Kind::number,false,yieldVersion},{"gapReductionEnd",Kind::number,false,yieldVersion}}; // D618
 constexpr Field stopControlFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"waitingLineId",Kind::text,true},
     {"mode",Kind::stopMode,true},{"conflictAreaIds",Kind::texts,true},{"generated",Kind::generated,false,generatedVersion}};
@@ -249,7 +251,10 @@ const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B:
     {"redRunningShare",&B::redRunningShare,redRunningVersion,true},{"redRunningTime",&B::redRunningTime,redRunningVersion,true},
     {"missedExitAfter",&B::missedExitAfter,missedExitVersion,true},
     {"inattentionDuration",&B::inattentionDuration,startUpVersion,true},{"inattentionProbability",&B::inattentionProbability,startUpVersion,true},
-    {"diffusionTime",&B::diffusionTime,diffusionVersion,true}};
+    {"diffusionTime",&B::diffusionTime,diffusionVersion,true},
+    {"yieldTime",&B::yieldTime,yieldVersion,true},{"yieldTimeDeviation",&B::yieldTimeDeviation,yieldVersion,true},
+    {"yieldTimeMinimum",&B::yieldTimeMinimum,yieldVersion,true},{"yieldTimeMaximum",&B::yieldTimeMaximum,yieldVersion,true},
+    {"impatience",&B::impatience,yieldVersion,true},{"timeToImpatience",&B::timeToImpatience,yieldVersion,true}}; // D618
 std::vector<Field> behaviourRow(bool w74) {
     const int notThis=w74?1:0,notOther=w74?0:1;
     std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},

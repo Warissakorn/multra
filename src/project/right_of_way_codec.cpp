@@ -25,6 +25,16 @@ ConflictSide readSide(const Json& j,const std::string& path,int version) {
         throw ValidationError({{"UNKNOWN_WAITING_LINE",path+".waitingLineId"}});
     return side;
 }
+// D618 (YIELD_IMPATIENCE §3): the three keys together or none; a lone one is refused at a missing one.
+std::optional<GapReduction> readGapReduction(const Json& j,Object object,const std::string& path) {
+    const char* keys[]={"finalGapTime","gapReductionStart","gapReductionEnd"};
+    int count=0;
+    for(const char* key:keys)count+=present(j,key)?1:0;
+    if(count==0)return std::nullopt;
+    for(const char* key:keys)if(!present(j,key))throw ValidationError({{"INVALID_PRIORITY_RULE",path+"."+key}});
+    return GapReduction{value(j,object,"finalGapTime").get<double>(),value(j,object,"gapReductionStart").get<double>(),
+                        value(j,object,"gapReductionEnd").get<double>()};
+}
 }
 RightOfWay readRightOfWay(const Json& j,int version) {
     knownFields(j,Object::rightOfWay,"network.rightOfWay",version);
@@ -65,6 +75,7 @@ RightOfWay readRightOfWay(const Json& j,int version) {
         auto& rule=row.priorityRules.back();
         rule.generated=generatedFlag(r,path,version);
         if(present(r,"visibility"))rule.visibility=field("visibility").get<double>(); // D607
+        if(!markers)rule.gapReduction=readGapReduction(r,Object::priorityRule,path); // D618
         const auto texts=[](const Json& list,const char* key) {
             std::vector<std::string> result;
             for(const auto& id:list) {
@@ -86,6 +97,7 @@ RightOfWay readRightOfWay(const Json& j,int version) {
                 value(point,Object::controlPoint,"station").get<double>()},mark("gapTime").get<double>(),mark("headway").get<double>(),{},{}};
             if(present(m,"maxSpeed"))marker.maxSpeed=mark("maxSpeed").get<double>();
             if(present(m,"vehicleClassIds"))marker.vehicleClassIds=texts(mark("vehicleClassIds"),"vehicleClassIds");
+            marker.gapReduction=readGapReduction(m,Object::priorityMarker,at); // D618
             rule.markers.push_back(std::move(marker));
         }
     }

@@ -44,6 +44,13 @@ behaviour change above is costed by callgrind before and after, as the 2026-11-1
 
 **Since (2026-11-20):** G1 and G2 are D608 ([START_UP](../reference/START_UP.md)), as Vissim, absent by default.
 **Since (2026-11-21):** G3 is D613 ([DIFFUSION](../reference/DIFFUSION.md)), as Vissim, off by default.
+**Since (2026-11-21, read from the manuals and SUMO's source):** G7 is D618 ([YIELD_IMPATIENCE](../reference/YIELD_IMPATIENCE.md)):
+Vissim has no such key, so it is Aimsun's gap reduction over a per-vehicle yield time, plus SUMO's impatience at conflict
+areas for the follow-on behind a standing major vehicle; off by default. G8 needs nothing: a regular stop sign holds one
+time step in Vissim (its dwell distribution belongs to toll counters), SUMO's `jmStopSignWait` is a fixed minimum and
+Aimsun stops completely, which MULTRA's Stop and optional `stopDwellTime` already match.
+**Where the rest live:** G4 (safety-distance reduction), G5 (cooperative lane change) and G6 (lane-change distance) are
+named in ROADMAP M3.4; G9 is M3.3.3b (W99).
 
 ## 4. Proposed order (the owner's choice; each needs a contract and failure-first rows)
 

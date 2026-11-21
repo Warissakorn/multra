@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — G7 slice 1: a waiting driver accepts less, Aimsun's gap reduction and SUMO's impatience (D618)
+
+- **Owner (verbatim):** "G7 ทำแบบ Aimsun"; on the follow-on, "ในสถานะการที่รถทางรองออกแล้วรถทางหลักหยุด แล้วรถทางรองคันถัดไป
+  ออกต่อกันกับคนแรก เนื่องจากมีโอกาสจากรถทางหลักหยุด"; "ทบทวนความเต็มใจให้รถทางหลักชะรอของ sumo"; "ทำทั้งสองส่วนตามแนะนำ".
+- **Read first** (hosts allowed for this): Vissim 2025's stop-sign and conflict-area help, SUMO's docs and `MSLink.cpp`, Aimsun
+  Next's manual. G8 needs nothing (all three hold a regular stop for a step or stop fully); Vissim has no G7 key.
+- **D618, [YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md):** schema 84; Aimsun's linear gap reduction over a per-vehicle
+  hashed yield time, set per rule or marker; SUMO's impatience at conflict areas only, so a standing major vehicle lets the
+  next minor vehicle follow. Off by default; `multra-cli 42` keeps 45 / 31.75870154816726 / 1.
+- **Verified (Linux, headless):** `yield_impatience` YI1–YI9 pass; `ctest --preset headless` 250/250; docs and sizes pass.
+- **Next:** slice 2, the place keys in the dialogs and a lab scene for the owner's look.
+
 ## 2026-11-21 — PRIORITY_RULES slice 3: display, table rows and the unreached-marker row (D617)
 
 - **Owner:** "ทำส่วนที่ 3 เลย".
@@ -148,17 +160,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Study:** [realism-gaps-vissim-sumo-aimsun](evidence/realism-gaps-vissim-sumo-aimsun.md): G1 start-up delay
   (M0's lost time 0.89 s against HCM 2.0 s) and G2 speed-dependent acceleration proposed first. No code.
 - **Verified:** see the commit; Windows not run.
-
-## 2026-11-20 — Owner's choices on the sitting's findings (D603–D605)
-
-- **Owner (verbatim):** "1 ข. และ เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้ Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim
-  · 2 แก้ตามแนะนำ"; then "ข. Priority rule แบบ Vissim".
-- **D603:** waiting lines carrying Stop or Yield are drawn only under the Conflict area, Stop line and Queue
-  counter tools (amends D590); `priority_canvas_tests` checks a Stop line is gone under Select and marked under
-  the Stop line tool.
-- **D605:** block-selecting tables draw one outline around each selected block over a light tint, from an
-  overlay (`tableSelectionOutline`); `table-grid-ui` checks a 2 × 2 block gives only its eight perimeter edges.
-- **D604:** [PRIORITY_RULES](reference/PRIORITY_RULES.md) drafted: stop line plus conflict markers without a
-  conflict area, compiled to the engine's existing `PriorityRule`; the next schema step proposed, rows PR1–PR10. Five
-  owner choices (§8) come before code.
-- **Verified on Linux (desktop, offscreen):** `table-grid-ui`, `priority-canvas` and `stop-line-ui` pass; full desktop suite 361/361. Windows not run.

@@ -57,6 +57,10 @@ struct ZoneState {
     bool majorBlocks{};                  // a major vehicle is inside, within headway, or within gapTime
     bool majorInside{};                  // the occupancy part alone: a major front past entry, rear not clear
     std::vector<std::uint64_t> holders;  // minor vehicles past the waiting line, rear not yet clear
+    // YIELD_IMPATIENCE (D618), only under index.yields: each major body short of entry, so a minor
+    // driver's own gap and impatience can be tested against it (majorBlocks keeps the zone's gapTime).
+    struct Approach { double distance{}, speed{}, maxDeceleration{}; };
+    std::vector<Approach> approaching;
 };
 // With the lateral switch on, a span a body casts on another lane (`own = false`, LATERAL §5) also
 // occupies that lane's zones (D202): inside a major area it blocks, on the chain's first segment short
@@ -74,7 +78,7 @@ std::vector<ZoneState> summarizeZones(const Scenario&, const ScenarioIndex&, con
 // that line by `tick`, whatever the gap.
 std::optional<double> zoneHold(const Scenario&, const ScenarioIndex&, const std::vector<ZoneState>&,
                                const Vehicle&, const VehicleRefs&, const std::optional<Leader>& leader,
-                               const StopService* service = nullptr, std::uint64_t tick = 0);
+                               const StopService* service = nullptr, std::uint64_t tick = 0, std::uint32_t seed = 0);
 // M3.2.5, contract §5: the stop-service table for the snapshot at the start of `tick`, from the
 // previous one. Each vehicle keeps at most one entry, for the nearest Stop line it has not passed:
 // carried over while it is the same line, created when the vehicle has come to the line -- slower

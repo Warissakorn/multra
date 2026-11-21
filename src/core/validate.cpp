@@ -1,5 +1,6 @@
 #include "missed_exit.hpp"
 #include "diffusion.hpp"
+#include "yield_time.hpp"
 #include "text.hpp"
 #include "validate.hpp"
 #include "start_up.hpp"
@@ -146,6 +147,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         // would also let the merge check below count it as arbitration.
         if (rule.yieldSegmentId == rule.conflictSegmentId) add("INVALID_RANGE", p + ".conflictSegmentId");
         if (rule.maxSpeed && !(std::isfinite(*rule.maxSpeed) && *rule.maxSpeed > 0)) add("INVALID_NUMBER", p + ".maxSpeed"); // D606
+        for (auto& issue : gapReductionIssues(rule.gapReduction, rule.gapTime, p, "INVALID_NUMBER")) issues.push_back(std::move(issue)); // D618
         for (const auto& [ids, key] : {std::pair{&rule.yieldTypeIds, ".yieldTypeIds"}, std::pair{&rule.blockTypeIds, ".blockTypeIds"}})
             if (*ids) for (const auto& type : **ids)
                 if (std::none_of(s.vehicleTypes.begin(), s.vehicleTypes.end(), [&](const auto& t) { return t.id == type; })) add("UNKNOWN_VEHICLE_TYPE", p + key);
@@ -160,6 +162,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         const auto& zone = s.conflictZones[i];
         const auto p = "conflictZones[" + std::to_string(i) + "]";
         number(zone.gapTime, p + ".gapTime"); number(zone.headway, p + ".headway", true);
+        for (auto& issue : gapReductionIssues(zone.gapReduction, zone.gapTime, p, "INVALID_NUMBER")) issues.push_back(std::move(issue)); // D618
         for (const auto& [side, name] : {std::pair{&zone.major, ".major"}, std::pair{&zone.minor, ".minor"}}) {
             const auto& chain = side->segmentIds;
             if (chain.empty()) {
@@ -294,6 +297,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
             for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
             for (auto& issue : diffusionIssues(b, p)) issues.push_back(std::move(issue)); // D613
+            for (auto& issue : yieldBehaviourIssues(b, p)) issues.push_back(std::move(issue)); // D618
             for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
             continue;
@@ -314,6 +318,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
         for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
         for (auto& issue : diffusionIssues(b, p)) issues.push_back(std::move(issue)); // D613
+        for (auto& issue : yieldBehaviourIssues(b, p)) issues.push_back(std::move(issue)); // D618
         for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.

@@ -5,6 +5,7 @@
 //
 // Waiting lines, conflict areas, their priority rules, (M3.2.5) Stop/Yield controls and (M3.2.6)
 // queue counters.
+#include "../../core/yield_types.hpp"
 #include <optional>
 #include <string>
 #include <vector>
@@ -51,6 +52,7 @@ struct ConflictArea {
 struct PriorityMarker {
     ControlPoint point; double gapTime{}, headway{}; std::optional<double> maxSpeed;
     std::vector<std::string> vehicleClassIds;
+    std::optional<GapReduction> gapReduction; // YIELD_IMPATIENCE §3 (D618), schema 84; absent: gapTime always
     bool operator==(const PriorityMarker&) const = default;
 };
 // Two exclusive forms. An area's numbers: at most one per area, direction from the area, never a
@@ -64,6 +66,7 @@ struct AuthoredPriorityRule {
     static constexpr double kDefaultVisibility = 100.0;
     std::string waitingLineId; std::vector<std::string> vehicleClassIds; std::vector<PriorityMarker> markers;
     bool markerForm() const { return !waitingLineId.empty() || !markers.empty(); }
+    std::optional<GapReduction> gapReduction; // the area form's (D618, schema 84); a marker carries its own
     bool operator==(const AuthoredPriorityRule&) const = default;
 };
 // M3.2.5 (contract §1, §5): what a driver must do at one waiting line before crossing the areas

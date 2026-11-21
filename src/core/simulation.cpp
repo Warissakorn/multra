@@ -1,5 +1,6 @@
 #include "missed_exit.hpp"
 #include "diffusion.hpp"
+#include "yield_time.hpp"
 #include "simulation.hpp"
 #include "conflicts.hpp"
 #include "detail.hpp"
@@ -145,6 +146,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             applyRouteDecision(scenario,vehicle,*decision,startTime,next.seed,next.randomState,events);
             decided = true;
         }
+    if (index.yields) countStandstill(vehicles); // YIELD_IMPATIENCE §4 (D618): the waiting time before this tick's decisions
     // Resolved once per tick rather than roughly six times per vehicle. D584: when insertion built
     // them and nothing since touched the list (no arrival, no reorder, no gate, no source decision),
     // they are exactly what a rebuild here would produce, so they are taken instead.
@@ -279,6 +281,8 @@ SimState stepSimulation(SimState&& state, double dt) {
             // D615: a Stop on the line is served first, as a Stop zone's is: no gap counts before it.
             const double line = routeRule.partStart + rule.yieldPosition;
             bool giveWay = rule.stop && !(!stopOf.empty() && stopOf[v] && stopOf[v]->line == line && !restsAtStop(stopOf[v], startTick));
+            const double needGap = !rule.gapReduction ? rule.gapTime // D618: Aimsun's reduction for this driver
+                : requiredGap(rule.gapTime, rule.gapReduction, behaviour, next.seed, vehicle, static_cast<double>(vehicle.standstillTicks) * scenario.timeStep);
             for (auto i = giveWay ? buckets.start[conflict + 1] : buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
                 const auto& span = spans[buckets.items[i]];
                 if (span.vehicleId == vehicle.id) continue;
@@ -298,7 +302,7 @@ SimState stepSimulation(SimState&& state, double dt) {
                 // Arriving too soon. A stopped major vehicle further off than the headway does
                 // NOT block, which is what stops a standing queue from deadlocking the minor
                 // approach forever rather than releasing it into a gap that genuinely exists.
-                else if (span.speed > 0 && reach / span.speed < rule.gapTime) giveWay = true;
+                else if (span.speed > 0 && reach / span.speed < needGap) giveWay = true;
                 if (giveWay) break;
             }
             if (!giveWay) continue;
@@ -308,7 +312,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         // Conflict zones hold a vehicle by the same stop-line mechanism once more.
         if (const auto hold = index.routeZones[refs[v].route].empty() ? std::nullopt
                               : zoneHold(scenario, index, zones, vehicle, refs[v], vehicleLeader,
-                                         stopOf.empty() ? nullptr : stopOf[v], startTick)) {
+                                         stopOf.empty() ? nullptr : stopOf[v], startTick, next.seed)) {
             holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold); zoneLine = std::min(zoneLine, *hold);
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0, true}; // D596: rest at the line
         }

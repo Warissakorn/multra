@@ -36,6 +36,8 @@ and then the step is unchanged to the bit.
 | `red_running.*` | The red-runner draw, `redElapsed`, `letThrough` | [RED_RUNNING](../../docs/reference/RED_RUNNING.md) |
 | `start_up.*` | Acceleration limit by speed (`maxAccelerationAt`) and temporary lack of attention (`inattentive`) | [START_UP](../../docs/reference/START_UP.md) |
 | `diffusion.*` | A vehicle held `diffusionTime` at its stub's dead end leaves the run with a `DiffusedEvent` (`applyDiffusion`, `diffusionIssues`) | [DIFFUSION](../../docs/reference/DIFFUSION.md) |
+| `yield_time.*` | Aimsun's gap reduction over a driver's hashed yield time and SUMO's impatience at conflict areas (`requiredGap`, `impatienceAfter`, `majorCanYield`, `countStandstill`) | [YIELD_IMPATIENCE](../../docs/reference/YIELD_IMPATIENCE.md) |
+| `yield_types.hpp` | `GapReduction`, the place's final gap and timing factors | [YIELD_IMPATIENCE](../../docs/reference/YIELD_IMPATIENCE.md) §3 |
 | `join_anticipation.*` | `indexJoins`, `joinEntries`, `anticipateJoin`: a second following law across a join, only with `clampRules.joinAnticipation` | [JOIN_ANTICIPATION](../../docs/reference/JOIN_ANTICIPATION.md) |
 | `perception.*` | Perception keys and ranges, the reaction-time action FIFO, `perceivedLeaders` | [PERCEPTION](../../docs/reference/PERCEPTION.md) |
 | `lateral_types.hpp` | `DrivingSide`, the compiled `SegmentCrossSection` | [LATERAL](../../docs/reference/LATERAL.md) |

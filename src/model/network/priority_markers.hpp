@@ -9,6 +9,8 @@ namespace multra {
 // it names, the area form's keys left unset, each marker's path, station and numbers, and no
 // marker on the line's own path (it would hold a vehicle for itself). Class ids are checked by
 // the project layer, which owns the classes.
+// D618: the area form's gap reduction against its gapTime (INVALID_PRIORITY_RULE at the key's path).
+void areaRuleGapIssues(const AuthoredPriorityRule&, const std::string& path, std::vector<ValidationIssue>&);
 void priorityMarkerIssues(const Network&, const AuthoredPriorityRule&, const std::string& path, std::vector<ValidationIssue>&);
 // D615: whether a marker-form rule waits at this line, so a Stop control there needs no area.
 bool lineServesPriorityMarkers(const RightOfWay&, const std::string& lineId);

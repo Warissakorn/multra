@@ -39,6 +39,8 @@ bool ownsStartUp(const ProjectDocument&); // D608 (START_UP): schema 81
 void rejectStartUpBefore81(const Json& document);
 bool ownsDiffusion(const ProjectDocument&); // D613 (DIFFUSION): schema 82
 void rejectDiffusionBefore82(const Json& document);
+bool ownsYield(const ProjectDocument&); // D618 (YIELD_IMPATIENCE): schema 84
+void rejectYieldBefore84(const Json& document);
 bool ownsCommitmentBehaviour(const ProjectDocument&); // B-2 (D219): schema 36
 void rejectCommitmentBefore36(const Json& document);
 bool ownsKerbBehaviour(const ProjectDocument&);

@@ -6,6 +6,7 @@
 #include "parking_types.hpp"
 #include "random_streams.hpp"
 #include "speed_decision_types.hpp"
+#include "yield_types.hpp"
 #include <cstdint>
 #include <limits>
 #include <memory>
@@ -83,6 +84,7 @@ struct DriverBehaviour {
     std::optional<double> missedExitAfter; // s at a dead end, then the vehicle gives up its turn (LANE_LOCKS B, D581); absent: never
     std::optional<double> diffusionTime; // s at a dead end, then the vehicle is removed (DIFFUSION, D613); absent: never
     std::optional<double> inattentionDuration, inattentionProbability; // START_UP §3 (D608): a pair; absent: always attentive
+    std::optional<double> yieldTime, yieldTimeDeviation, yieldTimeMinimum, yieldTimeMaximum, impatience, timeToImpatience; // s (Aimsun), SUMO: YIELD_IMPATIENCE (D618)
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles { double wheelbase{}, frontOverhang{}, rearOverhang{}; bool operator==(const VehicleAxles&) const = default; };
@@ -169,6 +171,7 @@ struct PriorityRule {
     // block at the marker. Absent: no limit, every type (every derived merge rule).
     std::optional<double> maxSpeed; std::optional<std::vector<std::string>> yieldTypeIds, blockTypeIds;
     bool stop{}; // D615: a Stop control on the line: a full stop there before the gap test (StopService)
+    std::optional<GapReduction> gapReduction; // YIELD_IMPATIENCE §3 (D618); absent: gapTime always
     bool operator==(const PriorityRule&) const = default;
 };
 // M3.2.3a. One crossing: the minor side gives way to the major side, and the two never occupy
@@ -195,6 +198,7 @@ struct ConflictZone {
     // VISIBILITY (D607): metres short of its waiting line within which a minor driver judges the gap;
     // farther out the area counts as blocked, so it plans to stop at the line. Infinite: no limit.
     double visibility{std::numeric_limits<double>::infinity()};
+    std::optional<GapReduction> gapReduction; // YIELD_IMPATIENCE §3 (D618); absent: gapTime always
     bool operator==(const ConflictZone&) const = default;
 };
 // M3.2.8b (docs/reference/M3_8_CONTRACT.md §2). A vehicle on route `fromRouteId` whose rear is at or past
@@ -306,6 +310,7 @@ struct ScenarioIndex {
     bool missedExits{};                         // some behaviour has one and some route a dead end
     std::vector<std::uint64_t> diffusionTicks;  // D613: per behaviour, ticks before removal; 0 never
     bool diffusions{};                          // some behaviour has one and some route a dead end
+    bool yields{};                              // D618: some behaviour has yieldTime or impatience
     // D95: the full-to-full spans, apart from `laneChangesOfRoute` (stub spans only), in target-slot
     // order. `discretionary` is set only when some span exists AND some behaviour has the threshold.
     bool discretionary{};
@@ -410,6 +415,7 @@ struct Vehicle : PendingVehicle {
     double desiredQuantile{-1}, freeFlowSoFar{}, freeFlowFrom{}, areaSpeed{};
     std::uint64_t deadEndTicks{}; // D581: consecutive ticks waiting at its dead end; 0 unless missedExitAfter
     std::uint64_t diffusionWait{}; // D613: likewise, toward diffusionTime
+    std::uint64_t standstillTicks{}; // D618: consecutive ticks below 0.1 m/s; counted only under index.yields
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

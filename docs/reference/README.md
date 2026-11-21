@@ -102,6 +102,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [VISIBILITY.md](VISIBILITY.md) | How far a yielding driver judges the gap at a conflict area: schema 80, 100 m default, rows VS1–VS8, measured unchanged at 100 m (D607) |
 | [START_UP.md](START_UP.md) | Moving off at green as Vissim: a vehicle type's acceleration curve and a behaviour's temporary lack of attention, schema 81, rows SU1–SU9, measured on saturated M0 (D608) |
 | [DIFFUSION.md](DIFFUSION.md) | Removing a vehicle stuck waiting for a lane change, as Vissim's waiting time before diffusion: a behaviour's `diffusionTime`, schema 82, rows DF1–DF8 (D613) |
+| [YIELD_IMPATIENCE.md](YIELD_IMPATIENCE.md) | A waiting driver accepts less: Aimsun's gap reduction (a behaviour's yield time, a rule's or marker's final gap and timing) and SUMO's impatience at conflict areas, schema 84, rows YI1–YI9 (D618) |
 | [PRIORITY_RULES.md](PRIORITY_RULES.md) | Draft (D604), not implemented: Vissim-style priority rules, a stop line with conflict markers and no conflict area, rows PR1–PR10; waits on the owner's choices §8 |
 
 Return to [the task reading map](../README.md#read-by-task).

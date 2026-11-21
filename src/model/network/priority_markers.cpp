@@ -1,4 +1,5 @@
 #include "priority_markers.hpp"
+#include "../../core/yield_time.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -13,10 +14,13 @@ bool validPath(const Network& n, const ControlPathRef& p) {
 }
 std::string at(const std::string& path, const char* key, std::size_t k) { return path + key + "[" + std::to_string(k) + "]"; }
 }
+void areaRuleGapIssues(const AuthoredPriorityRule& r, const std::string& path, std::vector<ValidationIssue>& issues) {
+    for (auto& issue : gapReductionIssues(r.gapReduction, r.gapTime, path, "INVALID_PRIORITY_RULE")) issues.push_back(std::move(issue));
+}
 void priorityMarkerIssues(const Network& n, const AuthoredPriorityRule& r, const std::string& path, std::vector<ValidationIssue>& issues) {
     const auto add = [&](const char* code, const std::string& where) { issues.push_back({code, where}); };
     // The two forms are exclusive: no area, and none of the area's numbers.
-    if (!r.conflictAreaId.empty() || r.gapTime != 0 || r.headway != 0 || r.visibility) add("INVALID_PRIORITY_RULE", path);
+    if (!r.conflictAreaId.empty() || r.gapTime != 0 || r.headway != 0 || r.visibility || r.gapReduction) add("INVALID_PRIORITY_RULE", path);
     const auto& lines = n.rightOfWay.waitingLines;
     const auto line = std::find_if(lines.begin(), lines.end(), [&](const auto& w) { return w.id == r.waitingLineId; });
     if (line == lines.end()) add("UNKNOWN_WAITING_LINE", path + ".waitingLineId");
@@ -30,6 +34,7 @@ void priorityMarkerIssues(const Network& n, const AuthoredPriorityRule& r, const
         if (!std::isfinite(m.gapTime) || m.gapTime <= 0) add("INVALID_PRIORITY_RULE", where + ".gapTime");
         if (!std::isfinite(m.headway) || m.headway < 0) add("INVALID_PRIORITY_RULE", where + ".headway");
         if (m.maxSpeed && !(std::isfinite(*m.maxSpeed) && *m.maxSpeed > 0)) add("INVALID_PRIORITY_RULE", where + ".maxSpeed");
+        for (auto& issue : gapReductionIssues(m.gapReduction, m.gapTime, where, "INVALID_PRIORITY_RULE")) issues.push_back(std::move(issue)); // D618
     }
 }
 bool lineServesPriorityMarkers(const RightOfWay& row, const std::string& lineId) {
@@ -61,7 +66,7 @@ PriorityMarkerResolution resolvePriorityMarkers(const Network& n, const RuntimeS
             if (!wait) continue;
             PriorityRule rule{priorityMarkerRuleId(r.id, k), wait->segment, wait->position, point->segment, point->position, m.gapTime, m.headway};
             if (m.maxSpeed) rule.maxSpeed = *m.maxSpeed / 3.6; // km/h in the file, m/s in the core
-            rule.stop = stop;
+            rule.stop = stop; rule.gapReduction = m.gapReduction; // D618
             rules.push_back(std::move(rule));
         }
         // All of a rule's markers or none: a line that ignored a lost marker would admit into it.

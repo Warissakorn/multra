@@ -148,7 +148,7 @@ std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
         if (!areas.contains(r.conflictAreaId)) add("UNKNOWN_CONFLICT_AREA", path + ".conflictAreaId");
         else if (!ruled.insert(r.conflictAreaId).second) add("DUPLICATE_PRIORITY_RULE", path + ".conflictAreaId");
         if (!std::isfinite(r.gapTime) || r.gapTime <= 0 || !std::isfinite(r.headway) || r.headway <= 0) add("INVALID_PRIORITY_RULE", path);
-        if (r.visibility && !(*r.visibility > 1 && *r.visibility <= 1000)) add("INVALID_PRIORITY_RULE", path + ".visibility"); // D607
+        if (r.visibility && !(*r.visibility > 1 && *r.visibility <= 1000)) add("INVALID_PRIORITY_RULE", path + ".visibility"); areaRuleGapIssues(r, path, issues); // D607, D618
     }
     // Queue counters (M3.2.6b): each line names a head or waiting line, or is a point, never both.
     std::set<std::string> heads;
@@ -424,7 +424,7 @@ RightOfWayResolution resolveRightOfWay(const Network& n, const RuntimeSections& 
             if (result.issues.size() == issuesBefore && chainFirst && chainSecond &&
                 a.priority != ConflictPriority::undetermined && wait && rule != row.priorityRules.end()) {
                 result.zones.push_back({"right-of-way/" + a.id, firstYields ? *chainSecond : *chainFirst,
-                                        firstYields ? *chainFirst : *chainSecond, *wait, rule->gapTime, rule->headway}); result.zones.back().visibility = rule->visibility.value_or(AuthoredPriorityRule::kDefaultVisibility); // D607
+                                        firstYields ? *chainFirst : *chainSecond, *wait, rule->gapTime, rule->headway}); result.zones.back().visibility = rule->visibility.value_or(AuthoredPriorityRule::kDefaultVisibility); result.zones.back().gapReduction = rule->gapReduction; // D607, D618
             }
         }
         if (a.kind == ConflictKind::merge && r.first && r.second &&
@@ -476,7 +476,7 @@ RightOfWayResolution resolveRightOfWay(const Network& n, const RuntimeSections& 
                                            [&](const auto& x) { return x.conflictAreaId == a.id; });
             result.zones.push_back({"right-of-way/" + a.id, firstYields ? *r->chainSecond : *r->chainFirst,
                                     firstYields ? *r->chainFirst : *r->chainSecond,
-                                    firstYields ? *r->waitFirst : *r->waitSecond, rule->gapTime, rule->headway}); result.zones.back().visibility = rule->visibility.value_or(AuthoredPriorityRule::kDefaultVisibility); // D607
+                                    firstYields ? *r->waitFirst : *r->waitSecond, rule->gapTime, rule->headway}); result.zones.back().visibility = rule->visibility.value_or(AuthoredPriorityRule::kDefaultVisibility); result.zones.back().gapReduction = rule->gapReduction; // D607, D618
         }
     }
     // Stop/Yield (M3.2.5). A control names the line its areas give way at; a Stop makes each of

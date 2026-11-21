@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-20 — Owner's choices on the sitting's findings (D603–D605)
+
+- **Owner (verbatim):** "1 ข. และ เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้ Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim
+  · 2 แก้ตามแนะนำ"; then "ข. Priority rule แบบ Vissim".
+- **D603:** waiting lines carrying Stop or Yield are drawn only under the Conflict area, Stop line and Queue
+  counter tools (amends D590); `priority_canvas_tests` checks a Stop line is gone under Select and marked under
+  the Stop line tool.
+- **D605:** block-selecting tables draw one outline around each selected block over a light tint, from an
+  overlay (`tableSelectionOutline`); `table-grid-ui` checks a 2 × 2 block gives only its eight perimeter edges.
+- **D604:** [PRIORITY_RULES](../reference/PRIORITY_RULES.md) drafted: stop line plus conflict markers without a
+  conflict area, compiled to the engine's existing `PriorityRule`; the next schema step proposed, rows PR1–PR10. Five
+  owner choices (§8) come before code.
+- **Verified on Linux (desktop, offscreen):** `table-grid-ui`, `priority-canvas` and `stop-line-ui` pass; full desktop suite 361/361. Windows not run.
+
 ## 2026-11-20 — Windows sitting, part 1: seven looks answered
 
 - **Owner's words (verbatim, by the numbers of the list sent in chat):** 1 (A2 step 1) "ตอนออกจาก เครื่องมือ
