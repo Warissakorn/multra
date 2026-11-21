@@ -2,6 +2,7 @@
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "../commands/right_of_way_commands.hpp"
+#include "../commands/priority_marker_commands.hpp"
 #include <QAction>
 #include <QComboBox>
 #include <QTabWidget>
@@ -45,6 +46,13 @@ void EditorWindow::buildConflicts() {
     canvas_->stopLinePicked = [this](const std::string& id) { conflicts_->select(id); };
     canvas_->stopLineRemoved = [this](const std::string& id) {
         execute("editorRemoveStopLine", [&](auto& d) { removeStopLine(d, id); }); };
+    // PRIORITY_RULES slice 2 (D616): a picked line's markers, one Undo step each.
+    canvas_->priorityMarkerAdded = [this](const std::string& line, const ControlPoint& at) {
+        execute("editorAddPriorityMarker", [&](auto& d) { addPriorityMarker(d, line, at); }); };
+    canvas_->priorityMarkerMoved = [this](const std::string& rule, std::size_t k, double station) {
+        execute("editorMovePriorityMarker", [&](auto& d) { movePriorityMarker(d, rule, k, station); }); };
+    canvas_->priorityMarkerRemoved = [this](const std::string& rule, std::size_t k) {
+        execute("editorRemovePriorityMarker", [&](auto& d) { removePriorityMarker(d, rule, k); }); };
 }
 void EditorWindow::translateConflicts() {
     conflicts_->translate();

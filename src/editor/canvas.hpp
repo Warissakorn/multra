@@ -150,6 +150,13 @@ public:
     std::function<void(const std::string&)> stopLinePicked, stopLineRemoved;
     const std::string& selectedStopLine() const { return selectedStopLine_; }
     void selectStopLine(std::string id);
+    // PRIORITY_RULES slice 2 (D616): with a line picked, Ctrl+right-click on another lane adds a conflict
+    // marker; a left click picks (and drags) a marker along its path; Delete removes the picked one.
+    std::function<void(const std::string& line, const ControlPoint&)> priorityMarkerAdded;
+    std::function<void(const std::string& rule, std::size_t, double)> priorityMarkerMoved;
+    std::function<void(const std::string& rule, std::size_t)> priorityMarkerRemoved;
+    using MarkerRef = std::pair<std::string, std::size_t>; // rule id, marker index
+    const std::optional<MarkerRef>& selectedMarker() const { return selectedMarker_; }
     std::vector<std::string> conflictsAt(Point) const;   // groups whose visible lane bands contain it
     // M3.2.4c (D68): the areas the drawing implies (automaticConflicts), drawn under the Conflict
     // area tool only -- passive crossings grey, derived merges in their derived colours, both
@@ -251,10 +258,13 @@ private:
     std::string waitingLineAt(Point) const;
     bool stopLinePress(QMouseEvent*);
     std::string selectedStopLine_;
+    std::optional<MarkerRef> selectedMarker_;
+    std::optional<MarkerRef> priorityMarkerAt(Point) const; // canvas_markers.cpp
+    void drawPriorityMarkers();
     bool conflictPress(QMouseEvent*);
     void updateLineDrag(QPoint);
     void finishLineDrag(QPoint);
-    struct LineDrag { std::string id; std::vector<Point> polyline; double original{}, station{}; bool moved{}; std::optional<ConnectorEquation> equation{}; };
+    struct LineDrag { std::string id; std::vector<Point> polyline; double original{}, station{}; bool moved{}; std::optional<ConnectorEquation> equation{}; std::optional<std::size_t> marker{}; };
     std::optional<LineDrag> lineDrag_;
     std::vector<MeasurementLine> counterDraft_;
     bool counterPress(QMouseEvent*);

@@ -1,5 +1,6 @@
 #include "study_area.hpp"
 #include "coarse_nodes.hpp"
+#include "priority_markers.hpp"
 #include "node_membership.hpp"
 #include <algorithm>
 #include <map>
@@ -90,10 +91,17 @@ Network cutNetwork(const Network& n, const StudyAreaCut& cut, const std::vector<
     const auto sideKept = [&](const ConflictSide& s) { return kept(links, connectors, s.path) && (s.waitingLineId.empty() || lines.contains(s.waitingLineId)); };
     for (const auto& a : row.conflictAreas)
         if (sideKept(a.first) && sideKept(a.second)) { out.rightOfWay.conflictAreas.push_back(a); areas.insert(a.id); }
-    for (const auto& r : row.priorityRules) if (areas.contains(r.conflictAreaId)) out.rightOfWay.priorityRules.push_back(r);
+    for (auto r : row.priorityRules) {
+        if (r.markerForm()) { // D616: with its line, keeping the markers on kept roads
+            std::erase_if(r.markers, [&](const auto& m) { return !kept(links, connectors, m.point.path); });
+            if (lines.contains(r.waitingLineId) && !r.markers.empty()) out.rightOfWay.priorityRules.push_back(std::move(r));
+        } else if (areas.contains(r.conflictAreaId)) out.rightOfWay.priorityRules.push_back(std::move(r));
+    }
     for (const auto& s : row.stopControls)
         if (lines.contains(s.waitingLineId) && std::all_of(s.conflictAreaIds.begin(), s.conflictAreaIds.end(), [&](const auto& id) { return areas.contains(id); }))
             out.rightOfWay.stopControls.push_back(s);
+    std::erase_if(out.rightOfWay.stopControls, [&](const auto& s) { // D616: a Stop that served only a rule left behind
+        return s.conflictAreaIds.empty() && !lineServesPriorityMarkers(out.rightOfWay, s.waitingLineId); });
     Ids heads;
     for (const auto& h : out.signalHeads) heads.insert(h.id);
     for (const auto& q : n.queueCounters)

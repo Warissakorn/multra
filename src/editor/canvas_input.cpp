@@ -347,6 +347,9 @@ void EditorCanvas::keyPressEvent(QKeyEvent* e) {
        (tool_==Tool::select || tool_==Tool::conflict) && !mouseGestureActive()) {
         cycleOverlap();e->accept();return;
     }
+    if(e->key()==Qt::Key_Delete && tool_==Tool::stopLine && selectedMarker_ && !mouseGestureActive()) { // D616
+        const auto m=*selectedMarker_;selectedMarker_.reset();if(priorityMarkerRemoved)priorityMarkerRemoved(m.first,m.second);return;
+    }
     if(e->key()==Qt::Key_Delete && tool_==Tool::stopLine && !selectedStopLine_.empty() && !mouseGestureActive()) {
         const auto id=selectedStopLine_;selectedStopLine_.clear();if(stopLineRemoved)stopLineRemoved(id);return;
     }

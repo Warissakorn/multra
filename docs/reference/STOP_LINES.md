@@ -122,7 +122,8 @@ to the type's maximum): its own contract, as LINE_APPROACH. Calibrated stop dist
   Delete removes it (`removeStopLine`, its areas back on their default lines). Coverage is written
   as names when the line is placed (`stopLineCoverage`): decided areas on default lines at or past
   it on its path, or, from a Link lane, on a Connector leaving that lane at or past it. Refused with
-  `EDIT_NO_CONFLICT_DOWNSTREAM` when that is none. The Conflict areas table has a Waits at column
+  `EDIT_NO_CONFLICT_DOWNSTREAM` when that is none; **since D616 (PRIORITY_RULES slice 2) such a line is
+  placed alone instead**, the waiting line of a priority rule whose markers are added with it picked. The Conflict areas table has a Waits at column
   and a Use default lines button (`deriveStopLines`). Under the Conflict area tool the hovered or
   selected area's default lines are drawn dashed and faint (`derived-line`). Rows: `stoplines` SL4,
   `stop-line-ui` (SL4 in the table, SL7).

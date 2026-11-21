@@ -50,7 +50,8 @@ void deleteWaitingLine(ProjectDocument& d, const std::string& id) {
     const auto& controls = d.network.rightOfWay.stopControls;
     if (std::any_of(areas.begin(), areas.end(), [&](const auto& a) {
             return a.first.waitingLineId == id || a.second.waitingLineId == id; }) ||
-        std::any_of(controls.begin(), controls.end(), [&](const auto& c) { return c.waitingLineId == id; }))
+        std::any_of(controls.begin(), controls.end(), [&](const auto& c) { return c.waitingLineId == id; }) ||
+        lineServesPriorityMarkers(d.network.rightOfWay, id)) // D616
         throw std::invalid_argument("EDIT_REFERENCED");
     remove(d.network.rightOfWay.waitingLines, id);
     detail::pruneQueueCounters(d); // a counter measuring at the line loses that line
@@ -89,6 +90,7 @@ std::size_t deriveStopLines(ProjectDocument& d) {
     auto& row = d.network.rightOfWay;
     std::set<std::string> kept;
     for (const auto& c : row.stopControls) kept.insert(c.waitingLineId);
+    for (const auto& r : row.priorityRules) if (r.markerForm()) kept.insert(r.waitingLineId); // D616
     for (const auto& c : d.network.queueCounters) for (const auto& l : c.lines) if (!l.referenceId.empty()) kept.insert(l.referenceId);
     std::set<std::string> dropped;
     for (const auto& w : row.waitingLines) {
@@ -135,7 +137,7 @@ void restoreAutomaticPriority(ProjectDocument& d, const std::string& section) {
         if (a.kind == ConflictKind::merge && member(a.first) && member(a.second)) gone.push_back(a.id);
     for (const auto& id : gone) deleteConflictArea(d, id);
     std::erase_if(row.waitingLines, [&](const auto& w) {
-        return std::none_of(row.conflictAreas.begin(), row.conflictAreas.end(), [&](const auto& a) {
+        return !lineServesPriorityMarkers(row, w.id) && std::none_of(row.conflictAreas.begin(), row.conflictAreas.end(), [&](const auto& a) {
             return a.first.waitingLineId == w.id || a.second.waitingLineId == w.id; });
     });
     detail::pruneQueueCounters(d);
@@ -150,6 +152,7 @@ bool on(const ControlPathRef& p, const std::set<std::string>& links, const std::
 template<class F> void eachPath(Network& n, F visit) {
     auto& row = n.rightOfWay;
     for (auto& w : row.waitingLines) visit(w.point.path, std::vector<double*>{&w.point.station});
+    for (auto& r : row.priorityRules) for (auto& m : r.markers) visit(m.point.path, std::vector<double*>{&m.point.station}); // D616
     for (auto& a : row.conflictAreas)
         for (auto* s : {&a.first, &a.second}) visit(s->path, std::vector<double*>{&s->entryStation, &s->exitStation});
     // M3.2.6b: a queue counter's explicit measurement point is a place on a road like any other.
@@ -178,6 +181,9 @@ void removeControlsOn(ProjectDocument& d, const std::set<std::string>& links, co
     }
     std::erase_if(row.conflictAreas, [&](const auto& a) { return gone.contains(a.id); });
     std::erase_if(row.priorityRules, [&](const auto& r) { return gone.contains(r.conflictAreaId); });
+    // D616: a marker on a removed road goes; a marker rule goes with its line or its last marker.
+    for (auto& r : row.priorityRules) std::erase_if(r.markers, [&](const auto& m) { return on(m.point.path, links, connectors); });
+    std::erase_if(row.priorityRules, [&](const auto& r) { return r.markerForm() && (lost.contains(r.waitingLineId) || r.markers.empty()); });
     std::erase_if(row.waitingLines, [&](const auto& w) { return lost.contains(w.id); });
     pruneStopControls(row);
     pruneQueueCounters(d, links, connectors);
@@ -216,6 +222,10 @@ void checkSplitControls(const Network& n, const std::string& link, double near, 
     for (const auto& a : n.rightOfWay.conflictAreas)
         for (const auto* s : {&a.first, &a.second})
             if (s->path.connectorId.empty() && s->path.linkId == link && !(s->exitStation <= near || s->entryStation >= far))
+                throw std::invalid_argument("EDIT_SPLIT_CONTROL");
+    for (const auto& r : n.rightOfWay.priorityRules) // D616: a marker is a place on a lane, as a line is
+        for (const auto& m : r.markers)
+            if (m.point.path.connectorId.empty() && m.point.path.linkId == link && m.point.station > near && m.point.station < far)
                 throw std::invalid_argument("EDIT_SPLIT_CONTROL");
     for (const auto& c : n.queueCounters)
         for (const auto& l : c.lines)
@@ -276,6 +286,15 @@ void copyControls(ProjectDocument& d, const Network& source, const std::map<std:
         areas[old] = a.id; d.network.rightOfWay.conflictAreas.push_back(std::move(a));
     }
     for (auto r : row.priorityRules) {
+        if (r.markerForm()) { // D616: with its line, keeping the markers whose path was copied
+            if (!lines.contains(r.waitingLineId)) continue;
+            std::erase_if(r.markers, [&](const auto& m) { return !copied(m.point.path); });
+            if (r.markers.empty()) continue;
+            for (auto& m : r.markers) m.point.path = remap(m.point.path);
+            r.id = allocateId(d, "rule"); r.generated = false; r.waitingLineId = lines.at(r.waitingLineId);
+            d.network.rightOfWay.priorityRules.push_back(std::move(r));
+            continue;
+        }
         if (!areas.contains(r.conflictAreaId)) continue;
         r.id = allocateId(d, "rule"); r.generated = false; r.conflictAreaId = areas.at(r.conflictAreaId);
         d.network.rightOfWay.priorityRules.push_back(std::move(r));
@@ -284,7 +303,7 @@ void copyControls(ProjectDocument& d, const Network& source, const std::map<std:
     for (auto c : row.stopControls) {
         if (!lines.contains(c.waitingLineId)) continue;
         std::erase_if(c.conflictAreaIds, [&](const auto& id) { return !areas.contains(id); });
-        if (c.conflictAreaIds.empty()) continue;
+        if (c.conflictAreaIds.empty() && !lineServesPriorityMarkers(d.network.rightOfWay, lines.at(c.waitingLineId))) continue;
         for (auto& id : c.conflictAreaIds) id = areas.at(id);
         c.id = allocateId(d, "stop"); c.generated = false; c.waitingLineId = lines.at(c.waitingLineId);
         d.network.rightOfWay.stopControls.push_back(std::move(c));
@@ -295,7 +314,8 @@ void copyControls(ProjectDocument& d, const Network& source, const std::map<std:
         const auto serves = [&](const auto& a, const std::string& id) { return a.first.waitingLineId == id || a.second.waitingLineId == id; };
         const bool servedBefore = std::any_of(row.conflictAreas.begin(), row.conflictAreas.end(), [&](const auto& a) { return serves(a, old); });
         const auto& now = d.network.rightOfWay.conflictAreas;
-        if (servedBefore && std::none_of(now.begin(), now.end(), [&](const auto& a) { return serves(a, fresh); }))
+        if (servedBefore && std::none_of(now.begin(), now.end(), [&](const auto& a) { return serves(a, fresh); }) &&
+            !lineServesPriorityMarkers(d.network.rightOfWay, fresh))
             std::erase_if(d.network.rightOfWay.waitingLines, [&](const auto& w) { return w.id == fresh; });
     }
 }

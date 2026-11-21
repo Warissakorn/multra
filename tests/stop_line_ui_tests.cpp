@@ -13,6 +13,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 using namespace multra;
 // M3.2.12 slice 3 (docs/reference/STOP_LINES.md §5, SL4 and SL7, D595): the Stop line tool places,
@@ -88,10 +89,14 @@ int main(int argc, char** argv) {
         require(c->selectedStopLine() == line.id, "The new line is not picked");
         require(table->item(table->currentRow(), 8)->text().toStdString() == line.id, "The table does not name the line");
         require(items(w, "waiting-line") == 1, "The placed line is not drawn");
-        // A second line upstream covers nothing: refused, nothing changes.
+        // A second line upstream covers nothing: D616 (amends D595) places it alone, naming no area.
         const auto placed = w.history().document();
         press(w, {100, -40}, Qt::RightButton, Qt::ControlModifier);
-        require(w.history().document() == placed, "A line covering nothing was stored");
+        require(network().rightOfWay.waitingLines.size() == 2, "A line with no area downstream was not placed");
+        for (const auto& x : network().rightOfWay.conflictAreas)
+            require((x.priority == ConflictPriority::firstYields ? x.first : x.second).waitingLineId == line.id, "The lone line took an area");
+        act(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(w.history().document() == placed, "Placing the lone line was not one Undo step");
         act(w, "editorUndo")->trigger(); QApplication::processEvents();
         require(w.history().revision() == revision && network().rightOfWay.waitingLines.empty(), "Placing was not one Undo step");
         act(w, "editorRedo")->trigger(); QApplication::processEvents();
@@ -105,6 +110,39 @@ int main(int argc, char** argv) {
         require(network().rightOfWay.waitingLines.empty(), "Delete did not remove the line");
         for (const auto& x : network().rightOfWay.conflictAreas)
             require(x.first.waitingLineId.empty() && x.second.waitingLineId.empty(), "An area still names the removed line");
+
+        // D616 (PRIORITY_RULES slice 2): a lone line, then with it picked Ctrl+right-click on A adds a
+        // conflict marker of its rule; a drag moves it along A, Delete removes it and the rule. One step each.
+        press(w, {100, -40}, Qt::RightButton, Qt::ControlModifier);
+        require(network().rightOfWay.waitingLines.size() == 1, "The lone line was not placed");
+        const auto lone = network().rightOfWay.waitingLines.front().id;
+        require(c->selectedStopLine() == lone, "The lone line is not picked");
+        const auto rules = [&] { std::size_t n = 0; for (const auto& r : network().rightOfWay.priorityRules) n += r.markerForm(); return n; };
+        press(w, {60, 1}, Qt::RightButton, Qt::ControlModifier);
+        require(rules() == 1, "Ctrl+right-click with a line picked did not add a marker");
+        const auto& rule = *std::find_if(network().rightOfWay.priorityRules.begin(), network().rightOfWay.priorityRules.end(), [](const auto& r) { return r.markerForm(); });
+        require(rule.waitingLineId == lone && rule.markers.size() == 1 && rule.markers[0].point.path.linkId == a, "The marker is not on A for the lone line");
+        const auto ruleId = rule.id; const double placedAt = rule.markers[0].point.station;
+        require(items(w, "priority-marker") == 1, "The marker is not drawn");
+        const auto markerBar = *waitingLineBar(network(), rule.markers[0].point);
+        const Point mid{(markerBar.first.x + markerBar.second.x) / 2, (markerBar.first.y + markerBar.second.y) / 2};
+        QTest::qWait(600);
+        QTest::mousePress(c->viewport(), Qt::LeftButton, Qt::NoModifier, pixel(w, mid));
+        QTest::mouseRelease(c->viewport(), Qt::LeftButton, Qt::NoModifier, pixel(w, {mid.x + 15, mid.y}));
+        QApplication::processEvents();
+        require(c->selectedMarker() && c->selectedMarker()->first == ruleId, "A click did not pick the marker");
+        const auto moved = network().rightOfWay.priorityRules.back().markers[0].point.station;
+        require(std::abs(moved - placedAt - 15) < 1, "The drag did not move the marker along A");
+        c->setFocus(); QTest::keyClick(c, Qt::Key_Delete); QApplication::processEvents();
+        require(rules() == 0 && items(w, "priority-marker") == 0, "Delete did not remove the marker and its rule");
+        act(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(rules() == 1, "Removing the marker was not one Undo step");
+        act(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(rules() == 1 && std::abs(network().rightOfWay.priorityRules.back().markers[0].point.station - placedAt) < 1e-9, "Moving the marker was not one Undo step");
+        act(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(rules() == 0 && network().rightOfWay.waitingLines.size() == 1, "Adding the marker was not one Undo step");
+        act(w, "editorUndo")->trigger(); QApplication::processEvents();
+        require(network().rightOfWay.waitingLines.empty(), "Placing the lone line was not one Undo step");
 
         // Use default lines: a stored line nobody made their own goes, in one step.
         auto legacy = w.history().document(); storeDerivedLines(legacy);

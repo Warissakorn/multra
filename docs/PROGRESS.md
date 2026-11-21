@@ -5,6 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — PRIORITY_RULES slice 2: the Stop line tool adds conflict markers (D616)
+
+- **Owner:** "ทำงานถัดไป".
+- **D616:** the Stop line tool places a line with no area downstream (amends D595's refusal); with a line picked,
+  Ctrl+right-click on another lane adds a marker at 3.0 s / 5.0 m, starting the rule; a marker drags along its path
+  and Delete removes it, the rule with its last marker; one Undo step each (`priority_marker_commands.cpp`).
+  Markers follow their roads (split, delete, copy, study-area cut) and show as green bars (`canvas_markers.cpp`).
+- **Rows:** `priority_marker` PR7, PR8 (5 tests); `stop-line-ui` extended (place alone, add, drag, Delete, Undo);
+  `stoplines` SL4 updated for the lone line.
+
 ## 2026-11-21 — PRIORITY_RULES slice 1b: a Stop on a priority rule's line (D615)
 
 - **Owner:** "ทำงานถัดไป" (the slice-1 remainder, D606 Q4 (a)).
@@ -145,31 +155,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   than 14 days ago carved out to the new plans/OWNER_LOOKS_CARVED (ROADMAP M1.30, M3.2.13, M14), which also takes D201's M1.29/M3.2.10 text so ROADMAP stays under 500 lines; I.1, I.3, I.4, F2, D2, E22 closed; merged
   items say what they took in. No look was passed by the session.
 - **Verified on Linux (headless):** `tjunction` 9/9; `check` 244/244 (in a fresh build directory `cli-consistency` first fails: `check` does not build `multra-consistency-cli-fixture`, a gap that predates this session). Desktop preset and Windows not run; the sitting is the owner's.
-
-## 2026-11-19 — Optimisation pass: measured, one item per commit (D597–)
-
-- **Owner:** "/optimize-program", all four dimensions, then "ทำตามแนะนำ" (items 1–6 in the recommended order).
-- **Baseline** (Linux GCC 13.3, Release `-g1` callgrind, seed 42): Ratchada study 32,935 M Ir, M2.6 3,841 M,
-  `multra-engine-benchmark 48 900` 14,578 M; desktop ctest 361/361; 44 compiler warnings.
-- **Same results:** a probe hashing every event (`eventJson`) of every shipped project that runs, the study and the
-  12-crossing benchmark corridor, seeds 42 and 43, matches the baseline after each engine item; CLI summaries byte-identical.
-- **D597:** `publishMoves` finds the joins crossed this tick by binary search over the ascending part starts
-  instead of reading every part of the route. Benchmark 14,578 → 10,363 M Ir (−28.9 %), study −0.6 %, M2.6 −0.9 %.
-- **D598:** `frontPart` bisects routes of more than 8 parts and keeps the scan for shorter ones. Benchmark
-  10,363 → 9,786 M Ir (−5.6 %); study 32,730 → 32,889 M (+0.5 %) and M2.6 +0.5 %: GCC no longer inlines the
-  scan into `locate`. Bisecting every route cost the study +1.8 %, so the short-route scan stays.
-- **Item 3, reverted:** a leader search by rear order cut the study 7.6 % but cost M2.6 2.4 % and the
-  benchmark 5.0 %; measurements in ENGINEERING_NOTES. No D-row: nothing changed.
-- **D599:** compiler warnings 44 → 0 (desktop Debug, GCC 13.3). 17 were GCC 13's `-Wdangling-reference` on
-  lookups that return into their container (each checked: none dangles), now off for GCC before 14 only; the rest
-  fixed in place (range-loop copies, misleading indentation, an unused parameter, two dead test helpers removed,
-  two shared test helpers `[[maybe_unused]]`, one sign comparison). No behaviour or assertion changed.
-- **D600:** one `isBlank` (`src/core/text.hpp`) replaces the blank-id rule written 24 times (12 identical
-  `blank()` helpers, 12 inline copies) in `core`, `model` and `project`.
-- **Final (same tree as committed, event hashes identical):** benchmark 14,578 → 9,786 M Ir (−32.9 %), study
-  32,935 → 32,889 M (−0.1 %), M2.6 3,841 → 3,827 M (−0.4 %); warnings 44 → 0; 361/361. Linux only; MSVC wall
-  time is the owner's check (NEXT).
-- **NEXT cut to open items again (D319):** the day's done slices (M3.2.4e, STOP_LINES, line approach), the
-  M9–M12 done narration and M13's if-changes checklist moved whole to
-  [archive/NEXT-state-2026-11-19](archive/NEXT-state-2026-11-19.md); NEXT ≈7,666 → 6,378 tokens (−17 %, estimate
-  by characters). Every open item, owner ask, command and D-id is kept.

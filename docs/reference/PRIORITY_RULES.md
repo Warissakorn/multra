@@ -1,7 +1,7 @@
 # PRIORITY_RULES — a stop line with conflict markers, without a conflict area (draft, D604)
 
-**Slices 1 and 1b implemented (D614, D615, 2026-11-21: schema 83, codec, compile, engine, Stop at the line; no
-UI); slices 2–3 open. The owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
+**Slices 1, 1b and 2 implemented (D614–D616, 2026-11-21: schema 83, codec, compile, engine, Stop at the line,
+the Stop line tool's marker gestures and lifecycle); slice 3 (display, table, owner's look) open. The owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
 Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim", then the choice "ข. Priority rule แบบ Vissim" over
 taking over the automatic candidates. Written before code; rows PR1–PR10 fail first. Section 8 holds
 the owner's choices, answered as Vissim does it (D606).
@@ -137,7 +137,10 @@ Calibrated gap times (M6). Vissim's "look beyond red signals". Converting existi
 1. **Done (D614):** the schema step, codec and compile to `PriorityRule`, and the engine's `maxSpeed` and class
    filters (PR1–PR6, PR9–PR13) on a hand-built crossing; no UI. Tests: `tests/priority_rule_tests.cpp`.
    **1b done (D615):** the Stop at the line (PR14–PR16).
-2. The Stop line tool's gestures, lifecycle and Undo (PR7, PR8).
+2. **Done (D616):** the Stop line tool's gestures, lifecycle and Undo (PR7, PR8):
+   `priority_marker_commands.cpp`, markers drawn as green bars (`canvas_markers.cpp`); tests
+   `priority_marker` and `stop-line-ui`. A copy keeps a rule when its line is copied, with the markers
+   whose roads were copied; a study-area cut does the same.
 3. Display and the table rows; the owner's look on Windows.
 
 **How Vissim does each (PTV Vissim help, "Creating priority rules" and "Attributes of priority rules",

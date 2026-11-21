@@ -152,8 +152,16 @@ TEST(stoplines, sl4_a_placed_line_covers_the_areas_downstream_of_it) {
     const auto r = resolveRightOfWay(d.network, runtimeSections(d.network), {5, 7});
     CHECK(r.issues.empty());
     for (const auto& z : r.zones) CHECK(z.waitPosition < 0); // every minor side waits on the approach, before its Connector
-    // A second line upstream covers nothing the first already does.
-    test::throws([&] { auto again = d; placeStopLine(again, {approach, end - 12}); }, "EDIT_NO_CONFLICT_DOWNSTREAM");
+    // A second line upstream covers nothing the first already does: D616 (amends D595) places it alone,
+    // the line of a priority rule to come, and every area keeps the first line.
+    {
+        auto again = d;
+        CHECK(stopLineCoverage(again.network, {approach, end - 12}).empty());
+        const auto alone = placeStopLine(again, {approach, end - 12});
+        CHECK(again.network.rightOfWay.waitingLines.size() == d.network.rightOfWay.waitingLines.size() + 1);
+        for (const auto& a : again.network.rightOfWay.conflictAreas) CHECK(a.first.waitingLineId != alone && a.second.waitingLineId != alone);
+        validateDocument(again);
+    }
     // On the crossing turn before its crossing: that turn's areas only.
     auto turn = t.document;
     const auto& crossing = areaOf(turn, t.crossingArea);

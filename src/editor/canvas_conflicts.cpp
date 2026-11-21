@@ -96,6 +96,16 @@ bool EditorCanvas::stopLinePress(QMouseEvent* e) {
     if (!place && e->button() != Qt::LeftButton) return false;
     const auto p = world(e->pos(), false);
     lastPick_ = p;
+    if (const auto m = place ? std::nullopt : priorityMarkerAt(p)) { // D616: a marker is the smaller target
+        selectedStopLine_.clear(); selectedMarker_ = m;
+        for (const auto& r : document_->network.rightOfWay.priorityRules) if (r.id == m->first) {
+            const auto& point = r.markers[m->second].point;
+            auto polyline = controlPathPolyline(document_->network, point.path);
+            if (polyline.size() >= 2) { lineDrag_ = LineDrag{r.id, std::move(polyline), point.station, point.station, false, {}, m->second}; dragPress_ = e->pos(); }
+        }
+        redraw(); return true;
+    }
+    if (!place) selectedMarker_.reset();
     if (const auto id = waitingLineAt(p); !place && !id.empty()) {
         selectStopLine(id);
         if (stopLinePicked) stopLinePicked(id);
@@ -111,6 +121,10 @@ bool EditorCanvas::stopLinePress(QMouseEvent* e) {
     const auto at = headAt(p);
     const auto point = at ? slotControlPoint(document_->network, *at) : std::nullopt;
     if (!point) { if (creationRejected) creationRejected(); return true; }
+    // D616: with a line picked, another lane gets a marker of its rule; its own lane a new line.
+    const auto& lines = document_->network.rightOfWay.waitingLines;
+    const auto picked = std::find_if(lines.begin(), lines.end(), [&](const auto& w) { return w.id == selectedStopLine_; });
+    if (picked != lines.end() && picked->point.path != point->path) { if (priorityMarkerAdded) priorityMarkerAdded(picked->id, *point); return true; }
     if (stopLinePlaced) stopLinePlaced(*point);
     return true;
 }
@@ -165,7 +179,9 @@ void EditorCanvas::finishLineDrag(QPoint position) {
     updateLineDrag(position); // the release is authoritative: the last move may be coalesced
     const auto drag = *lineDrag_; lineDrag_.reset();
     redraw();
-    if (drag.moved && std::abs(drag.station - drag.original) > 1e-9 && waitingLineMoved) waitingLineMoved(drag.id, drag.station);
+    if (!drag.moved || std::abs(drag.station - drag.original) <= 1e-9) return;
+    if (drag.marker) { if (priorityMarkerMoved) priorityMarkerMoved(drag.id, *drag.marker, drag.station); } // D616
+    else if (waitingLineMoved) waitingLineMoved(drag.id, drag.station);
 }
 void EditorCanvas::setAutomaticConflicts(std::vector<AutomaticConflict> automatic) {
     if (automatic_ == automatic) return;
@@ -312,5 +328,6 @@ void EditorCanvas::drawConflicts() {
         item->setData(0, QStringLiteral("waiting-line")); item->setData(1, QString::fromStdString(line.id));
         item->setData(2, QString::fromLatin1(!controlled ? "" : stop ? "stop" : "yield"));
     }
+    if(conflictTool||stopTool)drawPriorityMarkers(); // D616
 }
 }
