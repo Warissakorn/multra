@@ -13,7 +13,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Editor row beside `missedExitAfter`. Also PROJECT_SCHEMA's missing rows 80 and 81.
 - **Unchanged without the key:** `multra-cli 42` keeps 45 / 31.75870154816726 / 1.
 - **Measured** on the study's spread probe, seeds 42–45: at 60 s, 165 removed, completed 4,501 → 5,010.
-- **Checks:** `diffusion` 6/6; headless `check` 247/247.
+- **Checks:** `diffusion` 6/6; headless `check` 247/247. Desktop `check` alone failed `behaviour-lab-ui`
+  (SIGSEGV in `~DriverBehaviour`) and `cli-consistency`: both binaries were never `check` dependencies and ran
+  stale. `cmake/check_builds_all.cmake` now makes `check` depend on every executable.
 
 ## 2026-11-21 — M3.2.7d passes on attempt 2 (D612)
 

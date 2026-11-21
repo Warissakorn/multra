@@ -27,7 +27,6 @@ if(MULTRA_SHARED_LIBS AND NOT WIN32)
     set(CMAKE_LINK_DEPENDS_NO_SHARED ON) # a changed .so does not relink what uses it
 endif()
 include(CTest)
-
 add_library(multra_options INTERFACE)
 target_compile_definitions(multra_options INTERFACE
     MULTRA_VERSION="${PROJECT_VERSION}"
@@ -498,3 +497,4 @@ if(MULTRA_BUILD_DESKTOP)
     install(FILES "${MULTRA_PROJ_DATABASE}" DESTINATION bin/data/proj)
     add_subdirectory(src/shell)
 endif()
+include(cmake/check_builds_all.cmake)
