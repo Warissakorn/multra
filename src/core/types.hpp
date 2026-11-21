@@ -81,6 +81,7 @@ struct DriverBehaviour {
     bool stopFloor{}; // runtime only, never in a file: set by createSimulation from clampRules.standingStopFloor and amberDeceleration (LINE_APPROACH §7, D258)
     bool standingTarget{}, stopArrival{}; // runtime only, off by default: the M6 sweep's engine levers D and E (M6_SWEEP §4, D546)
     std::optional<double> missedExitAfter; // s at a dead end, then the vehicle gives up its turn (LANE_LOCKS B, D581); absent: never
+    std::optional<double> diffusionTime; // s at a dead end, then the vehicle is removed (DIFFUSION, D613); absent: never
     std::optional<double> inattentionDuration, inattentionProbability; // START_UP §3 (D608): a pair; absent: always attentive
     bool operator==(const DriverBehaviour&) const = default;
 };
@@ -298,6 +299,8 @@ struct ScenarioIndex {
     std::vector<std::uint32_t> remainingOfRoute;
     std::vector<std::uint64_t> missedExitTicks; // D581: per behaviour, ticks before a missed exit; 0 never
     bool missedExits{};                         // some behaviour has one and some route a dead end
+    std::vector<std::uint64_t> diffusionTicks;  // D613: per behaviour, ticks before removal; 0 never
+    bool diffusions{};                          // some behaviour has one and some route a dead end
     // D95: the full-to-full spans, apart from `laneChangesOfRoute` (stub spans only), in target-slot
     // order. `discretionary` is set only when some span exists AND some behaviour has the threshold.
     bool discretionary{};
@@ -398,6 +401,7 @@ struct Vehicle : PendingVehicle {
     // the piecewise free-flow time so far up to route distance freeFlowFrom, and the area speed (0: none).
     double desiredQuantile{-1}, freeFlowSoFar{}, freeFlowFrom{}, areaSpeed{};
     std::uint64_t deadEndTicks{}; // D581: consecutive ticks waiting at its dead end; 0 unless missedExitAfter
+    std::uint64_t diffusionWait{}; // D613: likewise, toward diffusionTime
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

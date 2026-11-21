@@ -54,6 +54,7 @@ Json eventJson(const SimEvent& event) {
             else if constexpr (std::is_same_v<T, MissedExitEvent>) { // D581
                 j["kind"] = "missed-exit"; j["fromRouteId"] = e.fromRouteId; j["toRouteId"] = e.toRouteId;
             }
+            else if constexpr (std::is_same_v<T, DiffusedEvent>) { j["kind"] = "diffused"; j["routeId"] = e.routeId; } // D613
             else if constexpr (std::is_same_v<T, LaneChangeEvent>) {
                 j["kind"] = "lane-change"; j["fromRouteId"] = e.fromRouteId; j["toRouteId"] = e.toRouteId;
             } else {
@@ -118,7 +119,9 @@ Json checkpointJson(const SimState& state) {
     return result;
 }
 Json summaryJson(const RunSummary& summary) {
-    return {{"validation", "not-yet-validated"}, {"completed", summary.completed}, {"safetyClamps", summary.safetyClamps},
-            {"meanTravelTime", optionalNumber(summary.meanTravelTime)}, {"meanDelay", optionalNumber(summary.meanDelay)}};
+    Json j{{"validation", "not-yet-validated"}, {"completed", summary.completed}, {"safetyClamps", summary.safetyClamps},
+           {"meanTravelTime", optionalNumber(summary.meanTravelTime)}, {"meanDelay", optionalNumber(summary.meanDelay)}};
+    if (summary.removed) j["removed"] = summary.removed; // D613: only when some vehicle was, so other runs keep their bytes
+    return j;
 }
 }

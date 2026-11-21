@@ -51,7 +51,12 @@ struct MissedExitEvent {
     double time{}; std::uint64_t vehicleId{}; std::string fromRouteId, toRouteId;
     bool operator==(const MissedExitEvent&) const = default;
 };
+// DIFFUSION (D613): a vehicle that waited diffusionTime at its stub's dead end left the network.
+struct DiffusedEvent {
+    double time{}; std::uint64_t vehicleId{}; std::string routeId;
+    bool operator==(const DiffusedEvent&) const = default;
+};
 using SimEvent = std::variant<SignalEvent, DepartedEvent, MovedEvent,
                               SegmentEnteredEvent, SafetyClampEvent, ArrivedEvent, LaneChangeEvent, RoutingEvent, RedRunningEvent,
-                              MissedExitEvent>;
+                              MissedExitEvent, DiffusedEvent>;
 }

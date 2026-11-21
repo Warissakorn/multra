@@ -81,6 +81,7 @@ struct BatchReport {
     std::vector<BatchLotRow> lots; // M8.5; last, so existing brace-initialisations keep meaning
     std::optional<Estimate> redRunning; // B-9 (D238): only when the runs carry the keys
     std::optional<Estimate> diverted;   // D581: only when the runs carry missedExitAfter
+    std::optional<Estimate> removed;    // D613: only when the runs carry diffusionTime
     std::vector<BatchNodeRow> nodes; // S0.3: one per Node; empty without any
     RandomStreams randomStreams{}; // INPUT_STREAMS §5 (IS8): every run's mapping
     bool operator==(const BatchReport&) const = default;

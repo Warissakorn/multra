@@ -61,6 +61,7 @@ struct MovementReport {
     std::uint64_t laneChanges{}; // M3.2.8b
     std::optional<std::uint64_t> redRunning; // B-9 (D238): only when a behaviour carries the keys
     std::optional<std::uint64_t> diverted;   // D581: whole run, only when a behaviour carries missedExitAfter
+    std::optional<std::uint64_t> removed;    // D613: whole run, only when a behaviour carries diffusionTime
     double warmup{}, evaluationEnd{}; // M5.3: the period the rows and queues describe
     std::optional<double> cooldown; // M5.9: the spec's, so output can say how the window was read
     std::vector<SectionRow> sections; // M5.4: one per authored section; empty without any

@@ -43,6 +43,7 @@ order kept across ticks is untried ([ENGINEERING_NOTES](../reference/ENGINEERING
 behaviour change above is costed by callgrind before and after, as the 2026-11-19 pass did.
 
 **Since (2026-11-20):** G1 and G2 are D608 ([START_UP](../reference/START_UP.md)), as Vissim, absent by default.
+**Since (2026-11-21):** G3 is D613 ([DIFFUSION](../reference/DIFFUSION.md)), as Vissim, off by default.
 
 ## 4. Proposed order (the owner's choice; each needs a contract and failure-first rows)
 

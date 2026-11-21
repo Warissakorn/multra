@@ -177,6 +177,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.redRunningShare) item["redRunningShare"] = *b.redRunningShare; // B-9 (D238)
             if (b.redRunningTime) item["redRunningTime"] = *b.redRunningTime;
             if (b.missedExitAfter) item["missedExitAfter"] = *b.missedExitAfter; // D581
+            if (b.diffusionTime) item["diffusionTime"] = *b.diffusionTime; // D613
             if (b.inattentionDuration) item["inattentionDuration"] = *b.inattentionDuration; // D608
             if (b.inattentionProbability) item["inattentionProbability"] = *b.inattentionProbability; // D608
         };

@@ -79,7 +79,8 @@ inline constexpr int periodFactorVersion=69;
 inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,entryLanesVersion=77,missedExitVersion=78,
     derivedLineVersion=79, // D594 (STOP_LINES): an empty conflict side waitingLineId, rightOfWay.frontStopDistance
     visibilityVersion=80, // D607 (VISIBILITY): a priority rule's visibility
-    startUpVersion=81; // D608 (START_UP): a vehicle type's accelerationCurve, a behaviour's inattention pair
+    startUpVersion=81, // D608 (START_UP): a vehicle type's accelerationCurve, a behaviour's inattention pair
+    diffusionVersion=82; // D613 (DIFFUSION): a behaviour's diffusionTime
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

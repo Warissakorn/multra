@@ -189,6 +189,8 @@ MovementReport MovementAccumulator::report(const SimState& end) const {
         r.diverted = summary.diverted;
         for (std::size_t m = 0; m < r.movements.size(); ++m) r.movements[m].diverted = diverted_[m];
     }
+    if (end.scenario && std::any_of(end.scenario->behaviours.begin(), end.scenario->behaviours.end(), // D613, likewise
+                                    [](const auto& b) { return b.diffusionTime.has_value(); })) r.removed = summary.removed;
     r.sections = sections_.report(); r.los = spec_.los;
     if (!spec_.nodes.empty()) {
         std::size_t turns = 0, legs = 0;

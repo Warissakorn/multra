@@ -1,4 +1,5 @@
 #include "missed_exit.hpp"
+#include "diffusion.hpp"
 #include "simulation.hpp"
 #include "conflicts.hpp"
 #include "detail.hpp"
@@ -161,7 +162,9 @@ SimState stepSimulation(SimState&& state, double dt) {
         }
         // LANE_LOCKS option B (D581): a vehicle held too long at its dead end gives up its turn.
         const bool diverted = index.missedExits && applyMissedExits(scenario, index, vehicles, refs, startTick, startTime, events);
-        if (!changes.empty() || diverted) {
+        // DIFFUSION (D613): a vehicle still waiting there after diffusionTime leaves the run.
+        const bool removed = index.diffusions && applyDiffusion(scenario, index, vehicles, refs, startTick, startTime, events);
+        if (!changes.empty() || diverted || removed) {
             refs = resolveRefs(scenario, vehicles, index);
             spans = occupiedSpans(scenario, vehicles, index, refs);
             buckets = bucketSpans(spans, scenario.segments.size());

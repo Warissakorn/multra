@@ -161,6 +161,20 @@ void rejectStartUpBefore81(const Json& j) {
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at(list, i) + "." + key}});
     }
 }
+// D613: schema 82 exactly when an owned behaviour carries diffusionTime.
+bool ownsDiffusion(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.diffusionTime.has_value(); });
+}
+void rejectDiffusionBefore82(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("diffusionTime"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".diffusionTime"}});
+}
 // B-8 (D231): schema 41 exactly when an owned behaviour carries stopDwellTime.
 bool ownsStopDwellBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&
