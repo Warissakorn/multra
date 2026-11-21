@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — PRIORITY_RULES slice 1b: a Stop on a priority rule's line (D615)
+
+- **Owner:** "ทำงานถัดไป" (the slice-1 remainder, D606 Q4 (a)).
+- **D615:** a Stop control on a marker rule's waiting line makes every marker's runtime rule a Stop
+  (`PriorityRule::stop`); the engine holds the vehicle until its stop service records a full stop at that line,
+  then the gap test applies, as a Stop zone does. Such a control may name no area (no schema step). Yield is the
+  rule alone.
+- **Rows:** `priority_rule` PR14–PR16 and PR10 with a Stop (13 tests). Without the hold PR14 fails.
+
 ## 2026-11-21 — PRIORITY_RULES slice 1: a stop line with conflict markers, no area (D614)
 
 - **Owner:** "ทำงานถัดไป" (D609's order: PRIORITY_RULES slice 1, choices D606).
@@ -163,11 +172,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   M9–M12 done narration and M13's if-changes checklist moved whole to
   [archive/NEXT-state-2026-11-19](archive/NEXT-state-2026-11-19.md); NEXT ≈7,666 → 6,378 tokens (−17 %, estimate
   by characters). Every open item, owner ask, command and D-id is kept.
-
-## 2026-11-19 — A held vehicle rests at its zone line: no crawl, no lurch (D596)
-
-- **Owner:** "ทำเรื่องรถคืบแล้วกระตุกที่เส้นต่อได้เลย".
-- **Measured first** ([LINE_APPROACH](reference/LINE_APPROACH.md) §9, T-junction seeds 42–51, env-switched patch, reverted): the crawl is the law's `√v` term in the desired gap and the 2 m is `standstillDistance`. Chosen: behind a conflict zone's hold the desired gap is 0. Crawl 194.7 → 13.8 s per seed, rest median 2.65 → 0 m, go-then-brake 15 → 0, clamps 0. The kinematic floor in every mode was measured and not taken (more go-then-brake).
-- **D596:** `Leader::zoneLine` on zone holds only; a vehicle resting at its line is not `committed`; a stop or residue ending at the line rests without a clamp. Signal heads, vehicles, derived rules and W74 unchanged; the four-leg and M2.6 pins pass unchanged.
-- **Rows:** new `zonelinerest` (LA1–LA4, failed with the flag off); BA146, BA119, BA121 and PL8 updated, reasons in LINE_APPROACH §9.
-- **Verified on Linux (desktop preset, Debug):** full `ctest` 361/361; changed units build without the PCH. Windows not run.

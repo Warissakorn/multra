@@ -132,6 +132,9 @@ TEST(priority_rule, pr10_the_same_seed_gives_the_same_events) {
     };
     const auto a = events();
     CHECK(!a.empty() && a == events());
+    s.priorityRules[0].stop = true; // D615: and with a Stop on the line
+    const auto b = events();
+    CHECK(!b.empty() && b == events() && b != a);
 }
 TEST(priority_rule, pr11_max_speed_limits_only_the_headway_test) {
     // 4 m inside a 5 m headway at 30 km/h, a 0.1 s gap time it clears (0.48 s): only the headway decides.
@@ -162,4 +165,59 @@ TEST(priority_rule, pr13_an_unknown_class_is_refused_at_its_path) {
     CHECK(refused(line, "UNKNOWN_VEHICLE_CLASS", "priorityRules[0].vehicleClassIds[0]"));
     auto marker = j; marker["network"]["rightOfWay"]["priorityRules"][0]["markers"][0]["vehicleClassIds"] = Json::array({"heavy", "buses"});
     CHECK(refused(marker, "UNKNOWN_VEHICLE_CLASS", "priorityRules[0].markers[0].vehicleClassIds[1]"));
+}
+// D615 (Q4 (a)): a minor vehicle (id 1) from 50 m at 10 m/s, run until it is 10 m past its line at
+// 100 m; the slowest speed it had within 5 m short of the line, and when it crossed.
+struct Approach { double slowest{1e9}; std::optional<double> crossed; };
+Approach approach(const Scenario& s, std::vector<test::Placement> majors = {}) {
+    majors.insert(majors.begin(), test::Placement{1, "minorRoute", 50, 10});
+    auto state = test::withVehicles(s, majors);
+    Approach a;
+    while (state.tick < totalTicks(s)) {
+        const auto v = std::find_if(state.vehicles.begin(), state.vehicles.end(), [](const auto& x) { return x.id == 1; });
+        if (v == state.vehicles.end() || v->distance > 110) break;
+        if (v->distance <= 100 && v->distance >= 95) a.slowest = std::min(a.slowest, v->speed);
+        if (v->distance > 100 && !a.crossed) a.crossed = state.time;
+        state = stepSimulation(state);
+    }
+    return a;
+}
+TEST(priority_rule, pr14_a_stop_on_the_line_is_a_full_stop_before_the_gap_test) {
+    auto s = crossing();
+    const auto yield = approach(s);
+    CHECK(yield.crossed && yield.slowest > 1); // the forcing: an empty major road, it drives through
+    s.priorityRules[0].stop = true;
+    const auto stop = approach(s);
+    CHECK(stop.crossed && stop.slowest < 0.1 && *stop.crossed > *yield.crossed);
+}
+TEST(priority_rule, pr15_after_the_stop_the_gap_test_still_holds) {
+    auto s = crossing(); s.priorityRules[0].stop = true;
+    // A major vehicle standing 4 m short of the marker, held there by a red head until 30 s.
+    s.signalPrograms = {{"red-then-green", 0, {{30, SignalColor::red}, {30, SignalColor::green}}}};
+    s.signalHeads = {{"head", "major", 97, "red-then-green"}};
+    const auto held = approach(s, {onMajor(2, 96, 0)});
+    CHECK(held.crossed && *held.crossed > 30);
+    const auto free = approach(s);
+    CHECK(free.crossed && *free.crossed < 30);
+}
+TEST(priority_rule, pr16_a_stop_control_with_no_area_on_a_marker_line) {
+    auto d = project();
+    d.network.rightOfWay.stopControls.push_back({"stop", "", "line", StopMode::stop, {}});
+    validateDocument(d);
+    const auto j = documentJson(d);
+    CHECK(j["schemaVersion"] == 83 && j["network"]["rightOfWay"]["stopControls"][0]["conflictAreaIds"].empty());
+    CHECK(parseDocument(Json::parse(j.dump())) == d);
+    const auto stops = [](const ProjectDocument& doc) {
+        std::size_t n = 0, all = 0;
+        for (const auto& r : compileDocument(doc, test::root() / "data").scenario.priorityRules)
+            if (r.id.starts_with("right-of-way/rule#")) { ++all; n += r.stop; }
+        return std::pair{n, all};
+    };
+    CHECK(stops(d) == std::pair<std::size_t, std::size_t>{2, 2});
+    d.network.rightOfWay.stopControls[0].mode = StopMode::yield;
+    CHECK(stops(d) == std::pair<std::size_t, std::size_t>{0, 2});
+    // On a line no marker rule names, a control with no area is still refused.
+    d.network.rightOfWay.waitingLines.push_back({"other", "", d.network.rightOfWay.waitingLines[0].point});
+    d.network.rightOfWay.stopControls[0].waitingLineId = "other";
+    test::throws([&] { validateDocument(d); }, "INVALID_STOP_CONTROL");
 }

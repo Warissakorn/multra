@@ -2,6 +2,14 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-19 — A held vehicle rests at its zone line: no crawl, no lurch (D596)
+
+- **Owner:** "ทำเรื่องรถคืบแล้วกระตุกที่เส้นต่อได้เลย".
+- **Measured first** ([LINE_APPROACH](../reference/LINE_APPROACH.md) §9, T-junction seeds 42–51, env-switched patch, reverted): the crawl is the law's `√v` term in the desired gap and the 2 m is `standstillDistance`. Chosen: behind a conflict zone's hold the desired gap is 0. Crawl 194.7 → 13.8 s per seed, rest median 2.65 → 0 m, go-then-brake 15 → 0, clamps 0. The kinematic floor in every mode was measured and not taken (more go-then-brake).
+- **D596:** `Leader::zoneLine` on zone holds only; a vehicle resting at its line is not `committed`; a stop or residue ending at the line rests without a clamp. Signal heads, vehicles, derived rules and W74 unchanged; the four-leg and M2.6 pins pass unchanged.
+- **Rows:** new `zonelinerest` (LA1–LA4, failed with the flag off); BA146, BA119, BA121 and PL8 updated, reasons in LINE_APPROACH §9.
+- **Verified on Linux (desktop preset, Debug):** full `ctest` 361/361; changed units build without the PCH. Windows not run.
+
 ## 2026-11-19 — STOP_LINES slice 3: the Stop line tool (D595)
 
 - **Owner:** "ทำส่วนที่ 3 ต่อได้เลย".

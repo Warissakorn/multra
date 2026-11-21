@@ -1,7 +1,7 @@
 # PRIORITY_RULES — a stop line with conflict markers, without a conflict area (draft, D604)
 
-**Slice 1 implemented (D614, 2026-11-21: schema 83, codec, compile, engine; no UI); slices 2–3 and the Stop
-rule of §3 open. The owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
+**Slices 1 and 1b implemented (D614, D615, 2026-11-21: schema 83, codec, compile, engine, Stop at the line; no
+UI); slices 2–3 open. The owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
 Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim", then the choice "ข. Priority rule แบบ Vissim" over
 taking over the automatic candidates. Written before code; rows PR1–PR10 fail first. Section 8 holds
 the owner's choices, answered as Vissim does it (D606).
@@ -56,9 +56,9 @@ speed on the headway test and vehicle-class filters (§3).
   no vehicle class is refused at its path.
 - A line can serve conflict areas (STOP_LINES) and rules at once; both hold, and the nearer hold
   wins as for heads and zones today. A Stop control on the line (`StopMode::stop`) requires the full
-  stop before the rule's gap test, as for areas (Q4 (a)); Yield is the rule alone. **Not yet built
-  (D614):** a Stop control still names only areas, so in slice 1 every rule is Yield-like; the Stop
-  needs the control to name rules and the engine's stop service to cover them (next slice, before UI).
+  stop before the rule's gap test, as for areas (Q4 (a)); Yield is the rule alone. **Built in slice 1b (D615):** a
+  Stop control on a marker rule's line may name no area (`conflictAreaIds: []`, from 83); it makes each
+  of the rule's runtime rules a Stop, served by the engine's stop service as a Stop zone's line is.
 - **Derived merge rules are unchanged:** no class lists, `maxSpeed` at its ceiling, so every shipped
   project and seed keeps its bytes (PR9).
 
@@ -108,6 +108,9 @@ speed on the headway test and vehicle-class filters (§3).
 | PR11 | `maxSpeed`: a major vehicle inside the headway at 30 km/h holds the line with `maxSpeed` 50 and does not with `maxSpeed` 20 (its gap time is set beyond `gapTime`, so only the headway test decides) |
 | PR12 | Classes: with the line's classes set to cars only, a heavy vehicle passes the line while a car facing the same major vehicle is held; with a marker's classes set to heavy only, a car on the major road does not hold the line and a heavy vehicle does |
 | PR13 | A class id that names no vehicle class is refused at its path; nothing is stored |
+| PR14 | A Stop on the line: with an empty major road a minor vehicle stands at the line before it crosses; with Yield it drives through (the forcing) |
+| PR15 | After the stop, a major vehicle within the headway still holds it; it goes once the major road clears |
+| PR16 | A Stop control with no area on a marker line round-trips at 83 and compiles every marker rule to a Stop (Yield: none); on a line no marker rule names it is still `INVALID_STOP_CONTROL` |
 
 ## 7. Out of scope
 
@@ -133,7 +136,7 @@ Calibrated gap times (M6). Vissim's "look beyond red signals". Converting existi
 
 1. **Done (D614):** the schema step, codec and compile to `PriorityRule`, and the engine's `maxSpeed` and class
    filters (PR1–PR6, PR9–PR13) on a hand-built crossing; no UI. Tests: `tests/priority_rule_tests.cpp`.
-   Left from §3: Stop at the line (1b, before slice 2).
+   **1b done (D615):** the Stop at the line (PR14–PR16).
 2. The Stop line tool's gestures, lifecycle and Undo (PR7, PR8).
 3. Display and the table rows; the owner's look on Windows.
 

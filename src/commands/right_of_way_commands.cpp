@@ -1,5 +1,6 @@
 #include "right_of_way_commands.hpp"
 #include "../model/network/right_of_way.hpp"
+#include "../model/network/priority_markers.hpp"
 #include "detail.hpp"
 #include <algorithm>
 #include <cmath>
@@ -198,7 +199,8 @@ void pruneStopControls(RightOfWay& row) {
     const auto hasLine = [&](const std::string& id) {
         return std::any_of(row.waitingLines.begin(), row.waitingLines.end(), [&](const auto& w) { return w.id == id; }); };
     for (auto& c : row.stopControls) std::erase_if(c.conflictAreaIds, [&](const auto& id) { return !hasArea(id); });
-    std::erase_if(row.stopControls, [&](const auto& c) { return c.conflictAreaIds.empty() || !hasLine(c.waitingLineId); });
+    std::erase_if(row.stopControls, [&](const auto& c) {
+        return (c.conflictAreaIds.empty() && !lineServesPriorityMarkers(row, c.waitingLineId)) || !hasLine(c.waitingLineId); }); // D615
 }
 bool controlsNameLink(const Network& n, const std::string& link) {
     bool named = false;

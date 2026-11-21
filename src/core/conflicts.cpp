@@ -189,6 +189,10 @@ std::vector<StopService> refreshStops(const Scenario& scenario, const ScenarioIn
         for (const auto& rz : index.routeZones[refs[v].route])
             if (rz.role == ZoneRole::minor && scenario.conflictZones[rz.zoneIndex].control == ZoneControl::stop &&
                 rz.waitAt - vehicle.distance >= -kPast && (!line || rz.waitAt < *line)) line = rz.waitAt;
+        for (const auto& rr : index.routeRules[refs[v].route]) { // D615: a Stop on a priority rule's line
+            const double at = rr.partStart + scenario.priorityRules[rr.ruleIndex].yieldPosition;
+            if (scenario.priorityRules[rr.ruleIndex].stop && at - vehicle.distance >= -kPast && (!line || at < *line)) line = at;
+        }
         if (!line) continue; // no Stop ahead: passing the last line cleared its service
         if (old != previous.end() && old->vehicleId == vehicle.id && old->line == *line) { next.push_back(*old); continue; }
         const auto& behaviour = scenario.behaviours[refs[v].behaviour];

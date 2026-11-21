@@ -176,7 +176,7 @@ std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
         id(c.id, path);
         if (!lines.contains(c.waitingLineId)) add("UNKNOWN_WAITING_LINE", path + ".waitingLineId");
         else if (!controlledLines.insert(c.waitingLineId).second) add("DUPLICATE_STOP_CONTROL", path + ".waitingLineId");
-        if (c.conflictAreaIds.empty()) add("INVALID_STOP_CONTROL", path + ".conflictAreaIds");
+        if (c.conflictAreaIds.empty() && !lineServesPriorityMarkers(row, c.waitingLineId)) add("INVALID_STOP_CONTROL", path + ".conflictAreaIds"); // D615
         for (std::size_t k = 0; k < c.conflictAreaIds.size(); ++k) {
             const auto at = path + ".conflictAreaIds[" + std::to_string(k) + "]";
             if (!areas.contains(c.conflictAreaIds[k])) add("UNKNOWN_CONFLICT_AREA", at);

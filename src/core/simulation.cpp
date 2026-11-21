@@ -276,8 +276,10 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (conflict == SIZE_MAX) continue; // Rejected by validation; never read out of bounds.
             // M3.2.8a: a driver who cannot stop at the line goes unless the point is occupied.
             const bool goes = committed(vehicle.speed, std::max(0.0, gap), type, behaviour); // B-2 (D219)
-            bool giveWay = false;
-            for (auto i = buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
+            // D615: a Stop on the line is served first, as a Stop zone's is: no gap counts before it.
+            const double line = routeRule.partStart + rule.yieldPosition;
+            bool giveWay = rule.stop && !(!stopOf.empty() && stopOf[v] && stopOf[v]->line == line && !restsAtStop(stopOf[v], startTick));
+            for (auto i = giveWay ? buckets.start[conflict + 1] : buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
                 const auto& span = spans[buckets.items[i]];
                 if (span.vehicleId == vehicle.id) continue;
                 if (blocks) { // D606: only the marker's classes block; vehicles are in id order

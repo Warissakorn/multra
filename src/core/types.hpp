@@ -168,6 +168,7 @@ struct PriorityRule {
     // vehicle only at or below this speed (m/s); the vehicle types that wait at the line and that
     // block at the marker. Absent: no limit, every type (every derived merge rule).
     std::optional<double> maxSpeed; std::optional<std::vector<std::string>> yieldTypeIds, blockTypeIds;
+    bool stop{}; // D615: a Stop control on the line: a full stop there before the gap test (StopService)
     bool operator==(const PriorityRule&) const = default;
 };
 // M3.2.3a. One crossing: the minor side gives way to the major side, and the two never occupy
@@ -310,7 +311,7 @@ struct ScenarioIndex {
     bool discretionary{};
     std::vector<std::vector<RouteLaneChange>> discretionaryOfRoute;
     std::vector<std::vector<RouteZone>> routeZones;  // parallel to Scenario::routes, in conflictZones order
-    bool stopZones{};                                // any zone is a Stop: only then is service tracked
+    bool stopZones{};                                // any Stop line, zone or rule (D615): only then is service tracked
     std::vector<std::size_t> programOfHead;          // parallel to Scenario::signalHeads
     std::vector<std::vector<RouteHead>> routeHeads;  // parallel to Scenario::routes, in signalHeads order
     std::vector<std::vector<RouteSpeedDecision>> routeSpeedDecisions; std::vector<std::vector<RouteSpeedArea>> routeSpeedAreas; // by route distance (B-6, D223, D225)

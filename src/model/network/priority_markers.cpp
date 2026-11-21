@@ -32,6 +32,9 @@ void priorityMarkerIssues(const Network& n, const AuthoredPriorityRule& r, const
         if (m.maxSpeed && !(std::isfinite(*m.maxSpeed) && *m.maxSpeed > 0)) add("INVALID_PRIORITY_RULE", where + ".maxSpeed");
     }
 }
+bool lineServesPriorityMarkers(const RightOfWay& row, const std::string& lineId) {
+    return std::any_of(row.priorityRules.begin(), row.priorityRules.end(), [&](const auto& r) { return r.markerForm() && r.waitingLineId == lineId; });
+}
 std::string priorityMarkerRuleId(const std::string& ruleId, std::size_t k) {
     return "right-of-way/" + ruleId + "#" + std::to_string(k);
 }
@@ -47,6 +50,9 @@ PriorityMarkerResolution resolvePriorityMarkers(const Network& n, const RuntimeS
         const auto path = "rightOfWay.priorityRules[" + std::to_string(i) + "]";
         if (!wait) result.issues.push_back({"CONFLICT_UNRESOLVED_PATH", path + ".waitingLineId"});
         std::vector<PriorityRule> rules;
+        // D615 (Q4 (a)): a Stop control on the line makes every marker's rule a Stop; Yield is the rule alone.
+        const bool stop = std::any_of(row.stopControls.begin(), row.stopControls.end(), [&](const auto& c) {
+            return c.waitingLineId == r.waitingLineId && c.mode == StopMode::stop; });
         bool located = wait.has_value();
         for (std::size_t k = 0; k < r.markers.size(); ++k) {
             const auto& m = r.markers[k];
@@ -55,6 +61,7 @@ PriorityMarkerResolution resolvePriorityMarkers(const Network& n, const RuntimeS
             if (!wait) continue;
             PriorityRule rule{priorityMarkerRuleId(r.id, k), wait->segment, wait->position, point->segment, point->position, m.gapTime, m.headway};
             if (m.maxSpeed) rule.maxSpeed = *m.maxSpeed / 3.6; // km/h in the file, m/s in the core
+            rule.stop = stop;
             rules.push_back(std::move(rule));
         }
         // All of a rule's markers or none: a line that ignored a lost marker would admit into it.

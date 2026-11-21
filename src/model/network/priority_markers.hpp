@@ -10,6 +10,8 @@ namespace multra {
 // marker on the line's own path (it would hold a vehicle for itself). Class ids are checked by
 // the project layer, which owns the classes.
 void priorityMarkerIssues(const Network&, const AuthoredPriorityRule&, const std::string& path, std::vector<ValidationIssue>&);
+// D615: whether a marker-form rule waits at this line, so a Stop control there needs no area.
+bool lineServesPriorityMarkers(const RightOfWay&, const std::string& lineId);
 // The runtime id of marker `k` of rule `ruleId`, so the project layer can find it again.
 std::string priorityMarkerRuleId(const std::string& ruleId, std::size_t k);
 // Every marker that locates, as a runtime rule with no type filter (the project layer adds the
