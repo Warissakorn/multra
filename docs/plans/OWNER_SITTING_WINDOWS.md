@@ -6,11 +6,23 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 `git log -p` on this file before D602); I.1, I.3, I.4, F2, D2 and E22 closed. Item names are unchanged
 and never reused; an item that took in an older one says so.
 
-**Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
+**Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): P51 → E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
 I.5 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15).
 
 ---
+
+## P — Priority rules (D614–D616)
+
+51. **Priority rule lab** (listed 2026-11-21 at the owner's request, "สร้าง Project สำหรับทดสอบเช็ค บน Window").
+    *File → Open example → Priority rule lab* (`priority-rule-lab.traffic.json`, left-hand). Check five things:
+    1. Choose the Stop line tool (`W`): two stop lines on the two turns (amber Yield on the right turn, red Stop on
+       the left turn), three green markers on the major road, and no conflict area (the grey crossing is passive).
+    2. Run: right-turners wait at their line for a gap in both streams; left-turners stop fully, then go.
+    3. Click the right-turn line, then Ctrl+right-click on another lane: a new green marker. Drag a marker along its
+       lane; click it and press Delete; Undo and Redo, one step each.
+    4. Ctrl+right-click on a lane with nothing downstream: a lone line is placed, not refused.
+    5. Verdict: is the behaviour plausible, and are the gestures clear in Thai? *Owner:*
 
 ## C — Run view (the 125 % screen)
 

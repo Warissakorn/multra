@@ -81,7 +81,8 @@ block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at
 done (D614):** schema 83 marker form, compile per marker to the core `PriorityRule`, `maxSpeed` and class
 filters in the engine; rows `priority_rule` PR1–PR6, PR10–PR13; M0 unchanged. **Slice 1b done (D615):** a Stop control
 on the line (it may name no area) is a full stop before the gap test (PR14–PR16). **Slice 2 done (D616):** with a line picked,
-Ctrl+right-click on another lane adds a marker; drag and Delete; markers follow their roads (PR7, PR8). **Next: slice 3** (display, table, the
+Ctrl+right-click on another lane adds a marker; drag and Delete; markers follow their roads (PR7, PR8). **For the owner:** [OWNER_SITTING_WINDOWS item 51](plans/OWNER_SITTING_WINDOWS.md) on the new
+`priority-rule-lab` example (first in the sitting). **Next: slice 3** (display, table, the
 unreached-marker Problems row; the owner's look on Windows).
 
 ## Review of 2026-11-10 — queued proposals (D493)

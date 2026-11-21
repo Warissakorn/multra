@@ -8,6 +8,9 @@
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/model/network/priority_markers.hpp"
 #include <algorithm>
+#include <map>
+#include <set>
+#include <sstream>
 using namespace multra;
 // PRIORITY_RULES slice 2 (D616), rows PR7 and PR8: the Stop line tool's marker commands, one Undo
 // step each, and the lifecycle that carries a rule's line and markers with their roads. A minor
@@ -131,4 +134,66 @@ TEST(priority_marker, pr8_copying_both_roads_copies_the_rule) {
     rules = 0;
     for (const auto& r : h.document().network.rightOfWay.priorityRules) rules += r.markerForm();
     CHECK(rules == 1 && h.document().network.rightOfWay.stopControls.size() == 1);
+}
+// The priority-rule lab (data/projects/priority-rule-lab.traffic.json, OWNER_SITTING_WINDOWS item 51):
+// the committed file is its builder's output, it carries the two rules, and they act on a run.
+#include "../tools/priority_rule_network.hpp"
+#include "../src/project/run.hpp"
+#include <fstream>
+TEST(priority_marker, lab_committed_file_is_the_builder_output) {
+    std::ifstream f(test::root() / "data/projects/priority-rule-lab.traffic.json");
+    std::stringstream text; text << f.rdbuf();
+    CHECK(text.str() == documentJson(fixture::priorityRuleLab().document).dump(2) + "\n");
+}
+TEST(priority_marker, lab_rules_compile_and_the_merges_keep_the_major_road) {
+    const auto lab = fixture::priorityRuleLab();
+    const auto& d = lab.document;
+    CHECK(d.network.rightOfWay.conflictAreas.empty() && d.network.rightOfWay.priorityRules.size() == 2);
+    const auto scenario = compileDocument(d, test::root() / "data").scenario;
+    std::size_t stop = 0, yield = 0;
+    for (const auto& r : scenario.priorityRules) {
+        if (r.id.starts_with("right-of-way/" + lab.leftRule + "#")) stop += r.stop;
+        else if (r.id.starts_with("right-of-way/" + lab.rightRule + "#")) yield += !r.stop;
+        else { // a derived merge rule: the turn yields, never the major Link it joins
+            const auto& n = d.network; const auto table = runtimeSections(n);
+            for (const auto& link : {lab.roads.eastbound, lab.roads.westbound})
+                for (const double at : {1.0, 299.0})
+                    CHECK(r.yieldSegmentId != resolveControlPath(n, table, {link, n.links[link == lab.roads.eastbound ? 0 : 1].lanes[0].id}, at));
+        }
+    }
+    CHECK(stop == 1 && yield == 2);
+    CHECK(runDiagnostics(d, test::root() / "data").empty());
+}
+TEST(priority_marker, lab_run_holds_both_turns_at_their_lines) {
+    const auto lab = fixture::priorityRuleLab();
+    const auto snapshot = compileDocument(lab.document, test::root() / "data");
+    const auto& s = snapshot.scenario;
+    std::map<std::string, std::size_t> routeOf;
+    for (std::size_t i = 0; i < s.routes.size(); ++i) routeOf[s.routes[i].id] = i;
+    auto state = createSimulation(s, 42);
+    std::set<std::uint64_t> stoodLeft, crossedLeft; std::size_t heldRight = 0;
+    std::vector<SimEvent> events;
+    while (state.tick < totalTicks(s)) {
+        for (const auto& v : state.vehicles) {
+            for (const auto& rr : state.index->routeRules[v.routeIndex]) {
+                const auto& rule = s.priorityRules[rr.ruleIndex];
+                const double line = rr.partStart + rule.yieldPosition;
+                const bool left = rule.id.starts_with("right-of-way/" + lab.leftRule + "#");
+                const bool right = rule.id.starts_with("right-of-way/" + lab.rightRule + "#");
+                // Stop (D615): the engine's stop service records the full stop at this line.
+                if (left && std::any_of(state.stopService.begin(), state.stopService.end(), [&](const auto& x) {
+                        return x.vehicleId == v.id && x.line == line; }) && v.speed < 0.1) stoodLeft.insert(v.id);
+                if (left && v.distance > line) crossedLeft.insert(v.id);
+                if (right && v.distance <= line && line - v.distance < 3 && v.speed < 0.1) ++heldRight;
+            }
+        }
+        state = stepSimulation(state);
+        events.insert(events.end(), state.events.begin(), state.events.end());
+    }
+    CHECK(heldRight > 0); // a right-turner stood at its line: the rule acted (the forcing)
+    CHECK(!crossedLeft.empty());
+    for (const auto id : crossedLeft) CHECK(stoodLeft.contains(id)); // every left-turner stopped first (Stop)
+    auto again = createSimulation(s, 42); std::vector<SimEvent> second;
+    while (again.tick < totalTicks(s)) { again = stepSimulation(again); second.insert(second.end(), again.events.begin(), again.events.end()); }
+    CHECK(events == second);
 }

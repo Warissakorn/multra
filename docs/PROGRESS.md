@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — The priority-rule lab for the owner's Windows look (item 51)
+
+- **Owner (verbatim):** "สร้าง Project สำหรับทดสอบเช็ค บน Window", then "สร้างเสร็จแล้ว pack binary เลย".
+- **`data/projects/priority-rule-lab.traffic.json`** (builder `tools/priority_rule_network.hpp`, regenerate with
+  `multra-priority-rule-fixture`; *Open example → Priority rule lab*): the T-junction's roads and demand, left-hand,
+  with two priority rules placed by the Stop line tool's commands and no conflict area. The right turn yields at its
+  line to markers on both streams; the left turn has a Stop with no area. Owner steps: OWNER_SITTING_WINDOWS item 51.
+- **Rows:** `priority_marker` (file is the builder's output; rules compile, Stop on the left turn, every derived
+  merge rule has the turn yielding; a seed-42 run holds right-turners and serves every left-turner's Stop; same events).
+- **Reading, no verdict (rule 4):** seeds 42–44, mean delay right turn 29.6 s, left turn (Stop) 44.4 s, major 4.0 s;
+  the Yield T-junction with conflict areas gives 17.5 s and 9.5 s.
+- **Checks:** `check` desktop 366/366, headless 249/249 (`studyperiods` SP1 counts ten shipped projects).
+
 ## 2026-11-21 — PRIORITY_RULES slice 2: the Stop line tool adds conflict markers (D616)
 
 - **Owner:** "ทำงานถัดไป".
@@ -144,16 +157,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Closed and removed from the sheets:** C14, C15, E33, E34, E35, E36, B45 and the items they took in (D602).
 - **Open:** A2 (steps 3–4 and the verdict; the step 1 finding is D590's rule for controlled lines, an owner
   choice); the E35 selection defect (NEXT). No code changed.
-
-## 2026-11-20 — Windows owner checks triaged before new work (D601, D602)
-
-- **Owner:** "ต้องการ เคลียร์ owner checks บน Windows ก่อนเริ่มงานใหม่"; chose "Triage first", "Yes, cut it"
-  for M3.2.7d, then "Approve as proposed".
-- **D601:** M3.2.7d's owner exercise is steps 1, 3–4 and the verdict. New test
-  `tjunction.an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed` (gap 4 s, headway 9 m,
-  Stop; the reopened file is byte-identical, seed 42's rows equal) covers steps 5–7; step 2 was already in
-  `rightofway_editor`. M3_ACCEPTANCE §3 updated.
-- **D602:** OWNER_SITTING_WINDOWS rewritten as one sitting of 17 items with an order; 31 looks listed more
-  than 14 days ago carved out to the new plans/OWNER_LOOKS_CARVED (ROADMAP M1.30, M3.2.13, M14), which also takes D201's M1.29/M3.2.10 text so ROADMAP stays under 500 lines; I.1, I.3, I.4, F2, D2, E22 closed; merged
-  items say what they took in. No look was passed by the session.
-- **Verified on Linux (headless):** `tjunction` 9/9; `check` 244/244 (in a fresh build directory `cli-consistency` first fails: `check` does not build `multra-consistency-cli-fixture`, a gap that predates this session). Desktop preset and Windows not run; the sitting is the owner's.

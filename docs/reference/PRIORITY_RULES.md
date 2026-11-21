@@ -103,7 +103,7 @@ speed on the headway test and vehicle-class filters (§3).
 | PR6 | A marker on the line's own path, or upstream of it, is refused with its path; nothing is stored |
 | PR7 | Placing a line with no area downstream, then a marker, is one Undo step each; Delete of the last marker removes the rule |
 | PR8 | Split, drag and lane edits carry the line and markers; a delete cascades in one Undo step |
-| PR9 | Every shipped project, seeds 42–51, is byte-identical (no file uses the form) |
+| PR9 | Every shipped project, seeds 42–51, is byte-identical (no file uses the form); since item 51 the one exception is `priority-rule-lab`, built for the owner's look |
 | PR10 | Same seed, same run: two runs of a rule fixture give identical events |
 | PR11 | `maxSpeed`: a major vehicle inside the headway at 30 km/h holds the line with `maxSpeed` 50 and does not with `maxSpeed` 20 (its gap time is set beyond `gapTime`, so only the headway test decides) |
 | PR12 | Classes: with the line's classes set to cars only, a heavy vehicle passes the line while a car facing the same major vehicle is held; with a marker's classes set to heavy only, a car on the major road does not hold the line and a heavy vehicle does |
@@ -141,7 +141,8 @@ Calibrated gap times (M6). Vissim's "look beyond red signals". Converting existi
    `priority_marker_commands.cpp`, markers drawn as green bars (`canvas_markers.cpp`); tests
    `priority_marker` and `stop-line-ui`. A copy keeps a rule when its line is copied, with the markers
    whose roads were copied; a study-area cut does the same.
-3. Display and the table rows; the owner's look on Windows.
+3. Display and the table rows; the owner's look on Windows: [OWNER_SITTING_WINDOWS item 51](../plans/OWNER_SITTING_WINDOWS.md),
+   on `data/projects/priority-rule-lab.traffic.json` (Open example → Priority rule lab).
 
 **How Vissim does each (PTV Vissim help, "Creating priority rules" and "Attributes of priority rules",
 versions 2020–2024; read 2026-11-20):** a priority rule is its own network object, one red stop line and

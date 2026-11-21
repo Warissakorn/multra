@@ -196,10 +196,7 @@ target_link_libraries(multra-m26-study PRIVATE multra_commands multra_options)
 target_precompile_headers(multra-m26-study REUSE_FROM multra-four-leg-fixture)
 add_executable(multra-count-study tools/count_study.cpp)
 target_link_libraries(multra-count-study PRIVATE multra_commands multra_options)
-# Regenerates the M3.2.7 T-junction from its one source, tools/t_junction_network.hpp.
-add_executable(multra-t-junction-fixture tools/t_junction_fixture.cpp)
-target_link_libraries(multra-t-junction-fixture PRIVATE multra_commands multra_options)
-target_precompile_headers(multra-t-junction-fixture REUSE_FROM multra-four-leg-fixture)
+include(cmake/right_of_way_fixtures.cmake) # the T-junction and the priority-rule lab
 # The M3.2.7b diagnostic sweep: archived evidence, not a test, so not part of `check`.
 add_executable(multra-t-junction-sweep tools/t_junction_sweep.cpp)
 target_link_libraries(multra-t-junction-sweep PRIVATE multra_commands multra_options)
