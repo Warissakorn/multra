@@ -45,13 +45,25 @@ struct ConflictArea {
     bool generated{};
     bool operator==(const ConflictArea&) const = default;
 };
-// At most one per area. Direction comes from the area, never a second copy here.
+// PRIORITY_RULES (D604, D606), schema 83: a conflict marker of a Vissim priority rule, on any lane
+// path. `maxSpeed` (km/h) limits only the headway test; absent is no limit. An empty
+// `vehicleClassIds` is every type.
+struct PriorityMarker {
+    ControlPoint point; double gapTime{}, headway{}; std::optional<double> maxSpeed;
+    std::vector<std::string> vehicleClassIds;
+    bool operator==(const PriorityMarker&) const = default;
+};
+// Two exclusive forms. An area's numbers: at most one per area, direction from the area, never a
+// second copy here. A Vissim priority rule (schema 83): `waitingLineId` and nonempty `markers`, no
+// area; `vehicleClassIds` names who waits at the line, empty is every type.
 struct AuthoredPriorityRule {
     std::string id, name, conflictAreaId; double gapTime{}, headway{}; bool generated{};
     // VISIBILITY (D607), schema 80: metres short of the waiting line within which the yielding driver
     // judges the gap; absent is kDefaultVisibility. Written only when set.
     std::optional<double> visibility;
     static constexpr double kDefaultVisibility = 100.0;
+    std::string waitingLineId; std::vector<std::string> vehicleClassIds; std::vector<PriorityMarker> markers;
+    bool markerForm() const { return !waitingLineId.empty() || !markers.empty(); }
     bool operator==(const AuthoredPriorityRule&) const = default;
 };
 // M3.2.5 (contract §1, §5): what a driver must do at one waiting line before crossing the areas

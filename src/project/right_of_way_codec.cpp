@@ -54,10 +54,40 @@ RightOfWay readRightOfWay(const Json& j,int version) {
         const auto path="rightOfWay.priorityRules["+std::to_string(row.priorityRules.size())+"]";
         knownFields(r,Object::priorityRule,path,version);
         const auto field=[&](const char* key)->const Json& {return value(r,Object::priorityRule,key);};
+        // D606, schema 83: a waiting line with markers instead of an area; the other form's keys
+        // are refused at the rule (the model reports a rule carrying both, INVALID_PRIORITY_RULE).
+        const bool markers=version>=priorityMarkerVersion && present(r,"waitingLineId");
+        if(markers)for(const char* key:{"conflictAreaId","gapTime","headway"})
+            if(r.contains(key))throw ValidationError({{"INVALID_PRIORITY_RULE",path+"."+key}});
+        if(!markers && version>=priorityMarkerVersion && r.contains("markers"))throw ValidationError({{"INVALID_PRIORITY_RULE",path+".markers"}});
         row.priorityRules.push_back({field("id").get<std::string>(),present(r,"name")?field("name").get<std::string>():"",
-            field("conflictAreaId").get<std::string>(),field("gapTime").get<double>(),field("headway").get<double>()});
-        row.priorityRules.back().generated=generatedFlag(r,path,version);
-        if(present(r,"visibility"))row.priorityRules.back().visibility=field("visibility").get<double>(); // D607
+            markers?"":field("conflictAreaId").get<std::string>(),markers?0:field("gapTime").get<double>(),markers?0:field("headway").get<double>()});
+        auto& rule=row.priorityRules.back();
+        rule.generated=generatedFlag(r,path,version);
+        if(present(r,"visibility"))rule.visibility=field("visibility").get<double>(); // D607
+        const auto texts=[](const Json& list,const char* key) {
+            std::vector<std::string> result;
+            for(const auto& id:list) {
+                if(!id.is_string())throw std::invalid_argument(std::string("Expected text: ")+key);
+                result.push_back(id.get<std::string>());
+            }
+            return result;
+        };
+        if(!markers)continue;
+        rule.waitingLineId=field("waitingLineId").get<std::string>();
+        if(present(r,"vehicleClassIds"))rule.vehicleClassIds=texts(field("vehicleClassIds"),"vehicleClassIds");
+        for(const auto& m:field("markers")) {
+            const auto at=path+".markers["+std::to_string(rule.markers.size())+"]";
+            knownFields(m,Object::priorityMarker,at,version);
+            const auto mark=[&](const char* key)->const Json& {return value(m,Object::priorityMarker,key);};
+            const auto& point=mark("point");
+            knownFields(point,Object::controlPoint,at+".point",version);
+            PriorityMarker marker{{readControlPath(value(point,Object::controlPoint,"path"),at+".point.path",version),
+                value(point,Object::controlPoint,"station").get<double>()},mark("gapTime").get<double>(),mark("headway").get<double>(),{},{}};
+            if(present(m,"maxSpeed"))marker.maxSpeed=mark("maxSpeed").get<double>();
+            if(present(m,"vehicleClassIds"))marker.vehicleClassIds=texts(mark("vehicleClassIds"),"vehicleClassIds");
+            rule.markers.push_back(std::move(marker));
+        }
     }
     if(version>=15 && present(j,"stopControls"))for(const auto& c:value(j,Object::rightOfWay,"stopControls")) {
         const auto path="rightOfWay.stopControls["+std::to_string(row.stopControls.size())+"]";

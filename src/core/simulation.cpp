@@ -265,6 +265,11 @@ SimState stepSimulation(SimState&& state, double dt) {
         // vehicle's own route and so is invisible to closestVehicle.
         for (const auto& routeRule : index.routeRules[refs[v].route]) {
             const auto& rule = scenario.priorityRules[routeRule.ruleIndex];
+            // D606: a type outside the line's classes passes as if the line were not there.
+            if (const auto* waits = index.yieldTypesOfRule.empty() ? nullptr : &index.yieldTypesOfRule[routeRule.ruleIndex];
+                waits && !waits->empty() && !(*waits)[refs[v].type]) continue;
+            const auto* blocks = index.blockTypesOfRule.empty() || index.blockTypesOfRule[routeRule.ruleIndex].empty()
+                                     ? nullptr : &index.blockTypesOfRule[routeRule.ruleIndex];
             const double gap = routeRule.partStart + rule.yieldPosition - vehicle.distance;
             if (gap < -1e-9) continue; // Already across the stop line; the decision was taken.
             const auto conflict = index.conflictSegmentOfRule[routeRule.ruleIndex];
@@ -275,6 +280,10 @@ SimState stepSimulation(SimState&& state, double dt) {
             for (auto i = buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
                 const auto& span = spans[buckets.items[i]];
                 if (span.vehicleId == vehicle.id) continue;
+                if (blocks) { // D606: only the marker's classes block; vehicles are in id order
+                    const auto at = std::lower_bound(vehicles.begin(), vehicles.end(), span.vehicleId, [](const auto& x, std::uint64_t id) { return x.id < id; });
+                    if (at == vehicles.end() || at->id != span.vehicleId || !(*blocks)[refs[static_cast<std::size_t>(at - vehicles.begin())].type]) continue;
+                }
                 // Positions are along the conflict segment, so this is a distance on the major
                 // approach: positive means its front is still short of the conflict point.
                 const double reach = rule.conflictPosition - span.front;
@@ -283,7 +292,7 @@ SimState stepSimulation(SimState&& state, double dt) {
                     if (span.rear <= rule.conflictPosition) giveWay = true;
                 } else if (goes) continue; // only occupancy holds it; a front clipped at a join
                 // reads reach 0 here, but it is then on the minor's next segment, a car-following leader
-                else if (reach <= rule.headway) giveWay = true;
+                else if (reach <= rule.headway && (!rule.maxSpeed || span.speed <= *rule.maxSpeed)) giveWay = true; // D606
                 // Arriving too soon. A stopped major vehicle further off than the headway does
                 // NOT block, which is what stops a standing queue from deadlocking the minor
                 // approach forever rather than releasing it into a gap that genuinely exists.

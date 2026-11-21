@@ -20,6 +20,7 @@ paths, Node membership, conflicts) is computed on every read and never stored.
 | `connector_attachment.*` | The 0.01 m lane-attachment measurement shared by validation and shell diagnostics | [NETWORK_EDITOR_CONNECTORS](../../docs/reference/NETWORK_EDITOR_CONNECTORS.md) |
 | `control.hpp` | Authored right-of-way controls as values | [M3_CONTRACT §1](../../docs/reference/M3_CONTRACT.md) |
 | `right_of_way.*` | What those controls mean: structural issues (reject the edit) apart from runtime issues; automatic conflicts (`automatic_conflicts.cpp`), coverage (`conflict_coverage.cpp`), crossings and groups | [M3_CONTRACT §2](../../docs/reference/M3_CONTRACT.md) |
+| `priority_markers.*` | A Vissim priority rule (a waiting line with conflict markers, no area): its structural issues and its compile, one core `PriorityRule` per marker | [PRIORITY_RULES](../../docs/reference/PRIORITY_RULES.md) |
 | `conflict_surface.*` | Conflict geometry on the same painted lane rails as display and paths; stations in authored metres | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |
 | `conflict_display.*` | Conflict and mouth polygons and their station spans for display (`conflict_polygons.cpp`, `conflict_bands.cpp`, `conflict_mouth_bands.cpp`) | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |
 | `conflict_polygon_math.*` | The inverse bilinear cross-section map shared by overlap and mouth measurement | [M3_CONTRACT](../../docs/reference/M3_CONTRACT.md) |

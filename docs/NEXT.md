@@ -29,7 +29,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2.7d passed on attempt 2 (D612); next G3
+## M3.2.7d passed on attempt 2 (D612); G3 and priority rules slice 1 done
 
 Done before it (2026-11-19; history in [the archived NEXT](archive/NEXT-state-2026-11-19.md)): M3.2.4e
 ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), [STOP_LINES](reference/STOP_LINES.md) (D591, D594–D595),
@@ -46,8 +46,8 @@ the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas
 - **M3.2.7d passed (D612):** step 4 and the verdict, owner (verbatim): "ทดลองแล้วสมจริง". M3.2 still closes only with
   its diverge acceptance-fixture row (ROADMAP M3.2).
 - **G3 done as Vissim (D613, [DIFFUSION](reference/DIFFUSION.md)):** a behaviour's `diffusionTime` removes a vehicle
-  stuck at its dead end and counts it as `removed`; off by default (M0 unchanged). **Next (D609's order):
-  PRIORITY_RULES slice 1**; the owner's remaining Windows items are in [OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md).
+  stuck at its dead end and counts it as `removed`; off by default (M0 unchanged). PRIORITY_RULES slice 1
+  done (D614, below); the owner's remaining Windows items are in [OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md).
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
@@ -75,15 +75,14 @@ A session prepares the build and records the owner's words; Linux tests close no
 lines hidden outside the right-of-way tools); E35's block selection → D605 (one outline per selected
 block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at the next table use.
 
-## Priority rules like Vissim (D604, D606) — choices answered; slice 1 next
+## Priority rules like Vissim (D604, D606, D614) — slice 1 done; Stop at the line next
 
-[PRIORITY_RULES](reference/PRIORITY_RULES.md): a stop line with conflict markers, no conflict area. Owner
-answered §8 as Vissim does it (D606): maximum speed on the headway test, vehicle classes on the line and on
-each marker, Stop means a full stop first, defaults 3.0 s / 5.0 m. **Slice 1** (PR1–PR6, PR9–PR13): the next
-schema step, codec, compile to the engine's `PriorityRule` (add `maxSpeed` and type-id filters, empty and
-unlimited for derived merges), runtime rows on a hand-built crossing; no UI. Read STOP_LINES §5,
-`stepSimulation`'s "Priority rules" block and `resolveRightOfWay` first; keep every shipped project's
-events identical (seeds 42–51).
+[PRIORITY_RULES](reference/PRIORITY_RULES.md): a stop line with conflict markers, no conflict area. **Slice 1
+done (D614):** schema 83 marker form, compile per marker to the core `PriorityRule`, `maxSpeed` and class
+filters in the engine; rows `priority_rule` PR1–PR6, PR10–PR13; M0 unchanged. **Next, slice 1b:** the Stop at
+the line (§3, Q4 (a)): let a Stop control name rules and the engine's stop service cover them, rows first.
+Then slice 2 (Stop line tool gestures, lifecycle, Undo; PR7, PR8) and slice 3 (display, table, the
+unreached-marker Problems row; the owner's look on Windows).
 
 ## Review of 2026-11-10 — queued proposals (D493)
 

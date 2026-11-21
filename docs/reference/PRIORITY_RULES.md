@@ -1,6 +1,7 @@
 # PRIORITY_RULES — a stop line with conflict markers, without a conflict area (draft, D604)
 
-**Contract, not yet implemented; the owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
+**Slice 1 implemented (D614, 2026-11-21: schema 83, codec, compile, engine; no UI); slices 2–3 and the Stop
+rule of §3 open. The owner answered §8 on 2026-11-20 (D606).** The owner's request of 2026-11-20 (verbatim): "เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้
 Conflict area ก็ได้ ให้สร้างพื้นที่ให้ทางเหมือน vissim", then the choice "ข. Priority rule แบบ Vissim" over
 taking over the automatic candidates. Written before code; rows PR1–PR10 fail first. Section 8 holds
 the owner's choices, answered as Vissim does it (D606).
@@ -49,21 +50,28 @@ speed on the headway test and vehicle-class filters (§3).
 - It compiles to one runtime `PriorityRule` per marker, all sharing the line's yield position, so a
   vehicle at the line waits while **any** marker blocks: it passes only when every marker's
   conditions hold (Vissim's rule with several markers).
-- A marker no route reaches is a Problems row, not an error; a marker on the line's own path, or
-  upstream of the line on it, is refused (it would hold a vehicle for itself). A class id that names
+- A marker no route reaches is a Problems row, not an error (with the table, slice 3); a marker on the
+  line's own lane path is refused, `PRIORITY_MARKER_ON_OWN_PATH` (it would hold a vehicle for itself).
+  Slice 1 checks the same lane path only, not other paths upstream on a route (D614). A class id that names
   no vehicle class is refused at its path.
 - A line can serve conflict areas (STOP_LINES) and rules at once; both hold, and the nearer hold
   wins as for heads and zones today. A Stop control on the line (`StopMode::stop`) requires the full
-  stop before the rule's gap test, as for areas (Q4 (a)); Yield is the rule alone.
+  stop before the rule's gap test, as for areas (Q4 (a)); Yield is the rule alone. **Not yet built
+  (D614):** a Stop control still names only areas, so in slice 1 every rule is Yield-like; the Stop
+  needs the control to name rules and the engine's stop service to cover them (next slice, before UI).
 - **Derived merge rules are unchanged:** no class lists, `maxSpeed` at its ceiling, so every shipped
   project and seed keeps its bytes (PR9).
 
-## 4. Schema (the next step after 79)
+## 4. Schema 83 (`priorityMarkerVersion`, D614)
 
 - `rightOfWay.priorityRules[i]` gains a second, exclusive form: `{id, name?, waitingLineId,
-  vehicleClassIds?, markers: [{point, gapTime, headway, maxSpeed, vehicleClassIds?}, …]}` where
+  vehicleClassIds?, markers: [{point, gapTime, headway, maxSpeed?, vehicleClassIds?}, …]}` where
   `point` is the existing ControlPoint object and an absent `vehicleClassIds` means every type.
-  Exactly one of `conflictAreaId` (the existing form) or `waitingLineId` + nonempty `markers`.
+  `maxSpeed` is km/h; absent is the ceiling, no limit (D614).
+  Exactly one of `conflictAreaId` (the existing form) or `waitingLineId` + nonempty `markers`; a
+  rule carrying keys of both is `INVALID_PRIORITY_RULE` at the key.
+- Compiled per marker to a runtime `PriorityRule` `right-of-way/<id>#<k>`; classes become type ids in
+  the project layer (`priority_rule_classes.cpp`), an unknown class is `UNKNOWN_VEHICLE_CLASS` at its path.
 - Refused below the new step at its path (`EDIT_UNSUPPORTED_FIELD`), as every later key; files without the
   form keep their bytes and version. The writer's version choice adds the floor.
 - Lifecycle: a marker or line follows its path like every ControlPoint (split, drag, lane edits,
@@ -123,8 +131,9 @@ Calibrated gap times (M6). Vissim's "look beyond red signals". Converting existi
 
 ## 9. Slices
 
-1. The schema step, codec and compile to `PriorityRule`, and the engine's `maxSpeed` and class
-   filters (PR1–PR6, PR9–PR13) on a hand-built crossing; no UI.
+1. **Done (D614):** the schema step, codec and compile to `PriorityRule`, and the engine's `maxSpeed` and class
+   filters (PR1–PR6, PR9–PR13) on a hand-built crossing; no UI. Tests: `tests/priority_rule_tests.cpp`.
+   Left from §3: Stop at the line (1b, before slice 2).
 2. The Stop line tool's gestures, lifecycle and Undo (PR7, PR8).
 3. Display and the table rows; the owner's look on Windows.
 

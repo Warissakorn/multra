@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-21 — PRIORITY_RULES slice 1: a stop line with conflict markers, no area (D614)
+
+- **Owner:** "ทำงานถัดไป" (D609's order: PRIORITY_RULES slice 1, choices D606).
+- **D614, [PRIORITY_RULES](reference/PRIORITY_RULES.md):** schema 83 adds a priority rule's marker form
+  (`waitingLineId`, `vehicleClassIds`, `markers` with `gapTime`, `headway`, optional `maxSpeed` in km/h and
+  `vehicleClassIds`). Each marker compiles to one core `PriorityRule` at the line (`priority_markers.cpp`);
+  classes become type ids in the project layer (`priority_rule_classes.cpp`). The engine's rule loop skips a
+  type outside the line's classes, a major vehicle outside the marker's, and a major vehicle above `maxSpeed` in
+  the headway test. No UI.
+- **Left from §3:** the Stop at the line (a Stop control names only areas; next, before slice 2) and the Problems
+  row for a marker no route reaches (with the table).
+- **Rows:** `priority_rule` PR1–PR6, PR10–PR13 (10 tests). Without the engine change PR11 and PR12 fail. PR9:
+  `multra-cli 42` keeps 45 / 31.75870154816726 / 1; no shipped file uses the form.
+
 ## 2026-11-21 — G3 as Vissim: a vehicle stuck at its dead end is removed and counted (D613)
 
 - **Owner, in chat on G3 (as recommended):** as Vissim, remove and count separately, off by default per behaviour.
@@ -156,10 +170,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D596:** `Leader::zoneLine` on zone holds only; a vehicle resting at its line is not `committed`; a stop or residue ending at the line rests without a clamp. Signal heads, vehicles, derived rules and W74 unchanged; the four-leg and M2.6 pins pass unchanged.
 - **Rows:** new `zonelinerest` (LA1–LA4, failed with the flag off); BA146, BA119, BA121 and PL8 updated, reasons in LINE_APPROACH §9.
 - **Verified on Linux (desktop preset, Debug):** full `ctest` 361/361; changed units build without the PCH. Windows not run.
-
-## 2026-11-19 — STOP_LINES slice 3: the Stop line tool (D595)
-
-- **Owner:** "ทำส่วนที่ 3 ต่อได้เลย".
-- **D595:** the Stop line tool (`W`, after Conflict area in the palette; tool 15 appended so other indices stay). Ctrl+right-click a lane places a line (`placeStopLine`) named on the decided default-line areas at or past it on its path, or on a Connector leaving its Link lane; refused (`EDIT_NO_CONFLICT_DOWNSTREAM`) when there are none. A click picks and drags, Delete removes (`removeStopLine`). The Conflict areas table gains Waits at and Use default lines; under the Conflict area tool the hovered or selected area's default lines are drawn dashed and faint. English and Thai text.
-- **Rows:** `stoplines` SL4 and the new `stop-line-ui` (SL4 in the table, SL7, place/refuse/undo/pick/Delete/Use default lines). `workspace-ui`, `design-system-ui` and `zone-ui` pin the palette and were updated for the sixteenth tool. [STOP_LINES](reference/STOP_LINES.md) §9 lists what still differs from the draft.
-- **Verified on Linux (desktop preset, Debug):** full `ctest` 360/360 after the palette pins were updated; the 17 changed `.cpp` units build without the PCH. Windows not run.

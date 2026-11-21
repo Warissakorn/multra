@@ -164,6 +164,10 @@ struct PriorityRule {
     std::string conflictSegmentId; double conflictPosition{}; // the point on the major approach
     double gapTime{};   // seconds: a major vehicle arriving sooner than this is not yielded to
     double headway{};   // metres: a major vehicle closer than this to the point blocks regardless
+    // PRIORITY_RULES (D606), only on an authored marker's rule: the headway test counts a major
+    // vehicle only at or below this speed (m/s); the vehicle types that wait at the line and that
+    // block at the marker. Absent: no limit, every type (every derived merge rule).
+    std::optional<double> maxSpeed; std::optional<std::vector<std::string>> yieldTypeIds, blockTypeIds;
     bool operator==(const PriorityRule&) const = default;
 };
 // M3.2.3a. One crossing: the minor side gives way to the major side, and the two never occupy
@@ -315,6 +319,9 @@ struct ScenarioIndex {
     // search by id. SIZE_MAX when the rule names a segment that does not exist; validation
     // rejects that scenario, but a hand-built index must not read out of bounds before it does.
     std::vector<std::size_t> conflictSegmentOfRule;  // parallel to Scenario::priorityRules
+    // D606: per rule, which vehicle types wait at its line and which block at its marker, indexed
+    // by Scenario::vehicleTypes; an empty row is every type. Both empty without a filtered rule.
+    std::vector<std::vector<bool>> yieldTypesOfRule, blockTypesOfRule;
     // The behaviour a vehicle uses depends only on its TYPE, so it needs no per-vehicle lookup
     // at all once the type is known. The sorted routeOfId/typeOfId tables that used to live here
     // are gone with the string ids they existed to resolve: a vehicle carries its slots.

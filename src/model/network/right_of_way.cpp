@@ -1,4 +1,5 @@
 #include "right_of_way.hpp"
+#include "priority_markers.hpp"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -143,7 +144,7 @@ std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
     for (std::size_t i = 0; i < row.priorityRules.size(); ++i) {
         const auto& r = row.priorityRules[i];
         const auto path = "rightOfWay.priorityRules[" + std::to_string(i) + "]";
-        id(r.id, path);
+        id(r.id, path); if (r.markerForm()) { priorityMarkerIssues(n, r, path, issues); continue; } // PRIORITY_RULES (D606)
         if (!areas.contains(r.conflictAreaId)) add("UNKNOWN_CONFLICT_AREA", path + ".conflictAreaId");
         else if (!ruled.insert(r.conflictAreaId).second) add("DUPLICATE_PRIORITY_RULE", path + ".conflictAreaId");
         if (!std::isfinite(r.gapTime) || r.gapTime <= 0 || !std::isfinite(r.headway) || r.headway <= 0) add("INVALID_PRIORITY_RULE", path);

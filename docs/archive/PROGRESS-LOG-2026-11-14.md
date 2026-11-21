@@ -2,6 +2,13 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-19 — STOP_LINES slice 3: the Stop line tool (D595)
+
+- **Owner:** "ทำส่วนที่ 3 ต่อได้เลย".
+- **D595:** the Stop line tool (`W`, after Conflict area in the palette; tool 15 appended so other indices stay). Ctrl+right-click a lane places a line (`placeStopLine`) named on the decided default-line areas at or past it on its path, or on a Connector leaving its Link lane; refused (`EDIT_NO_CONFLICT_DOWNSTREAM`) when there are none. A click picks and drags, Delete removes (`removeStopLine`). The Conflict areas table gains Waits at and Use default lines; under the Conflict area tool the hovered or selected area's default lines are drawn dashed and faint. English and Thai text.
+- **Rows:** `stoplines` SL4 and the new `stop-line-ui` (SL4 in the table, SL7, place/refuse/undo/pick/Delete/Use default lines). `workspace-ui`, `design-system-ui` and `zone-ui` pin the palette and were updated for the sixteenth tool. [STOP_LINES](../reference/STOP_LINES.md) §9 lists what still differs from the draft.
+- **Verified on Linux (desktop preset, Debug):** full `ctest` 360/360 after the palette pins were updated; the 17 changed `.cpp` units build without the PCH. Windows not run.
+
 ## 2026-11-19 — STOP_LINES slices 1–2: derived waiting lines, schema 79 (D594)
 
 - **Owner:** "ทำ STOP_LINES ต่อได้เลย".

@@ -117,6 +117,17 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
         index.conflictSegmentOfRule.push_back(found == scenario.segments.end() ? SIZE_MAX :
             static_cast<std::size_t>(found - scenario.segments.begin()));
     }
+    // D606: type masks only when some authored marker rule filters, so a merge-only run builds none.
+    const auto mask = [&](const std::optional<std::vector<std::string>>& ids) {
+        std::vector<bool> row;
+        if (!ids) return row;
+        for (const auto& type : scenario.vehicleTypes) row.push_back(std::find(ids->begin(), ids->end(), type.id) != ids->end());
+        return row;
+    };
+    if (std::any_of(scenario.priorityRules.begin(), scenario.priorityRules.end(), [](const auto& r) { return r.yieldTypeIds || r.blockTypeIds; }))
+        for (const auto& rule : scenario.priorityRules) {
+            index.yieldTypesOfRule.push_back(mask(rule.yieldTypeIds)); index.blockTypesOfRule.push_back(mask(rule.blockTypeIds));
+        }
     index.behaviourOfType.reserve(scenario.vehicleTypes.size());
     for (const auto& type : scenario.vehicleTypes) {
         const auto& behaviour = detail::byId(scenario.behaviours, type.behaviourId);

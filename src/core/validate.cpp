@@ -145,6 +145,10 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         // A segment cannot give way to itself: that is a rule that can never be satisfied, and it
         // would also let the merge check below count it as arbitration.
         if (rule.yieldSegmentId == rule.conflictSegmentId) add("INVALID_RANGE", p + ".conflictSegmentId");
+        if (rule.maxSpeed && !(std::isfinite(*rule.maxSpeed) && *rule.maxSpeed > 0)) add("INVALID_NUMBER", p + ".maxSpeed"); // D606
+        for (const auto& [ids, key] : {std::pair{&rule.yieldTypeIds, ".yieldTypeIds"}, std::pair{&rule.blockTypeIds, ".blockTypeIds"}})
+            if (*ids) for (const auto& type : **ids)
+                if (std::none_of(s.vehicleTypes.begin(), s.vehicleTypes.end(), [&](const auto& t) { return t.id == type; })) add("UNKNOWN_VEHICLE_TYPE", p + key);
     }
     (void)rules;
     // M3.2.3a/b. A conflict zone: two chains of consecutive segments, an area from entry on the

@@ -88,10 +88,18 @@ constexpr Field conflictAreaFields[]={
 constexpr Field conflictSideFields[]={
     {"path",Kind::controlPath,true},{"entryStation",Kind::number,true},{"exitStation",Kind::number,true},
     {"waitingLineId",Kind::text,true}};
+// D606, schema 83: either form; the area form's three keys are required unless `waitingLineId` is
+// present and refused when it is, and the marker form's two the other way round.
 constexpr Field priorityRuleFields[]={
-    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"conflictAreaId",Kind::text,true},
-    {"gapTime",Kind::number,true},{"headway",Kind::number,true},{"generated",Kind::generated,false,generatedVersion},
-    {"visibility",Kind::number,false,visibilityVersion}};
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{.name="conflictAreaId",.kind=Kind::text,.required=true,.unless="waitingLineId"},
+    {.name="gapTime",.kind=Kind::number,.required=true,.unless="waitingLineId"},{.name="headway",.kind=Kind::number,.required=true,.unless="waitingLineId"},
+    {"generated",Kind::generated,false,generatedVersion},{"visibility",Kind::number,false,visibilityVersion},
+    {.name="waitingLineId",.kind=Kind::text,.required=true,.knownFrom=priorityMarkerVersion,.unless="conflictAreaId"},
+    {.name="vehicleClassIds",.kind=Kind::texts,.knownFrom=priorityMarkerVersion},
+    {.name="markers",.kind=Kind::priorityMarkers,.required=true,.knownFrom=priorityMarkerVersion,.unless="conflictAreaId"}};
+constexpr Field priorityMarkerFields[]={
+    {"point",Kind::controlPoint,true},{"gapTime",Kind::number,true},{"headway",Kind::number,true},
+    {"maxSpeed",Kind::number,false},{"vehicleClassIds",Kind::texts,false}};
 constexpr Field stopControlFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"waitingLineId",Kind::text,true},
     {"mode",Kind::stopMode,true},{"conflictAreaIds",Kind::texts,true},{"generated",Kind::generated,false,generatedVersion}};
@@ -276,6 +284,7 @@ std::span<const Field> fields(Object object) {
     case Object::conflictArea:return conflictAreaFields;
     case Object::conflictSide:return conflictSideFields;
     case Object::priorityRule:return priorityRuleFields;
+    case Object::priorityMarker:return priorityMarkerFields;
     case Object::stopControl:return stopControlFields;
     case Object::queueCounter:return queueCounterFields;
     case Object::measurementLine:return measurementLineFields;
@@ -424,7 +433,7 @@ const Json& value(const Json& j,Object object,const char* name) {
             throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
         break;
     case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:case Kind::signalHeads:case Kind::groups:case Kind::phases:case Kind::controllers:case Kind::programs:
-    case Kind::waitingLines:case Kind::conflictAreas:case Kind::priorityRules:case Kind::stopControls:case Kind::texts:
+    case Kind::waitingLines:case Kind::conflictAreas:case Kind::priorityRules:case Kind::priorityMarkers:case Kind::stopControls:case Kind::texts:
     case Kind::queueCounters:case Kind::measurementLines:case Kind::travelTimeSections:
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:

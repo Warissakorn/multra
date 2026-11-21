@@ -1,6 +1,7 @@
 #include "network.hpp"
 #include "connector_surface.hpp"
 #include "right_of_way.hpp"
+#include "priority_markers.hpp"
 #include "../../core/validate.hpp"
 #include "../../core/lateral.hpp"
 #include "../../core/speed_control.hpp"
@@ -209,6 +210,7 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
     // With no authored control this is exactly derivedPriorityRules, rule for rule.
     auto rightOfWay = resolveRightOfWay(network, table, definition.priorityDefaults);
     for (auto& rule : rightOfWay.rules) scenario.priorityRules.push_back(std::move(rule));
+    for (auto& rule : resolvePriorityMarkers(network, table).rules) scenario.priorityRules.push_back(std::move(rule)); // D606
     // M3.2.3a: each runnable authored crossing, after any C++-supplied zone.
     for (auto& zone : rightOfWay.zones) scenario.conflictZones.push_back(std::move(zone));
     if (origins) {
