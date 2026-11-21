@@ -209,7 +209,8 @@ TEST(priority_rule, pr16_a_stop_control_with_no_area_on_a_marker_line) {
     CHECK(parseDocument(Json::parse(j.dump())) == d);
     const auto stops = [](const ProjectDocument& doc) {
         std::size_t n = 0, all = 0;
-        for (const auto& r : compileDocument(doc, test::root() / "data").scenario.priorityRules)
+        const auto snapshot = compileDocument(doc, test::root() / "data"); // held: MSVC ends a temporary's member before the loop
+        for (const auto& r : snapshot.scenario.priorityRules)
             if (r.id.starts_with("right-of-way/rule#")) { ++all; n += r.stop; }
         return std::pair{n, all};
     };
