@@ -54,3 +54,24 @@ mailing list, Aimsun Next's *Dynamic network checks*, all read through search re
 | DF6 | The same seed gives the same run, events included |
 | DF7 | The summary, the evaluation and the batch carry `removed` only when a behaviour has the key |
 | DF8 | Every shipped project and the counted study give identical reports (no shipped file sets it) |
+
+## 5. Measured on the counted study's spread probe (seeds 42–45)
+
+**Method.** ratchada-latphrao with `entryLanes` removed (LANE_LOCKS' spread probe: every movement spread
+over every lane, so vehicles wait at dead ends again), copies outside the repository, `diffusionTime`
+set on every behaviour; `multra-cli --project … --seeds 42-45`. The shipped study keeps D580's
+`entryLanes` and has no dead-end wait, so it is unchanged by the key.
+
+| `diffusionTime` | Removed | Completed | Pending (not yet entered) | Active at end | Mean delay of completed (s) | Clamps |
+|---|---|---|---|---|---|---|
+| absent | — | 4,500.5 | 5,714.0 | 553.5 | 747.8 | 2.5 |
+| 120 s | 53.8 | 4,891.8 | 5,290.5 | 532.0 | 781.6 | 2.75 |
+| 60 s | 164.5 | 5,009.5 | 5,069.8 | 524.3 | 771.8 | 2.5 |
+
+Means of four seeds; every seed is overloaded (over 5 % still pending). On every seed completed +
+active + pending + removed equals generated.
+
+**Reading (no verdict).** Removing a few stuck vehicles frees their lanes: at 60 s, 165 removals
+let about 500 more vehicles finish and 650 more enter. The completed mean delay rises slightly because
+vehicles that waited long behind the blocked lanes now finish inside the run. Removed vehicles carry
+no delay, as in Vissim, so a study that uses the key reports `removed` beside the delay.

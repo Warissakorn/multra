@@ -2,6 +2,14 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-19 — STOP_LINES slices 1–2: derived waiting lines, schema 79 (D594)
+
+- **Owner:** "ทำ STOP_LINES ต่อได้เลย".
+- **D594:** a conflict side with an empty `waitingLineId` waits `rightOfWay.frontStopDistance` (default 1 m, (0, 10]) short of its entry (`derivedWaitingStation`); schema 79. Add crossing areas, an automatic crossing, Take over merge and junction fills store no line. Stop/Yield on a derived side places one sign line before the first such area of its path and names it on the ones after. `deriveStopLines` (SL5) and its inverse `storeDerivedLines`. No migration at load; [STOP_LINES](../reference/STOP_LINES.md) §9 lists where it differs from the draft.
+- **Rows:** `stoplines` SL1–SL3, SL5, SL6 (stored and derived at the same places: equal zones, same seed-42 run), SL8. The T-junction regenerated: two sign lines (`wait-15`, `wait-17`) instead of six. Updated tests are listed in STOP_LINES §9.
+- **Not yet:** the Stop line tool, coverage as a derived rule, faint derived lines on hover (slice 3). A derived line is not drawn at all today.
+- **Verified on Linux (desktop preset, Debug):** full `ctest` 359/359; the 32 changed `.cpp` units build without the PCH. Windows not run.
+
 ## 2026-11-19 — Opaque conflict areas (D592); M3.2.4e merge admission over the mouth (D593)
 
 - **Owner (2026-11-19):** "ความทึบ 100%  และเริ่ม M3.2.4e ได้เลย".
