@@ -17,6 +17,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   `stop-line-ui` and `priority-ui` as a SEGFAULT before commit).
 - **Rows:** `priority_marker` (dialog command, refusals, Delete, advisory), `priority-ui` (rows, canvas pick, dialog,
   Undo, Delete on the lab), `priority-canvas` unchanged.
+- **Checks:** `multra-cli 42` keeps 45 / 31.75870154816726 / 1; `check` desktop 366/366, headless 249/249; 679 units
+  build without the PCH. Windows: Package binaries run started for the owner's item 51.
 
 ## 2026-11-21 — The priority-rule lab for the owner's Windows look (item 51)
 
