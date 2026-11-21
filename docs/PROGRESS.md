@@ -14,7 +14,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D618, [YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md):** schema 84; Aimsun's linear gap reduction over a per-vehicle
   hashed yield time, set per rule or marker; SUMO's impatience at conflict areas only, so a standing major vehicle lets the
   next minor vehicle follow. Off by default; `multra-cli 42` keeps 45 / 31.75870154816726 / 1.
-- **Verified (Linux, headless):** `yield_impatience` YI1–YI9 pass; `ctest --preset headless` 250/250; docs and sizes pass.
+- **Verified (Linux):** `yield_impatience` YI1–YI9 pass; `ctest --preset headless` 250/250; desktop: all but `results-tabs-ui`
+  passed in the parallel run, which timed out under load and passes alone (34 s); docs and sizes pass.
 - **Next:** slice 2, the place keys in the dialogs and a lab scene for the owner's look.
 
 ## 2026-11-21 — PRIORITY_RULES slice 3: display, table rows and the unreached-marker row (D617)
