@@ -18,6 +18,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   row for a marker no route reaches (with the table).
 - **Rows:** `priority_rule` PR1–PR6, PR10–PR13 (10 tests). Without the engine change PR11 and PR12 fail. PR9:
   `multra-cli 42` keeps 45 / 31.75870154816726 / 1; no shipped file uses the form.
+- **Checks:** `check` passes on desktop 365/365 and headless 248/248. Windows not run.
 
 ## 2026-11-21 — G3 as Vissim: a vehicle stuck at its dead end is removed and counted (D613)
 
