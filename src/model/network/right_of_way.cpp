@@ -148,7 +148,8 @@ std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
         if (!areas.contains(r.conflictAreaId)) add("UNKNOWN_CONFLICT_AREA", path + ".conflictAreaId");
         else if (!ruled.insert(r.conflictAreaId).second) add("DUPLICATE_PRIORITY_RULE", path + ".conflictAreaId");
         if (!std::isfinite(r.gapTime) || r.gapTime <= 0 || !std::isfinite(r.headway) || r.headway <= 0) add("INVALID_PRIORITY_RULE", path);
-        if (r.visibility && !(*r.visibility > 1 && *r.visibility <= 1000)) add("INVALID_PRIORITY_RULE", path + ".visibility"); areaRuleGapIssues(r, path, issues); // D607, D618
+        if (r.visibility && !(*r.visibility > 1 && *r.visibility <= 1000)) add("INVALID_PRIORITY_RULE", path + ".visibility"); // D607
+        areaRuleGapIssues(r, path, issues); // D618
     }
     // Queue counters (M3.2.6b): each line names a head or waiting line, or is a point, never both.
     std::set<std::string> heads;
