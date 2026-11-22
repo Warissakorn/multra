@@ -31,25 +31,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2.7d passed on attempt 2 (D612); G3 and priority rules slice 1 done
+## M3.2 — closes with its diverge acceptance-fixture row
 
-Done before it (2026-11-19; history in [the archived NEXT](archive/NEXT-state-2026-11-19.md)): M3.2.4e
-([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), [STOP_LINES](reference/STOP_LINES.md) (D591, D594–D595),
-the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas opaque (D592), D587–D590.
-
-- **Visibility done (D607, [VISIBILITY](reference/VISIBILITY.md)):** 100 m default changes no shipped result
-  (M0 stays closed); the approach slowdown starts below about 50 m, entered per area in the dialog.
-- **G1/G2 done as Vissim (D608, [START_UP](reference/START_UP.md)):** a type's `accelerationCurve` and a behaviour's
-  attention pair, absent by default (M0 unchanged). Measured on saturated M0: Vissim-like values shorten lost
-  time (1.53 → 0.96 s); a standstill acceleration of 2.0 m/s² gives 2.16 s (HCM 2.0). Owner, "ตามแนะนำ" (D609):
-  no shipped curve, each study sets it; order: A2 attempt 2, then G3, then PRIORITY_RULES slice 1.
-- **A2 step 3 answered (D610, D611):** gap/headway plausible; areas green, red and olive as Vissim with a centre
-  arrow; pointing shows a road's edges in black with arrows, selection in blue, a selected area its roads.
-- **M3.2.7d passed (D612):** step 4 and the verdict, owner (verbatim): "ทดลองแล้วสมจริง". M3.2 still closes only with
-  its diverge acceptance-fixture row (ROADMAP M3.2).
-- **G3 done as Vissim (D613, [DIFFUSION](reference/DIFFUSION.md)):** a behaviour's `diffusionTime` removes a vehicle
-  stuck at its dead end and counts it as `removed`; off by default (M0 unchanged). PRIORITY_RULES slice 1
-  done (D614, below); the owner's remaining Windows items are in [OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md).
+M3.2.7d passed on attempt 2 (D612); visibility (D607), G1/G2 (D608), G3 (D613) and the A2 answers (D610, D611)
+are done (history: [NEXT-state-2026-11-22](archive/NEXT-state-2026-11-22.md)). M3.2 still closes only with its
+diverge acceptance-fixture row (ROADMAP M3.2).
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
@@ -77,26 +63,16 @@ A session prepares the build and records the owner's words; Linux tests close no
 lines hidden outside the right-of-way tools); E35's block selection → D605 (one outline per selected
 block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at the next table use.
 
-## Priority rules like Vissim (D604, D606, D614–D617) — all slices done; the owner's look next
+## Priority rules like Vissim (D604, D606, D614–D617) — done; the owner's look passed
 
-[PRIORITY_RULES](reference/PRIORITY_RULES.md): a stop line with conflict markers, no conflict area. **Slice 1
-done (D614):** schema 83 marker form, compile per marker to the core `PriorityRule`, `maxSpeed` and class
-filters in the engine; rows `priority_rule` PR1–PR6, PR10–PR13; M0 unchanged. **Slice 1b done (D615):** a Stop control
-on the line (it may name no area) is a full stop before the gap test (PR14–PR16). **Slice 2 done (D616):** with a line picked,
-Ctrl+right-click on another lane adds a marker; drag and Delete; markers follow their roads (PR7, PR8). **The owner's look (item 51) passed 2026-11-22** ("51 ok") on the
-`priority-rule-lab` example. **Slice 3 done (D617):** headway bands, links
-while picked, table rows with a dialog, the unreached-marker advisory. **Left:** a class
+[PRIORITY_RULES](reference/PRIORITY_RULES.md): all slices done, item 51 passed 2026-11-22 ("51 ok"). **Left:** a class
 picker in place of typed class ids if the owner asks.
 
-## G7 waiting acceptance (D618, D619) — done; the owner judged it plausible (2026-11-22)
+## G7 waiting acceptance (D618, D619) — done; item 52 passed (2026-11-22)
 
-[YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md): Aimsun's gap reduction (a behaviour's per-vehicle `yieldTime`; a
-rule's or marker's `finalGapTime`, `gapReductionStart`, `gapReductionEnd`, in the area and rule dialogs) and SUMO's
-impatience at conflict areas (the follow-on behind a standing major vehicle), schema 84, rows YI1–YI12; off by default,
-M0 unchanged. **Item 52 passed 2026-11-22** ("สมจริง", with a licensing question answered in PROGRESS); its findings on
-conflict-area display are D620 (arrows on the lane centre, only on the selected area; Vissim's yellow and red-red).
-**The other realism gaps** ([evidence](evidence/realism-gaps-vissim-sumo-aimsun.md)): G8 needs nothing (matches all
-three programs); G4, G5, G6 are named in ROADMAP M3.4; G9 is M3.3.3b.
+[YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md); its display findings are D620. **The other realism gaps**
+([evidence](evidence/realism-gaps-vissim-sumo-aimsun.md)): G8 needs nothing (matches all three programs); G4, G5,
+G6 are named in ROADMAP M3.4; G9 is M3.3.3b.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
@@ -216,58 +192,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   choice. Rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md) and
   [PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md).
 - **Following slice (`procedures`, schema 73, feedback from 75), after owner review of D573–D574.**
-  Stop before starting it. Read D571–D574's diffs and copy the pins-first pattern as D574 left it:
-  `networkCodec::onlyKnownKeys` for a reader with no version, named floor constants (add
-  `procedureVersion=73`, `feedbackVersion=75` and use them in `document.cpp`'s guards and save
-  chain), `tests/schema_refusal.hpp` for refusal pins, and the shared `citedSource` row if a source
-  appears. Contracts: PROCEDURE_SEQUENCE §2 and
-  PROCEDURE_FEEDBACK §2; inventory the implemented reader rather than inferring from the writer.
-  1. **Inventory (read, change nothing):** procedure_codec.cpp's parseProcedures, step,
-     feedback, feedbackIssues and procedureIssues; document.cpp's guards and save selection.
-     Root procedures is refused below 73 at its path, even null. Feedback's pre-75 guard runs
-     AFTER parseProcedures: malformed feedback can fail INVALID_PROCEDURE before the guard;
-     valid feedback below 75 gives EDIT_UNSUPPORTED_FIELD at procedures[i].feedback. Keep this
-     order. Other codes are INVALID_ID and DUPLICATE_ID. Inspect kKinds/procedureStepKindName.
-  2. **Pins first (PRS1):** tests/procedure_schema_tests.cpp and _cases.hpp, registered in CMake,
-     built/passing on unchanged readers before metadata/schema/codec edits. Pin kind/type/key
-     paths, active checked before keys, missing ids, assignment's exclusive presence, feedback
-     methods/bounds/native integer tokens and complete issue order, including post-parse guards.
-  3. **Rows as read:** root false below 73, then a nonempty array of closed rows requiring text
-     id/name and nonempty steps; feedback false below 75. Steps are four closed rows tagged by
-     required kind; reuse the existing kind formatter for tag strings. Optional active is boolean
-     (true is accepted even though only false is written). Generation requires text rateSet;
-     distribution requires text deterrenceSet, with optional text skimMode/costMatrix; modeChoice
-     requires text modeChoiceSet, with optional nonempty text periods; assignment needs exactly
-     one of text period or macroRun (exclusive presence, unlike D573's inclusive sources).
-     Feedback is closed {method, weight?, maxIterations, tolerance}: method msa or constantWeight;
-     constantWeight requires numeric weight in [0, 1), msa forbids weight; maxIterations is a
-     native integer token in [2, 1000], tolerance numeric ≥ 0. Blank/unique ids remain codec
-     checks; dependency/known-reference/run rules remain with the existing run. No step-order
-     restriction or uniqueness inferred from example procedures.
-  4. **One key source:** replace only onlyKeys lists with shared field tables through
-     `onlyKnownKeys` (reader has no version; it checks at kLatestSchema). Keep kind-before-active, active-before-keys, field order,
-     int64 conversion/clamping, feedbackIssues and the document's post-parse feedback guard.
-     Do not change writer bytes, save floors, step formatting, catalogs or runs.
-  5. **Coverage:** add -procedures to the value and update $comment, C++/CLI pins, help, tools
-     README and DESKTOP_AUTOMATION's sentence; keep x-multra-complete false.
-  6. **Labels in `check` (D574):** add the new cases namespace to
-     `tests/schema_labels_dump_tests.cpp`; ctest `schema-labels` then checks every label and every
-     shipped project against the emitted schema. Still by hand (temporary, then deleted): writer
-     output at 73 (all step kinds, both assignment forms, active false) and 75 (MSA and
-     constantWeight, numeric boundaries), and about 20 probes outside cases(). Native-token floats
-     such as 2.0 may be labelled schema-accepted/codec-refused; schema-refused/codec-accepted must
-     be empty.
-  - **Pitfalls:** filter by group (multra-tests project), not test name; optional-only closed rows
-    emit required: []; parseDocument calls validateDocument. The feedback floor is post-parse;
-    do not move it earlier. Use PROJECT_SCHEMA_FEATURES for the new section and fix moved-section
-    links if splitting again. Keep every file ≤500 lines; network_fields.cpp is 433 at D573.
-    Headless is sufficient; report desktop/no-PCH/Windows honestly. The local linker-only
-    -Wl,--strip-debug cache flag fits the small disk; repository presets remain unchanged.
-  - **Session end:** headless build and cmake --build build/headless --target check green;
-    append the next decision ID and index entry; PROJECT_SCHEMA_FEATURES PRS1–PRS3,
-    PROJECT_SCHEMA/reference README updated; PROGRESS entry with the oldest moved whole to
-    archive and its links rewritten; rewrite this brief and Review waiting; commit/push the
-    same branch, without PR or merge, then stop for owner review.
+  Stop before starting it. The full brief (inventory, pins first, rows, one key source, coverage, labels,
+  pitfalls, session end) is [PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md).
 - **Proposed, not booked (review finding 7, deferred by D574):** the per-row "nonempty array of
   Object" kinds (`tripRateSets`, `deterrencePurposes`, `modeChoiceNests`, …; about 15 since D566)
   could become one kind that reads its Object from the Field. It touches every slice's table and
