@@ -237,8 +237,8 @@ void EditorCanvas::drawConflicts() {
                 :undecided || yields?canvasStyle::conflictYield():canvasStyle::conflictPriority();
             // D435 as amended by D592 (owner, 2026-11-19): a flat fill with no hatching or outline at
             // rest, fully opaque so the area reads on any road; the waiting lines stay above it (z 7).
-            // Only an automatic candidate nobody has decided stays a faint wash. Hover and the
-            // highlighted conflict get a clean solid edge.
+            // Every area, automatic ones too, is fully opaque since D620. Hover and the highlighted
+            // conflict get a clean solid edge.
             tint.setAlpha(255);
             const bool hatched=!branching && !undecided && yields; // tag only: z order, not paint
             QPen pen(Qt::NoPen);
