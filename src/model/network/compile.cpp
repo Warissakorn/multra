@@ -213,6 +213,7 @@ Scenario buildScenario(const Network& network, const RuntimeSections& table, con
     for (auto& rule : resolvePriorityMarkers(network, table).rules) scenario.priorityRules.push_back(std::move(rule)); // D606
     // M3.2.3a: each runnable authored crossing, after any C++-supplied zone.
     for (auto& zone : rightOfWay.zones) scenario.conflictZones.push_back(std::move(zone));
+    scenario.branchings = compiledBranchings(network, table); // D623: red-red branching, as the editor draws it
     if (origins) {
         CompiledRouteOrigins mapping;
         for (const auto& [authored, runtime] : expanded)

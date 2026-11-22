@@ -2,6 +2,14 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-21 — M3.2.7d passes on attempt 2 (D612)
+
+- **Owner, step 4 and the verdict (verbatim):** "ทดลองแล้วสมจริง", after Stop and Yield were explained here and in
+  SUMO and Aimsun.
+- Recorded in OWNER_SITTING A2 and the M3_ACCEPTANCE sheet; ROADMAP's M3.2.7d row passed. M3.2 stays open on its
+  diverge acceptance-fixture row. Windows version and timings were not given. No code change.
+- **Next (D609):** G3 stuck vehicles, then PRIORITY_RULES slice 1.
+
 ## 2026-11-21 — Pointing shows a road's direction; a selected conflict area shows its roads (D611)
 
 - **Owner (verbatim):** "ปรับให้การชี้ที่ Link และ connector แสดงเส้นขอบที่มีลูกศรสีดำ ส่วนการเลือกให้เป็นเป็นสีฟ้า

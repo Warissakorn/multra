@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-22 — Red-red branching enforced: A64 passes (D623)
+
+- **Owner:** "อ่าน sumo ก่อน", then "ทำตามแนะนำ" on item 53: option (a), the extent being the branching area the editor
+  draws. Read first: Vissim's manual (branching red-red, vehicles see each other) and SUMO's `MSLink.cpp` (same-source
+  sibling lanes are foes, car-following until the foe's back passes the divergence point).
+- **D623:** `compiledBranchings` (`src/model/network/branching_compile.cpp`) gives `Scenario::branchings` from the
+  Connector pairs leaving one lane; `appendVehicleSpans` copies a body whose rear is inside its area onto the sibling
+  (`own = false`). Rows A64, A67–A70 written first; all nine `diverge` rows pass, A64 with 0 overlaps on every seed.
+- **Measured:** completed trips unchanged except the study (−1.5 %); clamps unchanged; `multra-cli 42` byte-identical;
+  three movements beyond their noise, the T-junction's minor → eastbound 9.9 → 14.2 s (owner item 54). The first
+  version compiled through `automaticConflicts` (+18.8 % on the benchmark); compiling only same-lane pairs fixed that:
+  callgrind study +2.5 %, M2.6 +3.1 %, benchmark +2.0 %.
+  [Evidence](evidence/branching-leaders.md).
+- **Verified (Linux, offscreen):** desktop ctest 368/368; docs, sizes, architecture pass; 682 units build without the PCH.
+
 ## 2026-11-22 — M3.2's diverge rows written: A64 fails, bodies overlap inside a split (D622)
 
 - **Owner:** "พัฒนาต่อ"; the one NEXT item needing no owner was M3.2's diverge acceptance-fixture row (review O6/R7).
@@ -148,11 +163,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   (SIGSEGV in `~DriverBehaviour`) and `cli-consistency`: both binaries were never `check` dependencies and ran
   stale. `cmake/check_builds_all.cmake` now makes `check` depend on every executable. Verified: after touching
   `types.hpp`, `check` alone gives desktop 364/364 and headless 247/247.
-
-## 2026-11-21 — M3.2.7d passes on attempt 2 (D612)
-
-- **Owner, step 4 and the verdict (verbatim):** "ทดลองแล้วสมจริง", after Stop and Yield were explained here and in
-  SUMO and Aimsun.
-- Recorded in OWNER_SITTING A2 and the M3_ACCEPTANCE sheet; ROADMAP's M3.2.7d row passed. M3.2 stays open on its
-  diverge acceptance-fixture row. Windows version and timings were not given. No code change.
-- **Next (D609):** G3 stuck vehicles, then PRIORITY_RULES slice 1.

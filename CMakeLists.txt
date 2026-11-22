@@ -91,7 +91,7 @@ add_library(multra_model ${MULTRA_LIBRARY_TYPE} src/model/network/junction_templ
     src/model/network/conflict_surface.cpp src/model/network/conflict_groups.cpp src/model/network/conflict_coverage.cpp src/model/network/conflict_crossings.cpp src/model/network/conflict_polygons.cpp
     src/model/network/conflict_polygon_math.cpp
     src/model/network/conflict_bands.cpp
-    src/model/network/conflict_mouth_bands.cpp src/model/network/automatic_conflicts.cpp)
+    src/model/network/conflict_mouth_bands.cpp src/model/network/automatic_conflicts.cpp src/model/network/branching_compile.cpp)
 target_link_libraries(multra_model PUBLIC multra_core multra_macro multra_meso multra_analysis PRIVATE multra_options)
 target_sources(multra_model PRIVATE src/model/network/approach_layout.cpp src/model/demand/nema_timing.cpp src/model/demand/nema_check.cpp)
 # Run-view geometry is Qt-free and independently testable; the core never imports it.

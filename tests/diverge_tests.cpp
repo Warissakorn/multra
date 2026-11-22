@@ -189,11 +189,9 @@ Scenario heldOnB(Scenario s, const Shape& sh, std::size_t k, double at, double r
     return s;
 }
 }
-// A64 FAILS on the cross-branch half (M3_ACCEPTANCE §1; evidence/diverge-acceptance.md): a follower to C
-// stops seeing a leader to B once that leader's rear leaves the shared lane, and closes into its rear
-// inside the split. This test holds what passes; `MULTRA_DIVERGE_REPORT=1` prints the footprint
-// overlaps per seed, which the evidence records. It is not asserted, so the build stays green while
-// the remedy waits for the owner's choice; when one lands, assert `mouthOverlaps == 0` here.
+// A64 (D623): a body inside the branching area also occupies the sibling branch, so a follower to C keeps
+// behind a car to B until its rear has left the area. `MULTRA_DIVERGE_REPORT=1` prints the per-seed
+// footprints (evidence/diverge-acceptance.md had 8 of 10 seeds overlapping before D623).
 TEST(diverge, a64_a_queue_spilling_back_over_the_split_keeps_each_path_in_order) {
     const auto f = splitFixture();
     const auto base = compileDocument(f.d, data()).scenario;
@@ -206,7 +204,7 @@ TEST(diverge, a64_a_queue_spilling_back_over_the_split_keeps_each_path_in_order)
         if (std::getenv("MULTRA_DIVERGE_REPORT"))
             std::printf("seed %llu clamps %zu path-overlaps %zu footprint-ticks %zu deepest %.2f m spilled %d\n",
                         static_cast<unsigned long long>(seed), w.clamps, w.overlaps, w.mouthOverlaps, w.worst, int(w.spilled));
-        CHECK(w.clamps == 0); CHECK(w.overlaps == 0);
+        CHECK(w.clamps == 0); CHECK(w.overlaps == 0); CHECK(w.mouthOverlaps == 0);
         CHECK(std::equal(w.leftShared.begin(), w.leftShared.end(), w.entered.begin()));
     }
     CHECK(spilled >= 9); // the forcing: a vehicle to B stood with its rear inside the split (seed 42 stops short)
@@ -254,4 +252,107 @@ TEST(diverge, a66_a_copied_state_through_the_split_replays_exactly) {
         CHECK(a.events == b.events); compared += a.events.size();
     }
     CHECK(compared > 0); CHECK(a.vehicles.empty() && b.vehicles.empty()); // drained, no vehicle lost
+}
+namespace {
+// One car to B placed standing with its front `front` metres past the split, held there by a red head
+// just ahead of it; the inputs to B are dropped, so only cars to C come up behind it.
+SimState standingOnB(const Fork& f, const Shape& sh, double front) {
+    auto s = heldOnB(compileDocument(f.d, data()).scenario, sh, 1, front + 2.5, 10000);
+    std::erase_if(s.inputs, [](const auto& i) { return i.id.find("in-b") != std::string::npos; });
+    auto st = createSimulation(s, 42);
+    Vehicle v;
+    v.id = st.nextVehicleId++; v.distance = sh.shared + front; v.speed = 0;
+    for (std::uint32_t r = 0; r < st.scenario->routes.size(); ++r) if (st.scenario->routes[r].id.find("to-b") != std::string::npos) v.routeIndex = r;
+    for (std::uint32_t t = 0; t < st.scenario->vehicleTypes.size(); ++t) if (st.scenario->vehicleTypes[t].id == "car") v.typeIndex = t;
+    v.desiredSpeed = 15; v.driverFactor = 0.5;
+    st.vehicles.push_back(v);
+    return st;
+}
+double touchOnB(const Scenario& s, const Shape& sh) {
+    for (const auto& b : s.branchings) {
+        if (b.firstSegmentId == s.routes[sh.routeB].segmentIds[1]) return b.firstLength;
+        if (b.secondSegmentId == s.routes[sh.routeB].segmentIds[1]) return b.secondLength;
+    }
+    return 0;
+}
+}
+TEST(diverge, a67_each_branching_pair_compiles_once_with_the_editors_reach) {
+    const auto f = splitFixture();
+    const auto s = compileDocument(f.d, data()).scenario;
+    const auto sh = shape(s);
+    CHECK(s.branchings.size() == 1); // the pair; the two mouth pieces against A give none
+    const auto& b = s.branchings.front();
+    const std::set<std::string> segments{b.firstSegmentId, b.secondSegmentId};
+    CHECK(segments == (std::set<std::string>{s.routes[sh.routeB].segmentIds[1], s.routes[sh.routeC].segmentIds[1]}));
+    double exit = 0; // the editor's own reach, in Connector stations
+    for (const auto& a : automaticConflicts(f.d.network))
+        if (!a.first.path.connectorId.empty() && !a.second.path.connectorId.empty()) exit = a.first.exitStation;
+    CHECK(exit > 5);
+    // Located on the runtime Connector, whose metres run a little longer than the drawn stations.
+    for (const double length : {b.firstLength, b.secondLength}) { CHECK(length >= exit - 1e-9); CHECK(length < exit * 1.05); }
+    CHECK(validateScenario(s).empty());
+    // Two Connectors from two different lanes that never overlap: no branching, nothing compiled.
+    Fork g; g.d.definition = AuthoringDefinition{};
+    g.a = addLink(g.d, {{0, 0}, {200, 0}}, 2, 3.5);
+    g.b = addLink(g.d, {{230, 8}, {400, 8}}, 1, 3.5);
+    g.c = addLink(g.d, {{230, -8}, {400, -8}}, 1, 3.5);
+    const auto lane = [&](const std::string& l, int k) { return fixture::detail::lane(g.d, l, k); };
+    const auto left = addConnector(g.d, {g.a, lane(g.a, 1)}, {g.b, lane(g.b, 0)});
+    const auto right = addConnector(g.d, {g.a, lane(g.a, 0)}, {g.c, lane(g.c, 0)});
+    putInput(g.d, {"in-b", putRoute(g.d, {"to-b", {g.a, left, g.b}}), "car", 300, 0, 60});
+    putInput(g.d, {"in-c", putRoute(g.d, {"to-c", {g.a, right, g.c}}), "car", 300, 0, 60});
+    changeRunSettings(g.d, 60, 0.1);
+    std::size_t drawn = 0;
+    for (const auto& a : automaticConflicts(g.d.network))
+        drawn += a.kind == ConflictKind::branching && !a.first.path.connectorId.empty() && !a.second.path.connectorId.empty();
+    CHECK(compileDocument(g.d, data()).scenario.branchings.size() == drawn); // exactly what the editor draws
+}
+TEST(diverge, a68_a_car_standing_past_the_area_holds_nobody_on_the_other_branch) {
+    const auto f = splitFixture();
+    const auto base = compileDocument(f.d, data()).scenario;
+    const auto sh = shape(base);
+    const double touch = touchOnB(base, sh);
+    CHECK(touch > 5);
+    // Past the area (rear beyond its reach) cars to C go by; inside it, they wait behind it.
+    for (const auto& [front, past] : {std::pair{touch + 4.5 + 3, true}, std::pair{touch, false}}) {
+        auto st = standingOnB(f, sh, front);
+        const auto standing = st.vehicles.front().id;
+        const double length = st.scenario->vehicleTypes[st.vehicles.front().typeIndex].length;
+        CHECK((st.vehicles.front().distance - length - sh.shared > touch) == past); // the forcing: where its rear is
+        std::size_t reachedC = 0;
+        while (st.time < 120) {
+            st = stepSimulation(std::move(st));
+            const auto it = std::find_if(st.vehicles.begin(), st.vehicles.end(), [&](const auto& v) { return v.id == standing; });
+            CHECK(it != st.vehicles.end() && it->speed < 0.1 && std::abs(it->distance - (sh.shared + front)) < 0.5); // it stands
+            for (const auto& v : st.vehicles) if (v.routeIndex == sh.routeC && v.distance > sh.shared + touch + 4.5) ++reachedC;
+        }
+        CHECK((reachedC > 0) == past);
+    }
+}
+TEST(diverge, a69_a_scenario_without_a_diverge_compiles_no_branching) {
+    CHECK(test::demo().scenario.branchings.empty()); // M0's crossing.json, and so the TS baselines' runs
+    ProjectDocument d; d.definition = AuthoringDefinition{};
+    const auto link = addLink(d, {{0, 0}, {300, 0}}, 1, 3.5);
+    putInput(d, {"in", putRoute(d, {"r", {link}}), "car", 600, 0, 60}); changeRunSettings(d, 60, 0.1);
+    const auto s = compileDocument(d, data()).scenario;
+    CHECK(s.branchings.empty()); CHECK(!buildScenarioIndex(s).branchings);
+}
+TEST(diverge, a70_a_state_copied_with_a_body_on_the_sibling_replays_exactly) {
+    const auto f = splitFixture();
+    const auto base = compileDocument(f.d, data()).scenario;
+    const auto sh = shape(base);
+    auto st = createSimulation(heldOnB(base, sh, 2, 30, 120), 42);
+    const auto index = buildScenarioIndex(*st.scenario);
+    const auto ghosts = [&](const SimState& x) {
+        const auto spans = occupiedSpans(*x.scenario, x.vehicles, index);
+        return std::count_if(spans.begin(), spans.end(), [](const auto& span) { return !span.own; });
+    };
+    while (ghosts(st) == 0 && st.tick < totalTicks(*st.scenario)) st = stepSimulation(std::move(st));
+    CHECK(ghosts(st) > 0); // the forcing: copied with a body occupying the sibling branch
+    auto a = st, b = st;
+    while (a.tick < totalTicks(*a.scenario)) {
+        a = stepSimulation(std::move(a)); b = stepSimulation(std::move(b));
+        CHECK(a.events == b.events);
+    }
+    CHECK(a.vehicles.empty() && b.vehicles.empty());
 }

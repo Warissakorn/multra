@@ -92,7 +92,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    note:* D611.
    *Owner:* 2026-11-21, attempt 2, step 4 and the verdict (verbatim), after asking how Stop and Yield differ
    here and in SUMO and Aimsun: "ทดลองแล้วสมจริง". **Attempt 2 passes (D612):** the minor road's behaviour is
-   plausible. Windows version and timings were not given. M3.2 still waits on its diverge acceptance row (written: A64 fails, item 53).
+   plausible. Windows version and timings were not given. M3.2's diverge rows are written and pass since D623 (items 53, 54).
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
@@ -259,7 +259,14 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     follows a car on the sibling branch inside it (no reservation; runs change only where a queue stands in a
     split; measured with callgrind and re-published); **(b)** a branching zone in the core, reserved like a
     conflict area; **(c)** leave it documented, so M3.2's no-overlap gate is unmet at diverges (M3.2 stays
-    open or is carved). *Session's recommendation:* (a). *Owner:*
+    open or is carved). *Session's recommendation:* (a). *Owner:* **"ทำตามแนะนำ", 2026-11-22: (a), the extent being
+    the branching area the editor measures and draws; no new key, constant or parameter (D623).** After reading Vissim's
+    manual and SUMO's `MSLink.cpp`, which both keep the two branches in a following relationship inside the split.
+54. **A car waiting inside a split** (listed 2026-11-22, D623, [evidence](../evidence/branching-leaders.md)). Open
+    `t-junction-priority`, Run, and watch the minor approach (one lane, splitting into its two turns): a car
+    waiting at its line inside the split now holds a car for the other turn behind it; before D623 that car
+    drove through it (minor → eastbound 9.9 → 14.2 s, seeds 42–51). Is that plausible for a one-lane
+    approach? *Owner:*
 
 ## C–I — on the Windows machine
 

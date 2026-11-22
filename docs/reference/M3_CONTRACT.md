@@ -65,7 +65,12 @@ Unsupported folded strips remain named blockers; tangencies do not create positi
 
 The automatic editor shows crossing, merge and branching separately. A branching band
 is selectable, red-red and labelled as original-order behavior, with priority/Edit/Delete
-unavailable. It introduces no new core reservation. A continuation is measured but does not
+unavailable. It introduces no new core reservation. **Red-red is enforced (D623):** the compiler
+gives each pair of Connectors with a branching area between them `Scenario::branchings`, the area's
+extent on each (its `exitStation`, located on the runtime segment); a body whose rear is inside its
+own side's extent also occupies the sibling, as a span there with the same metres from the split
+(`own = false`, as D210's covered lanes), so followers on either branch keep their order behind it.
+Only Connector-against-Connector areas count; the mouth pieces against the Link do not. A continuation is measured but does not
 create a conflict row. A derived-only `ConflictKind::branching` is rejected by authored commands,
 structural validation and the codec; authored kinds and file schemas remain crossing/merge.
 

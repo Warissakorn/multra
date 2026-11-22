@@ -94,12 +94,22 @@ the two branches, as footprints in the plane. Results: [diverge-acceptance](../e
 |---|---|---|---|---|
 | A62 | .2/.4 | The plain diverge, compiled | Only branching areas, one between the two branches; nothing stored; no zone, rule or span compiled | Passes |
 | A63 | .3 | Free flow, seeds 42–51 | Vehicles leave the shared lane in departure order; no clamp; no body overlap along a path or across the split | Passes |
-| A64 | .3 | A branch's queue reaching back over the split, seeds 42–51; the forcing (a vehicle standing with its rear inside the split) asserted first | A63's results under congestion | **Fails:** footprints across the split overlap in 8 seeds, up to 1.69 m, with no clamp; order and the along-path check pass |
+| A64 | .3 | A branch's queue reaching back over the split, seeds 42–51; the forcing (a vehicle standing with its rear inside the split) asserted first | A63's results under congestion | Failed before D623 (8 seeds, up to 1.69 m, no clamp); **passes after D623**: 0 overlaps, 0 clamps ([branching-leaders](../evidence/branching-leaders.md)) |
 | A65 | .3 | A branch blocked at the split for 90 s | The blocked vehicle holds everyone behind it, whatever their branch (first-in, first-out, as Meso ME21); then all drain in order, no clamp | Passes |
 | A66 | .3 | A64's run copied with a queue across the split | Exact replay; all drain | Passes |
 
-A64's remedy waits for the owner (OWNER_SITTING item 53); when it lands, `diverge.a64_*` asserts no
-footprint overlap. Until then M3.2's no-overlap gate is not met at diverges.
+The owner chose the remedy (OWNER_SITTING item 53, D623): a body inside the branching area occupies the
+sibling branch too (M3_CONTRACT, branching). Its rows, written before the code:
+
+| ID | Slice | Case | Must show |
+|---|---|---|---|
+| A64 | .3 | As above, after D623 | No footprint overlap in any seed (`mouthOverlaps == 0`), still no clamp, order kept |
+| A67 | .3 | The diverge compiled; then a two-lane Link whose lanes each split by two Connectors | One `branchings` entry per Connector pair with a branching area, each length the area's `exitStation` located on its runtime segment; the mouth pieces against the Link give none; Connectors from different lanes pair only if the editor draws a branching area between them |
+| A68 | .3 | A car to B standing beyond the branching area (its rear past the extent) | It holds nobody to C. The forcing is asserted first: its rear is past the extent and it is standing |
+| A69 | .3 | Every scenario without a branching: the four TS baselines, `crossing.json`, a straight road | Byte-identical events; `branchings` empty |
+| A70 | .3 | A copied state with a body inside the split | Exact replay; no new `SimState` field |
+
+A64 and A67–A70 pass (2026-11-22, Linux).
 
 ## 2. T-junction fixture specification
 

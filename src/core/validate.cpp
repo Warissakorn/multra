@@ -421,6 +421,18 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         if (!behaviours.contains(e.behaviourId)) add("UNKNOWN_BEHAVIOUR", p + ".behaviourId");
         if (!selected.insert({e.segmentId, e.vehicleTypeId}).second) add("DUPLICATE_ID", p);
     }
+    // D623: a compiled branching names two different segments, each reach on its own segment.
+    for (std::size_t i = 0; i < s.branchings.size(); ++i) {
+        const auto& b = s.branchings[i];
+        const auto p = "branchings[" + std::to_string(i) + "]";
+        if (b.firstSegmentId == b.secondSegmentId) add("DUPLICATE_ID", p);
+        const auto side = [&](const std::string& id, double length, const std::string& name) {
+            const auto on = segments.find(id);
+            if (on == segments.end()) add("UNKNOWN_SEGMENT", p + name + "SegmentId");
+            else if (!std::isfinite(length) || length < 0 || length > on->second->length) add("INVALID_POSITION", p + name + "Length");
+        };
+        side(b.firstSegmentId, b.firstLength, ".first"); side(b.secondSegmentId, b.secondLength, ".second");
+    }
     // M3.2.8b: compiled lateral spans and dead ends, once the routes they name are known good.
     if (routes.size() == s.routes.size())
         for (auto& issue : laneChangeIssues(s)) issues.push_back(std::move(issue));
