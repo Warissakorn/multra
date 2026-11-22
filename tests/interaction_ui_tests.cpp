@@ -59,8 +59,13 @@ void selectionWorkflow(EditorCanvas& c) {
     QTest::mouseMove(c.viewport(),pixel(c,{-65,0}));
     require(feedback(c,"a","hover"),"Select hover has no feedback");
     // D611 (owner): pointing shows the edges with near-black arrows; selecting turns them the selection blue.
-    const auto arrowIn=[&](const QColor& colour){for(auto* i:c.scene()->items())if(i->data(0).toString()=="direction-arrow" && i->data(1).toString()=="a")
-        if(auto* p=dynamic_cast<QGraphicsPolygonItem*>(i);p && p->brush().color()==colour)return true;return false;};
+    const auto arrowIn=[&](const QColor& colour){
+        for(auto* i:c.scene()->items()) {
+            if(i->data(0).toString()!="direction-arrow" || i->data(1).toString()!="a")continue;
+            if(auto* p=dynamic_cast<QGraphicsPolygonItem*>(i);p && p->brush().color()==colour)return true;
+        }
+        return false;
+    };
     require(arrowIn(canvasStyle::directionEdge()),"Hover has no near-black direction arrows");
     click(c,{-65,0});require(c.selected()=="a" && feedback(c,"a","selected"),"Click did not select hovered road");
     require(arrowIn(canvasStyle::selection()) && !arrowIn(canvasStyle::directionEdge()),"Selection arrows are not the selection blue");
