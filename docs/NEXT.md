@@ -14,8 +14,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   Yperman); repositories, page rules, caveats and the chapter map by milestone are in
   [BOOKS](reference/BOOKS.md). Attach with `add_repo`, never vendor; cite the book, read the image
   before using a number. Checks of 2026-10-23: [book-copies-check](evidence/book-copies-check.md).
-- **Before an engine slice:** keep `src/core/` files at 500 lines or fewer (2026-11-13: largest `types.hpp` 469,
-  `lanes.cpp` 422, `validate.cpp` 418); split along the responsibility a change touches first (D319). The owner deferred splitting `types.hpp` on its
+- **Before an engine slice:** keep `src/core/` files at 500 lines or fewer (2026-11-22: largest `types.hpp` 471,
+  `validate.cpp` 438, `lanes.cpp` 435); split along the responsibility a change touches first (D319). `types.hpp` reached 497
+  with D618, so its W74 and perception value types moved to `w74_types.hpp` (2026-11-22, line limit only; no rebuild
+  measured). The owner deferred splitting `types.hpp` for rebuild cost on its
   own: estimated 466 → 420 objects rebuilt after a runtime-state edit, 338 with `eventJson`,
   `checkpointJson` and `summaryJson` moved out of `project/json.hpp`. Do it with the first engine
   slice that edits `Vehicle` or `SimState`, and measure the rebuild before and after.
@@ -66,8 +68,8 @@ the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas
 ## Owner checks on Windows — triaged, one sitting (D602, 2026-11-20)
 
 The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,
-E35, E36, B45 (words in PROGRESS). **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md)):
-A2 steps 3–4 and the verdict, E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, G1, H1, C12. Thirty-one
+E35, E36, B45 (words in PROGRESS). **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md); A2 passed 2026-11-21, D612):
+E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, G1, H1, C12. Thirty-one
 older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
 A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
 
@@ -142,8 +144,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
   (each list's `selectRow()` callers would need rewriting first).
 
-## Optimisation passes (2026-11-07 D487–D489; 2026-11-19 D597–D600) — follow-ups only
+## Optimisation passes (2026-11-07 D487–D489; 2026-11-19 D597–D600; 2026-11-22 D621) — follow-ups only
 
+- **2026-11-22:** GCC/Clang Debug builds compile with `-Og` (D621): the desktop suite 331 → ~140 s, results
+  byte-identical; `-DMULTRA_DEBUG_OG=OFF` restores `-O0`. The schema-label dump streams case by case (peak memory
+  2.2 GB → 0.6 GB). `CMakeLists.txt` is at 498 lines: split before adding to it.
 - C14 passed (2026-11-20, "นิ่ง"). A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
   source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
