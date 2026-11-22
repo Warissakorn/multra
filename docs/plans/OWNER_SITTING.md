@@ -137,7 +137,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
 33–36. **J4T/J5/J6 choices:** answered and approved; [whole B33–B36](../archive/OWNER_SITTING-B33-B36-2026-10-31.md).
 
-Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
+Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD-D400-D599.md#d404)):
 - “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
 - “allRed คือ clearance ที่กรอก; เวลาแดงรอ barrier คำนวณแยกจาก timing ของอีก ring (แนะนำ)”
 - “เริ่ม phase 2/6 ที่เวลา 0 ตาม U0; leading far turn อยู่ท้าย cycle ก่อนหน้า (แนะนำ)”

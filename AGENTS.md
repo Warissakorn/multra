@@ -115,11 +115,11 @@ below, whose reasoning is D7. The ones that get broken by accident:
   archive (`multra-check-docs` fails past twelve, D585). A new BA row takes the next free id;
   tests named for it stay in one group. Record new decision IDs and reasoning once in `docs/decisions/RECORD.md`. **What is
   next goes in `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do.
-- **Append to `docs/decisions/RECORD.md`, never read it whole** (D400 onward, ≈53k tokens by D584; D1–D199
-  and D200–D399 are frozen in `RECORD-D001-D199.md` and `RECORD-D200-D399.md`, D486): add the row
+- **Append to `docs/decisions/RECORD.md`, never read it whole** (D600 onward; D1–D599 are frozen in
+  `RECORD-D001-D199.md`, `RECORD-D200-D399.md` and `RECORD-D400-D599.md`, D486): add the row
   with a shell append, and read a cited row by its anchor with `grep -n 'id="dNNN"' docs/decisions/RECORD*.md`
-  or the file's tail. When `RECORD.md` nears 500 lines, cut its oldest 200 IDs into a frozen file
-  the same way and rewrite their links.
+  or the file's tail. When `RECORD.md` holds 200 IDs (every 200 IDs, D486), cut them into the next frozen
+  file the same way, move their index lines into it and rewrite their links.
 
 ## Session end
 

@@ -1,7 +1,7 @@
 # Decision index
 
 This is navigation, not a second decision log. The complete decisions and reasoning are
-in [RECORD](RECORD.md) (D400 onward; D1–D399 frozen in [RECORD-D001-D199](RECORD-D001-D199.md) and [RECORD-D200-D399](RECORD-D200-D399.md), D486). Read the applicable rows
+in [RECORD](RECORD.md) (D600 onward; D1–D599 frozen in [RECORD-D001-D199](RECORD-D001-D199.md), [RECORD-D200-D399](RECORD-D200-D399.md) and [RECORD-D400-D599](RECORD-D400-D599.md), D486). Read the applicable rows
 and their evidence before reopening a choice. IDs remain stable even when records move.
 
 | Topic | Start with these decisions |
@@ -28,72 +28,52 @@ not automatically the current contract. Current interfaces live in the reference
 
 ## All decision IDs
 
-D1–D399 are indexed at the top of their frozen files, [RECORD-D001-D199](RECORD-D001-D199.md#index) and
-[RECORD-D200-D399](RECORD-D200-D399.md#index) (D486). D400 onward:
+D1–D599 are indexed at the top of their frozen files, [RECORD-D001-D199](RECORD-D001-D199.md#index),
+[RECORD-D200-D399](RECORD-D200-D399.md#index) and [RECORD-D400-D599](RECORD-D400-D599.md#index) (D486). D600 onward:
 
 For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_POSE.md) and the
 2026-10-05 phase entries in PROGRESS; those entries do not invent new D-numbers.
 
 [M14 decisions D386 onward](M14.md) — junction templates, signals, UTDF and their owner reviews.
 
-[D419](RECORD.md#d419) — A9 B40 partly answered: expected Micro demand, explicit HV classification, whole-set sourced replacement and unresolved-demand refusal; native preview checkpoint, T/PHF/comparison pending.
 
-[D420](RECORD.md#d420) — A9 B40 timing/batch choices answered; resolve stubs through all agreeing complete compiled lane-change targets, with origin fallback only without targets.
 
-[D421](RECORD.md#d421) — A9 staged Fill, feature-selected schema-64 provenance and model-window Micro comparison; exact analytical CLI parity, one Undo and B41 manual window still pending.
 
-- [D422](RECORD.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.
-- [D432](RECORD.md#d432) — all 34 owner-requested UI audit corrections: safe staged forms/exports/document refresh, task workspaces, responsive Results, readable Lab and session density.
-- [D444](RECORD.md#d444) — lateral crossing at the window end: one target-lane lookup (`targetSectionAt`) for the start and the crossing, one `spanHolds` test, and the whole body kept in its lane on a side it cannot cross (replaces D189's centre clamp).
-- [D445](RECORD.md#d445) — a straddler searches a covered lane only on the section level with its front (fixes audit Finding 2's gap-0 leader and clamps).
-- [D446](RECORD.md#d446) — while a lateral change is under way, D207's swap partner extends to a rear stub too close to accept the changer (`acceptsAsLeader`, shared with D208); `yieldMutual` moves to `lane_swap.cpp`.
-- [D447](RECORD.md#d447) — a body over the line whose lateral move is blocked in 2D steps back like D208's refused cover (one step-back path); revises D206's BA53.
-- [D448](RECORD.md#d448) — the lane-change start's lateral safety filter reads the target lane by `targetPartAt` (D444's to-range rule) through `followerFilterOn`.
-- [D449](RECORD.md#d449) — the weaving lab: a synthetic Type A weaving fixture with an off/on sweep (rows BA179–BA183); at full demand the weave end locks (open).
-- [D450](RECORD.md#d450) — at a shared dead end, a swapping pair is kept while the front one closes in, and no change lands in a waiting partner's place (BA183–BA185).
-- [D451](RECORD.md#d451) — switched on, a change under way counts as on its target route for D207, and an approaching partner is taken where it will wait (BA186–BA187).
-- [D452](RECORD.md#d452) — no courtesy for a change that may not land: a follower no longer holds back for a changer whose landing D450 (b) refuses (BA188–BA189).
-- [D453](RECORD.md#d453) — switched on, a change under way that may not land claims nothing: no outward step, no partner yield, no reserved place (BA190–BA191).
-- [D454](RECORD.md#d454) — the yielding partner of a swapping pair brakes up to `maxDecelerationCooperativeBraking` once the front one closes in (BA192–BA193).
-- [D455](RECORD.md#d455) — gap seeking, slice 1: cooperative braking helps a refused stub anywhere in its span, its swap partner excepted (BA194–BA195; A38 revised).
-- [D456](RECORD.md#d456) — a stub vehicle's dead end is a second obstacle: a nearer moving leader no longer hides it (BA196–BA197).
-- [D457](RECORD.md#d457) — the lateral lab: a shipped four-scene project carrying the lateral keys as lab placeholders, a lab-only exception to D178 (BA198–BA203).
-- [D458](RECORD.md#d458) — gap seeking, slice 2: switched on, a refused changer falls back behind its blocker, braking comfortably at most (BA204–BA205).
-- [D459](RECORD.md#d459) — two-entry weaves: a lane family may start a joined chain on a downstream Link, with a lead-in and a rear check over its feeders (BA179 revised, BA206–BA208).
-- [D460](RECORD.md#d460) — canvas review fixes: thin Node outlines, real-size signal heads, a centred clear button, input rates on their lanes (amends D425/D426/D432/D434/D435).
-- [D461](RECORD.md#d461) — canvas display fixes: Fit ignores hidden rate labels, small signal heads are their stop line, the road edge follows road width, Connector heads hang beside the Link edge.
-- [D462](RECORD.md#d462) — owner choices: no marker for hidden rates, one-page object groups lose the tab strip and title the dock, movement names stay as authored.
-- [D463](RECORD.md#d463) — UI round 2: Properties fits its panel, the summary clips on a row, short labels with hints, a one-line scope banner, "—" in empty result cells.
-- [D464](RECORD.md#d464) — a network image PNG shows every input rate (grey-framed box) and every signal head box; the canvas-lod threshold test measures real decoration again.
-- [D465](RECORD.md#d465) — canvas style slice C: shipped car/pickup/van palettes, a screen-offset vehicle shadow, no Node outlines or unpinned rates over a run.
-- [D466](RECORD.md#d466) — signal head boxes past the stop line on one straight arm, a dark casing on run vehicles (contrast rule kept in wireframe).
-- [D467](RECORD.md#d467) — review fixes: high-DPI shadow, one palette parser, poles tested off the road; dark casings and the head's hit place kept.
-- [D468](RECORD.md#d468), [D469](RECORD.md#d469), [D470](RECORD.md#d470), [D471](RECORD.md#d471), [D472](RECORD.md#d472), [D473](RECORD.md#d473), [D474](RECORD.md#d474), [D475](RECORD.md#d475), [D476](RECORD.md#d476), [D477](RECORD.md#d477), [D478](RECORD.md#d478), [D479](RECORD.md#d479), [D480](RECORD.md#d480), [D481](RECORD.md#d481), [D482](RECORD.md#d482), [D483](RECORD.md#d483), [D484](RECORD.md#d484), [D485](RECORD.md#d485) — M10.2 trip generation contract (rate sets as data, category and regression methods, attractions balanced to productions, unit carried); owner answers 1a–8a; G0 read Ortúzar Ch. 4, fixture Example 4.1, not 4.5; G1 engine, run, outputs and CLI; G2 owned sets (schema 66), zone attributes, Trip generation page; M10.3 distribution contract after reading Ortúzar Ch. 5; answers 1a–9a and D1 engine, skim, run, outputs and CLI; D2 owned deterrence sets and cost matrices (schema 67), dialogs, Trip distribution page; D3 singly constrained contract and implementation; M10.4 mode choice contract after reading Ortúzar §5.4.4 and Ch. 6–7; E1 engine, period factors (schema 69), run, outputs and CLI; E2 owned sets, Mode choice page, Write OD matrices (schema 70); nested logit contract and N1, nests at schema 71 with a Nests dialog; destination-constrained purposes (schema 72); the procedure sequence contract and P1 (schema 73, `--procedure`) and P2 (dialog and page); [D486](RECORD.md#d486), the decision record split every 200 IDs.
+- [D422](RECORD-D400-D599.md#d422) — A9 B41: explicit per-Node session-only manual count windows, shared batch/T guards, manual/model labels and comparison CSV; no stored field.
+- [D432](RECORD-D400-D599.md#d432) — all 34 owner-requested UI audit corrections: safe staged forms/exports/document refresh, task workspaces, responsive Results, readable Lab and session density.
+- [D444](RECORD-D400-D599.md#d444) — lateral crossing at the window end: one target-lane lookup (`targetSectionAt`) for the start and the crossing, one `spanHolds` test, and the whole body kept in its lane on a side it cannot cross (replaces D189's centre clamp).
+- [D445](RECORD-D400-D599.md#d445) — a straddler searches a covered lane only on the section level with its front (fixes audit Finding 2's gap-0 leader and clamps).
+- [D446](RECORD-D400-D599.md#d446) — while a lateral change is under way, D207's swap partner extends to a rear stub too close to accept the changer (`acceptsAsLeader`, shared with D208); `yieldMutual` moves to `lane_swap.cpp`.
+- [D447](RECORD-D400-D599.md#d447) — a body over the line whose lateral move is blocked in 2D steps back like D208's refused cover (one step-back path); revises D206's BA53.
+- [D448](RECORD-D400-D599.md#d448) — the lane-change start's lateral safety filter reads the target lane by `targetPartAt` (D444's to-range rule) through `followerFilterOn`.
+- [D449](RECORD-D400-D599.md#d449) — the weaving lab: a synthetic Type A weaving fixture with an off/on sweep (rows BA179–BA183); at full demand the weave end locks (open).
+- [D450](RECORD-D400-D599.md#d450) — at a shared dead end, a swapping pair is kept while the front one closes in, and no change lands in a waiting partner's place (BA183–BA185).
+- [D451](RECORD-D400-D599.md#d451) — switched on, a change under way counts as on its target route for D207, and an approaching partner is taken where it will wait (BA186–BA187).
+- [D452](RECORD-D400-D599.md#d452) — no courtesy for a change that may not land: a follower no longer holds back for a changer whose landing D450 (b) refuses (BA188–BA189).
+- [D453](RECORD-D400-D599.md#d453) — switched on, a change under way that may not land claims nothing: no outward step, no partner yield, no reserved place (BA190–BA191).
+- [D454](RECORD-D400-D599.md#d454) — the yielding partner of a swapping pair brakes up to `maxDecelerationCooperativeBraking` once the front one closes in (BA192–BA193).
+- [D455](RECORD-D400-D599.md#d455) — gap seeking, slice 1: cooperative braking helps a refused stub anywhere in its span, its swap partner excepted (BA194–BA195; A38 revised).
+- [D456](RECORD-D400-D599.md#d456) — a stub vehicle's dead end is a second obstacle: a nearer moving leader no longer hides it (BA196–BA197).
+- [D457](RECORD-D400-D599.md#d457) — the lateral lab: a shipped four-scene project carrying the lateral keys as lab placeholders, a lab-only exception to D178 (BA198–BA203).
+- [D458](RECORD-D400-D599.md#d458) — gap seeking, slice 2: switched on, a refused changer falls back behind its blocker, braking comfortably at most (BA204–BA205).
+- [D459](RECORD-D400-D599.md#d459) — two-entry weaves: a lane family may start a joined chain on a downstream Link, with a lead-in and a rear check over its feeders (BA179 revised, BA206–BA208).
+- [D460](RECORD-D400-D599.md#d460) — canvas review fixes: thin Node outlines, real-size signal heads, a centred clear button, input rates on their lanes (amends D425/D426/D432/D434/D435).
+- [D461](RECORD-D400-D599.md#d461) — canvas display fixes: Fit ignores hidden rate labels, small signal heads are their stop line, the road edge follows road width, Connector heads hang beside the Link edge.
+- [D462](RECORD-D400-D599.md#d462) — owner choices: no marker for hidden rates, one-page object groups lose the tab strip and title the dock, movement names stay as authored.
+- [D463](RECORD-D400-D599.md#d463) — UI round 2: Properties fits its panel, the summary clips on a row, short labels with hints, a one-line scope banner, "—" in empty result cells.
+- [D464](RECORD-D400-D599.md#d464) — a network image PNG shows every input rate (grey-framed box) and every signal head box; the canvas-lod threshold test measures real decoration again.
+- [D465](RECORD-D400-D599.md#d465) — canvas style slice C: shipped car/pickup/van palettes, a screen-offset vehicle shadow, no Node outlines or unpinned rates over a run.
+- [D466](RECORD-D400-D599.md#d466) — signal head boxes past the stop line on one straight arm, a dark casing on run vehicles (contrast rule kept in wireframe).
+- [D467](RECORD-D400-D599.md#d467) — review fixes: high-DPI shadow, one palette parser, poles tested off the road; dark casings and the head's hit place kept.
+- [D468](RECORD-D400-D599.md#d468), [D469](RECORD-D400-D599.md#d469), [D470](RECORD-D400-D599.md#d470), [D471](RECORD-D400-D599.md#d471), [D472](RECORD-D400-D599.md#d472), [D473](RECORD-D400-D599.md#d473), [D474](RECORD-D400-D599.md#d474), [D475](RECORD-D400-D599.md#d475), [D476](RECORD-D400-D599.md#d476), [D477](RECORD-D400-D599.md#d477), [D478](RECORD-D400-D599.md#d478), [D479](RECORD-D400-D599.md#d479), [D480](RECORD-D400-D599.md#d480), [D481](RECORD-D400-D599.md#d481), [D482](RECORD-D400-D599.md#d482), [D483](RECORD-D400-D599.md#d483), [D484](RECORD-D400-D599.md#d484), [D485](RECORD-D400-D599.md#d485) — M10.2 trip generation contract (rate sets as data, category and regression methods, attractions balanced to productions, unit carried); owner answers 1a–8a; G0 read Ortúzar Ch. 4, fixture Example 4.1, not 4.5; G1 engine, run, outputs and CLI; G2 owned sets (schema 66), zone attributes, Trip generation page; M10.3 distribution contract after reading Ortúzar Ch. 5; answers 1a–9a and D1 engine, skim, run, outputs and CLI; D2 owned deterrence sets and cost matrices (schema 67), dialogs, Trip distribution page; D3 singly constrained contract and implementation; M10.4 mode choice contract after reading Ortúzar §5.4.4 and Ch. 6–7; E1 engine, period factors (schema 69), run, outputs and CLI; E2 owned sets, Mode choice page, Write OD matrices (schema 70); nested logit contract and N1, nests at schema 71 with a Nests dialog; destination-constrained purposes (schema 72); the procedure sequence contract and P1 (schema 73, `--procedure`) and P2 (dialog and page); [D486](RECORD-D400-D599.md#d486), the decision record split every 200 IDs.
 
-[D558](RECORD.md#d558) — owned composition, type-share and interval rows join the composed project schema from the reader's own field metadata; closed at every version, no read gate.
 
-[D559](RECORD.md#d559) — owned modes join the composed schema: `false` below 49, a closed three-text row from it; `parseMode` keeps its bare catalog code.
 
-[D560](RECORD.md#d560) — owned vehicle types join the composed schema: row open below 21 and closed from it, closed axles/pcu, open speed range, curve/kerbLanes/pcu gated at 40/42/49.
 
-[D561](RECORD.md#d561) — the behaviour reader inventoried before code: model tag, per-model rows, closure from 21, ten floors; slices B1–B3.
 
-[D562](RECORD.md#d562) — owner item 49: desiredSpeed bounds report MULTRA's field sentences; desiredSpeed and curve points close with the vehicle-type row from 21.
 
-[D563](RECORD.md#d563) — behaviour slice B1: model tag and per-model rows generated from core's key lists; parseBehaviourLibrary's closure asks the same table.
 
-[D564](RECORD.md#d564) — behaviour slice B2: rows closed from 21, ten floors as shared constants, readOptionals reads the schema's table.
 
-[D565](RECORD.md#d565) — vehicle classes and link behaviour types join the composed schema; their key checks use the same tables and requireKnownFields is removed.
-[D566](RECORD.md#d566) — the root zone layer (zones, zone connectors, OD matrices, parking lots) joins the composed schema; the zone codec reads its key lists from the same tables.
-[D567](RECORD.md#d567) — root study periods, definition.clockStart and the study area join the composed schema; their codecs share exactFields with the zone codec.
-[D568](RECORD.md#d568) — the root map joins the composed schema with the codec's own ranges; the CRS-anchor agreement stays with the codec.
-[D569](RECORD.md#d569) — definition.macroSettings and the root macroRuns join the composed schema; their readers check keys with knownKey.
-[D570](RECORD.md#d570) — the root tripRateSets joins the composed schema; the trip-rate codec checks keys with knownKey.
-[D571](RECORD.md#d571) — owned deterrence sets and cost matrices join the composed schema, including constraint floors 68/72; both readers check the same key tables.
-[D572](RECORD.md#d572) — periodFactors joins the composed schema at 69; its reader uses exactFields without changing diagnostics, share sums or period/pair validation.
-[D573](RECORD.md#d573) — modeChoiceSets/nests/logsum join the composed schema with inclusive cost-source anyOf; feature extensions move to PROJECT_SCHEMA_FEATURES.
-[D574](RECORD.md#d574) — review fixes to D570–D573: named floors, one key helper, citedSource, the schema-labels test, atLeastOne.
 [D601](RECORD.md#d601) — M3.2.7d's owner exercise keeps steps 1, 3–4 and the verdict; priority flip and save/reopen/replay are automated.
 [D602](RECORD.md#d602) — Windows owner sheet triaged: 17 items kept, 6 closed, 31 old looks carved out to ROADMAP.
 [D603](RECORD.md#d603) — waiting lines with Stop or Yield are hidden outside the right-of-way tools (amends D590).
