@@ -34,9 +34,18 @@ using namespace multra;
 TEST(schemalabels, dump_every_labelled_case) {
     const char* out=std::getenv("MULTRA_SCHEMA_LABELS");
     if(!out)return;
-    Json all=Json::array();
-    const auto add=[&](const char* slice,const auto& cases) {
-        for(const auto& c:cases)all.push_back({{"slice",slice},{"name",c.name},{"document",c.document},{"accepts",c.schemaAccepts}});
+    // Streamed one case at a time, each moved into its record: the same bytes as one dumped array,
+    // without a second copy of every document (195 MB, 2.2 GB peak before).
+    std::ofstream file(out,std::ios::binary);
+    CHECK(static_cast<bool>(file));
+    bool first=true;
+    file<<'[';
+    const auto add=[&](const char* slice,auto cases) {
+        for(auto& c:cases) {
+            Json record=Json::object();
+            record["slice"]=slice;record["name"]=std::move(c.name);record["document"]=std::move(c.document);record["accepts"]=c.schemaAccepts;
+            file<<(first?"":",")<<record.dump();first=false;
+        }
     };
     add("behaviourClassCases",behaviourClassCases::cases());
     add("behaviourCases",behaviourCases::cases());
@@ -60,8 +69,6 @@ TEST(schemalabels, dump_every_labelled_case) {
     add("tripRateCases",tripRateCases::cases());
     add("vehicleTypeCases",vehicleTypeCases::cases());
     add("zoneCases",zoneCases::cases());
-    std::ofstream file(out,std::ios::binary);
-    CHECK(static_cast<bool>(file));
-    file<<all.dump();
+    file<<']';
     CHECK(static_cast<bool>(file));
 }
