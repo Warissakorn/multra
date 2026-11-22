@@ -38,6 +38,7 @@ and then the step is unchanged to the bit.
 | `diffusion.*` | A vehicle held `diffusionTime` at its stub's dead end leaves the run with a `DiffusedEvent` (`applyDiffusion`, `diffusionIssues`) | [DIFFUSION](../../docs/reference/DIFFUSION.md) |
 | `yield_time.*` | Aimsun's gap reduction over a driver's hashed yield time and SUMO's impatience at conflict areas (`requiredGap`, `impatienceAfter`, `majorCanYield`, `countStandstill`) | [YIELD_IMPATIENCE](../../docs/reference/YIELD_IMPATIENCE.md) |
 | `yield_types.hpp` | `GapReduction`, the place's final gap and timing factors | [YIELD_IMPATIENCE](../../docs/reference/YIELD_IMPATIENCE.md) §3 |
+| `w74_types.hpp` | `W74Parameters`, a driver's `W74Traits` and `W74State`, `PerceptionParameters` | [W74](../../docs/reference/W74.md), [PERCEPTION](../../docs/reference/PERCEPTION.md) §6 |
 | `join_anticipation.*` | `indexJoins`, `joinEntries`, `anticipateJoin`: a second following law across a join, only with `clampRules.joinAnticipation` | [JOIN_ANTICIPATION](../../docs/reference/JOIN_ANTICIPATION.md) |
 | `perception.*` | Perception keys and ranges, the reaction-time action FIFO, `perceivedLeaders` | [PERCEPTION](../../docs/reference/PERCEPTION.md) |
 | `lateral_types.hpp` | `DrivingSide`, the compiled `SegmentCrossSection` | [LATERAL](../../docs/reference/LATERAL.md) |
