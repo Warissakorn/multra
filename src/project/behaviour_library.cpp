@@ -139,6 +139,59 @@ void rejectMissedExitBefore78(const Json& j) {
         if (behaviours[i].is_object() && behaviours[i].contains("missedExitAfter"))
             throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".missedExitAfter"}});
 }
+// D608: schema 81 exactly when an owned behaviour carries the inattention pair or an owned type a curve.
+bool ownsStartUp(const ProjectDocument& d) {
+    if (!d.definition) return false;
+    const auto& def = *d.definition;
+    return (!def.externalBehaviours && std::any_of(def.behaviours.begin(), def.behaviours.end(), [](const auto& b) {
+               return b.inattentionDuration.has_value() || b.inattentionProbability.has_value(); })) ||
+           (!def.externalVehicleTypes && std::any_of(def.vehicleTypes.begin(), def.vehicleTypes.end(), [](const auto& t) {
+               return !t.accelerationCurve.empty(); }));
+}
+void rejectStartUpBefore81(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    for (const auto& [list, keys] : {std::pair{"behaviours", std::vector<const char*>{"inattentionDuration", "inattentionProbability"}},
+                                     std::pair{"vehicleTypes", std::vector<const char*>{"accelerationCurve"}}}) {
+        if (!definition.contains(list) || !definition.at(list).is_array()) continue;
+        const auto& rows = definition.at(list);
+        for (std::size_t i = 0; i < rows.size(); ++i)
+            for (const char* key : keys)
+                if (rows[i].is_object() && rows[i].contains(key))
+                    throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at(list, i) + "." + key}});
+    }
+}
+// D613: schema 82 exactly when an owned behaviour carries diffusionTime.
+bool ownsDiffusion(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.diffusionTime.has_value(); });
+}
+void rejectDiffusionBefore82(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        if (behaviours[i].is_object() && behaviours[i].contains("diffusionTime"))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".diffusionTime"}});
+}
+// D618: schema 84 exactly when an owned behaviour carries a yield-time or impatience key.
+constexpr const char* kYieldKeys[] = {"yieldTime", "yieldTimeDeviation", "yieldTimeMinimum", "yieldTimeMaximum", "impatience", "timeToImpatience"};
+bool ownsYield(const ProjectDocument& d) {
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) {
+            return b.yieldTime || b.yieldTimeDeviation || b.yieldTimeMinimum || b.yieldTimeMaximum || b.impatience || b.timeToImpatience; });
+}
+void rejectYieldBefore84(const Json& j) {
+    if (!j.contains("definition") || !j.at("definition").is_object()) return;
+    const auto& definition = j.at("definition");
+    if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
+    const auto& behaviours = definition.at("behaviours");
+    for (std::size_t i = 0; i < behaviours.size(); ++i)
+        for (const char* key : kYieldKeys)
+            if (behaviours[i].is_object() && behaviours[i].contains(key))
+                throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key}});
+}
 // B-8 (D231): schema 41 exactly when an owned behaviour carries stopDwellTime.
 bool ownsStopDwellBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&

@@ -73,15 +73,16 @@ void buildLibrary(QDialog& d) {
         // D217: the keys for either model are rows too, off until ticked; lateral is one group.
         for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "lookBackDistance", "rearTimeToCollision",
                                 "reactionTime", "lateral", "curveLateralAcceleration", "commitmentDeceleration",
-                                "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime"})
+                                "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime", "inattentionDuration", "inattentionProbability"})
             require(!item<QCheckBox>(e, (std::string(key) + "Set").c_str())->isChecked(), "Either-model row missing or pre-set");
         for (const char* key : {"lookAheadDistance", "observedVehiclesAhead", "reactionTime", "lateral", "curveLateralAcceleration",
-                                "commitmentDeceleration", "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime"})
+                                "commitmentDeceleration", "mandatoryDecelerationOwn", "mandatoryDecelerationTrailingVehicle", "stopDwellTime", "driverFactorSpread", "redRunningShare", "redRunningTime", "inattentionDuration", "inattentionProbability"})
             item<QCheckBox>(e, (std::string(key) + "Set").c_str())->setChecked(true);
         for (const auto& [key, value] : std::vector<std::pair<const char*, double>>{{"lookAheadDistance", 150},
                  {"observedVehiclesAhead", 2}, {"reactionTime", .5}, {"lateralMinDistanceStanding", .5},
                  {"lateralMinDistanceAt50", 1}, {"maxLateralSpeed", 1}, {"curveLateralAcceleration", 3}, {"commitmentDeceleration", 4},
-                 {"mandatoryDecelerationOwn", 3}, {"mandatoryDecelerationTrailingVehicle", 5}, {"stopDwellTime", 2.5}, {"driverFactorSpread", .3}, {"redRunningShare", .05}, {"redRunningTime", 2}})
+                 {"mandatoryDecelerationOwn", 3}, {"mandatoryDecelerationTrailingVehicle", 5}, {"stopDwellTime", 2.5}, {"driverFactorSpread", .3}, {"redRunningShare", .05}, {"redRunningTime", 2},
+                 {"inattentionDuration", 1}, {"inattentionProbability", .05}})
             item<QDoubleSpinBox>(e, key)->setValue(value);
         confirm(e);
     });
@@ -148,6 +149,8 @@ int main(int argc, char** argv) {
         require(def.behaviours[1].stopDwellTime == 2.5 && !def.behaviours[0].stopDwellTime, "Stop dwell not edited (D231)");
         require(def.behaviours[1].driverFactorSpread == .3 && !def.behaviours[0].driverFactorSpread, "Driver-factor spread not edited (D236)");
         require(def.behaviours[1].redRunningShare == .05 && def.behaviours[1].redRunningTime == 2 && !def.behaviours[0].redRunningShare, "Red running not edited (D238)");
+        require(def.behaviours[1].inattentionDuration == 1 && def.behaviours[1].inattentionProbability == .05 &&
+                !def.behaviours[0].inattentionDuration, "Attention pair not edited (D608, SU8)");
         require(def.vehicleClasses.size() == 1 && def.linkBehaviourTypes.size() == 1, "Class or behaviour type lost");
         require(def.linkBehaviourTypes[0].overrides.size() == 1, "Override lost");
         item<QAction>(w, "editorUndo")->trigger();
@@ -233,9 +236,9 @@ int main(int argc, char** argv) {
         require(w.history().document().definition->behaviourNames.at("w74-set") == "Urban W74", "w74 name not edited");
         require(behaviour("w74-set").curveLateralAcceleration == 2 && behaviour("w74-set").perception.reactionTime == .4,
                 "w74 either-model keys not saved (D213, D217)");
-        // 44 for the red-running pair the edited prototype copy carries (B-9, D238), above its spread (43),
-        // Stop dwell (41, D231), mandatory deceleration keys (37), commitment (36) and kerb bias (35).
-        require(documentJson(w.history().document())["schemaVersion"] == 44, "w74 file not schema 44");
+        // 81 for the attention pair the edited prototype copy carries (D608), above its red-running pair (44,
+        // D238), spread (43), Stop dwell (41, D231), mandatory deceleration keys (37), commitment (36), kerb bias (35).
+        require(documentJson(w.history().document())["schemaVersion"] == 81, "w74 file not schema 81");
         library([](QDialog& d) {
             modal([&] { click(d, "editorBehaviours", "catalogEdit", "w74-set"); }, [](QDialog& e) {
                 item<QCheckBox>(e, "reactionTimeSet")->setChecked(false); confirm(e);

@@ -48,6 +48,23 @@ int main(int argc,char** argv) {
         require(links->selectionModel()->selectedIndexes().size()==4,"The cell block did not take");
         require(links->selectionModel()->selectedRows().isEmpty(),"The block selected whole rows");
         require(selectedTableRows(links)==std::vector<int>{0,1},"Selected rows of a cell block are wrong");
+        // D605 (owner, E35): one outline around the whole block -- its perimeter, no inner edge --
+        // drawn by an overlay that a one-object list does not get.
+        {
+            const auto lines=tableSelectionOutline(links);
+            require(lines.size()==8,"A 2 x 2 block does not have one outline of eight cell edges");
+            const auto outer=links->visualRect(links->model()->index(0,2)).united(links->visualRect(links->model()->index(1,3)));
+            for(const auto& line:lines) {
+                const bool vertical=line.x1()==line.x2();
+                require(vertical?(line.x1()==outer.left()||line.x1()==outer.right()):(line.y1()==outer.top()||line.y1()==outer.bottom()),
+                        "An outline edge runs inside the block");
+            }
+            require(links->findChild<QWidget*>("editorTableSelectionOutline")&&!routes->findChild<QWidget*>("editorTableSelectionOutline"),
+                    "The outline overlay is on the wrong tables");
+            block(links,0,2,0,2);
+            require(tableSelectionOutline(links).size()==4,"One cell is not framed on its four sides");
+            block(links,0,2,1,3);
+        }
         auto* canvas=window.canvas();
         const auto id=[&](int row){return links->item(row,0)->data(Qt::UserRole).toString().toStdString();};
         require(canvas->selection().size()==2&&canvas->isSelected(id(0))&&canvas->isSelected(id(1)),"A cell block did not select its rows' objects");

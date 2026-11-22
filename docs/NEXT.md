@@ -14,8 +14,10 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   Yperman); repositories, page rules, caveats and the chapter map by milestone are in
   [BOOKS](reference/BOOKS.md). Attach with `add_repo`, never vendor; cite the book, read the image
   before using a number. Checks of 2026-10-23: [book-copies-check](evidence/book-copies-check.md).
-- **Before an engine slice:** keep `src/core/` files at 500 lines or fewer (2026-11-13: largest `types.hpp` 469,
-  `lanes.cpp` 422, `validate.cpp` 418); split along the responsibility a change touches first (D319). The owner deferred splitting `types.hpp` on its
+- **Before an engine slice:** keep `src/core/` files at 500 lines or fewer (2026-11-22: largest `types.hpp` 471,
+  `validate.cpp` 438, `lanes.cpp` 435); split along the responsibility a change touches first (D319). `types.hpp` reached 497
+  with D618, so its W74 and perception value types moved to `w74_types.hpp` (2026-11-22, line limit only; no rebuild
+  measured). The owner deferred splitting `types.hpp` for rebuild cost on its
   own: estimated 466 → 420 objects rebuilt after a runtime-state edit, 338 with `eventJson`,
   `checkpointJson` and `summaryJson` moved out of `project/json.hpp`. Do it with the first engine
   slice that edits `Vehicle` or `SimState`, and measure the rebuild before and after.
@@ -29,18 +31,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2.7d — the owner's attempt 2 on Windows is next
+## M3.2 — closes with its diverge acceptance-fixture row
 
-Done before it (2026-11-19; history in [the archived NEXT](archive/NEXT-state-2026-11-19.md)): M3.2.4e
-([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), [STOP_LINES](reference/STOP_LINES.md) (D591, D594–D595),
-the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas opaque (D592), D587–D590.
-
-- **Next: the owner's attempt 2 of M3.2.7d on Windows** — lines, the Stop line tool (`W`), the stop at
-  the line, and the look at D587 (a row's dialog opened once) and D588 (no white Connector edge).
-  Findings and measured positions are in [OWNER_SITTING](plans/OWNER_SITTING.md) A2.
-- **Ask, before attempt 2:** the owner asked to test only what needs the owner. Proposed: keep steps 1
-  (look), 3–4 (gap/headway, Stop/Yield, engineer's plausibility) and the verdict; steps 2 and 6–7 are
-  covered by `rightofway` round-trip and same-seed replay tests. Changing §3 needs the owner's yes and a D-row.
+M3.2.7d passed on attempt 2 (D612); visibility (D607), G1/G2 (D608), G3 (D613) and the A2 answers (D610, D611)
+are done (history: [NEXT-state-2026-11-22](archive/NEXT-state-2026-11-22.md)). M3.2 still closes only with its
+diverge acceptance-fixture row (ROADMAP M3.2).
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
@@ -56,18 +51,28 @@ the line approach (D596, [LINE_APPROACH](reference/LINE_APPROACH.md) §9), areas
   `missedExitAfter`) were compiled but never opened.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
-## Owner checks waiting from recent sessions
+## Owner checks on Windows — triaged, one sitting (D602, 2026-11-20)
 
-All in [OWNER_SITTING](plans/OWNER_SITTING.md) (rule 3; Linux tests close none of them): B45 (UI
-review), B46 (Macro example), C14 (Run view after D463/D487), C15 (run vehicles, slice C), C16
-(random streams), E35 (tables like Excel), E36 (Route tool and marks), item 42 (M10 pages).
+The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,
+E35, E36, B45 (words in PROGRESS). **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md); A2 passed 2026-11-21, D612):
+E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, G1, H1, C12. Thirty-one
+older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
+A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
 
-**Review waiting (code, not a gate):** D570–D574 on branch `claude/optimistic-bohr-lpfu98`: the
-Macro-set schema rows ([PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md)) and D574,
-the code-review fixes to them (named floors, `onlyKnownKeys`, `citedSource`, `atLeastOne`, ctest
-`schema-labels` and `python3-jsonschema` on Linux CI). Verified on Linux headless (`check` 240/240)
-and the changed units without the PCH; the desktop preset and Windows were not run, and the CI
-change has not run on GitHub yet. Nothing is merged. Stop for owner review before `procedures`.
+**Owner findings of 2026-11-20, decided the same day:** A2's lines outside the tool → D603 (controlled
+lines hidden outside the right-of-way tools); E35's block selection → D605 (one outline per selected
+block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at the next table use.
+
+## Priority rules like Vissim (D604, D606, D614–D617) — done; the owner's look passed
+
+[PRIORITY_RULES](reference/PRIORITY_RULES.md): all slices done, item 51 passed 2026-11-22 ("51 ok"). **Left:** a class
+picker in place of typed class ids if the owner asks.
+
+## G7 waiting acceptance (D618, D619) — done; item 52 passed (2026-11-22)
+
+[YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md); its display findings are D620. **The other realism gaps**
+([evidence](evidence/realism-gaps-vissim-sumo-aimsun.md)): G8 needs nothing (matches all three programs); G4, G5,
+G6 are named in ROADMAP M3.4; G9 is M3.3.3b.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 
@@ -97,7 +102,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     - **Ask** (D535): is S1's gate S1-a alone, or S1-f and S1-d too?
     - D530 (the S1 diagnostic) and D531 (median and skewness) each need a measurement contract before use.
 - **UI** (seen on Linux at 1440 × 900, [the review's steps](PROGRESS.md)):
-  - The owner's look at D497–D504 is OWNER_SITTING B45.
+  - The owner's look at D497–D504 (B45) passed, 2026-11-20.
   - The Node analysis example uses the pocket template (D513).
   - Not wanted (D505): palette names at 1366 px. No start page (D505): File already has recent files and examples. Reopen only if a real
     user cannot find them.
@@ -107,7 +112,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   - Left from D502: milestone status statements ("M10.2 implemented") are still not checked against code;
     the user guide has no Thai edition and no pictures.
 
-## Tables like Excel (D490) — done; owner's look is E35
+## Tables like Excel (D490) — done; E35 passed on paste (2026-11-20), one selection defect above
 
 - Contract: [EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md).
 - **Left from the compactness review:** the Results tab strip still scrolls at 1024 in Thai, and
@@ -115,14 +120,16 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
   (each list's `selectRow()` callers would need rewriting first).
 
-## Optimisation passes (2026-11-07 D487–D489; 2026-11-19 D597–D600) — follow-ups only
+## Optimisation passes (2026-11-07 D487–D489; 2026-11-19 D597–D600; 2026-11-22 D621) — follow-ups only
 
-- Owner: C14. A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
+- **2026-11-22:** GCC/Clang Debug builds compile with `-Og` (D621): the desktop suite 331 → ~140 s, results
+  byte-identical; `-DMULTRA_DEBUG_OG=OFF` restores `-O0`. The schema-label dump streams case by case (peak memory
+  2.2 GB → 0.6 GB). `CMakeLists.txt` is at 498 lines: split before adding to it.
+- C14 passed (2026-11-20, "นิ่ง"). A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
   source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
   cause is keys or sloppiness, not size.
-- **Owner check (D597, D598):** MSVC Release wall time of the study and of `multra-engine-benchmark 48 900`
-  before and after; Linux callgrind showed the benchmark −32.9 % Ir, the study −0.1 %.
+- **Owner check (D597, D598):** MSVC Release wall time, now part of OWNER_SITTING_WINDOWS C12.
 - **D599:** the build is warning-free on GCC 13; the next GCC 14+ or MSVC `/W4` build may show new ones:
   fix them in the code, never widen the GCC < 14 exemption.
 - **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-19): `closestVehicle`
@@ -134,12 +141,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 - [CANVAS_STYLE](plans/CANVAS_STYLE.md) holds the grill answers and slices A–E; A–C and their
   fixes are D423–D426 and D460–D466. The junction median spikes stay (Q5).
-- **Stop for owner review:** C15 (slice C) and E33/E34 (D427–D432,
-  [remediation evidence](evidence/ui-audit-fixes.md)). Slice D (lane arrows, white stop line)
-  starts only on the owner's go.
-
-## M13 — A9 implemented; stop for owner review
-
+- **Owner review answered 2026-11-20:** C15 (slice C) "ตรง", E33 "ตรง", E34 "กดถึงได้ตลอด". Slice D (lane
+  arrows, white stop line) still starts only on the owner's go.
 - **Stop here; do not start another slice.** A9 (D422, NA24–NA30) awaits the owner's final review;
   B40/B41 are answered and no contract question is pending. Windows/high-DPI appearance is
   [OWNER_SITTING E32](plans/OWNER_SITTING.md).
@@ -165,7 +168,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - All-way-stop generation stays listed but disabled until A5/U1 needs it (D399); StopControl
   is unchanged. No timing defaults: all site timing is required. Posted speed is never a cap
   (D381). Macro/Meso freeSpeed and the drawing's HCM inputs remain independent of recipes.
-- Windows appearance remains OWNER_SITTING E24–E32; Linux tests do not close those items.
+- Windows appearance: E24–E31 are carved out to ROADMAP M14 (D602), E32 stays on the sheet; Linux tests do not close those items.
   Watch B29's turn keys, HCM storage and partial-total questions; do not silently settle them.
 
 ## Object interchange follow-up (M1.23.1–M1.23.2, D365–D367)
@@ -189,58 +192,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   choice. Rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md) and
   [PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md).
 - **Following slice (`procedures`, schema 73, feedback from 75), after owner review of D573–D574.**
-  Stop before starting it. Read D571–D574's diffs and copy the pins-first pattern as D574 left it:
-  `networkCodec::onlyKnownKeys` for a reader with no version, named floor constants (add
-  `procedureVersion=73`, `feedbackVersion=75` and use them in `document.cpp`'s guards and save
-  chain), `tests/schema_refusal.hpp` for refusal pins, and the shared `citedSource` row if a source
-  appears. Contracts: PROCEDURE_SEQUENCE §2 and
-  PROCEDURE_FEEDBACK §2; inventory the implemented reader rather than inferring from the writer.
-  1. **Inventory (read, change nothing):** procedure_codec.cpp's parseProcedures, step,
-     feedback, feedbackIssues and procedureIssues; document.cpp's guards and save selection.
-     Root procedures is refused below 73 at its path, even null. Feedback's pre-75 guard runs
-     AFTER parseProcedures: malformed feedback can fail INVALID_PROCEDURE before the guard;
-     valid feedback below 75 gives EDIT_UNSUPPORTED_FIELD at procedures[i].feedback. Keep this
-     order. Other codes are INVALID_ID and DUPLICATE_ID. Inspect kKinds/procedureStepKindName.
-  2. **Pins first (PRS1):** tests/procedure_schema_tests.cpp and _cases.hpp, registered in CMake,
-     built/passing on unchanged readers before metadata/schema/codec edits. Pin kind/type/key
-     paths, active checked before keys, missing ids, assignment's exclusive presence, feedback
-     methods/bounds/native integer tokens and complete issue order, including post-parse guards.
-  3. **Rows as read:** root false below 73, then a nonempty array of closed rows requiring text
-     id/name and nonempty steps; feedback false below 75. Steps are four closed rows tagged by
-     required kind; reuse the existing kind formatter for tag strings. Optional active is boolean
-     (true is accepted even though only false is written). Generation requires text rateSet;
-     distribution requires text deterrenceSet, with optional text skimMode/costMatrix; modeChoice
-     requires text modeChoiceSet, with optional nonempty text periods; assignment needs exactly
-     one of text period or macroRun (exclusive presence, unlike D573's inclusive sources).
-     Feedback is closed {method, weight?, maxIterations, tolerance}: method msa or constantWeight;
-     constantWeight requires numeric weight in [0, 1), msa forbids weight; maxIterations is a
-     native integer token in [2, 1000], tolerance numeric ≥ 0. Blank/unique ids remain codec
-     checks; dependency/known-reference/run rules remain with the existing run. No step-order
-     restriction or uniqueness inferred from example procedures.
-  4. **One key source:** replace only onlyKeys lists with shared field tables through
-     `onlyKnownKeys` (reader has no version; it checks at kLatestSchema). Keep kind-before-active, active-before-keys, field order,
-     int64 conversion/clamping, feedbackIssues and the document's post-parse feedback guard.
-     Do not change writer bytes, save floors, step formatting, catalogs or runs.
-  5. **Coverage:** add -procedures to the value and update $comment, C++/CLI pins, help, tools
-     README and DESKTOP_AUTOMATION's sentence; keep x-multra-complete false.
-  6. **Labels in `check` (D574):** add the new cases namespace to
-     `tests/schema_labels_dump_tests.cpp`; ctest `schema-labels` then checks every label and every
-     shipped project against the emitted schema. Still by hand (temporary, then deleted): writer
-     output at 73 (all step kinds, both assignment forms, active false) and 75 (MSA and
-     constantWeight, numeric boundaries), and about 20 probes outside cases(). Native-token floats
-     such as 2.0 may be labelled schema-accepted/codec-refused; schema-refused/codec-accepted must
-     be empty.
-  - **Pitfalls:** filter by group (multra-tests project), not test name; optional-only closed rows
-    emit required: []; parseDocument calls validateDocument. The feedback floor is post-parse;
-    do not move it earlier. Use PROJECT_SCHEMA_FEATURES for the new section and fix moved-section
-    links if splitting again. Keep every file ≤500 lines; network_fields.cpp is 433 at D573.
-    Headless is sufficient; report desktop/no-PCH/Windows honestly. The local linker-only
-    -Wl,--strip-debug cache flag fits the small disk; repository presets remain unchanged.
-  - **Session end:** headless build and cmake --build build/headless --target check green;
-    append the next decision ID and index entry; PROJECT_SCHEMA_FEATURES PRS1–PRS3,
-    PROJECT_SCHEMA/reference README updated; PROGRESS entry with the oldest moved whole to
-    archive and its links rewritten; rewrite this brief and Review waiting; commit/push the
-    same branch, without PR or merge, then stop for owner review.
+  Stop before starting it. The full brief (inventory, pins first, rows, one key source, coverage, labels,
+  pitfalls, session end) is [PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md).
 - **Proposed, not booked (review finding 7, deferred by D574):** the per-row "nonempty array of
   Object" kinds (`tripRateSets`, `deterrencePurposes`, `modeChoiceNests`, …; about 15 since D566)
   could become one kind that reads its Object from the Field. It touches every slice's table and

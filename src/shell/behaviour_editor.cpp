@@ -145,6 +145,9 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         if (key.integer) shared.back().spin->setDecimals(0);
     }
     shared.push_back(optional(perceptionPage, perception, "driverFactorSpread", &either.driverFactorSpread)); // B-4 (D236)
+    // START_UP §3 (D608): a pair; ticking one alone is refused by validation with its path.
+    shared.push_back(optional(perceptionPage, perception, "inattentionDuration", &either.inattentionDuration));
+    shared.push_back(optional(perceptionPage, perception, "inattentionProbability", &either.inattentionProbability));
     shared.push_back(optional(lanePage, lanes, "mandatoryDecelerationOwn", &either.mandatoryDecelerationOwn)); // B-3 (D221)
     shared.push_back(optional(lanePage, lanes, "mandatoryDecelerationTrailingVehicle", &either.mandatoryDecelerationTrailingVehicle));
     auto* lateral = new QCheckBox("lateral", lanePage); lateral->setObjectName("lateralSet"); lateral->setChecked(hasLateral(b.lateral));
@@ -156,11 +159,16 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         lanes->addRow(key.name, spin); lateralKeys.push_back({&key, spin});
     }
     shared.push_back(optional(lanePage, lanes, "missedExitAfter", &either.missedExitAfter)); // D581 (LANE_LOCKS option B)
+    shared.push_back(optional(lanePage, lanes, "diffusionTime", &either.diffusionTime)); // D613 (DIFFUSION)
     shared.push_back(optional(junctionPage, junctions, "commitmentDeceleration", &either.commitmentDeceleration)); // B-2 (D219)
     shared.push_back(optional(junctionPage, junctions, "stopDwellTime", &either.stopDwellTime)); // B-8 (D231)
     shared.push_back(optional(junctionPage, junctions, "redRunningShare", &either.redRunningShare)); // B-9 (D238)
     shared.push_back(optional(junctionPage, junctions, "redRunningTime", &either.redRunningTime));
     shared.push_back(optional(junctionPage, junctions, "curveLateralAcceleration", &either.curveLateralAcceleration));
+    for (const auto& [key, value] : {std::pair{"yieldTime", &either.yieldTime}, {"yieldTimeDeviation", &either.yieldTimeDeviation}, // D618
+             {"yieldTimeMinimum", &either.yieldTimeMinimum}, {"yieldTimeMaximum", &either.yieldTimeMaximum}, {"impatience", &either.impatience},
+             {"timeToImpatience", &either.timeToImpatience}}) shared.push_back(optional(junctionPage, junctions, key, value));
+    shared[shared.size() - 2].spin->setMinimum(-1); shared[shared.size() - 2].spin->setValue(either.impatience.value_or(0)); // SUMO's base may be negative
     const auto keepShared = [&](DriverBehaviour& to) {
         for (const auto& o : shared) *o.value = o.on->isChecked() ? std::optional<double>(o.spin->value()) : std::nullopt;
         to.perception = either.perception; to.curveLateralAcceleration = either.curveLateralAcceleration;
@@ -170,6 +178,10 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         to.stopDwellTime = either.stopDwellTime; to.driverFactorSpread = either.driverFactorSpread;
         to.redRunningShare = either.redRunningShare; to.redRunningTime = either.redRunningTime;
         to.missedExitAfter = either.missedExitAfter; // D581
+        to.diffusionTime = either.diffusionTime; // D613
+        to.yieldTime = either.yieldTime; to.yieldTimeDeviation = either.yieldTimeDeviation; to.yieldTimeMinimum = either.yieldTimeMinimum; // D618
+        to.yieldTimeMaximum = either.yieldTimeMaximum; to.impatience = either.impatience; to.timeToImpatience = either.timeToImpatience;
+        to.inattentionDuration = either.inattentionDuration; to.inattentionProbability = either.inattentionProbability; // D608
         to.lateral = {};
         if (lateral->isChecked()) for (const auto& [key, spin] : lateralKeys) to.lateral.*key->member = spin->value();
     };

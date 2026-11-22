@@ -88,9 +88,20 @@ constexpr Field conflictAreaFields[]={
 constexpr Field conflictSideFields[]={
     {"path",Kind::controlPath,true},{"entryStation",Kind::number,true},{"exitStation",Kind::number,true},
     {"waitingLineId",Kind::text,true}};
+// D606, schema 83: either form; the area form's three keys are required unless `waitingLineId` is
+// present and refused when it is, and the marker form's two the other way round.
 constexpr Field priorityRuleFields[]={
-    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"conflictAreaId",Kind::text,true},
-    {"gapTime",Kind::number,true},{"headway",Kind::number,true},{"generated",Kind::generated,false,generatedVersion}};
+    {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{.name="conflictAreaId",.kind=Kind::text,.required=true,.unless="waitingLineId"},
+    {.name="gapTime",.kind=Kind::number,.required=true,.unless="waitingLineId"},{.name="headway",.kind=Kind::number,.required=true,.unless="waitingLineId"},
+    {"generated",Kind::generated,false,generatedVersion},{"visibility",Kind::number,false,visibilityVersion},
+    {.name="waitingLineId",.kind=Kind::text,.required=true,.knownFrom=priorityMarkerVersion,.unless="conflictAreaId"},
+    {.name="vehicleClassIds",.kind=Kind::texts,.knownFrom=priorityMarkerVersion},
+    {.name="markers",.kind=Kind::priorityMarkers,.required=true,.knownFrom=priorityMarkerVersion,.unless="conflictAreaId"},
+    {"finalGapTime",Kind::number,false,yieldVersion},{"gapReductionStart",Kind::number,false,yieldVersion},{"gapReductionEnd",Kind::number,false,yieldVersion}}; // D618
+constexpr Field priorityMarkerFields[]={
+    {"point",Kind::controlPoint,true},{"gapTime",Kind::number,true},{"headway",Kind::number,true},
+    {"maxSpeed",Kind::number,false},{"vehicleClassIds",Kind::texts,false},
+    {"finalGapTime",Kind::number,false,yieldVersion},{"gapReductionStart",Kind::number,false,yieldVersion},{"gapReductionEnd",Kind::number,false,yieldVersion}}; // D618
 constexpr Field stopControlFields[]={
     {"id",Kind::text,true},{"name",Kind::text,false,0,0,true},{"waitingLineId",Kind::text,true},
     {"mode",Kind::stopMode,true},{"conflictAreaIds",Kind::texts,true},{"generated",Kind::generated,false,generatedVersion}};
@@ -137,9 +148,10 @@ constexpr Field vehicleTypeFields[]={
     {"desiredSpeed",Kind::speedRange,true},{"maxAcceleration",Kind::number,true},
     {"comfortableDeceleration",Kind::number,true},{"maxDeceleration",Kind::number,true},
     {"behaviourId",Kind::text,true},{"axles",Kind::axles},{"kerbLanes",Kind::kerbLanes,false,0,kerbLanesVersion},
-    {"pcu",Kind::pcu,false,0,modeVersion}};
+    {"pcu",Kind::pcu,false,0,modeVersion},{"accelerationCurve",Kind::accelerationCurve,false,0,startUpVersion}};
 constexpr Field speedRangeFields[]={{"min",Kind::number,true},{"max",Kind::number,true},{"curve",Kind::speedCurve,false,0,speedCurveVersion}};
 constexpr Field speedPointFields[]={{"speed",Kind::number,true},{"share",Kind::number,true}};
+constexpr Field accelerationPointFields[]={{"speed",Kind::number,true},{"acceleration",Kind::number,true}}; // D608
 constexpr Field axleFields[]={{"wheelbase",Kind::number,true},{"frontOverhang",Kind::number,true},{"rearOverhang",Kind::number,true}};
 constexpr Field pcuFields[]={{"value",Kind::number,true},{"source",Kind::text,true}};
 // D563 (PROJECT_SCHEMA_DEMAND, behaviour inventory): the two model rows. The parameter keys come
@@ -237,7 +249,12 @@ const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B:
     {"mandatoryDecelerationTrailingVehicle",&B::mandatoryDecelerationTrailingVehicle,mandatoryVersion,true},
     {"stopDwellTime",&B::stopDwellTime,stopDwellVersion,true},{"driverFactorSpread",&B::driverFactorSpread,driverFactorSpreadVersion,true},
     {"redRunningShare",&B::redRunningShare,redRunningVersion,true},{"redRunningTime",&B::redRunningTime,redRunningVersion,true},
-    {"missedExitAfter",&B::missedExitAfter,missedExitVersion,true}};
+    {"missedExitAfter",&B::missedExitAfter,missedExitVersion,true},
+    {"inattentionDuration",&B::inattentionDuration,startUpVersion,true},{"inattentionProbability",&B::inattentionProbability,startUpVersion,true},
+    {"diffusionTime",&B::diffusionTime,diffusionVersion,true},
+    {"yieldTime",&B::yieldTime,yieldVersion,true},{"yieldTimeDeviation",&B::yieldTimeDeviation,yieldVersion,true},
+    {"yieldTimeMinimum",&B::yieldTimeMinimum,yieldVersion,true},{"yieldTimeMaximum",&B::yieldTimeMaximum,yieldVersion,true},
+    {"impatience",&B::impatience,yieldVersion,true},{"timeToImpatience",&B::timeToImpatience,yieldVersion,true}}; // D618
 std::vector<Field> behaviourRow(bool w74) {
     const int notThis=w74?1:0,notOther=w74?0:1;
     std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},
@@ -272,6 +289,7 @@ std::span<const Field> fields(Object object) {
     case Object::conflictArea:return conflictAreaFields;
     case Object::conflictSide:return conflictSideFields;
     case Object::priorityRule:return priorityRuleFields;
+    case Object::priorityMarker:return priorityMarkerFields;
     case Object::stopControl:return stopControlFields;
     case Object::queueCounter:return queueCounterFields;
     case Object::measurementLine:return measurementLineFields;
@@ -291,6 +309,7 @@ std::span<const Field> fields(Object object) {
     case Object::vehicleType:return vehicleTypeFields;
     case Object::speedRange:return speedRangeFields;
     case Object::speedPoint:return speedPointFields;
+    case Object::accelerationPoint:return accelerationPointFields;
     case Object::axles:return axleFields;
     case Object::pcu:return pcuFields;
     case Object::behaviour:{static const auto row=behaviourRow(false);return row;}
@@ -350,7 +369,7 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::modeChoiceSet || object==Object::modeChoicePurpose || object==Object::modeChoiceAlternative || object==Object::modeChoiceNest)return false;
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
-    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint)return version<behaviourVersion;
+    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint || object==Object::accelerationPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
@@ -419,12 +438,12 @@ const Json& value(const Json& j,Object object,const char* name) {
             throw std::invalid_argument("DUPLICATE_SIGNAL_GROUP");
         break;
     case Kind::array:case Kind::links:case Kind::lanes:case Kind::geometry:case Kind::markings:case Kind::connectors:case Kind::numbers:case Kind::signalHeads:case Kind::groups:case Kind::phases:case Kind::controllers:case Kind::programs:
-    case Kind::waitingLines:case Kind::conflictAreas:case Kind::priorityRules:case Kind::stopControls:case Kind::texts:
+    case Kind::waitingLines:case Kind::conflictAreas:case Kind::priorityRules:case Kind::priorityMarkers:case Kind::stopControls:case Kind::texts:
     case Kind::queueCounters:case Kind::measurementLines:case Kind::travelTimeSections:
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
     case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:case Kind::modes:
-    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::behaviours:
+    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::accelerationCurve:case Kind::behaviours:
     case Kind::vehicleClasses:case Kind::linkBehaviourTypes:case Kind::behaviourOverrides:
         if(!v.is_array())expected="Expected array: ";
         break;

@@ -1,4 +1,6 @@
 #include "missed_exit.hpp"
+#include "diffusion.hpp"
+#include "yield_time.hpp"
 #include "simulation.hpp"
 #include "conflicts.hpp"
 #include "detail.hpp"
@@ -9,6 +11,7 @@
 #include "leaders.hpp"
 #include "lateral_motion.hpp"
 #include "parking.hpp"
+#include "start_up.hpp"
 #include "perception.hpp"
 #include "red_running.hpp"
 #include "routing.hpp"
@@ -143,6 +146,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             applyRouteDecision(scenario,vehicle,*decision,startTime,next.seed,next.randomState,events);
             decided = true;
         }
+    if (index.yields) countStandstill(vehicles); // YIELD_IMPATIENCE §4 (D618): the waiting time before this tick's decisions
     // Resolved once per tick rather than roughly six times per vehicle. D584: when insertion built
     // them and nothing since touched the list (no arrival, no reorder, no gate, no source decision),
     // they are exactly what a rebuild here would produce, so they are taken instead.
@@ -160,7 +164,9 @@ SimState stepSimulation(SimState&& state, double dt) {
         }
         // LANE_LOCKS option B (D581): a vehicle held too long at its dead end gives up its turn.
         const bool diverted = index.missedExits && applyMissedExits(scenario, index, vehicles, refs, startTick, startTime, events);
-        if (!changes.empty() || diverted) {
+        // DIFFUSION (D613): a vehicle still waiting there after diffusionTime leaves the run.
+        const bool removed = index.diffusions && applyDiffusion(scenario, index, vehicles, refs, startTick, startTime, events);
+        if (!changes.empty() || diverted || removed) {
             refs = resolveRefs(scenario, vehicles, index);
             spans = occupiedSpans(scenario, vehicles, index, refs);
             buckets = bucketSpans(spans, scenario.segments.size());
@@ -261,16 +267,29 @@ SimState stepSimulation(SimState&& state, double dt) {
         // vehicle's own route and so is invisible to closestVehicle.
         for (const auto& routeRule : index.routeRules[refs[v].route]) {
             const auto& rule = scenario.priorityRules[routeRule.ruleIndex];
+            // D606: a type outside the line's classes passes as if the line were not there.
+            if (const auto* waits = index.yieldTypesOfRule.empty() ? nullptr : &index.yieldTypesOfRule[routeRule.ruleIndex];
+                waits && !waits->empty() && !(*waits)[refs[v].type]) continue;
+            const auto* blocks = index.blockTypesOfRule.empty() || index.blockTypesOfRule[routeRule.ruleIndex].empty()
+                                     ? nullptr : &index.blockTypesOfRule[routeRule.ruleIndex];
             const double gap = routeRule.partStart + rule.yieldPosition - vehicle.distance;
             if (gap < -1e-9) continue; // Already across the stop line; the decision was taken.
             const auto conflict = index.conflictSegmentOfRule[routeRule.ruleIndex];
             if (conflict == SIZE_MAX) continue; // Rejected by validation; never read out of bounds.
             // M3.2.8a: a driver who cannot stop at the line goes unless the point is occupied.
             const bool goes = committed(vehicle.speed, std::max(0.0, gap), type, behaviour); // B-2 (D219)
-            bool giveWay = false;
-            for (auto i = buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
+            // D615: a Stop on the line is served first, as a Stop zone's is: no gap counts before it.
+            const double line = routeRule.partStart + rule.yieldPosition;
+            bool giveWay = rule.stop && !(!stopOf.empty() && stopOf[v] && stopOf[v]->line == line && !restsAtStop(stopOf[v], startTick));
+            const double needGap = !rule.gapReduction ? rule.gapTime // D618: Aimsun's reduction for this driver
+                : requiredGap(rule.gapTime, rule.gapReduction, behaviour, next.seed, vehicle, static_cast<double>(vehicle.standstillTicks) * scenario.timeStep);
+            for (auto i = giveWay ? buckets.start[conflict + 1] : buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
                 const auto& span = spans[buckets.items[i]];
                 if (span.vehicleId == vehicle.id) continue;
+                if (blocks) { // D606: only the marker's classes block; vehicles are in id order
+                    const auto at = std::lower_bound(vehicles.begin(), vehicles.end(), span.vehicleId, [](const auto& x, std::uint64_t id) { return x.id < id; });
+                    if (at == vehicles.end() || at->id != span.vehicleId || !(*blocks)[refs[static_cast<std::size_t>(at - vehicles.begin())].type]) continue;
+                }
                 // Positions are along the conflict segment, so this is a distance on the major
                 // approach: positive means its front is still short of the conflict point.
                 const double reach = rule.conflictPosition - span.front;
@@ -279,11 +298,11 @@ SimState stepSimulation(SimState&& state, double dt) {
                     if (span.rear <= rule.conflictPosition) giveWay = true;
                 } else if (goes) continue; // only occupancy holds it; a front clipped at a join
                 // reads reach 0 here, but it is then on the minor's next segment, a car-following leader
-                else if (reach <= rule.headway) giveWay = true;
+                else if (reach <= rule.headway && (!rule.maxSpeed || span.speed <= *rule.maxSpeed)) giveWay = true; // D606
                 // Arriving too soon. A stopped major vehicle further off than the headway does
                 // NOT block, which is what stops a standing queue from deadlocking the minor
                 // approach forever rather than releasing it into a gap that genuinely exists.
-                else if (span.speed > 0 && reach / span.speed < rule.gapTime) giveWay = true;
+                else if (span.speed > 0 && reach / span.speed < needGap) giveWay = true;
                 if (giveWay) break;
             }
             if (!giveWay) continue;
@@ -293,7 +312,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         // Conflict zones hold a vehicle by the same stop-line mechanism once more.
         if (const auto hold = index.routeZones[refs[v].route].empty() ? std::nullopt
                               : zoneHold(scenario, index, zones, vehicle, refs[v], vehicleLeader,
-                                         stopOf.empty() ? nullptr : stopOf[v], startTick)) {
+                                         stopOf.empty() ? nullptr : stopOf[v], startTick, next.seed)) {
             holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold); zoneLine = std::min(zoneLine, *hold);
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0, true}; // D596: rest at the line
         }
@@ -320,6 +339,9 @@ SimState stepSimulation(SimState&& state, double dt) {
                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
             following = delayedAction(vehicle, delay, following, type, behaviour, current);
         }
+        // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
+        if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]
+            following.acceleration = inattentiveAcceleration(vehicle, following.acceleration, type);
         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
         double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
         double braking = type.comfortableDeceleration;

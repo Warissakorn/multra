@@ -6,6 +6,7 @@
 #include "zone_codec.hpp"
 #include "demand_time_types.hpp"
 #include "behaviour_library.hpp"
+#include "priority_rule_classes.hpp"
 #include "evaluation_period.hpp"
 #include "clamp_rules.hpp"
 #include "random_streams_codec.hpp"
@@ -59,6 +60,23 @@ Json side(const ConflictSide& s) {
     return {{"path",controlPath(s.path)},{"entryStation",s.entryStation},{"exitStation",s.exitStation},
             {"waitingLineId",s.waitingLineId}};
 }
+// D618, schema 84: the three gap-reduction keys, only when set.
+void gapReductionJson(Json& j,const std::optional<GapReduction>& r) {
+    if(r)j["finalGapTime"]=r->finalGapTime,j["gapReductionStart"]=r->start,j["gapReductionEnd"]=r->end;
+}
+// D606: a priority rule's marker form; class lists only when set, so "every type" writes no key.
+Json priorityMarkerRuleJson(const AuthoredPriorityRule& r) {
+    Json markers=Json::array();
+    for(const auto& m:r.markers) {
+        markers.push_back({{"point",{{"path",controlPath(m.point.path)},{"station",m.point.station}}},{"gapTime",m.gapTime},{"headway",m.headway}});
+        if(m.maxSpeed)markers.back()["maxSpeed"]=*m.maxSpeed;
+        if(!m.vehicleClassIds.empty())markers.back()["vehicleClassIds"]=m.vehicleClassIds;
+        gapReductionJson(markers.back(),m.gapReduction);
+    }
+    Json result={{"id",r.id},{"name",r.name},{"waitingLineId",r.waitingLineId},{"markers",markers}};
+    if(!r.vehicleClassIds.empty())result["vehicleClassIds"]=r.vehicleClassIds;
+    return result;
+}
 // S4.5 (D323, D324): the last object written carries `generated` only when true (schema 54).
 void generated(Json& list, bool flag) { if (flag) list.back()["generated"] = true; }
 // M3.2.2. Written only when there is something to write, so a project without controls saves
@@ -70,8 +88,12 @@ Json rightOfWayJson(const RightOfWay& row) {
     for(const auto& a:row.conflictAreas)
         areas.push_back({{"id",a.id},{"name",a.name},{"kind",conflictKindName(a.kind)},{"first",side(a.first)},
                          {"second",side(a.second)},{"priority",conflictPriorityName(a.priority)}}),generated(areas,a.generated);
-    for(const auto& r:row.priorityRules)
+    for(const auto& r:row.priorityRules) {
+        if(r.markerForm()) {rules.push_back(priorityMarkerRuleJson(r));generated(rules,r.generated);continue;} // D606, schema 83
         rules.push_back({{"id",r.id},{"name",r.name},{"conflictAreaId",r.conflictAreaId},{"gapTime",r.gapTime},{"headway",r.headway}}),generated(rules,r.generated);
+        if(r.visibility)rules.back()["visibility"]=*r.visibility; // D607, schema 80
+        gapReductionJson(rules.back(),r.gapReduction);
+    }
     Json result={{"waitingLines",lines},{"conflictAreas",areas},{"priorityRules",rules}};
     // D594, schema 79: only when it is not the default, so other files keep their keys.
     if(row.frontStopDistance!=RightOfWay::kDefaultFrontStopDistance)result["frontStopDistance"]=row.frontStopDistance;
@@ -111,7 +133,11 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const auto& row=d.network.rightOfWay;
     const bool derivedLines=row.frontStopDistance!=RightOfWay::kDefaultFrontStopDistance ||
         std::any_of(row.conflictAreas.begin(),row.conflictAreas.end(),[](const auto& a){return a.first.waitingLineId.empty() || a.second.waitingLineId.empty();});
-    return derivedLines ? networkCodec::derivedLineVersion : ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    const bool visibility=std::any_of(row.priorityRules.begin(),row.priorityRules.end(),[](const auto& r){return r.visibility.has_value();}); // D607
+    const bool markers=std::any_of(row.priorityRules.begin(),row.priorityRules.end(),[](const auto& r){return r.markerForm();}); // D606
+    const bool gapReductions=std::any_of(row.priorityRules.begin(),row.priorityRules.end(),[](const auto& r){
+        return r.gapReduction || std::any_of(r.markers.begin(),r.markers.end(),[](const auto& m){return m.gapReduction.has_value();});}); // D618
+    return gapReductions || ownsYield(d) ? networkCodec::yieldVersion : markers ? networkCodec::priorityMarkerVersion : ownsDiffusion(d) ? networkCodec::diffusionVersion : ownsStartUp(d) ? networkCodec::startUpVersion : visibility ? networkCodec::visibilityVersion : derivedLines ? networkCodec::derivedLineVersion : ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -255,6 +281,7 @@ void validateDocument(const ProjectDocument& d) {
     if (d.definition && !(std::isfinite(d.definition->clockStart) && d.definition->clockStart >= 0 && d.definition->clockStart <= kClockLimit))
         throw ValidationError({{"INVALID_NUMBER", "definition.clockStart"}}); // S1.1
     if (auto issues = behaviourLibraryIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
+    if (auto issues = priorityRuleClassIssues(d); !issues.empty()) throw ValidationError(std::move(issues)); // D606
     if (auto issues = macroRunDefinitionIssues(d); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = ownedTripRateSetIssues(d.tripRateSets); !issues.empty()) throw ValidationError(std::move(issues));
     if (auto issues = ownedDeterrenceSetIssues(d.deterrenceSets); !issues.empty()) throw ValidationError(std::move(issues));
@@ -352,6 +379,9 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < networkCodec::driverFactorSpreadVersion) rejectDriverFactorSpreadBefore43(j);
     if (version < networkCodec::redRunningVersion) rejectRedRunningBefore44(j);
     if (version < networkCodec::missedExitVersion) rejectMissedExitBefore78(j); // D581
+    if (version < networkCodec::startUpVersion) rejectStartUpBefore81(j); // D608
+    if (version < networkCodec::diffusionVersion) rejectDiffusionBefore82(j); // D613
+    if (version < networkCodec::yieldVersion) rejectYieldBefore84(j); // D618
     if (version < 45) rejectClampRulesBefore45(j);
     if (version < 46) rejectJoinAnticipationBefore46(j);
     if (version < 47) rejectStandingStopFloorBefore47(j);

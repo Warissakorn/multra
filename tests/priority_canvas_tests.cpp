@@ -1,6 +1,7 @@
 #include "tab_page_helpers.hpp"
 #include "ui_test_storage.hpp"
 #include "../src/shell/editor_window.hpp"
+#include "../src/editor/canvas_style.hpp"
 #include "../src/commands/right_of_way_commands.hpp"
 #include "../src/model/network/right_of_way.hpp"
 #include <nlohmann/json.hpp>
@@ -10,6 +11,7 @@
 #include <QDialog>
 #include <QFile>
 #include <QGraphicsPathItem>
+#include <QGraphicsPolygonItem>
 #include <QListWidget>
 #include <QStandardPaths>
 #include <QTabWidget>
@@ -240,6 +242,93 @@ int main(int argc, char** argv) {
         require(table->rowCount() == 1 && drawn(w) == shown, "Reopening did not show the same group");
         for (int r = 0; r < table->rowCount(); ++r) require(table->item(r, 6)->text() == "Runs", "A reopened area does not run");
         require(network().rightOfWay.stopControls.size() == 1 && lineMark(w, line.id) == "stop", "Reopening lost the Stop");
+        // D603: a line with Stop shows under the right-of-way tools only, not under Select.
+        c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
+        require(drawn(w) == 0, "A Stop line is drawn outside the right-of-way tools");
+        c->setTool(EditorCanvas::Tool::stopLine); c->redraw(); QApplication::processEvents();
+        require(lineMark(w, line.id) == "stop", "The Stop line tool does not show the Stop line");
+        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
+        // D610 (owner, A2 attempt 2 step 3): areas in the picture's colours -- the side with right of way
+        // #00FF00, the yielding side #FF0000; D620 (owner): an authored undecided area red on both sides.
+        const auto tints = [&] {
+            std::vector<QString> found;
+            for (auto* i : c->scene()->items()) if (i->data(0).toString() == "conflict-area")
+                if (auto* path = dynamic_cast<QGraphicsPathItem*>(i)) found.push_back(path->brush().color().name(QColor::HexRgb).toUpper());
+            std::sort(found.begin(), found.end()); found.erase(std::unique(found.begin(), found.end()), found.end()); return found;
+        };
+        require(tints() == std::vector<QString>{"#00FF00", "#FF0000"}, "Areas are not drawn in priority green and yield red");
+        {
+            auto undecided = w.history().document();
+            for (auto& a : undecided.network.rightOfWay.conflictAreas) a.priority = ConflictPriority::undetermined;
+            undecided.network.rightOfWay.stopControls.clear();
+            const QString passive = temp.filePath("passive.traffic.json"); write(passive, undecided);
+            w.openFile(passive); c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
+            require(tints() == std::vector<QString>{"#FF0000"}, "An undecided area is not drawn red on both sides");
+            w.openFile(file); QApplication::processEvents();
+        }
+        const auto arrowsOn = [&](const std::string& id) {
+            std::vector<QPolygonF> found;
+            for (auto* i : c->scene()->items()) if (i->data(0).toString() == "direction-arrow" && i->data(1).toString().toStdString() == id)
+                if (auto* poly = dynamic_cast<QGraphicsPolygonItem*>(i)) found.push_back(poly->polygon());
+            return found;
+        };
+        const auto arrowColour = [&](const std::string& id) {
+            QColor colour;
+            for (auto* i : c->scene()->items()) if (i->data(0).toString() == "direction-arrow" && i->data(1).toString().toStdString() == id)
+                if (auto* poly = dynamic_cast<QGraphicsPolygonItem*>(i)) colour = poly->brush().color();
+            return colour.name(QColor::HexRgb).toUpper();
+        };
+        const auto anyArrow = [&] { for (auto* i : c->scene()->items()) if (i->data(0).toString() == "direction-arrow") return true; return false; };
+        // D611 (owner): no edge arrows until something is pointed at or selected.
+        c->clearSelection(); c->setHighlightedConflict({});
+        for (const auto tool : {EditorCanvas::Tool::conflict, EditorCanvas::Tool::stopLine, EditorCanvas::Tool::select}) {
+            c->setTool(tool); c->redraw(); QApplication::processEvents();
+            require(!anyArrow(), "Edges carry arrows with nothing pointed at or selected");
+        }
+        // Selecting a conflict area shows the Links it runs on as hovered: near-black edges with arrows.
+        c->setTool(EditorCanvas::Tool::conflict); c->setHighlightedConflict(group.key); c->redraw(); QApplication::processEvents();
+        for (const auto& link : network().links) {
+            const auto arrows = arrowsOn(link.id);
+            require(!arrows.empty(), "A Link of the selected conflict area has no direction arrows");
+            require(arrowColour(link.id) == "#1F1F1F", "A Link of the selected conflict area is not drawn as hovered");
+            // The tip (first vertex) lies further along the Link's digitised direction than the base.
+            const QPointF along(link.geometry.back().x - link.geometry.front().x, link.geometry.back().y - link.geometry.front().y);
+            const auto dot = [&](QPointF p) { return p.x() * along.x() + p.y() * along.y(); };
+            for (const auto& a : arrows) require(dot(a[0]) > dot((a[1] + a[2]) / 2), "An arrow points against the Link");
+        }
+        // A selected Link is blue, and it stays blue while its area is selected.
+        c->select(network().links.front().id); c->redraw(); QApplication::processEvents();
+        require(arrowColour(network().links.front().id) == canvasStyle::selection().name(QColor::HexRgb).toUpper(), "A selected Link's arrows are not the selection blue");
+        c->clearSelection(); c->setHighlightedConflict(group.key); c->redraw(); QApplication::processEvents();
+        // D610 (b), owner: each conflicting path carries a dark centre line with an arrowhead at its exit end.
+        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
+        {
+            std::vector<std::string> pairs; int heads = 0;
+            for (auto* i : c->scene()->items()) {
+                if (i->data(0).toString() == "conflict-area") pairs.push_back(i->data(3).toString().toStdString());
+                if (i->data(0).toString() != "conflict-arrow") continue;
+                auto* poly = dynamic_cast<QGraphicsPolygonItem*>(i);
+                if (!poly) continue;
+                const auto q = poly->polygon(); ++heads;
+                // On link a (x 0 -> 200, y 0) the tip is the arrow's furthest point downstream.
+                if (std::abs(q[0].y() - q[1].y()) < 2 && std::abs(q[0].y()) < 4 && std::abs(q[1].y()) < 4)
+                    require(q[0].x() > q[1].x() && q[0].x() > q[2].x(), "A centre arrow on the major road points upstream");
+            }
+            require(heads > 0, "No centre arrow is drawn on the conflict bands");
+            for (const auto& id : pairs) {
+                bool found = false;
+                for (auto* i : c->scene()->items()) found = found || (i->data(0).toString() == "conflict-arrow" && i->data(3).toString().toStdString() == id);
+                require(found, "A conflict band has no centre arrow");
+            }
+        }
+        // D620 (owner): the centre arrows show only on the selected area.
+        c->setHighlightedConflict({}); c->redraw(); QApplication::processEvents();
+        { int marks = 0; for (auto* i : c->scene()->items()) marks += i->data(0).toString() == "conflict-arrow";
+          require(marks == 0, "Centre arrows show on an area that is not selected"); }
+        c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
+        int edges = 0; for (auto* i : c->scene()->items()) edges += i->data(0).toString() == "conflict-arrow";
+        require(edges == 0 && !anyArrow(), "Edges or conflict bands carry arrows under Select with nothing selected");
+        c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         std::cout << "priority canvas tests passed\n";
         return 0;
     } catch (const std::exception& e) {

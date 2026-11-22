@@ -177,6 +177,7 @@ BatchReport aggregate(std::vector<SeedRun> runs) {
     r.pending = over(runs, [](const SeedRun& s) { return std::optional<double>(static_cast<double>(s.report.pending)); });
     r.safetyClamps = over(runs, [](const SeedRun& s) { return std::optional<double>(static_cast<double>(s.report.safetyClamps)); });
     if (first.diverted) r.diverted = over(runs, [](const SeedRun& s) { return s.report.diverted ? std::optional<double>(static_cast<double>(*s.report.diverted)) : std::nullopt; });
+    if (first.removed) r.removed = over(runs, [](const SeedRun& s) { return s.report.removed ? std::optional<double>(static_cast<double>(*s.report.removed)) : std::nullopt; }); // D613
     if (first.redRunning) r.redRunning = over(runs, [](const SeedRun& s) { return s.report.redRunning ? std::optional<double>(static_cast<double>(*s.report.redRunning)) : std::nullopt; });
     return r;
 }

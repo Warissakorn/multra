@@ -110,6 +110,10 @@ void setConflictGroupControl(ProjectDocument&, const std::string& id, const std:
                              ConflictPriority, double gapTime, double headway);
 void cycleConflictGroupPriority(ProjectDocument&, const std::string& id, const PriorityDefaults&);
 void setConflictGroupStopControl(ProjectDocument&, const std::string& id, std::optional<StopMode>);
+// VISIBILITY (D607): every rule of the area's group sees this far; nullopt is the 100 m default.
+void setConflictGroupVisibility(ProjectDocument&, const std::string& id, std::optional<double> visibility);
+// D618: every rule of the area's group takes the gap reduction (none removes it).
+void setConflictGroupGapReduction(ProjectDocument&, const std::string& id, std::optional<GapReduction>);
 void removeConflictGroup(ProjectDocument&, const std::string& id);
 
 }

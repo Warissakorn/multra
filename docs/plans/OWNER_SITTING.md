@@ -61,6 +61,38 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    *Session note (2026-11-19, D596):* the creep and lurch: a held vehicle now rests with its front at a zone's
    line (measured T-junction seeds 42–51: rest 2.65 m short → 0 m, crawl under 1 m/s 194.7 → 13.8 s per seed,
    go-then-brake 15 → 0), [LINE_APPROACH](../reference/LINE_APPROACH.md) §9.
+   **Attempt 2 (D601, owner 2026-11-20 "Yes, cut it"):** steps 1, 3 and 4 and the verdict only; step 2 and
+   steps 5–7 are automated (M3_ACCEPTANCE §3). Also look at D587 (a row's dialog opens once), D588 (no white
+   Connector edge) and the Stop line tool (`W`).
+   *Owner:* 2026-11-20, attempt 2, step 1 (verbatim): "ตอนออกจาก เครื่องมือ conflict area แล้วยังมี เส้นหยุดให้เห็นอยู่".
+   Steps 3–4 and the verdict are not yet given. *Session note (read in the file and the code, no verdict):* the
+   two lines still drawn are `wait-15` and `wait-17`, each the line of a Yield control (`stop-16`, `stop-18`);
+   D590 shows a line carrying Stop or Yield under every tool, and hides only plain lines. Whether a controlled
+   line should also hide outside the tool is the owner's choice (it would amend D590).
+   *Owner:* 2026-11-20 (verbatim): "ข. และ เครื่องมือเส้นหยุดสามารถสร้างได้โดยไม่ต้องใช้ Conflict area ก็ได้ ให้สร้าง
+   พื้นที่ให้ทางเหมือน vissim", then "ข. Priority rule แบบ Vissim". *Session note:* controlled lines now hide outside
+   the right-of-way tools (D603); priority rules are drafted as PRIORITY_RULES (D604), waiting on its §8.
+   *Owner:* 2026-11-20 (verbatim): "ตรวจสอบว่าการวิ่งมาหยุดที่เส้น มีรายละเอียดมากกว่านี้หรือไม่ ลองศึกษาจากโปรแกรมอื่น".
+   *Session note (read, not measured):* [line-approach-other-programs](../evidence/line-approach-other-programs.md):
+   Vissim, SUMO and Aimsun all limit how far a yielding driver sees the major road (a visibility distance), so it
+   approaches at a speed from which it can stop; MULTRA sees every major vehicle at any distance and does not slow
+   when the gap is clear. Choices V (visibility), D (dwell distribution), I (impatience) or none wait for the owner.
+   *Owner:* 2026-11-20 (verbatim): "V ทำเหมือน vissim เริ่มตัดสินใจเรื่อง gap ทำด้วยหรือไม่". V chosen, as Vissim;
+   the contract waits on the default distance and the reading of "visibility" (asked in chat the same day).
+   *Owner:* "1ก 2ก", then "ทุกไฟล์". *Session note:* done as D607 ([VISIBILITY](../reference/VISIBILITY.md)); at 100 m no
+   shipped result changes, so on the T-junction attempt 2 looks as before unless a shorter visibility is entered
+   in the area's dialog (20 m: crossing 19.15 → 19.86 s, near turn 9.93 → 11.64 s).
+   *Owner:* 2026-11-20, attempt 2, step 3 (verbatim, with a picture): "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง
+   conflict area ให้มีสีแบบในรูปและลูดศรชี้ตามทิศทาง ลักษณะคล้ายในรูป". *Session note:* done as D610 (green, red and
+   olive areas; arrows on every edge under the Conflict area and Stop line tools). Step 4 and the verdict remain.
+   *Owner:* 2026-11-21 (verbatim): "เหลือลูกที่กึ่งแล้วแนวที่เกิด conflict แต่ละแนว"; in chat: a centre line with the
+   arrowhead at its exit end. *Session note:* D610 (b), each band now carries one.
+   *Owner:* 2026-11-21 (verbatim): "ปรับให้การชี้ที่ Link และ connector แสดงเส้นขอบที่มีลูกศรสีดำ ส่วนการเลือกให้เป็นเป็นสีฟ้า
+   แล้วปรับให้การเลือก conflict area ทำให้ link และ connector ขึ้นสถานะถูกชี้", then "ไม่ปรับสีถนน เพิ่มแค่ข้อ 2". *Session
+   note:* D611.
+   *Owner:* 2026-11-21, attempt 2, step 4 and the verdict (verbatim), after asking how Stop and Yield differ
+   here and in SUMO and Aimsun: "ทดลองแล้วสมจริง". **Attempt 2 passes (D612):** the minor road's behaviour is
+   plausible. Windows version and timings were not given. M3.2 still waits on its diverge acceptance row.
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
@@ -105,7 +137,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    Node-analysis volumes read from the planned CountSet rather than stored on the Node. *Owner:*
 33–36. **J4T/J5/J6 choices:** answered and approved; [whole B33–B36](../archive/OWNER_SITTING-B33-B36-2026-10-31.md).
 
-Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD.md#d404)):
+Answered 2026-10-29: **B32**, owner selected the recommendations ([D404](../decisions/RECORD-D400-D599.md#d404)):
 - “ใช้สอง ring ตามหมายเลขเสมอ; P4 ปล่อย 4 แล้ว 8 โดยอีก ring รอแดง (แนะนำ)”
 - “allRed คือ clearance ที่กรอก; เวลาแดงรอ barrier คำนวณแยกจาก timing ของอีก ring (แนะนำ)”
 - “เริ่ม phase 2/6 ที่เวลา 0 ตาม U0; leading far turn อยู่ท้าย cycle ก่อนหน้า (แนะนำ)”
@@ -173,7 +205,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
    attributes, *Trip-rate sets…* (import `tests/data/trip-generation/trip-rates/example-4-1.json`) and the *Trip generation* page; layout ok?
    M10.3 D2 (D474): *Deterrence sets…*, *Cost matrices…* and the *Trip distribution* page (import `tests/data/trip-distribution/`'s sets). M10.4 E2 (D479): the *Mode choice* page, *Mode choice sets…* (import `tests/data/trip-distribution/mode-choice/hand.json`), *Period factors…* and *Write OD matrices*, then Run Macro on the period. M10.4 N1 (D481): *Mode choice sets…* → *Nests…* (add `foot` with `walk`, φ 0.5; try φ 1.5). D4 (D482): import `deterrence/hand-destination.json` and check the *Trip distribution* note. D485: *Procedure* page: add a procedure in *Procedures…*, run it, turn a step off. *Owner:*
 
-45. **UI review fixes** (listed 2026-11-10, D497–D499; [images](../images/ui-review-d497/)). On Windows: Results by level, *File → Open example*, a batch's tables under its note, Problems' crossing rows; the palette names its tools from 1440 px (D503, [images](../images/palette-d503/)); *File → Open recent* (D504). Layout ok? *Owner:*
+45. **UI review fixes:** answered 2026-11-20, "แยกได้"; result in [PROGRESS](../PROGRESS.md).
 
 46. **The Macro example** (listed 2026-11-10, D492). Open `macro-four-step`, run *Procedure*, check
     the Macro links table: do the example's size and story suit a first-time user? *Owner:*
@@ -225,4 +257,5 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
 Sections C (Run view), D (Right-of-way), E (Drawing and gestures), F (Dialogs), G (Object
 interchange), H (Desktop automation) and I (UTDF probe) are in
 [OWNER_SITTING_WINDOWS](OWNER_SITTING_WINDOWS.md); the rules above apply to them, and their item
-names (C1, E32, I.5) are unchanged.
+names (C14, E32, I.5) are unchanged. Triaged 2026-11-20 ([D602](../decisions/RECORD.md#d602)): that sheet
+holds the sitting's order; the older looks are carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROADMAP M1.30, M3.2.13, M14).

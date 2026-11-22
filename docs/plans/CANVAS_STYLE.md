@@ -2,7 +2,7 @@
 
 The owner chose these in a grill session on 2026-11-01 (Q1–Q12). This file holds the delivery
 slices. The decision record holds what each slice decided: slice A is
-[D423](../decisions/RECORD.md#d423).
+[D423](../decisions/RECORD-D400-D599.md#d423).
 
 ## Owner decisions
 

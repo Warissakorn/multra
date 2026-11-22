@@ -14,10 +14,12 @@
 #include <functional>
 #include <optional>
 #include <map>
+#include <set>
 #include <QTimer>
 #include "map_provider.hpp"
 class QLabel;
 class QImage;
+class QGraphicsPolygonItem;
 
 namespace multra {
 class MapLayer;
@@ -148,6 +150,13 @@ public:
     std::function<void(const std::string&)> stopLinePicked, stopLineRemoved;
     const std::string& selectedStopLine() const { return selectedStopLine_; }
     void selectStopLine(std::string id);
+    // PRIORITY_RULES slice 2 (D616): with a line picked, Ctrl+right-click on another lane adds a conflict
+    // marker; a left click picks (and drags) a marker along its path; Delete removes the picked one.
+    std::function<void(const std::string& line, const ControlPoint&)> priorityMarkerAdded;
+    std::function<void(const std::string& rule, std::size_t, double)> priorityMarkerMoved;
+    std::function<void(const std::string& rule, std::size_t)> priorityMarkerRemoved;
+    using MarkerRef = std::pair<std::string, std::size_t>; // rule id, marker index
+    const std::optional<MarkerRef>& selectedMarker() const { return selectedMarker_; }
     std::vector<std::string> conflictsAt(Point) const;   // groups whose visible lane bands contain it
     // M3.2.4c (D68): the areas the drawing implies (automaticConflicts), drawn under the Conflict
     // area tool only -- passive crossings grey, derived merges in their derived colours, both
@@ -249,10 +258,13 @@ private:
     std::string waitingLineAt(Point) const;
     bool stopLinePress(QMouseEvent*);
     std::string selectedStopLine_;
+    std::optional<MarkerRef> selectedMarker_;
+    std::optional<MarkerRef> priorityMarkerAt(Point) const; // canvas_markers.cpp
+    void drawPriorityMarkers();
     bool conflictPress(QMouseEvent*);
     void updateLineDrag(QPoint);
     void finishLineDrag(QPoint);
-    struct LineDrag { std::string id; std::vector<Point> polyline; double original{}, station{}; bool moved{}; std::optional<ConnectorEquation> equation{}; };
+    struct LineDrag { std::string id; std::vector<Point> polyline; double original{}, station{}; bool moved{}; std::optional<ConnectorEquation> equation{}; std::optional<std::size_t> marker{}; };
     std::optional<LineDrag> lineDrag_;
     std::vector<MeasurementLine> counterDraft_;
     bool counterPress(QMouseEvent*);
@@ -424,6 +436,10 @@ private:
     // direction on them as arrowheads, not in the middle of the road.
     void drawObjectFeedback(const std::string&, const QPainterPath&, double z,
                             const std::vector<std::vector<Point>>& edges = {});
+    void drawDirectionArrows(const std::string&, const std::vector<std::vector<Point>>& edges, QColor, double z);
+    // D611: the Links and Connectors the selected conflict area runs on; drawn as hovered.
+    std::set<std::string> conflictRelated_;
+    void updateConflictRelated();
     void drawGeometryHandles(const std::string&, const std::vector<Point>&, bool connector);
     // Wireframe: a centre line `pixels` wide on screen as a region, and the drawn line itself
     // (tagged "centre-line") with its selection feedback riding it.
@@ -437,7 +453,7 @@ private:
     std::vector<bool> placeLaneLabels(const QTransform& toScreen, std::vector<QRectF>& placed); // D460
     std::vector<CanvasLabel*> labels_;
     // A filled arrowhead of constant screen size, centred on `at` and pointing along `angle`.
-    void addArrowhead(Point at, double angle, double pixels, QColor, double z, const QString& tag);
+    QGraphicsPolygonItem* addArrowhead(Point at, double angle, double pixels, QColor, double z, const QString& tag);
     // True once a move is visibly under way: the lane tabs, which follow the committed document,
     // are hidden until it is released rather than left behind at the old place.
     bool movingGeometry() const;

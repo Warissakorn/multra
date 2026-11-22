@@ -2,6 +2,7 @@
 #include "node_membership.hpp"
 #include "coarse_nodes.hpp"
 #include "right_of_way.hpp"
+#include "priority_markers.hpp"
 #include "../../core/validate.hpp"
 #include <algorithm>
 
@@ -113,6 +114,8 @@ std::vector<Diagnostic> runtimeDiagnostics(const Network& network, const Scenari
     // M3.2.2: the same resolver the compiler uses, so the panel and Run cannot disagree.
     for(const auto& issue:resolveRightOfWay(network,runtimeSections(network),definition.priorityDefaults).issues)
         result.push_back(resolve(network,issue,DiagnosticSeverity::runtime));
+    for(const auto& issue:resolvePriorityMarkers(network,runtimeSections(network)).issues) // PRIORITY_RULES (D606)
+        result.push_back(resolve(network,issue,DiagnosticSeverity::runtime));
     // Shape advisories sit beside the runtime rows: visible and selectable, but they never
     // reach compileScenario, so neither Run nor saving is blocked by one.
     for(const auto& issue:connectorShapeIssues(network))
@@ -121,6 +124,8 @@ std::vector<Diagnostic> runtimeDiagnostics(const Network& network, const Scenari
     for(const auto& issue:nodeMembershipIssues(network))
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
     for(const auto& issue:streetSegmentThroughNodeIssues(network)) // S3.6a (STREET_SEGMENTS §6)
+        result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
+    for(const auto& issue:unreachedPriorityMarkers(network,definition.routes)) // D617
         result.push_back(resolve(network,issue,DiagnosticSeverity::advisory));
     for(const auto& issue:routeAmbiguityIssues(network,definition))
         result.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});

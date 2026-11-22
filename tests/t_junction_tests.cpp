@@ -185,3 +185,21 @@ TEST(tjunction, commitment_removes_the_minor_clamps_the_sweep_archived_and_leave
     }
     CHECK(minor < archived);
 }
+TEST(tjunction, an_edited_fixture_saved_and_reopened_repeats_its_run_on_the_same_seed) {
+    // M3.2.7d steps 3-7 as the owner does them (D601): change gapTime and headway, set Stop, run
+    // seed 42; save, reopen, run seed 42 again. The reopened file and its rows must be identical.
+    fixture::TJunctionOptions o; o.gapTime = 4; o.headway = 9; o.control = StopMode::stop;
+    const auto edited = fixture::tJunction(o);
+    const auto saved = documentJson(edited.document).dump();
+    CHECK(saved != documentJson(fixture::tJunction().document).dump()); // the forcing: the edit is in the file
+    const auto reopened = parseDocument(Json::parse(saved));
+    CHECK(documentJson(reopened).dump() == saved);
+    const auto first = run(edited.document, edited), again = run(reopened, edited);
+    CHECK(movement(first.report, kCrossing).vehicles > 0);
+    CHECK(first.report.movements == again.report.movements);
+    CHECK(first.report.queues == again.report.queues);
+    const auto s = compileDocument(reopened, test::root() / "data").scenario;
+    const auto& crossing = zoneOn(s, edited.crossingTurn);
+    test::near(crossing.gapTime, 4, 0); test::near(crossing.headway, 9, 0);
+    CHECK(crossing.control == ZoneControl::stop);
+}

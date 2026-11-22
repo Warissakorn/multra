@@ -12,8 +12,10 @@ the live queue. Owner observations are distinct from automated checks.
 | [OSM_BACKGROUND.md](OSM_BACKGROUND.md) | OSM raster map implementation and delivery order (2026-10-12) |
 | [OWNER_SITTING.md](OWNER_SITTING.md) | Every item waiting on the owner, for one sitting (D143) |
 | [OWNER_SITTING_WINDOWS.md](OWNER_SITTING_WINDOWS.md) | OWNER_SITTING's sections C–I, the checks on the owner's Windows machine |
+| [OWNER_LOOKS_CARVED.md](OWNER_LOOKS_CARVED.md) | Owner looks carved out of the sitting after 14 days (D201, D602); open, closing nothing |
 | [OBJECT_PANELS_NODES_CONFLICTS.md](OBJECT_PANELS_NODES_CONFLICTS.md) | Contract for the Nodes and Conflicts tabs as panels: what each owns, its hooks, what the window calls (D523) — 2026-11-12 |
 | [OBJECT_TABLE.md](OBJECT_TABLE.md) | Contract for the metadata-driven object table (Vissim/SUMO style): column metadata, in-place edit, hide/show columns, row filter; Study periods pilot (D525) — 2026-11-12 |
+| [PROCEDURE_SCHEMA_SLICE.md](PROCEDURE_SCHEMA_SLICE.md) | The brief for the `procedures` schema slice (schema 73, feedback 75), waiting for the owner's review of D573–D574 — 2026-11-22 |
 | [UTDF_PROBE.md](UTDF_PROBE.md) | M14 U0: the reference junction and steps for the owner's UTDF probe; Vistro 2026 writes the golden file (D438) — 2026-10-28, revised 2026-11-03 |
 | [M1_ACCEPTANCE.md](M1_ACCEPTANCE.md) | M1 owner acceptance record |
 | [M2_PLAN.md](M2_PLAN.md) | M2 plan — and the M1 review it starts from |

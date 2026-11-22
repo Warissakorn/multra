@@ -4,6 +4,7 @@
 #include "input_manifest.hpp"
 #include "diagnostics.hpp"
 #include "behaviour_library.hpp"
+#include "priority_rule_classes.hpp"
 #include "demand_paths.hpp"
 #include "od_demand.hpp"
 #include "parking_compile.hpp"
@@ -99,6 +100,7 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     if(manifest)manifest->validate();
     CompiledRouteOrigins routeOrigins;
     auto scenario=compileScenario(d.network,definition,walks.builtSections(),&routeOrigins);
+    applyPriorityRuleClasses(scenario,d.network,*d.definition); // D606
     scenario.speedDecisions=compileSpeedDecisions(d.network,authored); // B-6 (D223)
     scenario.reducedSpeedAreas=compileSpeedAreas(d.network,authored); // B-6 §7 (D225)
     // M8.4b (D157): the authored lots become the engine's, on the routes just compiled.

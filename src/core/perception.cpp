@@ -1,6 +1,7 @@
 #include "perception.hpp"
 #include "lateral.hpp"
 #include "leaders.hpp"
+#include "start_up.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -65,7 +66,7 @@ FollowingResult delayedAction(const Vehicle& vehicle, std::size_t ticks, const F
     // A shortened FIFO discards its oldest entries; a longer one repeats its oldest entry. An empty
     // one comes from a zero-delay road (D186): the driver carries on with what it decides now.
     auto applied = history.empty() ? decided : history[history.size() > ticks ? history.size() - ticks : 0];
-    applied.acceleration = std::clamp(applied.acceleration, -type.maxDeceleration, type.maxAcceleration);
+    applied.acceleration = std::clamp(applied.acceleration, -type.maxDeceleration, maxAccelerationAt(type, vehicle.speed)); // D608
     if (vehicle.speed == 0 && leader && leader->gap <= standstillGap(behaviour))
         applied.acceleration = std::min(0.0, applied.acceleration);
     return applied;

@@ -1,14 +1,17 @@
 #include "table_layout.hpp"
 #include "editor_interaction.hpp"
 #include "conflicts_panel.hpp"
+#include "gap_reduction_fields.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include "../commands/right_of_way_commands.hpp"
+#include "../commands/priority_marker_commands.hpp"
 #include "../model/network/right_of_way.hpp"
 #include <QAction>
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QDoubleSpinBox>
+#include <cmath>
 #include <QFormLayout>
 #include <QHeaderView>
 #include <QKeySequence>
@@ -73,6 +76,7 @@ ConflictsPanel::ConflictsPanel(QWidget* parent, ObjectTabContext context, Confli
         context_.execute("editorDeriveStopLines", [&](auto& d) { deriveStopLines(d); }); }));
     bar->addAction(action("editorDeleteConflict", [this] {
         const auto id = selected(); if (id.empty()) return;
+        if (isRule(id)) { context_.execute("editorDeletePriorityRule", [&](auto& d) { removePriorityRule(d, id); }); return; } // D617
         context_.execute("editorDeleteConflict", [&](auto& d) { removeConflictGroup(d, id); });
     }));
     openRowOn(tab_.table, this, [this] { const auto id = selected(); if (!id.empty()) edit(id); }); // D587: double-click or Enter, once
@@ -101,13 +105,13 @@ void ConflictsPanel::refresh() {
     if (!shown && automaticRevision_ != UINT64_MAX) { automatic_.clear(); automaticRevision_ = UINT64_MAX; }
     hooks_.showAutomatic(automatic_);
     const auto groups = conflictGroups(n, automatic_);
-    const int rows = static_cast<int>(groups.size());
+    const int rows = static_cast<int>(groups.size() + ruleCount());
     if (tab_.revision != context_.revision() || tab_.table->rowCount() != rows) {
         tab_.revision = context_.revision();
         const QSignalBlocker block(tab_.table);
         tab_.table->setRowCount(rows);
         const auto verdict = row.conflictAreas.empty() ? RightOfWayResolution{} : resolveRightOfWay(n, runtimeSections(n), {1, 1});
-        for (int r=0;r<rows;++r) {
+        for (int r=0;r<static_cast<int>(groups.size());++r) { // the groups; the rules follow (D617)
             const auto& g=groups[static_cast<std::size_t>(r)];
             std::vector<QStringList> members;std::vector<bool> editable;
             // STOP_LINES §5 (SL4): the line the yielding side waits at -- a placed stop line by name, or its default.
@@ -169,6 +173,7 @@ void ConflictsPanel::refresh() {
             }
             if(conflictGroupContains(g,keep))tab_.table->selectRow(r);
         }
+        fillRuleRows(static_cast<int>(groups.size()), keep); // D617
         fitTableColumns(tab_.table);
     }
     hooks_.highlight(selected());
@@ -184,8 +189,11 @@ void ConflictsPanel::refresh() {
     const bool automatic = isAutomaticKey(chosen);
     const auto group=std::find_if(groups.begin(),groups.end(),[&](const auto& g){return g.key==chosen;});
     const bool branching=group!=groups.end() && group->geometryKind==ConflictGeometryKind::branching;
-    for (const auto* key : {"editorEditConflict", "editorCyclePriority"}) actions_.at(key)->setEnabled(!chosen.empty() && !branching);
-    for (const auto* key : {"editorRestorePriority", "editorDeleteConflict"}) actions_.at(key)->setEnabled(!chosen.empty() && !automatic);
+    const bool rule = isRule(chosen); // D617: a priority rule row edits and deletes; it has no priority to cycle
+    actions_.at("editorEditConflict")->setEnabled(!chosen.empty() && !branching);
+    actions_.at("editorCyclePriority")->setEnabled(!chosen.empty() && !branching && !rule);
+    actions_.at("editorRestorePriority")->setEnabled(!chosen.empty() && !automatic && !rule);
+    actions_.at("editorDeleteConflict")->setEnabled(!chosen.empty() && !automatic);
     actions_.at("editorDeriveStopLines")->setEnabled(!row.waitingLines.empty());
 }
 void ConflictsPanel::authorConflict(const std::string& key) {
@@ -196,7 +204,7 @@ void ConflictsPanel::authorConflict(const std::string& key) {
     if (context_.execute("editorAuthorConflict", [&](auto& d) { created = authorConflictGroup(d, key, defaults); })) select(created);
 }
 void ConflictsPanel::cyclePriority(const std::string& id) {
-    if (id.empty()) return;
+    if (id.empty() || isRule(id)) return;
     if (isAutomaticKey(id)) { authorConflict(id); return; } // the first P on a passive area sets it
     const auto defaults = hooks_.priorityDefaults();
     context_.execute("editorCyclePriority", [&](auto& d) { cycleConflictGroupPriority(d, id, defaults); });
@@ -205,7 +213,9 @@ bool ConflictsPanel::select(const std::string& id) {
     if (id.empty() || !tab_.table) return false;
     const auto& row = context_.document().network.rightOfWay;
     std::string area = id;
-    for (const auto& r : row.priorityRules) if (r.id == id) area = r.conflictAreaId;
+    // D617: a marker rule's row, by its id or its line's.
+    for (const auto& r : row.priorityRules) if (r.markerForm() && (r.id == id || r.waitingLineId == id)) { area = r.id; break; }
+    for (const auto& r : row.priorityRules) if (r.id == id && !r.markerForm()) area = r.conflictAreaId;
     for (const auto& c : row.stopControls) if (c.id == id && !c.conflictAreaIds.empty()) area = c.conflictAreaIds.front();
     for (const auto& a : row.conflictAreas)
         if (a.first.waitingLineId == id || a.second.waitingLineId == id) { area = a.id; break; }
@@ -219,6 +229,7 @@ bool ConflictsPanel::select(const std::string& id) {
 }
 void ConflictsPanel::edit(const std::string& id) {
     if (isAutomaticKey(id)) { authorConflict(id); return; } // Enter on an automatic row authors it
+    if (isRule(id)) { editRule(id); return; } // D617
     const auto& row = context_.document().network.rightOfWay;
     const auto a = std::find_if(row.conflictAreas.begin(), row.conflictAreas.end(), [&](const auto& x) { return x.id == id; });
     if (a == row.conflictAreas.end()) return;
@@ -241,6 +252,10 @@ void ConflictsPanel::edit(const std::string& id) {
     auto* headway = new QDoubleSpinBox(&dialog); headway->setObjectName("editorConflictHeadway");
     headway->setRange(0.1, 500); headway->setDecimals(1); headway->setSuffix(" m");
     headway->setValue(rule != row.priorityRules.end() ? rule->headway : std::max(0.1, defaults.headway));
+    // VISIBILITY (D607): how far short of its line the yielding driver judges the gap; 100 m when unset.
+    auto* visibility = new QDoubleSpinBox(&dialog); visibility->setObjectName("editorConflictVisibility");
+    visibility->setRange(1.1, 1000); visibility->setDecimals(1); visibility->setSuffix(" m");
+    visibility->setValue(rule != row.priorityRules.end() && rule->visibility ? *rule->visibility : AuthoredPriorityRule::kDefaultVisibility);
     std::size_t pairCount=1;
     bool hasBranching=false;
     for(const auto& g:conflictGroups(context_.document().network,automatic_))if(conflictGroupContains(g,id)) {
@@ -255,6 +270,8 @@ void ConflictsPanel::edit(const std::string& id) {
     form->addRow(text("editorConflictPriority"), priority);
     form->addRow("gapTime", gap);
     form->addRow("headway", headway);
+    form->addRow("visibility", visibility);
+    const auto reduction = gapReductionFields(&dialog, form, rule != row.priorityRules.end() ? rule->gapReduction : std::nullopt, text("editorGapReduction"), ""); // D618
     // What a driver does at the line where the area gives way (M3.2.5b). The mode belongs to the
     // line, so it also applies to the other areas behind that line. Nothing to set while no side
     // gives way.
@@ -280,6 +297,9 @@ void ConflictsPanel::edit(const std::string& id) {
     const int mode = control->currentData().toInt();
     context_.execute("editorEditConflict", [&](auto& d) {
         setConflictGroupControl(d, id, name->text().toStdString(), chosen, gap->value(), headway->value());
+        const double seen = visibility->value(); // the key is written only when it is not the default
+        setConflictGroupVisibility(d, id, std::abs(seen - AuthoredPriorityRule::kDefaultVisibility) < 1e-9 ? std::nullopt : std::optional{seen});
+        setConflictGroupGapReduction(d, id, reduction.value());
         if (chosen != ConflictPriority::undetermined)
             setConflictGroupStopControl(d, id, mode < 0 ? std::nullopt : std::optional{static_cast<StopMode>(mode)});
     });

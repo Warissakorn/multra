@@ -5,6 +5,7 @@
 #include "../model/network/conflict_surface.hpp"
 #include <QApplication>
 #include <QGraphicsPathItem>
+#include <QGraphicsPolygonItem>
 #include <QMouseEvent>
 #include <QPen>
 #include <algorithm>
@@ -95,6 +96,16 @@ bool EditorCanvas::stopLinePress(QMouseEvent* e) {
     if (!place && e->button() != Qt::LeftButton) return false;
     const auto p = world(e->pos(), false);
     lastPick_ = p;
+    if (const auto m = place ? std::nullopt : priorityMarkerAt(p)) { // D616: a marker is the smaller target
+        selectedStopLine_.clear(); selectedMarker_ = m;
+        for (const auto& r : document_->network.rightOfWay.priorityRules) if (r.id == m->first) {
+            const auto& point = r.markers[m->second].point;
+            auto polyline = controlPathPolyline(document_->network, point.path);
+            if (polyline.size() >= 2) { lineDrag_ = LineDrag{r.id, std::move(polyline), point.station, point.station, false, {}, m->second}; dragPress_ = e->pos(); }
+        }
+        redraw(); return true;
+    }
+    if (!place) selectedMarker_.reset();
     if (const auto id = waitingLineAt(p); !place && !id.empty()) {
         selectStopLine(id);
         if (stopLinePicked) stopLinePicked(id);
@@ -110,6 +121,10 @@ bool EditorCanvas::stopLinePress(QMouseEvent* e) {
     const auto at = headAt(p);
     const auto point = at ? slotControlPoint(document_->network, *at) : std::nullopt;
     if (!point) { if (creationRejected) creationRejected(); return true; }
+    // D616: with a line picked, another lane gets a marker of its rule; its own lane a new line.
+    const auto& lines = document_->network.rightOfWay.waitingLines;
+    const auto picked = std::find_if(lines.begin(), lines.end(), [&](const auto& w) { return w.id == selectedStopLine_; });
+    if (picked != lines.end() && picked->point.path != point->path) { if (priorityMarkerAdded) priorityMarkerAdded(picked->id, *point); return true; }
     if (stopLinePlaced) stopLinePlaced(*point);
     return true;
 }
@@ -164,7 +179,9 @@ void EditorCanvas::finishLineDrag(QPoint position) {
     updateLineDrag(position); // the release is authoritative: the last move may be coalesced
     const auto drag = *lineDrag_; lineDrag_.reset();
     redraw();
-    if (drag.moved && std::abs(drag.station - drag.original) > 1e-9 && waitingLineMoved) waitingLineMoved(drag.id, drag.station);
+    if (!drag.moved || std::abs(drag.station - drag.original) <= 1e-9) return;
+    if (drag.marker) { if (priorityMarkerMoved) priorityMarkerMoved(drag.id, *drag.marker, drag.station); } // D616
+    else if (waitingLineMoved) waitingLineMoved(drag.id, drag.station);
 }
 void EditorCanvas::setAutomaticConflicts(std::vector<AutomaticConflict> automatic) {
     if (automatic_ == automatic) return;
@@ -183,6 +200,19 @@ std::string EditorCanvas::automaticAt(Point p) const {
     }
     return {};
 }
+void EditorCanvas::updateConflictRelated() {
+    // D611 (owner): selecting a conflict area shows the Links and Connectors it runs on as hovered.
+    conflictRelated_.clear();
+    if (!document_ || tool_ != Tool::conflict || highlightedConflict_.empty()) return;
+    const auto& n = document_->network;
+    const auto groups = conflictGroups(n, automatic_);
+    const auto group = std::find_if(groups.begin(), groups.end(), [&](const auto& g) { return g.key == highlightedConflict_; });
+    const auto member = [&](const std::string& id) { return id == highlightedConflict_ || (group != groups.end() && conflictGroupContains(*group, id)); };
+    for (const auto& a : n.rightOfWay.conflictAreas) if (member(a.id))
+        for (const auto* side : {&a.first, &a.second}) conflictRelated_.insert(conflictOwner(side->path));
+    for (const auto& a : automatic_) if (member(a.key))
+        for (const auto* side : {&a.first, &a.second}) conflictRelated_.insert(conflictOwner(side->path));
+}
 void EditorCanvas::drawConflicts() {
     if (!document_) return;
     const auto& n = document_->network;
@@ -200,12 +230,16 @@ void EditorCanvas::drawConflicts() {
             const bool undecided=priority==ConflictPriority::undetermined;
             const bool yields=(side==&first)==(priority==ConflictPriority::firstYields);
             const bool lit=key==highlightedConflict_,hover=key==hoverConflict_ || key==hoverAutomatic_;
-            QColor tint=branching?canvasStyle::error():undecided?(automatic?canvasStyle::ink():canvasStyle::warning()):yields?canvasStyle::error():canvasStyle::ok();
+            // D620 (owner, amends D610): as Vissim, an area nobody has authored is yellow (passive, whatever
+            // rule the engine derives for a merge); an authored undecided area is red on both sides; an authored
+            // decision green and red. A refused branching stays the dark error ink.
+            QColor tint=branching?canvasStyle::error():automatic?canvasStyle::conflictPassive()
+                :undecided || yields?canvasStyle::conflictYield():canvasStyle::conflictPriority();
             // D435 as amended by D592 (owner, 2026-11-19): a flat fill with no hatching or outline at
             // rest, fully opaque so the area reads on any road; the waiting lines stay above it (z 7).
-            // Only an automatic candidate nobody has decided stays a faint wash. Hover and the
-            // highlighted conflict get a clean solid edge.
-            tint.setAlpha(automatic && undecided?40:255);
+            // Every area, automatic ones too, is fully opaque since D620. Hover and the highlighted
+            // conflict get a clean solid edge.
+            tint.setAlpha(255);
             const bool hatched=!branching && !undecided && yields; // tag only: z order, not paint
             QPen pen(Qt::NoPen);
             if(lit || hover) {
@@ -221,11 +255,33 @@ void EditorCanvas::drawConflicts() {
             item->setData(4,QString::fromLatin1(branching?"branching":geometryKind==ConflictGeometryKind::merge?"merge":"crossing"));
             item->setData(5,QString::fromStdString(conflictOwner(side->path))); // directional participant
             item->setData(3,QString::fromStdString(id)); // lane-pair identity, independent of group selection
+            // D610 (b), owner: each conflicting path carries a dark centre line, arrowhead at its exit end;
+            // D620 (owner): on the lane's own centre, and only on the selected area (its group).
+            if(!lit || branching)continue;
+            QColor mark=tint.darker(170);mark.setAlpha(255);
+            QPen centre(mark,1.5);centre.setCosmetic(true);centre.setCapStyle(Qt::FlatCap);
+            const auto spans=side==&first?geometry.first:geometry.second;
+            const auto& mouths=side==&first?geometry.firstMouth:geometry.secondMouth;
+            std::vector<ConflictSide> lanes(spans.begin(),spans.end());for(const auto& m:mouths)lanes.push_back(m.lane);
+            for(const auto& span:lanes) {
+                const auto line=conflictSideCentre(n,span);
+                const double length=line.size()<2?0:polylineLength(line);
+                if(!(length>=.5) || !std::isfinite(length))continue;
+                const double z=item->zValue()+.05;
+                QPainterPath stroke(QPointF(line.front().x,line.front().y));for(std::size_t i=1;i<line.size();++i)stroke.lineTo(line[i].x,line[i].y);
+                auto* mid=scene_.addPath(stroke,centre);mid->setZValue(z);
+                const double inset=std::min(length/2,6/viewScale());
+                const auto ahead=directionAlong(line,length-inset,false);
+                auto* head=addArrowhead(pointAlong(line,length-inset),std::atan2(ahead.y,ahead.x),6,mark,z+.01,QStringLiteral("conflict-arrow"));
+                for(auto* part:{static_cast<QGraphicsItem*>(mid),static_cast<QGraphicsItem*>(head)}) {
+                    part->setData(0,QStringLiteral("conflict-arrow"));part->setData(1,QString::fromStdString(key));part->setData(3,QString::fromStdString(id));
+                }
+            }
         }
     };
-    // D590 (owner): conflict areas and their plain waiting lines show only under the Conflict area
-    // tool (and the lines under the Queue counter tool, which snaps to them); a line carrying Stop or
-    // Yield is a sign the author placed, and always shows.
+    // D590 (owner): conflict areas show only under the Conflict area tool. D603 (owner, amends D590):
+    // waiting lines, plain or carrying Stop or Yield, show only under the Conflict area, Stop line and
+    // Queue counter tools (the counter snaps to them).
     // D594 slice 3: the Stop line tool shows the areas its lines cover, and every placed line.
     const bool stopTool=tool_==Tool::stopLine,conflictTool=tool_==Tool::conflict,lineTool=conflictTool||stopTool||tool_==Tool::counter;
     if(conflictTool||stopTool)for(const auto& a:n.rightOfWay.conflictAreas)draw(a.id,a.kind,a.priority,a.first,a.second,false,
@@ -262,7 +318,7 @@ void EditorCanvas::drawConflicts() {
         const auto control = std::find_if(n.rightOfWay.stopControls.begin(), n.rightOfWay.stopControls.end(),
                                           [&](const auto& c) { return c.waitingLineId == line.id; });
         const bool controlled = control != n.rightOfWay.stopControls.end();
-        if (!lineTool && !controlled) continue;
+        if (!lineTool) continue; // D603
         const bool stop = controlled && control->mode == StopMode::stop;
         const bool picked = stopTool && line.id == selectedStopLine_;
         QPen pen(dragged || picked ? canvasStyle::active() : line.id==hoverWaitingLine_ ? canvasStyle::hover() : stop ? canvasStyle::error() : canvasStyle::warning(), dragged || stop ? 3 : 2,
@@ -273,5 +329,6 @@ void EditorCanvas::drawConflicts() {
         item->setData(0, QStringLiteral("waiting-line")); item->setData(1, QString::fromStdString(line.id));
         item->setData(2, QString::fromLatin1(!controlled ? "" : stop ? "stop" : "yield"));
     }
+    if(conflictTool||stopTool)drawPriorityMarkers(); // D616
 }
 }

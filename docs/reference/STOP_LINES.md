@@ -26,8 +26,8 @@ it, and add a separate tool for stop lines, so the author sees only the lines th
 | Which areas does a placed stop line control? | Every conflict area downstream on its path, up to the end of the junction (the next Link past the Connector chain), unless another placed line comes first. The Conflict areas table shows which line each area uses |
 
 Already done (D590): conflict areas and plain waiting lines show only under the Conflict area tool
-(lines also under the Queue counter tool, which snaps to them). A line carrying Stop or Yield
-always shows.
+(lines also under the Queue counter tool, which snaps to them). Since D603 a line carrying Stop or
+Yield also shows only under the Conflict area, Stop line and Queue counter tools (owner, 2026-11-20).
 
 ## 3. Model
 
@@ -122,7 +122,8 @@ to the type's maximum): its own contract, as LINE_APPROACH. Calibrated stop dist
   Delete removes it (`removeStopLine`, its areas back on their default lines). Coverage is written
   as names when the line is placed (`stopLineCoverage`): decided areas on default lines at or past
   it on its path, or, from a Link lane, on a Connector leaving that lane at or past it. Refused with
-  `EDIT_NO_CONFLICT_DOWNSTREAM` when that is none. The Conflict areas table has a Waits at column
+  `EDIT_NO_CONFLICT_DOWNSTREAM` when that is none; **since D616 (PRIORITY_RULES slice 2) such a line is
+  placed alone instead**, the waiting line of a priority rule whose markers are added with it picked. The Conflict areas table has a Waits at column
   and a Use default lines button (`deriveStopLines`). Under the Conflict area tool the hovered or
   selected area's default lines are drawn dashed and faint (`derived-line`). Rows: `stoplines` SL4,
   `stop-line-ui` (SL4 in the table, SL7).

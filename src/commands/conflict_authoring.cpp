@@ -1,5 +1,6 @@
 #include "right_of_way_commands.hpp"
 #include "../model/network/right_of_way.hpp"
+#include "../model/network/priority_markers.hpp"
 #include "detail.hpp"
 #include <algorithm>
 #include <cmath>
@@ -73,7 +74,7 @@ void setConflictControl(ProjectDocument& d, const std::string& areaId, const std
     if (changed.priority != priority) {
         auto& controls = d.network.rightOfWay.stopControls;
         for (auto& c : controls) std::erase(c.conflictAreaIds, areaId);
-        std::erase_if(controls, [](const auto& c) { return c.conflictAreaIds.empty(); });
+        std::erase_if(controls, [&](const auto& c) { return c.conflictAreaIds.empty() && !lineServesPriorityMarkers(d.network.rightOfWay, c.waitingLineId); }); // D616
     }
     changed.name = name; changed.priority = priority;
     putConflictArea(d, changed);
@@ -156,7 +157,8 @@ void setAreaControl(ProjectDocument& d, const std::string& areaId, std::optional
     auto& controls = row.stopControls;
     for (auto& c : controls) std::erase_if(c.conflictAreaIds, [&](const auto& id) {
         return c.waitingLineId == line || std::find(behind.begin(), behind.end(), id) != behind.end(); });
-    std::erase_if(controls, [](const auto& c) { return c.conflictAreaIds.empty(); });
+    std::erase_if(controls, [&](const auto& c) { // the line's own control is replaced; a marker rule's elsewhere stays (D616)
+        return c.waitingLineId == line || (c.conflictAreaIds.empty() && !lineServesPriorityMarkers(row, c.waitingLineId)); });
     if (mode) putStopControl(d, {"", "", line, *mode, behind});
 }
 std::vector<std::string> stopLineCoverage(const Network& n, const ControlPoint& at) {
@@ -177,8 +179,9 @@ std::vector<std::string> stopLineCoverage(const Network& n, const ControlPoint& 
     return covered;
 }
 std::string placeStopLine(ProjectDocument& d, const ControlPoint& at) {
+    // D616 (PRIORITY_RULES §5, amends D595): with no area downstream the line stands alone and
+    // starts a priority rule; its markers are added with the line picked.
     const auto covered = stopLineCoverage(d.network, at);
-    if (covered.empty()) throw std::invalid_argument("EDIT_NO_CONFLICT_DOWNSTREAM");
     const auto id = putWaitingLine(d, {"", "", at});
     for (auto& a : d.network.rightOfWay.conflictAreas)
         if (std::find(covered.begin(), covered.end(), a.id) != covered.end())
@@ -190,6 +193,7 @@ void removeStopLine(ProjectDocument& d, const std::string& lineId) {
     if (std::none_of(row.waitingLines.begin(), row.waitingLines.end(), [&](const auto& w) { return w.id == lineId; }))
         throw std::invalid_argument("EDIT_UNKNOWN_OBJECT");
     std::erase_if(row.stopControls, [&](const auto& c) { return c.waitingLineId == lineId; });
+    std::erase_if(row.priorityRules, [&](const auto& r) { return r.markerForm() && r.waitingLineId == lineId; }); // D616
     for (auto& a : row.conflictAreas)
         for (auto* s : {&a.first, &a.second}) if (s->waitingLineId == lineId) s->waitingLineId.clear();
     std::erase_if(row.waitingLines, [&](const auto& w) { return w.id == lineId; });
@@ -202,7 +206,7 @@ void removeConflictArea(ProjectDocument& d, const std::string& areaId) {
     for (const auto* side : {&removed.first, &removed.second}) {
         const bool used = std::any_of(row.conflictAreas.begin(), row.conflictAreas.end(), [&](const auto& a) {
             return a.first.waitingLineId == side->waitingLineId || a.second.waitingLineId == side->waitingLineId; });
-        if (!used) std::erase_if(row.waitingLines, [&](const auto& w) { return w.id == side->waitingLineId; });
+        if (!used && !lineServesPriorityMarkers(row, side->waitingLineId)) std::erase_if(row.waitingLines, [&](const auto& w) { return w.id == side->waitingLineId; });
     }
     detail::pruneQueueCounters(d);
 }

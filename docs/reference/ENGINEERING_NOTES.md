@@ -113,6 +113,10 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
 
 ## Working notes
 
+- **`check` builds every executable (2026-11-21).** `cmake/check_builds_all.cmake` makes `check`
+  depend on every executable target, collected after all subdirectories. Before, a test binary not
+  named with `add_dependencies(check …)` (`behaviour-lab-ui`, `cli-consistency`'s fixture) ran stale
+  against rebuilt shared libraries and crashed once `DriverBehaviour` grew.
 - **Road-scale edits (D384, 2026-10-28, Linux, Release, median of three).** Fixture: a k×k grid of
   Roads 200 m apart, two owned templates (2+2 ranked 2, 1+1 ranked 1), every crossing confirmed
   as a junction at 2 m. F3 on every Road (k=15, 480 Roads): 96.3 s → 80 ms. One edit renaming a

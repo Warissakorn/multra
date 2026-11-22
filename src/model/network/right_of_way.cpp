@@ -1,4 +1,5 @@
 #include "right_of_way.hpp"
+#include "priority_markers.hpp"
 #include <algorithm>
 #include <cmath>
 #include <functional>
@@ -143,11 +144,12 @@ std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
     for (std::size_t i = 0; i < row.priorityRules.size(); ++i) {
         const auto& r = row.priorityRules[i];
         const auto path = "rightOfWay.priorityRules[" + std::to_string(i) + "]";
-        id(r.id, path);
+        id(r.id, path); if (r.markerForm()) { priorityMarkerIssues(n, r, path, issues); continue; } // PRIORITY_RULES (D606)
         if (!areas.contains(r.conflictAreaId)) add("UNKNOWN_CONFLICT_AREA", path + ".conflictAreaId");
         else if (!ruled.insert(r.conflictAreaId).second) add("DUPLICATE_PRIORITY_RULE", path + ".conflictAreaId");
-        if (!std::isfinite(r.gapTime) || r.gapTime <= 0 || !std::isfinite(r.headway) || r.headway <= 0)
-            add("INVALID_PRIORITY_RULE", path);
+        if (!std::isfinite(r.gapTime) || r.gapTime <= 0 || !std::isfinite(r.headway) || r.headway <= 0) add("INVALID_PRIORITY_RULE", path);
+        if (r.visibility && !(*r.visibility > 1 && *r.visibility <= 1000)) add("INVALID_PRIORITY_RULE", path + ".visibility"); // D607
+        areaRuleGapIssues(r, path, issues); // D618
     }
     // Queue counters (M3.2.6b): each line names a head or waiting line, or is a point, never both.
     std::set<std::string> heads;
@@ -175,7 +177,7 @@ std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
         id(c.id, path);
         if (!lines.contains(c.waitingLineId)) add("UNKNOWN_WAITING_LINE", path + ".waitingLineId");
         else if (!controlledLines.insert(c.waitingLineId).second) add("DUPLICATE_STOP_CONTROL", path + ".waitingLineId");
-        if (c.conflictAreaIds.empty()) add("INVALID_STOP_CONTROL", path + ".conflictAreaIds");
+        if (c.conflictAreaIds.empty() && !lineServesPriorityMarkers(row, c.waitingLineId)) add("INVALID_STOP_CONTROL", path + ".conflictAreaIds"); // D615
         for (std::size_t k = 0; k < c.conflictAreaIds.size(); ++k) {
             const auto at = path + ".conflictAreaIds[" + std::to_string(k) + "]";
             if (!areas.contains(c.conflictAreaIds[k])) add("UNKNOWN_CONFLICT_AREA", at);
@@ -193,59 +195,6 @@ std::string resolveControlPath(const Network& n, const RuntimeSections& table, c
                                double station) {
     const auto at = locate(n, table, ref, station);
     return at ? at->segment : std::string{};
-}
-std::vector<MergeGroup> mergeGroups(const Network& n, const RuntimeSections& table) {
-    std::vector<MergeGroup> groups;
-    for (const auto& section : table.sections) {
-        MergeGroup group{section.id, {}, false};
-        // The ranking derivedPriorityRules applies: the lane already carrying traffic first, then
-        // arriving paths in drawing order. Each later member gives way to every earlier one.
-        if (section.start > 0)
-            for (const auto& up : table.sections)
-                if (up.laneId == section.laneId && up.end == section.start) group.incoming.push_back(up.id);
-        for (std::size_t p = 0; p < table.paths.size(); ++p)
-            if (table.pathNext[p] == section.id) group.incoming.push_back(table.paths[p].id);
-        if (group.incoming.size() < 2) continue;
-        groups.push_back(std::move(group));
-    }
-    if (groups.empty()) return groups;
-    // Geometry and path references stay fixed for this call. Resolve each authored merge once,
-    // rather than repeating the same location work for every receiving section in the network.
-    for (const auto& area : n.rightOfWay.conflictAreas) {
-        if (area.kind != ConflictKind::merge) continue;
-        const auto a = resolveControlPath(n, table, area.first.path, area.first.entryStation);
-        const auto b = resolveControlPath(n, table, area.second.path, area.second.entryStation);
-        if (a.empty() || b.empty() || a == b) continue;
-        for (auto& group : groups) {
-            const auto member = [&](const std::string& id) {
-                return std::find(group.incoming.begin(), group.incoming.end(), id) != group.incoming.end();
-            };
-            if (member(a) && member(b)) group.explicitControl = true;
-        }
-    }
-    return groups;
-}
-std::vector<std::string> mergeSectionsOf(const Network& n, const RuntimeSections& table, const std::string& connectorId) {
-    std::vector<std::string> sections;
-    const auto* c = findConnector(n, connectorId);
-    if (!c) return sections;
-    for (const auto& g : mergeGroups(n, table))
-        for (int i = 0; i < std::max(c->fromLaneCount, c->toLaneCount); ++i)
-            if (std::find(g.incoming.begin(), g.incoming.end(), connectorPathId(*c, i)) != g.incoming.end()) {
-                sections.push_back(g.section);
-                break;
-            }
-    return sections;
-}
-std::string mergeSectionOfArea(const Network& n, const RuntimeSections& table, const ConflictArea& area) {
-    if (area.kind != ConflictKind::merge) return {};
-    const auto a = resolveControlPath(n, table, area.first.path, area.first.entryStation);
-    const auto b = resolveControlPath(n, table, area.second.path, area.second.entryStation);
-    for (const auto& g : mergeGroups(n, table)) {
-        const auto member = [&](const std::string& s) { return std::find(g.incoming.begin(), g.incoming.end(), s) != g.incoming.end(); };
-        if (!a.empty() && !b.empty() && member(a) && member(b)) return g.section;
-    }
-    return {};
 }
 namespace {
 bool cyclic(const std::vector<std::string>& nodes, const std::multimap<std::string, std::string>& edges) {
@@ -423,7 +372,7 @@ RightOfWayResolution resolveRightOfWay(const Network& n, const RuntimeSections& 
             if (result.issues.size() == issuesBefore && chainFirst && chainSecond &&
                 a.priority != ConflictPriority::undetermined && wait && rule != row.priorityRules.end()) {
                 result.zones.push_back({"right-of-way/" + a.id, firstYields ? *chainSecond : *chainFirst,
-                                        firstYields ? *chainFirst : *chainSecond, *wait, rule->gapTime, rule->headway});
+                                        firstYields ? *chainFirst : *chainSecond, *wait, rule->gapTime, rule->headway}); result.zones.back().visibility = rule->visibility.value_or(AuthoredPriorityRule::kDefaultVisibility); result.zones.back().gapReduction = rule->gapReduction; // D607, D618
             }
         }
         if (a.kind == ConflictKind::merge && r.first && r.second &&
@@ -475,7 +424,7 @@ RightOfWayResolution resolveRightOfWay(const Network& n, const RuntimeSections& 
                                            [&](const auto& x) { return x.conflictAreaId == a.id; });
             result.zones.push_back({"right-of-way/" + a.id, firstYields ? *r->chainSecond : *r->chainFirst,
                                     firstYields ? *r->chainFirst : *r->chainSecond,
-                                    firstYields ? *r->waitFirst : *r->waitSecond, rule->gapTime, rule->headway});
+                                    firstYields ? *r->waitFirst : *r->waitSecond, rule->gapTime, rule->headway}); result.zones.back().visibility = rule->visibility.value_or(AuthoredPriorityRule::kDefaultVisibility); result.zones.back().gapReduction = rule->gapReduction; // D607, D618
         }
     }
     // Stop/Yield (M3.2.5). A control names the line its areas give way at; a Stop makes each of

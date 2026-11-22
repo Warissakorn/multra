@@ -36,6 +36,13 @@ inline constexpr const char* okHex="#176B44";
 inline constexpr const char* routeStartHex="#5BE39A";
 inline constexpr const char* routeEndHex="#FF6B6B";
 inline constexpr const char* routeTintHex="#FACC15";
+// D610 (owner, with a picture): conflict areas in Vissim's flat colours -- right of way, yields, and
+// (D620) passive: an area nobody has authored. An authored undecided area is the yield red on both sides.
+inline constexpr const char* conflictPriorityHex="#00FF00";
+inline constexpr const char* conflictYieldHex="#FF0000";
+inline constexpr const char* conflictPassiveHex="#FFFF00";
+// D610: the road edges and their direction arrows under the right-of-way tools, near-black as the picture.
+inline constexpr const char* directionEdgeHex="#1F1F1F";
 
 inline constexpr int space1=4,space2=8,space3=12,space4=16,space5=20,space6=24;
 // The band under the toolbar row above the panels: a dock separator's 4 px and its two 1 px edges (D491).

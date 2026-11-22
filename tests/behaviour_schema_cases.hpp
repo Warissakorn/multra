@@ -74,7 +74,7 @@ inline std::vector<std::pair<std::string,int>> floors() {
     std::vector<std::pair<std::string,int>> result{{"amberDeceleration",28},{"curveLateralAcceleration",34},
         {"kerbLaneBias",35},{"commitmentDeceleration",36},{"mandatoryDecelerationOwn",37},
         {"mandatoryDecelerationTrailingVehicle",37},{"stopDwellTime",41},{"driverFactorSpread",43},
-        {"redRunningShare",44},{"redRunningTime",44},{"missedExitAfter",78}};
+        {"redRunningShare",44},{"redRunningTime",44},{"missedExitAfter",78},{"diffusionTime",82}};
     for(const auto* key:{"lookAheadDistance","observedVehiclesAhead","lookBackDistance","rearTimeToCollision","reactionTime"})
         result.push_back({key,32});
     for(const auto* key:{"lateralMinDistanceStanding","lateralMinDistanceAt50","maxLateralSpeed"})result.push_back({key,33});

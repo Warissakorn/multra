@@ -3,7 +3,7 @@
 Prepared by a session for Q4, open since 2026-09-10: *which published benchmarks define the M6
 tolerance?* ([D143](../decisions/RECORD-D001-D199.md#d143), R2 (b); the 2026-10-03 review's
 [O2 and S0](../archive/ROADMAP-review-2026-10-03.md)). The owner answers by letter in the
-owner sitting (B9). **Answered 2026-11-11 ([D505](../decisions/RECORD.md#d505)): the owner took §7's
+owner sitting (B9). **Answered 2026-11-11 ([D505](../decisions/RECORD-D400-D599.md#d505)): the owner took §7's
 recommendation in every row.** That chooses sources only. §6 is written (2026-11-12, D515) and the tolerance is set (B47 (a), D516).
 
 ## 1. Rules of this sheet

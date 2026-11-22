@@ -68,6 +68,10 @@ std::optional<std::pair<Point, Point>> waitingLineBar(const Network&, const Cont
 // Connector's base polyline), so a drag commits the station waitingLineBar and the resolver read.
 // Empty when the reference does not resolve.
 std::vector<Point> controlPathPolyline(const Network&, const ControlPathRef&);
+// D620: the lane's own centre (midway between its two boundaries) from the side's lower station to its
+// higher one, in travel order; empty when the strip does not resolve. A multi-lane Link's base line is
+// its reference line, not a lane's centre, so the conflict band's centre arrow is drawn on this.
+std::vector<Point> conflictSideCentre(const Network&, const ConflictSide&);
 // Physical distance/offset on the driving lane, adapted to stored authoring coordinates.
 double controlStationDistance(const Network&, const ControlPathRef&, double from, double to);
 double offsetControlStation(const Network&, const ControlPathRef&, double station, double metres);

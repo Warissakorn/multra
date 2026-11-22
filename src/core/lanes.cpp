@@ -282,6 +282,13 @@ void indexLaneChanges(const Scenario& s, ScenarioIndex& index) {
             index.missedExitTicks[b] = std::max<std::uint64_t>(1, static_cast<std::uint64_t>(std::ceil(*after / s.timeStep - 1e-9)));
     index.missedExits = !s.routeDeadEnds.empty() &&
         std::any_of(index.missedExitTicks.begin(), index.missedExitTicks.end(), [](auto n) { return n > 0; });
+    index.diffusionTicks.assign(s.behaviours.size(), 0); // D613
+    for (std::size_t b = 0; b < s.behaviours.size(); ++b)
+        if (const auto after = s.behaviours[b].diffusionTime; after && s.timeStep > 0)
+            index.diffusionTicks[b] = std::max<std::uint64_t>(1, static_cast<std::uint64_t>(std::ceil(*after / s.timeStep - 1e-9)));
+    index.diffusions = !s.routeDeadEnds.empty() &&
+        std::any_of(index.diffusionTicks.begin(), index.diffusionTicks.end(), [](auto n) { return n > 0; });
+    index.yields = std::any_of(s.behaviours.begin(), s.behaviours.end(), [](const auto& b) { return b.yieldTime || b.impatience; }); // D618
     for (const auto& dead : s.routeDeadEnds)
         if (const auto r = slotOf(s, dead.routeId); r < s.routes.size()) index.deadEndOfRoute[r] = dead.at;
     index.discretionaryOfRoute.assign(s.routes.size(), {});

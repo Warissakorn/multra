@@ -9,6 +9,11 @@ struct SpeedPoint {
     double speed{}, share{};
     bool operator==(const SpeedPoint&) const = default;
 };
+// START_UP §2 (D608): a vehicle type's acceleration limit at a speed, piecewise linear from speed 0.
+struct AccelerationPoint {
+    double speed{}, acceleration{};
+    bool operator==(const AccelerationPoint&) const = default;
+};
 struct SpeedRange {
     double min{}, max{};
     std::vector<SpeedPoint> curve;

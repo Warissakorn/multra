@@ -1,3 +1,8 @@
+// D621: at -Og, GCC 13 reports a compiler temporary at the end of main() as maybe-uninitialized, with
+// no source location (the brace-initialised vectors of optional-bearing structs). Silenced here only.
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 #include "../src/shell/editor_window.hpp"
 #include "ui_test_storage.hpp"
 #include <nlohmann/json.hpp>

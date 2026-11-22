@@ -44,6 +44,7 @@ class NetworkSchema {
         case Kind::vehicleTypes:rule={{"type","array"},{"items",reference(Object::vehicleType,version)}};break;
         case Kind::speedRange:rule=reference(Object::speedRange,version);break;
         case Kind::speedCurve:rule={{"type","array"},{"items",reference(Object::speedPoint,version)}};break;
+        case Kind::accelerationCurve:rule={{"type","array"},{"items",reference(Object::accelerationPoint,version)}};break;
         case Kind::axles:rule=reference(Object::axles,version);break;
         case Kind::pcu:rule=reference(Object::pcu,version);break;
         case Kind::kerbLanes:rule={{"type","integer"},{"x-multra-nativeType","integer-token"}};break;
@@ -148,6 +149,7 @@ class NetworkSchema {
         case Kind::conflictAreas:rule={{"type","array"},{"items",reference(Object::conflictArea,version)}};break;
         case Kind::conflictSide:rule=reference(Object::conflictSide,version);break;
         case Kind::priorityRules:rule={{"type","array"},{"items",reference(Object::priorityRule,version)}};break;
+        case Kind::priorityMarkers:rule={{"type","array"},{"minItems",1},{"items",reference(Object::priorityMarker,version)}};break;
         case Kind::stopControls:rule={{"type","array"},{"items",reference(Object::stopControl,version)}};break;
         case Kind::queueCounters:rule={{"type","array"},{"items",reference(Object::queueCounter,version)}};break;
         case Kind::measurementLines:rule={{"type","array"},{"items",reference(Object::measurementLine,version)}};break;
@@ -260,6 +262,7 @@ public:
                 case Object::conflictArea:return "conflictArea";
                 case Object::conflictSide:return "conflictSide";
                 case Object::priorityRule:return "priorityRule";
+                case Object::priorityMarker:return "priorityMarker";
                 case Object::stopControl:return "stopControl";
                 case Object::queueCounter:return "queueCounter";
                 case Object::measurementLine:return "measurementLine";
@@ -279,6 +282,7 @@ public:
                 case Object::vehicleType:return "vehicleType";
                 case Object::speedRange:return "speedRange";
                 case Object::speedPoint:return "speedPoint";
+                case Object::accelerationPoint:return "accelerationPoint";
                 case Object::axles:return "axles";
                 case Object::pcu:return "pcu";
                 case Object::behaviour:return "behaviour";

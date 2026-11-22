@@ -1,6 +1,9 @@
 #include "missed_exit.hpp"
+#include "diffusion.hpp"
+#include "yield_time.hpp"
 #include "text.hpp"
 #include "validate.hpp"
+#include "start_up.hpp"
 #include "conflicts.hpp"
 #include "lanes.hpp"
 #include "parking.hpp"
@@ -143,6 +146,11 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         // A segment cannot give way to itself: that is a rule that can never be satisfied, and it
         // would also let the merge check below count it as arbitration.
         if (rule.yieldSegmentId == rule.conflictSegmentId) add("INVALID_RANGE", p + ".conflictSegmentId");
+        if (rule.maxSpeed && !(std::isfinite(*rule.maxSpeed) && *rule.maxSpeed > 0)) add("INVALID_NUMBER", p + ".maxSpeed"); // D606
+        for (auto& issue : gapReductionIssues(rule.gapReduction, rule.gapTime, p, "INVALID_NUMBER")) issues.push_back(std::move(issue)); // D618
+        for (const auto& [ids, key] : {std::pair{&rule.yieldTypeIds, ".yieldTypeIds"}, std::pair{&rule.blockTypeIds, ".blockTypeIds"}})
+            if (*ids) for (const auto& type : **ids)
+                if (std::none_of(s.vehicleTypes.begin(), s.vehicleTypes.end(), [&](const auto& t) { return t.id == type; })) add("UNKNOWN_VEHICLE_TYPE", p + key);
     }
     (void)rules;
     // M3.2.3a/b. A conflict zone: two chains of consecutive segments, an area from entry on the
@@ -154,6 +162,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         const auto& zone = s.conflictZones[i];
         const auto p = "conflictZones[" + std::to_string(i) + "]";
         number(zone.gapTime, p + ".gapTime"); number(zone.headway, p + ".headway", true);
+        for (auto& issue : gapReductionIssues(zone.gapReduction, zone.gapTime, p, "INVALID_NUMBER")) issues.push_back(std::move(issue)); // D618
         for (const auto& [side, name] : {std::pair{&zone.major, ".major"}, std::pair{&zone.minor, ".minor"}}) {
             const auto& chain = side->segmentIds;
             if (chain.empty()) {
@@ -177,6 +186,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             if (has(zone.minor.segmentIds, id)) add("INVALID_RANGE", p + ".minor.segmentIds");
         if (!std::isfinite(zone.waitPosition) || zone.waitPosition > zone.minor.entry || zone.minor.segmentIds.empty() ||
             zone.waitPosition < -singleApproach(zone.minor.segmentIds.front())) add("INVALID_POSITION", p + ".waitPosition");
+        if (!(zone.visibility > 1)) add("INVALID_RANGE", p + ".visibility"); // D607: (1, inf]; NaN refused
     }
     // Per route, through the same incidence the run uses (conflicts.hpp).
     // `holds` is the waits-for graph between zones: a route that can hold zone M while waiting as
@@ -285,8 +295,10 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : stopDwellIssues(b, p)) issues.push_back(std::move(issue)); // B-8 (D231)
             spreadIssues(b, p, issues); // B-4 (D236)
             for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
-        for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
             for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
+            for (auto& issue : diffusionIssues(b, p)) issues.push_back(std::move(issue)); // D613
+            for (auto& issue : yieldBehaviourIssues(b, p)) issues.push_back(std::move(issue)); // D618
+            for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
             continue;
         }
@@ -305,6 +317,9 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         spreadIssues(b, p, issues); // B-4 (D236)
         for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
         for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
+        for (auto& issue : diffusionIssues(b, p)) issues.push_back(std::move(issue)); // D613
+        for (auto& issue : yieldBehaviourIssues(b, p)) issues.push_back(std::move(issue)); // D618
+        for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
         // D95: the two discretionary fields come together; one alone is refused on the other's path.
         // A zero threshold is refused: two free lanes would then tie at a gain of 0, and every
@@ -340,6 +355,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         number(t.desiredSpeed.min, p + ".desiredSpeed.min"); number(t.desiredSpeed.max, p + ".desiredSpeed.max");
         if (t.desiredSpeed.max < t.desiredSpeed.min) add("INVALID_RANGE", p + ".desiredSpeed");
         if (t.kerbLanes && (*t.kerbLanes < 1 || *t.kerbLanes > 16)) add("INVALID_KERB_LANES", p + ".kerbLanes"); // B-7 (D234)
+        for (auto& issue : accelerationCurveIssues(t, p)) issues.push_back(std::move(issue)); // D608
         if (t.pcu && (!std::isfinite(t.pcu->value) || t.pcu->value <= 0 || isBlank(t.pcu->source)))
             add("INVALID_PCU", p + ".pcu"); // S1.2 (STUDY_PERIODS §7, D270): positive and cited
         // B-5 (SPEED_DISTRIBUTION §4, D229): a curve from (min, 0) to (max, 1), speeds rising, shares not falling.

@@ -6,7 +6,10 @@
 #include "parking_types.hpp"
 #include "random_streams.hpp"
 #include "speed_decision_types.hpp"
+#include "w74_types.hpp"
+#include "yield_types.hpp"
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -23,33 +26,6 @@ struct Route {
     bool circuit{};
     double leadIn{}; // D459: distance before a joined chain's first Link, for the free-flow time
     bool operator==(const Route&) const = default;
-};
-// M3.3.3a W74 (docs/reference/W74.md, D129). Every key is required data (hard rule 5); there
-// are deliberately no defaults.
-struct W74Parameters {
-    double ax, bxAdd, bxMult, exAdd, exMult, cxAdd, cxMult, opdvAdd, opdvMult, dMax;
-    double bMaxAdd, bMaxMult, bMaxSpeedRoot, bNullAdd, bNullMult, bMinAdd;
-    double leaderAccelerationWeight, emergencyLeaderWeight;
-    bool operator==(const W74Parameters&) const = default;
-};
-// Per-driver draws in [0, 1], fixed when the vehicle is generated (contract §5).
-struct W74Traits {
-    double zBx, zEx, zCx, zOp, zOsc;
-    bool operator==(const W74Traits&) const = default;
-};
-// M3.5 perception (docs/reference/PERCEPTION.md §6, D179/D181): optional keys on either model;
-// an absent key means the pre-M3.5 behaviour. observedVehiclesAhead holds an integer.
-struct PerceptionParameters {
-    std::optional<double> lookAheadDistance, observedVehiclesAhead, lookBackDistance;
-    std::optional<double> rearTimeToCollision, reactionTime;
-    bool operator==(const PerceptionParameters&) const = default;
-};
-enum class W74Regime : std::uint8_t { free, approaching, following, emergency };
-// The previous tick's regime and the oscillation sign it used (0 outside following), §7.
-struct W74State {
-    W74Regime regime{};
-    std::int8_t sign{};
-    bool operator==(const W74State&) const = default;
 };
 struct DriverBehaviour {
     std::string id;
@@ -80,6 +56,9 @@ struct DriverBehaviour {
     bool stopFloor{}; // runtime only, never in a file: set by createSimulation from clampRules.standingStopFloor and amberDeceleration (LINE_APPROACH §7, D258)
     bool standingTarget{}, stopArrival{}; // runtime only, off by default: the M6 sweep's engine levers D and E (M6_SWEEP §4, D546)
     std::optional<double> missedExitAfter; // s at a dead end, then the vehicle gives up its turn (LANE_LOCKS B, D581); absent: never
+    std::optional<double> diffusionTime; // s at a dead end, then the vehicle is removed (DIFFUSION, D613); absent: never
+    std::optional<double> inattentionDuration, inattentionProbability; // START_UP §3 (D608): a pair; absent: always attentive
+    std::optional<double> yieldTime, yieldTimeDeviation, yieldTimeMinimum, yieldTimeMaximum, impatience, timeToImpatience; // s (Aimsun), SUMO: YIELD_IMPATIENCE (D618)
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles { double wheelbase{}, frontOverhang{}, rearOverhang{}; bool operator==(const VehicleAxles&) const = default; };
@@ -91,6 +70,7 @@ struct VehicleType {
     SpeedRange desiredSpeed;
     double maxAcceleration{}, comfortableDeceleration{}, maxDeceleration{};
     std::string behaviourId; std::optional<int> kerbLanes; // B-7 (LANE_PREFERENCE, D234): enters on lanes 0..N-1
+    std::vector<AccelerationPoint> accelerationCurve; // START_UP §2 (D608); empty: maxAcceleration at every speed
     // Display kinematics only; traffic following/reservations still use length.
     std::optional<VehicleAxles> axles; std::optional<Pcu> pcu;
     bool operator==(const VehicleType&) const = default;
@@ -160,6 +140,12 @@ struct PriorityRule {
     std::string conflictSegmentId; double conflictPosition{}; // the point on the major approach
     double gapTime{};   // seconds: a major vehicle arriving sooner than this is not yielded to
     double headway{};   // metres: a major vehicle closer than this to the point blocks regardless
+    // PRIORITY_RULES (D606), only on an authored marker's rule: the headway test counts a major
+    // vehicle only at or below this speed (m/s); the vehicle types that wait at the line and that
+    // block at the marker. Absent: no limit, every type (every derived merge rule).
+    std::optional<double> maxSpeed; std::optional<std::vector<std::string>> yieldTypeIds, blockTypeIds;
+    bool stop{}; // D615: a Stop control on the line: a full stop there before the gap test (StopService)
+    std::optional<GapReduction> gapReduction; // YIELD_IMPATIENCE §3 (D618); absent: gapTime always
     bool operator==(const PriorityRule&) const = default;
 };
 // M3.2.3a. One crossing: the minor side gives way to the major side, and the two never occupy
@@ -183,6 +169,10 @@ struct ConflictZone {
     double gapTime{};      // seconds, as PriorityRule
     double headway{};      // metres, as PriorityRule
     ZoneControl control{ZoneControl::yield};
+    // VISIBILITY (D607): metres short of its waiting line within which a minor driver judges the gap;
+    // farther out the area counts as blocked, so it plans to stop at the line. Infinite: no limit.
+    double visibility{std::numeric_limits<double>::infinity()};
+    std::optional<GapReduction> gapReduction; // YIELD_IMPATIENCE §3 (D618); absent: gapTime always
     bool operator==(const ConflictZone&) const = default;
 };
 // M3.2.8b (docs/reference/M3_8_CONTRACT.md §2). A vehicle on route `fromRouteId` whose rear is at or past
@@ -292,12 +282,15 @@ struct ScenarioIndex {
     std::vector<std::uint32_t> remainingOfRoute;
     std::vector<std::uint64_t> missedExitTicks; // D581: per behaviour, ticks before a missed exit; 0 never
     bool missedExits{};                         // some behaviour has one and some route a dead end
+    std::vector<std::uint64_t> diffusionTicks;  // D613: per behaviour, ticks before removal; 0 never
+    bool diffusions{};                          // some behaviour has one and some route a dead end
+    bool yields{};                              // D618: some behaviour has yieldTime or impatience
     // D95: the full-to-full spans, apart from `laneChangesOfRoute` (stub spans only), in target-slot
     // order. `discretionary` is set only when some span exists AND some behaviour has the threshold.
     bool discretionary{};
     std::vector<std::vector<RouteLaneChange>> discretionaryOfRoute;
     std::vector<std::vector<RouteZone>> routeZones;  // parallel to Scenario::routes, in conflictZones order
-    bool stopZones{};                                // any zone is a Stop: only then is service tracked
+    bool stopZones{};                                // any Stop line, zone or rule (D615): only then is service tracked
     std::vector<std::size_t> programOfHead;          // parallel to Scenario::signalHeads
     std::vector<std::vector<RouteHead>> routeHeads;  // parallel to Scenario::routes, in signalHeads order
     std::vector<std::vector<RouteSpeedDecision>> routeSpeedDecisions; std::vector<std::vector<RouteSpeedArea>> routeSpeedAreas; // by route distance (B-6, D223, D225)
@@ -306,6 +299,9 @@ struct ScenarioIndex {
     // search by id. SIZE_MAX when the rule names a segment that does not exist; validation
     // rejects that scenario, but a hand-built index must not read out of bounds before it does.
     std::vector<std::size_t> conflictSegmentOfRule;  // parallel to Scenario::priorityRules
+    // D606: per rule, which vehicle types wait at its line and which block at its marker, indexed
+    // by Scenario::vehicleTypes; an empty row is every type. Both empty without a filtered rule.
+    std::vector<std::vector<bool>> yieldTypesOfRule, blockTypesOfRule;
     // The behaviour a vehicle uses depends only on its TYPE, so it needs no per-vehicle lookup
     // at all once the type is known. The sorted routeOfId/typeOfId tables that used to live here
     // are gone with the string ids they existed to resolve: a vehicle carries its slots.
@@ -392,6 +388,8 @@ struct Vehicle : PendingVehicle {
     // the piecewise free-flow time so far up to route distance freeFlowFrom, and the area speed (0: none).
     double desiredQuantile{-1}, freeFlowSoFar{}, freeFlowFrom{}, areaSpeed{};
     std::uint64_t deadEndTicks{}; // D581: consecutive ticks waiting at its dead end; 0 unless missedExitAfter
+    std::uint64_t diffusionWait{}; // D613: likewise, toward diffusionTime
+    std::uint64_t standstillTicks{}; // D618: consecutive ticks below 0.1 m/s; counted only under index.yields
     bool operator==(const Vehicle&) const = default;
 };
 // Parallel to Scenario::inputs, one entry each and in that order: createSimulation builds it

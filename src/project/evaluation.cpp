@@ -206,6 +206,7 @@ Json movementJson(const MovementReport& r) {
     j["laneChanges"] = r.laneChanges;
     if (r.redRunning) j["redRunning"] = *r.redRunning; // B-9 (D238): only with the keys
     if (r.diverted) j["diverted"] = *r.diverted; // D581: only with the key
+    if (r.removed) j["removed"] = *r.removed; // D613: only with the key
     j["evaluationPeriod"] = {{"warmup", r.warmup}, {"end", r.evaluationEnd}}; // M5.3
     if (r.cooldown) j["evaluationPeriod"]["cooldown"] = *r.cooldown; // M5.9: only with one
     if (!r.sections.empty()) { // M5.4: only with a section, so other projects keep their bytes
@@ -385,6 +386,7 @@ std::string movementCsv(const MovementReport& r) {
     if (r.cooldown) out << "cooldown_s," << csvNumber(*r.cooldown) << '\n'; // M5.9: only with one
     if (r.redRunning) out << "redRunning," << *r.redRunning << '\n'; // B-9 (D238)
     if (r.diverted) out << "diverted," << *r.diverted << '\n'; // D581
+    if (r.removed) out << "removed," << *r.removed << '\n'; // D613
     if (!r.lots.empty()) out << "parked," << r.parked << '\n'; // M8.5: closes the vehicle count
     return out.str();
 }

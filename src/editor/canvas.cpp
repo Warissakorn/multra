@@ -113,6 +113,7 @@ void EditorCanvas::redraw() {
     if (runLayerBaked_) { runLayerBaked_=false; resetCachedContent(); }
     if (grid != cachedGrid_) { cachedGrid_ = grid; resetCachedContent(); }
     if (!document_) return;
+    updateConflictRelated();
     const auto& bg=document_->background;
     if (backgroundVisible_ && !bg.pngBase64->empty()) {
         if (cachedImage_ != bg.pngBase64) {

@@ -4,6 +4,7 @@
 #include "../src/model/network/conflict_display.hpp"
 #include "../src/project/document.hpp"
 #include "../src/project/latest_schema.hpp"
+#include "../src/project/network_fields.hpp"
 using namespace multra;
 using namespace tjunction;
 // M3.2.12 slices 1b-2, rows SL1-SL3, SL5, SL6 and SL8 of docs/reference/STOP_LINES.md (D594): a side
@@ -86,7 +87,7 @@ TEST(stoplines, sl5_deriving_keeps_signs_counters_and_dragged_lines_and_resaves_
         CHECK(std::any_of(row.waitingLines.begin(), row.waitingLines.end(), [&](const auto& w) { return w.id == c.waitingLineId; }));
     validateDocument(legacy);
     const auto json = documentJson(legacy);
-    CHECK(json.at("schemaVersion") == kLatestSchema);
+    CHECK(json.at("schemaVersion") == networkCodec::derivedLineVersion); // D594's step, not the newest
     CHECK(documentJson(parseDocument(json)) == json);
     CHECK(deriveStopLines(legacy) == 0); // a second pass changes nothing
 }
@@ -129,7 +130,7 @@ TEST(stoplines, sl8_front_stop_distance_is_a_project_value_in_0_to_10_metres) {
         CHECK(refused);
     }
     // Older schemas know neither the value nor an empty line.
-    auto old = json; old["schemaVersion"] = kLatestSchema - 1;
+    auto old = json; old["schemaVersion"] = networkCodec::derivedLineVersion - 1;
     test::throws([&] { parseDocument(old); }, "EDIT_UNSUPPORTED_FIELD");
     old["network"]["rightOfWay"].erase("frontStopDistance");
     test::throws([&] { parseDocument(old); }, "UNKNOWN_WAITING_LINE");
@@ -151,8 +152,16 @@ TEST(stoplines, sl4_a_placed_line_covers_the_areas_downstream_of_it) {
     const auto r = resolveRightOfWay(d.network, runtimeSections(d.network), {5, 7});
     CHECK(r.issues.empty());
     for (const auto& z : r.zones) CHECK(z.waitPosition < 0); // every minor side waits on the approach, before its Connector
-    // A second line upstream covers nothing the first already does.
-    test::throws([&] { auto again = d; placeStopLine(again, {approach, end - 12}); }, "EDIT_NO_CONFLICT_DOWNSTREAM");
+    // A second line upstream covers nothing the first already does: D616 (amends D595) places it alone,
+    // the line of a priority rule to come, and every area keeps the first line.
+    {
+        auto again = d;
+        CHECK(stopLineCoverage(again.network, {approach, end - 12}).empty());
+        const auto alone = placeStopLine(again, {approach, end - 12});
+        CHECK(again.network.rightOfWay.waitingLines.size() == d.network.rightOfWay.waitingLines.size() + 1);
+        for (const auto& a : again.network.rightOfWay.conflictAreas) CHECK(a.first.waitingLineId != alone && a.second.waitingLineId != alone);
+        validateDocument(again);
+    }
     // On the crossing turn before its crossing: that turn's areas only.
     auto turn = t.document;
     const auto& crossing = areaOf(turn, t.crossingArea);

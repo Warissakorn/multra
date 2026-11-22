@@ -48,7 +48,8 @@ The other headers:
 | `object_table.*` | `ObjectTable`: the metadata-driven object table (headers, rows, kept selection, formats); piloted on Study periods (D525) | [OBJECT_TABLE](../../docs/plans/OBJECT_TABLE.md) |
 | `street_segments_panel.*` | `StreetSegmentsPanel`: the Street segments object tab, its template combo and dialog, and the Street segment tool's preview and commit (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
 | `nodes_panel.*` | `NodesPanel`: the Nodes object tab, its rename dialog, actions and the Node tool's commit; window parts reached through `NodesHooks` (D523) | [NODES](../../docs/reference/NODES.md) |
-| `conflicts_panel.*` | `ConflictsPanel`: the Conflict areas object tab, its dialogs, priority actions and the automatic areas; window parts reached through `ConflictsHooks` (D523) | [M3_PLAN](../../docs/plans/M3_PLAN.md) |
+| `conflicts_panel.*` | `ConflictsPanel`: the Conflict areas object tab, its dialogs (priority-rule rows and dialog in `conflicts_panel_rules.cpp`, D617), priority actions and the automatic areas; window parts reached through `ConflictsHooks` (D523) | [M3_PLAN](../../docs/plans/M3_PLAN.md) |
+| `gap_reduction_fields.hpp` | The checkbox and three numbers of a place's gap reduction in the area and rule dialogs (D618) | [YIELD_IMPATIENCE](../../docs/reference/YIELD_IMPATIENCE.md) §3 |
 | `cross_sections_panel.*` | `CrossSectionsPanel`: the Cross-sections object tab and its dialog (D521) | [STREET_SEGMENTS](../../docs/reference/STREET_SEGMENTS.md) |
 | `zones_panel.*` | `ZonesPanel`: the Zones object tab, its connectors, dialogs and the Zone tool's commit (D521) | [ZONES_AND_PARKING](../../docs/reference/ZONES_AND_PARKING.md) |
 | `link_types_panel.*` | `LinkTypesPanel`: the Link types object tab and its dialog; `linkTypeRowsOf` for the Link's type field (D521) | [MACRO_NETWORK](../../docs/reference/MACRO_NETWORK.md) |
@@ -64,7 +65,7 @@ The other headers:
 | `recent_files.*` | File → *Open recent*: the person's last eight projects in `recent-files.json` beside their other local data; `rememberRecentFile` on open and save, `fillRecentMenu` lists them (D504) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `results_levels.*` | The Results level picker: one level's tabs at a time, tabs without data left out, jumps pick their level (D497) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `editor_interaction.*` | Application-wide input behaviour installed once, covering modal dialogs | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
-| `message_label.*` | The one-row, closable message line under the canvas | [D429](../../docs/decisions/RECORD.md#d429) |
+| `message_label.*` | The one-row, closable message line under the canvas | [D429](../../docs/decisions/RECORD-D400-D599.md#d429) |
 | `editor_storage.*` | Atomic replacement and exact Save bytes shared with analysis snapshots; refuses an export over the active project or recovery file | [NETWORK_EDITOR](../../docs/reference/NETWORK_EDITOR.md) |
 | `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD-D200-D399.md#d286) |
 | `form_values.*` | Precision-preserving staged values, language-switch drafts and validation before modal acceptance | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |

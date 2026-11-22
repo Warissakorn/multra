@@ -93,8 +93,12 @@ The `desktop` preset builds the `multra_*` libraries as shared objects on Linux
 every test executable, and editing a library source relinks only that library. The `headless`,
 `sanitizer` and `release` presets, packaging and every Windows build stay static.
 
+A GCC or Clang Debug build compiles with `-Og` and keeps `-g` (D621). It ran the desktop suite in about
+140 s instead of 331 s on 4 cores, with identical results. To step through code at `-O0`, configure
+with `-DMULTRA_DEBUG_OG=OFF`. MSVC builds are unchanged.
+
 **Cloud containers** (Claude Code on the web): a Debug desktop build with debug information filled
-the container's disk (23 GB). Configure with `cmake --preset desktop -DCMAKE_CXX_FLAGS_DEBUG="-O0 -g0"`;
+the container's disk (23 GB). Configure with `cmake --preset desktop -DCMAKE_CXX_FLAGS_DEBUG="-g0"` (D621's `-Og` still applies);
 the apt line above also needs `libxkbcommon-dev`, and `apt-get update` first.
 
 In displayless CI the desktop test uses `QT_QPA_PLATFORM=offscreen`. Normal launches
