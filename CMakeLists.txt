@@ -55,6 +55,7 @@ else()
         endif()
     endif()
 endif()
+include(cmake/debug_optimisation.cmake) # D621: -Og for GCC/Clang Debug builds
 
 # System/vcpkg packages; no network downloads happen implicitly during configure.
 find_package(nlohmann_json 3.11 CONFIG QUIET)
