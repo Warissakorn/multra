@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-22 — Three optimisation passes: the test loop, the Debug build, the live docs (D621)
+
+- **Owner:** /optimize-program three times (the third with "เอกสาร"); each plan answered "แก้ตามแนะนำ". The owner did not
+  revert the W74 split of `types.hpp` (line limit only; NEXT keeps the deferred rebuild split).
+- **Pass 1 (after G7):** the schema-label dump streams case by case, output byte-identical (dump 38.3 → 25.3 s, peak memory
+  2,217 → 603 MB, `schema-labels` 84.2 → 71.5 s); merge groups out of `right_of_way.cpp` (500 → 447 lines); comments and the
+  D592/D610 amendment notes brought in line with D620; one misleading-indentation warning fixed. A pickling change for the
+  Python half was measured and dropped (1.1 s of pickling; fork-shared validation was slower, 40.2 → 66.1 s).
+- **Pass 2, D621:** GCC/Clang Debug builds compile with `-Og`: the desktop suite 331 s (313–336) → 138–143 s, `check`
+  336–356 → 148 s, `multra-cli 42` byte-identical; `-DMULTRA_DEBUG_OG=OFF` restores `-O0`. The engine was not touched:
+  Release runs 0.25 µs per vehicle-tick. Two more warnings fixed; `types.hpp` 497 → 471 (`w74_types.hpp`).
+- **Pass 3 (docs):** NEXT's four stale statements corrected; finished-slice history moved verbatim to
+  [NEXT-state-2026-11-22](archive/NEXT-state-2026-11-22.md) and the `procedures` brief to
+  [PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md) (NEXT ~7,100 → ~5,400 tokens); D400–D599 frozen in
+  [RECORD-D400-D599](decisions/RECORD-D400-D599.md) as D486 splits every 200 IDs (RECORD.md ~61,700 → ~5,900 tokens).
+- **Verified (Linux, offscreen):** desktop `check` 367/367 after each pass; docs and sizes pass. Nothing visible changed,
+  so there is no Windows look.
+
 ## 2026-11-22 — Windows items 51 and 52 passed; conflict-area display as Vissim (D620)
 
 - **Owner (verbatim):** "4. 51 ok"; on item 52: "5. สมจริง แต่สามารถใช้ตาม Aimsun next ได้อย่างถูกต้องตามกฎหมายใช่หรือไม่".
@@ -137,18 +155,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Tests:** `priority-canvas` (no arrows with nothing pointed at or selected; the selected area's Links black
   and pointing downstream; a selected Link blue) and `editor-interaction-ui` (hover black, selection blue; its old
   "hover draws no arrows" check reversed). Desktop `check` green, 363 tests.
-
-## 2026-11-20 — Conflict areas in Vissim's colours; direction arrows on every edge (D610)
-
-- **Owner, A2 attempt 2 step 3 (verbatim, with a picture):** "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง conflict
-  area ให้มีสีแบบในรูปและลูดศรชี้ตามทิศทาง ลักษณะคล้ายในรูป". In chat: arrows on every edge under the tool, no A/B
-  labels, colours as bright as the picture.
-- **D610:** sides with right of way `#00FF00`, yielding `#FF0000`, undecided `#C0C000` (canvas-only tokens);
-  branching keeps the dark error ink, an automatic candidate its faint wash. Under the Conflict area and Stop line
-  tools every Link and Connector edge is a near-black line (`#1F1F1F`) with arrowheads along travel.
-- **Tests:** `priority-canvas` checks the three colours and arrows on every Link and Connector under both tools,
-  pointing the digitised way, and no unselected edge under Select; it failed before the change. Desktop `check`
-  green, 363 tests. Step 4 and the verdict are still the owner's.
-- **D610 (b), 2026-11-21:** owner (verbatim) "เหลือลูกที่กึ่งแล้วแนวที่เกิด conflict แต่ละแนว": each band carries a
-  dark centre line with an arrowhead at its exit end; `priority-canvas` checks every band has one, the major
-  road's point downstream, and none under Select (failed before).

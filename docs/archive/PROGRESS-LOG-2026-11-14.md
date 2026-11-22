@@ -2,6 +2,21 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-20 — Conflict areas in Vissim's colours; direction arrows on every edge (D610)
+
+- **Owner, A2 attempt 2 step 3 (verbatim, with a picture):** "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง conflict
+  area ให้มีสีแบบในรูปและลูดศรชี้ตามทิศทาง ลักษณะคล้ายในรูป". In chat: arrows on every edge under the tool, no A/B
+  labels, colours as bright as the picture.
+- **D610:** sides with right of way `#00FF00`, yielding `#FF0000`, undecided `#C0C000` (canvas-only tokens);
+  branching keeps the dark error ink, an automatic candidate its faint wash. Under the Conflict area and Stop line
+  tools every Link and Connector edge is a near-black line (`#1F1F1F`) with arrowheads along travel.
+- **Tests:** `priority-canvas` checks the three colours and arrows on every Link and Connector under both tools,
+  pointing the digitised way, and no unselected edge under Select; it failed before the change. Desktop `check`
+  green, 363 tests. Step 4 and the verdict are still the owner's.
+- **D610 (b), 2026-11-21:** owner (verbatim) "เหลือลูกที่กึ่งแล้วแนวที่เกิด conflict แต่ละแนว": each band carries a
+  dark centre line with an arrowhead at its exit end; `priority-canvas` checks every band has one, the major
+  road's point downstream, and none under Select (failed before).
+
 ## 2026-11-20 — G1 start-up as Vissim: acceleration by speed, lack of attention (D608)
 
 - **Owner (verbatim):** "เริ่ม G1 ทำเหมือน vissim", then "ก+ข".
