@@ -81,18 +81,18 @@ block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at
 done (D614):** schema 83 marker form, compile per marker to the core `PriorityRule`, `maxSpeed` and class
 filters in the engine; rows `priority_rule` PR1–PR6, PR10–PR13; M0 unchanged. **Slice 1b done (D615):** a Stop control
 on the line (it may name no area) is a full stop before the gap test (PR14–PR16). **Slice 2 done (D616):** with a line picked,
-Ctrl+right-click on another lane adds a marker; drag and Delete; markers follow their roads (PR7, PR8). **For the owner:** [OWNER_SITTING_WINDOWS item 51](plans/OWNER_SITTING_WINDOWS.md) on the new
-`priority-rule-lab` example (first in the sitting). **Slice 3 done (D617):** headway bands, links
-while picked, table rows with a dialog, the unreached-marker advisory. **Left:** the owner's look (item 51); a class
+Ctrl+right-click on another lane adds a marker; drag and Delete; markers follow their roads (PR7, PR8). **The owner's look (item 51) passed 2026-11-22** ("51 ok") on the
+`priority-rule-lab` example. **Slice 3 done (D617):** headway bands, links
+while picked, table rows with a dialog, the unreached-marker advisory. **Left:** a class
 picker in place of typed class ids if the owner asks.
 
-## G7 waiting acceptance (D618, D619) — slices 1 and 2 done; the owner's look next
+## G7 waiting acceptance (D618, D619) — done; the owner judged it plausible (2026-11-22)
 
 [YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md): Aimsun's gap reduction (a behaviour's per-vehicle `yieldTime`; a
 rule's or marker's `finalGapTime`, `gapReductionStart`, `gapReductionEnd`, in the area and rule dialogs) and SUMO's
 impatience at conflict areas (the follow-on behind a standing major vehicle), schema 84, rows YI1–YI12; off by default,
-M0 unchanged. **For the owner:** [OWNER_SITTING_WINDOWS item 52](plans/OWNER_SITTING_WINDOWS.md) on the new
-`yield-impatience-lab` example, after item 51, on a new Windows build.
+M0 unchanged. **Item 52 passed 2026-11-22** ("สมจริง", with a licensing question answered in PROGRESS); its findings on
+conflict-area display are D620 (arrows on the lane centre, only on the selected area; Vissim's yellow and red-red).
 **The other realism gaps** ([evidence](evidence/realism-gaps-vissim-sumo-aimsun.md)): G8 needs nothing (matches all
 three programs); G4, G5, G6 are named in ROADMAP M3.4; G9 is M3.3.3b.
 

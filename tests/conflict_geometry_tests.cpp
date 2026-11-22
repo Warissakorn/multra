@@ -230,3 +230,21 @@ TEST(conflict_geometry, mapped_lane_mouths_are_excluded_at_link_ends_and_interna
             }
         }
 }
+// D620 (owner, Windows item 52's finding): a conflict band's centre arrow on a multi-lane Link lies on
+// its lane's own centre, not on the Link's reference line.
+TEST(conflict_geometry, a_side_centre_lies_on_its_own_lane_on_a_multi_lane_link) {
+    ProjectDocument d; d.network.drivingSide = DrivingSide::right;
+    const auto id = addLink(d, {{0, 0}, {100, 0}}, 2, 3.5);
+    const auto& link = d.network.links.front(); CHECK(link.id == id && link.lanes.size() == 2);
+    std::vector<double> offsets;
+    for (const auto& l : link.lanes) {
+        const auto centre = conflictSideCentre(d.network, {{id, l.id, "", "", ""}, 60, 40, ""});
+        CHECK(centre.size() >= 2);
+        test::near(centre.front().x, 40, 1e-9); test::near(centre.back().x, 60, 1e-9); // travel order
+        test::near(centre.front().y, centre.back().y, 1e-9);
+        offsets.push_back(centre.front().y);
+    }
+    // One lane width apart, neither on the reference line: the old arrow sat on it for both lanes.
+    test::near(std::abs(offsets[0] - offsets[1]), 3.5, 1e-9);
+    CHECK(std::abs(offsets[0]) > 1 && std::abs(offsets[1]) > 1);
+}

@@ -6,32 +6,12 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 `git log -p` on this file before D602); I.1, I.3, I.4, F2, D2 and E22 closed. Item names are unchanged
 and never reused; an item that took in an older one says so.
 
-**Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): P51 → P52 → E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
+**Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
 I.5 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
-E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15).
+E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
+2026-11-22: P51 and P52 (words in PROGRESS; their findings D620).
 
 ---
-
-## P — Priority rules (D614–D616)
-
-51. **Priority rule lab** (listed 2026-11-21 at the owner's request, "สร้าง Project สำหรับทดสอบเช็ค บน Window").
-    *File → Open example → Priority rule lab* (`priority-rule-lab.traffic.json`, left-hand). Check five things:
-    1. Choose the Stop line tool (`W`): two stop lines on the two turns (amber Yield on the right turn, red Stop on
-       the left turn), three green markers on the major road, and no conflict area (the grey crossing is passive).
-    2. Run: right-turners wait at their line for a gap in both streams; left-turners stop fully, then go.
-    3. Click the right-turn line, then Ctrl+right-click on another lane: a new green marker. Drag a marker along its
-       lane; click it and press Delete; Undo and Redo, one step each.
-    4. Ctrl+right-click on a lane with nothing downstream: a lone line is placed, not refused.
-    5. Verdict: is the behaviour plausible, and are the gestures clear in Thai? *Owner:*
-52. **Waiting acceptance lab** (listed 2026-11-21, G7, D618–D619). *File → Open example → Waiting acceptance lab*
-    (`yield-impatience-lab.traffic.json`, right-hand). Check four things:
-    1. Run and watch the minor road: after a long wait drivers take shorter gaps (Aimsun); when a major vehicle
-       stops for one minor vehicle, the next follows it out (SUMO's impatience). The two never overlap in the crossing.
-    2. Conflict areas tab: open an area's row; *Gap reduction while waiting (Aimsun)* is checked with finalGapTime
-       2 s, gapReductionStart 1 and gapReductionEnd 2. Uncheck it, OK, Run: the minor queue grows. Undo.
-    3. Behaviours: the behaviour editor's Junctions page shows yieldTime 20, yieldTimeDeviation 5, yieldTimeMinimum 5,
-       yieldTimeMaximum 40 and impatience 0.2.
-    4. Verdict: is the minor road's behaviour plausible? *Owner:*
 
 ## C — Run view (the 125 % screen)
 

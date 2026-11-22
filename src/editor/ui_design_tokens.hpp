@@ -39,7 +39,7 @@ inline constexpr const char* routeTintHex="#FACC15";
 // D610 (owner, with a picture): conflict areas in Vissim's flat colours -- right of way, yields, undecided.
 inline constexpr const char* conflictPriorityHex="#00FF00";
 inline constexpr const char* conflictYieldHex="#FF0000";
-inline constexpr const char* conflictPassiveHex="#C0C000";
+inline constexpr const char* conflictPassiveHex="#FFFF00";
 // D610: the road edges and their direction arrows under the right-of-way tools, near-black as the picture.
 inline constexpr const char* directionEdgeHex="#1F1F1F";
 

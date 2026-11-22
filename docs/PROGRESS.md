@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-22 — Windows items 51 and 52 passed; conflict-area display as Vissim (D620)
+
+- **Owner (verbatim):** "4. 51 ok"; on item 52: "5. สมจริง แต่สามารถใช้ตาม Aimsun next ได้อย่างถูกต้องตามกฎหมายใช่หรือไม่".
+  Findings 1–3 with two pictures: arrows off their lanes at multi-lane crossings; new junctions already green and red;
+  "3. อธิบาย conflict area ที่ยังไม่สามารถปรับได้". Answers: "พิมผิด ต้องการให้แสดงเส้นลูกษรตรงกลางเฉพาะตอนเลือก Conflict area นั้น";
+  "เหลืองเหมือนกันหมด".
+- **D620:** centre arrows on the lane's own centre and only on the selected area; unauthored areas yellow (automatic merges
+  included), authored undecided red on both sides. Explained in chat: the dark brown areas are branching (a diverge from one
+  lane), read-only because vehicles keep their order there; the licensing answer (methods from public manuals, reimplemented;
+  no code or text copied; not legal advice).
+- **Verified (Linux, offscreen):** desktop 367/367 (priority-canvas checks red-red and no arrows off the selected area); the
+  new geometry row puts two lanes' centres 3.5 m apart; docs and sizes pass.
+
 ## 2026-11-21 — G7 slice 2: the gap reduction in the dialogs, and the waiting-acceptance lab (D619)
 
 - **Owner:** "ทำต่อ".
@@ -139,21 +152,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D610 (b), 2026-11-21:** owner (verbatim) "เหลือลูกที่กึ่งแล้วแนวที่เกิด conflict แต่ละแนว": each band carries a
   dark centre line with an arrowhead at its exit end; `priority-canvas` checks every band has one, the major
   road's point downstream, and none under Select (failed before).
-
-## 2026-11-20 — G1 start-up as Vissim: acceleration by speed, lack of attention (D608)
-
-- **Owner (verbatim):** "เริ่ม G1 ทำเหมือน vissim", then "ก+ข".
-- **D608:** a vehicle type's optional `accelerationCurve` and a behaviour's optional `inattentionDuration` /
-  `inattentionProbability` (schema 81); editors in the type dialog and the behaviour editor.
-- **Unchanged without the keys:** `multra-cli 42` on M0 keeps 45 / 31.75870154816726 / 1 clamp.
-- **Measured** on a saturated copy of M0 (START_UP §5): lost time today 1.53 s; Vissim-like values 0.96 s; a
-  2.0 m/s² standstill curve 2.16 s with saturation headway 2.01 s (HCM 2.0 s / 1.9 s). SU9 (benchmark) not measured.
-- **Owner, "ตามแนะนำ" (D609):** shipped data keeps no curve (a study's choice); next A2, then G3, then priority rules.
-- **Fixed after the commit:** the `visibility` and `startup` groups joined `all-model-tests`; the W74 branch of
-  `validate.cpp` no longer reports `missedExitAfter` twice (a check in `lanechange`, failing before the fix).
-  Headless `check` green, 246 tests, before that fix; `lanechange` 28/28 and the docs check after it.
-- **SU8 run on desktop:** the type dialog's curve used 2 m/s² above the 1.75 the same test set, so the dialog
-  (rightly) refused it and the test hung; values now under it. The behaviour editor's attention pair joins the
-  library UI test (its file now saves at 81). Desktop `check` green, 363 tests.
-- **Also:** stop-line tests pinned to their own schema step (79) instead of the newest; `right_of_way.cpp` kept
-  under 500 lines.

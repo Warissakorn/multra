@@ -249,7 +249,7 @@ int main(int argc, char** argv) {
         require(lineMark(w, line.id) == "stop", "The Stop line tool does not show the Stop line");
         c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
         // D610 (owner, A2 attempt 2 step 3): areas in the picture's colours -- the side with right of way
-        // #00FF00, the yielding side #FF0000, an undecided area #C0C000 -- and every edge carries arrows.
+        // #00FF00, the yielding side #FF0000; D620 (owner): an authored undecided area red on both sides.
         const auto tints = [&] {
             std::vector<QString> found;
             for (auto* i : c->scene()->items()) if (i->data(0).toString() == "conflict-area")
@@ -263,7 +263,7 @@ int main(int argc, char** argv) {
             undecided.network.rightOfWay.stopControls.clear();
             const QString passive = temp.filePath("passive.traffic.json"); write(passive, undecided);
             w.openFile(passive); c->setTool(EditorCanvas::Tool::conflict); c->redraw(); QApplication::processEvents();
-            require(tints() == std::vector<QString>{"#C0C000"}, "An undecided area is not drawn olive yellow");
+            require(tints() == std::vector<QString>{"#FF0000"}, "An undecided area is not drawn red on both sides");
             w.openFile(file); QApplication::processEvents();
         }
         const auto arrowsOn = [&](const std::string& id) {
@@ -321,6 +321,10 @@ int main(int argc, char** argv) {
                 require(found, "A conflict band has no centre arrow");
             }
         }
+        // D620 (owner): the centre arrows show only on the selected area.
+        c->setHighlightedConflict({}); c->redraw(); QApplication::processEvents();
+        { int marks = 0; for (auto* i : c->scene()->items()) marks += i->data(0).toString() == "conflict-arrow";
+          require(marks == 0, "Centre arrows show on an area that is not selected"); }
         c->setTool(EditorCanvas::Tool::select); c->redraw(); QApplication::processEvents();
         int edges = 0; for (auto* i : c->scene()->items()) edges += i->data(0).toString() == "conflict-arrow";
         require(edges == 0 && !anyArrow(), "Edges or conflict bands carry arrows under Select with nothing selected");

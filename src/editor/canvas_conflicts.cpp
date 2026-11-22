@@ -230,14 +230,16 @@ void EditorCanvas::drawConflicts() {
             const bool undecided=priority==ConflictPriority::undetermined;
             const bool yields=(side==&first)==(priority==ConflictPriority::firstYields);
             const bool lit=key==highlightedConflict_,hover=key==hoverConflict_ || key==hoverAutomatic_;
-            // D610 (owner): right of way green, yields red, undecided olive; a refused branching stays the dark error ink.
-            QColor tint=branching?canvasStyle::error():undecided?(automatic?canvasStyle::ink():canvasStyle::conflictPassive())
-                :yields?canvasStyle::conflictYield():canvasStyle::conflictPriority();
+            // D620 (owner, amends D610): as Vissim, an area nobody has authored is yellow (passive, whatever
+            // rule the engine derives for a merge); an authored undecided area is red on both sides; an authored
+            // decision green and red. A refused branching stays the dark error ink.
+            QColor tint=branching?canvasStyle::error():automatic?canvasStyle::conflictPassive()
+                :undecided || yields?canvasStyle::conflictYield():canvasStyle::conflictPriority();
             // D435 as amended by D592 (owner, 2026-11-19): a flat fill with no hatching or outline at
             // rest, fully opaque so the area reads on any road; the waiting lines stay above it (z 7).
             // Only an automatic candidate nobody has decided stays a faint wash. Hover and the
             // highlighted conflict get a clean solid edge.
-            tint.setAlpha(automatic && undecided?40:255);
+            tint.setAlpha(255);
             const bool hatched=!branching && !undecided && yields; // tag only: z order, not paint
             QPen pen(Qt::NoPen);
             if(lit || hover) {
@@ -253,17 +255,16 @@ void EditorCanvas::drawConflicts() {
             item->setData(4,QString::fromLatin1(branching?"branching":geometryKind==ConflictGeometryKind::merge?"merge":"crossing"));
             item->setData(5,QString::fromStdString(conflictOwner(side->path))); // directional participant
             item->setData(3,QString::fromStdString(id)); // lane-pair identity, independent of group selection
-            // D610 (b), owner: each conflicting path carries a dark centre line, arrowhead at its exit end.
-            if(automatic && undecided)continue; // a faint candidate stays faint
+            // D610 (b), owner: each conflicting path carries a dark centre line, arrowhead at its exit end;
+            // D620 (owner): on the lane's own centre, and only on the selected area (its group).
+            if(!lit || branching)continue;
             QColor mark=tint.darker(170);mark.setAlpha(255);
             QPen centre(mark,1.5);centre.setCosmetic(true);centre.setCapStyle(Qt::FlatCap);
             const auto spans=side==&first?geometry.first:geometry.second;
             const auto& mouths=side==&first?geometry.firstMouth:geometry.secondMouth;
             std::vector<ConflictSide> lanes(spans.begin(),spans.end());for(const auto& m:mouths)lanes.push_back(m.lane);
             for(const auto& span:lanes) {
-                std::vector<Point> line;
-                try{line=polylineSpan(controlPathPolyline(n,span.path),std::min(span.entryStation,span.exitStation),std::max(span.entryStation,span.exitStation));}
-                catch(const std::exception&){continue;}
+                const auto line=conflictSideCentre(n,span);
                 const double length=line.size()<2?0:polylineLength(line);
                 if(!(length>=.5) || !std::isfinite(length))continue;
                 const double z=item->zValue()+.05;

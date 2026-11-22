@@ -2,6 +2,24 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-20 — G1 start-up as Vissim: acceleration by speed, lack of attention (D608)
+
+- **Owner (verbatim):** "เริ่ม G1 ทำเหมือน vissim", then "ก+ข".
+- **D608:** a vehicle type's optional `accelerationCurve` and a behaviour's optional `inattentionDuration` /
+  `inattentionProbability` (schema 81); editors in the type dialog and the behaviour editor.
+- **Unchanged without the keys:** `multra-cli 42` on M0 keeps 45 / 31.75870154816726 / 1 clamp.
+- **Measured** on a saturated copy of M0 (START_UP §5): lost time today 1.53 s; Vissim-like values 0.96 s; a
+  2.0 m/s² standstill curve 2.16 s with saturation headway 2.01 s (HCM 2.0 s / 1.9 s). SU9 (benchmark) not measured.
+- **Owner, "ตามแนะนำ" (D609):** shipped data keeps no curve (a study's choice); next A2, then G3, then priority rules.
+- **Fixed after the commit:** the `visibility` and `startup` groups joined `all-model-tests`; the W74 branch of
+  `validate.cpp` no longer reports `missedExitAfter` twice (a check in `lanechange`, failing before the fix).
+  Headless `check` green, 246 tests, before that fix; `lanechange` 28/28 and the docs check after it.
+- **SU8 run on desktop:** the type dialog's curve used 2 m/s² above the 1.75 the same test set, so the dialog
+  (rightly) refused it and the test hung; values now under it. The behaviour editor's attention pair joins the
+  library UI test (its file now saves at 81). Desktop `check` green, 363 tests.
+- **Also:** stop-line tests pinned to their own schema step (79) instead of the newest; `right_of_way.cpp` kept
+  under 500 lines.
+
 ## 2026-11-20 — Visibility at conflict areas (D607); realism study against Vissim, SUMO, Aimsun
 
 - **Owner (verbatim):** "V ทำเหมือน vissim เริ่มตัดสินใจเรื่อง gap ทำด้วยหรือไม่", "1ก 2ก", "ทุกไฟล์"; then "ศึกษาส่วนอื่นที่ต้อง

@@ -98,6 +98,17 @@ std::vector<Point> controlPathPolyline(const Network& n, const ControlPathRef& r
     const auto strip = stripOf(n, ref);
     return strip ? strip->base : std::vector<Point>{};
 }
+std::vector<Point> conflictSideCentre(const Network& n, const ConflictSide& side) {
+    try {
+        const auto strip = stripOf(n, side.path);
+        if (!strip || strip->base.size() < 2 || strip->left.size() != strip->base.size() || strip->right.size() != strip->base.size()) return {};
+        std::vector<Point> centre;
+        for (std::size_t j = 0; j < strip->base.size(); ++j)
+            centre.push_back({(strip->left[j].x + strip->right[j].x) / 2, (strip->left[j].y + strip->right[j].y) / 2});
+        const double a = std::min(side.entryStation, side.exitStation), b = std::max(side.entryStation, side.exitStation);
+        return polylineSpan(centre, matchedStation(strip->base, centre, a), matchedStation(strip->base, centre, b));
+    } catch (const std::exception&) { return {}; }
+}
 std::optional<ControlPoint> laneControlPoint(const Network& n, const LaneReference& lane, double laneStation) {
     for (const auto& l : n.links) if (l.id == lane.linkId)
         for (const auto& x : l.lanes) if (x.id == lane.laneId) {

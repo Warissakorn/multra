@@ -116,5 +116,6 @@ The owner's choices, 2026-11-21, on [realism-gaps-vissim-sumo-aimsun](../evidenc
 
   The crossing is never held by both sides, and there are no clamps.
 - **Left:**
-  - the owner's look (OWNER_SITTING_WINDOWS item 52);
+  - the owner's look (OWNER_SITTING_WINDOWS item 52) passed 2026-11-22, verbatim: "สมจริง แต่สามารถใช้ตาม Aimsun next ได้อย่างถูกต้องตามกฎหมายใช่หรือไม่"
+    (the question is answered in PROGRESS: methods read from public manuals and reimplemented, no code or text copied);
   - Aimsun's default factors, which are not in the manual read.
