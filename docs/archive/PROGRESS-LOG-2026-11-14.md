@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-21 — Pointing shows a road's direction; a selected conflict area shows its roads (D611)
+
+- **Owner (verbatim):** "ปรับให้การชี้ที่ Link และ connector แสดงเส้นขอบที่มีลูกศรสีดำ ส่วนการเลือกให้เป็นเป็นสีฟ้า
+  แล้วปรับให้การเลือก conflict area ทำให้ link และ connector ขึ้นสถานะถูกชี้", then "ไม่ปรับสีถนน เพิ่มแค่ข้อ 2"
+  (the rule in every tool; not hovering an area, no road colour change).
+- **D611:** a hovered Link or Connector shows its long edges near-black (`#1F1F1F`) with arrowheads; a selected one
+  stays the accent blue with blue arrows; under the Conflict area tool, the Links and Connectors a selected area
+  runs on are drawn as hovered. D610's arrows on every edge under the right-of-way tools are withdrawn.
+- **Tests:** `priority-canvas` (no arrows with nothing pointed at or selected; the selected area's Links black
+  and pointing downstream; a selected Link blue) and `editor-interaction-ui` (hover black, selection blue; its old
+  "hover draws no arrows" check reversed). Desktop `check` green, 363 tests.
+
 ## 2026-11-20 — Conflict areas in Vissim's colours; direction arrows on every edge (D610)
 
 - **Owner, A2 attempt 2 step 3 (verbatim, with a picture):** "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง conflict

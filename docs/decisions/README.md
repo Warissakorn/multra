@@ -95,3 +95,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D619](RECORD.md#d619) — the gap reduction in the area and rule dialogs; the waiting-acceptance lab for the owner's look.
 [D620](RECORD.md#d620) — conflict-area arrows on the lane centre and only when selected; Vissim's yellow for unauthored areas, red-red for undecided.
 [D621](RECORD.md#d621) — GCC/Clang Debug builds compile with `-Og`: the desktop suite in 140 s instead of 331 s, results byte-identical.
+[D622](RECORD.md#d622) — M3.2 diverge rows A62–A66: order, FIFO and replay pass; A64 fails, bodies overlap inside a split under a branch queue (owner item 53).

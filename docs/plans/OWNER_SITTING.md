@@ -92,7 +92,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    note:* D611.
    *Owner:* 2026-11-21, attempt 2, step 4 and the verdict (verbatim), after asking how Stop and Yield differ
    here and in SUMO and Aimsun: "ทดลองแล้วสมจริง". **Attempt 2 passes (D612):** the minor road's behaviour is
-   plausible. Windows version and timings were not given. M3.2 still waits on its diverge acceptance row.
+   plausible. Windows version and timings were not given. M3.2 still waits on its diverge acceptance row (written: A64 fails, item 53).
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
@@ -251,6 +251,15 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     driven and `diverted` on the counted one (D582). Closed.** Still to see in the editor (with item
     C/E checks): the decision dialog's "enters on the lanes that serve it" checkbox and the
     behaviour editor's `missedExitAfter` field.
+53. **Bodies overlapping inside a diverge** (listed 2026-11-22, D622, [evidence](../evidence/diverge-acceptance.md)).
+    M3.2's diverge row A64 fails: when one branch's queue reaches back into the split, a car to the other
+    branch stops seeing the car ahead once that car's rear has left the shared lane, and drives through its
+    rear where the two lanes still overlap (8 of 10 seeds, up to 1.69 m, no clamp). Pick: **(a)** the
+    compiler gives each pair of branches the length within which bodies can touch, and a follower also
+    follows a car on the sibling branch inside it (no reservation; runs change only where a queue stands in a
+    split; measured with callgrind and re-published); **(b)** a branching zone in the core, reserved like a
+    conflict area; **(c)** leave it documented, so M3.2's no-overlap gate is unmet at diverges (M3.2 stays
+    open or is carved). *Session's recommendation:* (a). *Owner:*
 
 ## C–I — on the Windows machine
 

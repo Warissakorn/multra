@@ -85,6 +85,22 @@ A56–A58 (D101), implemented and off by the owner's choice (D102); A53 fails
 cooperation are **M3.2.8c** and get their rows before their code. Passing A01–A58 alone does not
 close M3.2.
 
+**Diverge acceptance fixture** (M3.2's closure row, review O6/R7; D622). One lane A splits by two
+Connectors into B and C, an authored route and input to each (`tests/diverge_tests.cpp`, `diverge.*`).
+Branching is original order (D109): no zone and no rule. Bodies are checked along each path and, across
+the two branches, as footprints in the plane. Results: [diverge-acceptance](../evidence/diverge-acceptance.md).
+
+| ID | Slice | Case | Must show | Result (2026-11-22, Linux) |
+|---|---|---|---|---|
+| A62 | .2/.4 | The plain diverge, compiled | Only branching areas, one between the two branches; nothing stored; no zone, rule or span compiled | Passes |
+| A63 | .3 | Free flow, seeds 42–51 | Vehicles leave the shared lane in departure order; no clamp; no body overlap along a path or across the split | Passes |
+| A64 | .3 | A branch's queue reaching back over the split, seeds 42–51; the forcing (a vehicle standing with its rear inside the split) asserted first | A63's results under congestion | **Fails:** footprints across the split overlap in 8 seeds, up to 1.69 m, with no clamp; order and the along-path check pass |
+| A65 | .3 | A branch blocked at the split for 90 s | The blocked vehicle holds everyone behind it, whatever their branch (first-in, first-out, as Meso ME21); then all drain in order, no clamp | Passes |
+| A66 | .3 | A64's run copied with a queue across the split | Exact replay; all drain | Passes |
+
+A64's remedy waits for the owner (OWNER_SITTING item 53); when it lands, `diverge.a64_*` asserts no
+footprint overlap. Until then M3.2's no-overlap gate is not met at diverges.
+
 ## 2. T-junction fixture specification
 
 Implement `tools/t_junction_network.hpp` through existing commands, following the four-leg

@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-22 — M3.2's diverge rows written: A64 fails, bodies overlap inside a split (D622)
+
+- **Owner:** "พัฒนาต่อ"; the one NEXT item needing no owner was M3.2's diverge acceptance-fixture row (review O6/R7).
+- **D622:** `tests/diverge_tests.cpp` (`diverge.*`), rows A62–A66 in M3_ACCEPTANCE: one lane splitting by two Connectors.
+  A62 (branching only, nothing compiled), A63 (free flow: departure order kept, no clamp, no overlap), A65 (a branch
+  blocked at the split holds everyone behind it, first-in first-out) and A66 (copied-state replay) pass. **A64 fails:**
+  when a branch queue reaches back into the split, a car to the other branch loses its leader once the leader's rear
+  leaves the shared lane and drives through it where the lanes still overlap (8 of 10 seeds, up to 1.69 m, no clamp).
+  Bodies are checked as rectangles in the plane; station overlap alone over-reports (lanes 11.76 m, bodies about 8 m).
+- **Not done:** the engine is unchanged; the remedy changes runs at every diverge, so it is the owner's choice
+  (OWNER_SITTING item 53; recommended (a), sibling-branch leaders). [Evidence](evidence/diverge-acceptance.md).
+- **Verified (Linux, offscreen):** desktop ctest 368/368 (the new `diverge` group included); docs, file sizes pass.
+
 ## 2026-11-22 — Three optimisation passes: the test loop, the Debug build, the live docs (D621)
 
 - **Owner:** /optimize-program three times (the third with "เอกสาร"); each plan answered "แก้ตามแนะนำ". The owner did not
@@ -143,15 +156,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - Recorded in OWNER_SITTING A2 and the M3_ACCEPTANCE sheet; ROADMAP's M3.2.7d row passed. M3.2 stays open on its
   diverge acceptance-fixture row. Windows version and timings were not given. No code change.
 - **Next (D609):** G3 stuck vehicles, then PRIORITY_RULES slice 1.
-
-## 2026-11-21 — Pointing shows a road's direction; a selected conflict area shows its roads (D611)
-
-- **Owner (verbatim):** "ปรับให้การชี้ที่ Link และ connector แสดงเส้นขอบที่มีลูกศรสีดำ ส่วนการเลือกให้เป็นเป็นสีฟ้า
-  แล้วปรับให้การเลือก conflict area ทำให้ link และ connector ขึ้นสถานะถูกชี้", then "ไม่ปรับสีถนน เพิ่มแค่ข้อ 2"
-  (the rule in every tool; not hovering an area, no road colour change).
-- **D611:** a hovered Link or Connector shows its long edges near-black (`#1F1F1F`) with arrowheads; a selected one
-  stays the accent blue with blue arrows; under the Conflict area tool, the Links and Connectors a selected area
-  runs on are drawn as hovered. D610's arrows on every edge under the right-of-way tools are withdrawn.
-- **Tests:** `priority-canvas` (no arrows with nothing pointed at or selected; the selected area's Links black
-  and pointing downstream; a selected Link blue) and `editor-interaction-ui` (hover black, selection blue; its old
-  "hover draws no arrows" check reversed). Desktop `check` green, 363 tests.

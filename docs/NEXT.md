@@ -31,11 +31,17 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2 — closes with its diverge acceptance-fixture row
+## M3.2 — the diverge row fails A64; wait for owner item 53
 
-M3.2.7d passed on attempt 2 (D612); visibility (D607), G1/G2 (D608), G3 (D613) and the A2 answers (D610, D611)
-are done (history: [NEXT-state-2026-11-22](archive/NEXT-state-2026-11-22.md)). M3.2 still closes only with its
-diverge acceptance-fixture row (ROADMAP M3.2).
+M3.2.7d passed on attempt 2 (D612); the diverge rows A62–A66 are written (D622,
+[evidence](evidence/diverge-acceptance.md)). A64 fails: with a branch queue reaching back into a split, cars on the
+two branches overlap (up to 1.69 m, no clamp), because `closestVehicle` drops a leader whose rear has left the shared
+lane. **Owner:** [OWNER_SITTING](plans/OWNER_SITTING.md) item 53, (a) sibling-branch leaders (recommended), (b) a
+branching zone, (c) leave it and carve the gate. **Under (a):** a contract paragraph and rows first (M3_CONTRACT
+branching; the compiled touch length per Connector pair from the same rails as the editor's branching area), then
+code in `src/core/leaders.hpp` with callgrind before and after (study, M2.6, the benchmark), hash events on seeds
+42–43, and assert `mouthOverlaps == 0` in `diverge.a64_*`; re-publish the shipped projects whose runs move.
+`MULTRA_DIVERGE_REPORT=1 multra-tests diverge` prints the per-seed overlaps.
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
