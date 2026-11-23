@@ -19,6 +19,7 @@
 #include "mode_schema_cases.hpp"
 #include "network_schema_cases.hpp"
 #include "period_factor_schema_cases.hpp"
+#include "procedure_schema_cases.hpp"
 #include "right_of_way_schema_cases.hpp"
 #include "routing_schema_cases.hpp"
 #include "signal_control_schema_cases.hpp"
@@ -61,6 +62,7 @@ TEST(schemalabels, dump_every_labelled_case) {
     add("modeCases",modeCases::cases());
     add("networkCases",networkCases::cases());
     add("periodFactorCases",periodFactorCases::cases());
+    add("procedureCases",procedureCases::cases());
     add("rightOfWayCases",rightOfWayCases::cases());
     add("routingCases",routingCases::cases());
     add("signalControlCases",signalControlCases::cases());

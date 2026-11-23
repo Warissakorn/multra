@@ -85,7 +85,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [VEHICLE_POSE.md](VEHICLE_POSE.md) | Vehicle pose — rear axle reference and continuous lane changes |
 | [PROJECT_SCHEMA.md](PROJECT_SCHEMA.md) | Project schema inventory and partial formal envelope/background/Network/Link/Lane/Connector/reference/SignalHead and signal/right-of-way control measurement and base Route/VehicleInput/RoutingDecision coverage, with version rules |
 | [PROJECT_SCHEMA_DEMAND.md](PROJECT_SCHEMA_DEMAND.md) | Definition demand rows of the composed schema: Routes/VehicleInputs/intervals (D363), RoutingDecisions (D364), compositions (D558), modes (D559), vehicle types (D560), behaviours (D561/D563/D564), vehicle classes and link behaviour types (D565) |
-| [PROJECT_SCHEMA_FEATURES.md](PROJECT_SCHEMA_FEATURES.md) | Feature rows of the composed schema: zones (D566), studies/clockStart/study area (D567), map (D568), Macro settings/runs (D569), trip-rate sets (D570), deterrence sets/cost matrices (D571), period factors (D572), mode-choice sets/nests/logsum (D573, MCS1–MCS3) |
+| [PROJECT_SCHEMA_FEATURES.md](PROJECT_SCHEMA_FEATURES.md) | Feature rows of the composed schema: zones (D566), studies/clockStart/study area (D567), map (D568), Macro settings/runs (D569), trip-rate sets (D570), deterrence sets/cost matrices (D571), period factors (D572), mode-choice sets/nests/logsum (D573, MCS1–MCS3), procedures (D636, PRS1–PRS3) |
 | [NETWORK_EDITOR.md](NETWORK_EDITOR.md) | Native network editor |
 | [NETWORK_EDITOR_CONNECTORS.md](NETWORK_EDITOR_CONNECTORS.md) | Native network editor — Connectors |
 | [CONNECTOR_FOUR_POINT_MOUTH.md](CONNECTOR_FOUR_POINT_MOUTH.md) | Centred Connector axis and four-point mouths |

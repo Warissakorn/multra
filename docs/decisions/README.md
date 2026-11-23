@@ -104,3 +104,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D630](RECORD.md#d630) — the root `CMakeLists.txt` split into `cmake/` includes by responsibility (498 → 194 lines); generated build byte-identical.
 [D634](RECORD.md#d634) — Results tabs fit at 1024 in Thai without shorter labels (proved, every tab forced); the clamp note opens with not-validated.
 [D635](RECORD.md#d635) — insertion rebuilds span buckets only for a later candidate, not after every arrival: benchmark −0.81 %, same events.
+[D636](RECORD.md#d636) — `procedures` (73) and feedback (75) in the composed schema; step rows by kind, exclusive assignment; zero disagreements.

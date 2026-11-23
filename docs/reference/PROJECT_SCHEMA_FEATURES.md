@@ -258,3 +258,36 @@ schema is byte-identical except that the shared `{citation, table}` row is named
   against the emitted schema, so the schema half of the TR3, DS3/CM3, PF3 and MCS3 rows now runs
   in `check`. The envelope slice is excluded: its labels are for `projectEnvelopeSchema()` alone.
 
+## Procedure extension (D636)
+
+The composed CLI coverage adds `-procedures`; complete remains false. Root `procedures`
+([PROCEDURE_SEQUENCE §2](PROCEDURE_SEQUENCE.md), `procedure_codec.cpp`) is false below 73, even null
+(`EDIT_UNSUPPORTED_FIELD` at `procedures`), then a nonempty array of closed procedure rows.
+
+- A procedure requires text `id` and `name` and a nonempty `steps` array; optional `feedback` is
+  false below 75.
+- A step is one of four closed rows chosen by its `kind` (`tripGeneration`, `tripDistribution`,
+  `modeChoice`, else the `assignment` row, whose `kind` enum refuses any other text). Every row allows
+  boolean `active`. Generation requires text `rateSet`; distribution requires text `deterrenceSet`,
+  with optional text `skimMode` and `costMatrix`; mode choice requires text `modeChoiceSet`, with an
+  optional nonempty text array `periods`; assignment needs exactly one of text `period` or `macroRun`
+  (D566's `unless`: an exclusive rule, unlike D573's inclusive cost sources).
+- Feedback ([PROCEDURE_FEEDBACK §2](PROCEDURE_FEEDBACK.md)) is a closed row: `method` `msa` or
+  `constantWeight`; `constantWeight` requires numeric `weight` with 0 ≤ weight < 1, and `msa` refuses
+  one; `maxIterations` an integer in [2, 1000] (native integer token); numeric `tolerance` ≥ 0.
+
+Only key membership moves to the shared tables (`macro_set_fields.cpp`, read with `onlyKnownKeys`:
+the reader has no file version). Codes (`INVALID_PROCEDURE`, `INVALID_ID`, `DUPLICATE_ID`), paths and
+issue order are unchanged: `kind` before `active` before keys, and the feedback floor stays after
+parsing, so malformed feedback below 75 is refused `INVALID_PROCEDURE` first. Blank and unique ids,
+blank references and every reference to a set, period or run remain codec or run checks, labelled
+schema-accepted; no step order or step uniqueness is inferred. A float such as `2.0` for
+`maxIterations` is schema-accepted and codec-refused (native token). Writer bytes, save floors,
+catalogs and runs are unchanged.
+
+| Row | Check |
+|---|---|
+| PRS1 | On unchanged readers (project 121/121 before the schema edit): the root floor at 73 even null and the post-parse feedback floor at 75; kind, then active, then keys; another kind's key refused at the step; exclusive assignment; missing, non-string and blank ids and duplicates; feedback method, weight, native-integer `maxIterations` bounds and `tolerance`; a complete 12-issue sequence preserves all codes/paths/order |
+| PRS2 | Root false below 73; closed rows and required keys; the kind dispatch and the assignment row's exclusive `unless`; feedback false below 75, its method enum, bounds and the constantWeight/msa weight condition; no blank/unique-id, reference or step-order rule |
+| PRS3 | Labelled structural refusals fail parseDocument; ctest `schema-labels` agrees on all 138,710 labels (procedure cases included) and 20 projects (including `macro-four-step`), zero disagreements. By hand with jsonschema 4.26.0 (temporary test, deleted): writer output at 73 (every kind, both assignment forms, active false, optional keys absent) and 75 (MSA and constantWeight at the bounds) accepted; 20 probes: 6 both accept, 2 codec-only refusals, 12 both refuse; schema-refused/codec-accepted is zero. The emitted schema is unchanged outside `procedures` |
+

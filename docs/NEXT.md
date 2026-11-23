@@ -195,14 +195,14 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   observed-shape discovery plus codec dry validation. Root presence rules, codec owners and save
   floors: [PROJECT_SCHEMA](reference/PROJECT_SCHEMA.md); definition demand rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md);
   optional feature rows: [PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md).
-- **Mapped so far (D558–D573):** compositions, modes, vehicle types, behaviours (item 49 answered,
+- **Mapped so far (D558–D573, D636):** compositions, modes, vehicle types, behaviours (item 49 answered,
   D562), vehicle classes and link behaviour types, the zone layer, study periods and area, the map,
   Macro settings and runs, trip rates, deterrence sets and cost matrices, period factors, mode
   choice. Rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md) and
   [PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md).
-- **Following slice (`procedures`, schema 73, feedback from 75), after owner review of D573–D574.**
-  Stop before starting it. The full brief (inventory, pins first, rows, one key source, coverage, labels,
-  pitfalls, session end) is [PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md).
+- **`procedures` (73, feedback 75) is mapped (D636, PRS1–PRS3)** after the owner's "ok" to D573–D574; it waits for
+  the owner's review of D636. The Macro sets' and procedures' tables are in `macro_set_fields.cpp`. No further
+  schema slice is briefed: the next is the owner's pick (an uncovered root feature, or the proposal below).
 - **Proposed, not booked (review finding 7, deferred by D574):** the per-row "nonempty array of
   Object" kinds (`tripRateSets`, `deterrencePurposes`, `modeChoiceNests`, …; about 15 since D566)
   could become one kind that reads its Object from the Field. It touches every slice's table and

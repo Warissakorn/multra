@@ -137,7 +137,7 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool markers=std::any_of(row.priorityRules.begin(),row.priorityRules.end(),[](const auto& r){return r.markerForm();}); // D606
     const bool gapReductions=std::any_of(row.priorityRules.begin(),row.priorityRules.end(),[](const auto& r){
         return r.gapReduction || std::any_of(r.markers.begin(),r.markers.end(),[](const auto& m){return m.gapReduction.has_value();});}); // D618
-    return gapReductions || ownsYield(d) ? networkCodec::yieldVersion : markers ? networkCodec::priorityMarkerVersion : ownsDiffusion(d) ? networkCodec::diffusionVersion : ownsStartUp(d) ? networkCodec::startUpVersion : visibility ? networkCodec::visibilityVersion : derivedLines ? networkCodec::derivedLineVersion : ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    return gapReductions || ownsYield(d) ? networkCodec::yieldVersion : markers ? networkCodec::priorityMarkerVersion : ownsDiffusion(d) ? networkCodec::diffusionVersion : ownsStartUp(d) ? networkCodec::startUpVersion : visibility ? networkCodec::visibilityVersion : derivedLines ? networkCodec::derivedLineVersion : ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? networkCodec::feedbackVersion : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? networkCodec::procedureVersion : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -354,9 +354,9 @@ ProjectDocument parseDocument(const Json& j) {
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].distributionCost"}});
         }
     d.modeChoiceSets = parseOwnedModeChoiceSets(j); // M10.4 E2
-    if (version < 73 && j.contains("procedures")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures"}});
+    if (version < networkCodec::procedureVersion && j.contains("procedures")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures"}});
     d.procedures = parseProcedures(j); // D484
-    for (std::size_t i = 0; version < 75 && i < d.procedures.size(); ++i) // PROCEDURE_FEEDBACK §2 (D547)
+    for (std::size_t i = 0; version < networkCodec::feedbackVersion && i < d.procedures.size(); ++i) // PROCEDURE_FEEDBACK §2 (D547)
         if (d.procedures[i].feedback) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures[" + std::to_string(i) + "].feedback"}});
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j,version);

@@ -5,6 +5,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-23 — `procedures` in the composed project schema (D636)
+
+- **Owner:** "ok" to D573–D574, which released the briefed slice ([PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md)).
+- **Pins first:** `tests/procedure_schema_tests.cpp` (PRS1) passed on the unchanged reader, project 121/121: both floors
+  (feedback's after parsing), kind → active → keys, exclusive assignment, ids, feedback bounds, a 12-issue order.
+- **Schema:** root `procedures` false below 73; closed procedure rows; four step rows chosen by `kind`; assignment's
+  `period`/`macroRun` exclusive via `unless`; feedback false below 75, one row with a constantWeight/msa weight condition.
+  Coverage `-procedures`. The emitted schema is unchanged outside `procedures` (per-version root and every old `$def`).
+- **One key source:** `procedure_codec.cpp` reads keys with `onlyKnownKeys`; the Macro sets' and procedures' tables
+  moved whole to `src/project/macro_set_fields.cpp` (`network_fields.cpp` 472 → 427 lines). Codes, paths, order, writer
+  bytes and save floors unchanged; `document.cpp` names 73/75 with the new constants.
+- **Labels:** `tests/procedure_schema_cases.hpp` in `schema-labels`: 138,710 labels and 20 projects, zero
+  disagreements. By hand (temporary, deleted): writer output at 73/75 and 20 probes with jsonschema 4.26.0; zero
+  schema-refused/codec-accepted.
+- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No-PCH and
+  Windows not run.
+
 ## 2026-11-23 — Insertion's bucket rebuild after the last arrival dropped (D635)
 
 - **User:** "พัฒนาต่อ"; no owner item was free, so the session took NEXT's untried engine lever: insertion rebuilt every
@@ -142,16 +159,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   callgrind study +2.5 %, M2.6 +3.1 %, benchmark +2.0 %.
   [Evidence](evidence/branching-leaders.md).
 - **Verified (Linux, offscreen):** desktop ctest 368/368; docs, sizes, architecture pass; 682 units build without the PCH.
-
-## 2026-11-22 — M3.2's diverge rows written: A64 fails, bodies overlap inside a split (D622)
-
-- **Owner:** "พัฒนาต่อ"; the one NEXT item needing no owner was M3.2's diverge acceptance-fixture row (review O6/R7).
-- **D622:** `tests/diverge_tests.cpp` (`diverge.*`), rows A62–A66 in M3_ACCEPTANCE: one lane splitting by two Connectors.
-  A62 (branching only, nothing compiled), A63 (free flow: departure order kept, no clamp, no overlap), A65 (a branch
-  blocked at the split holds everyone behind it, first-in first-out) and A66 (copied-state replay) pass. **A64 fails:**
-  when a branch queue reaches back into the split, a car to the other branch loses its leader once the leader's rear
-  leaves the shared lane and drives through it where the lanes still overlap (8 of 10 seeds, up to 1.69 m, no clamp).
-  Bodies are checked as rectangles in the plane; station overlap alone over-reports (lanes 11.76 m, bodies about 8 m).
-- **Not done:** the engine is unchanged; the remedy changes runs at every diverge, so it is the owner's choice
-  (OWNER_SITTING item 53; recommended (a), sibling-branch leaders). [Evidence](evidence/diverge-acceptance.md).
-- **Verified (Linux, offscreen):** desktop ctest 368/368 (the new `diverge` group included); docs, file sizes pass.

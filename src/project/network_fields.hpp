@@ -13,7 +13,8 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     vehicleType,speedRange,speedPoint,accelerationPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
     rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings,
     tripRateSet,citedSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor,
-    modeChoiceSet,modeChoicePurpose,modeChoiceAlternative,modeChoiceNest };
+    modeChoiceSet,modeChoicePurpose,modeChoiceAlternative,modeChoiceNest,
+    procedure,generationStep,distributionStep,modeChoiceStep,assignmentStep,procedureFeedback };
 enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unchecked,connectors,reference,numbers,generated,signalHeads,group,groups,phases,color,controllers,programs,
     rightOfWay,waitingLines,controlPoint,controlPath,conflictAreas,conflictSide,priorityRules,priorityMarkers,stopControls,
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
@@ -27,7 +28,8 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     tripRateSets,citedSource,tripRatePurposes,tripRateSide,tripRateCategories,tripRateTerms,crossMethod,regressionMethod,rate,
     deterrenceSets,deterrencePurposes,exponentialFunction,minuteUnit,deterrenceBeta,intrazonalShare,deterrenceConstraint,
     costMatrices,costMatrixSource,costRows,periodFactors,periodShare,
-    modeChoiceSets,modeChoicePurposes,modeChoiceAlternatives,modeChoiceNests,modeCoefficient,modeOccupancy,modeNestPhi,logsumCost };
+    modeChoiceSets,modeChoicePurposes,modeChoiceAlternatives,modeChoiceNests,modeCoefficient,modeOccupancy,modeNestPhi,logsumCost,
+    procedures,procedureSteps,stepKind,procedureFeedback,feedbackMethod,feedbackIterations };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -76,6 +78,9 @@ inline constexpr int distributionVersion=67,constraintVersion=68,destinationCons
 // D572: the root periodFactors is refused below 69, even null.
 inline constexpr int periodFactorVersion=69;
 // D573: owned mode-choice sets from 70, nests from 71 and distributionCost from 76.
+// D636: the root procedures (D484) is refused below 73, even null; a procedure's feedback (D547) below 75,
+// checked after parsing (document.cpp).
+inline constexpr int procedureVersion=73,feedbackVersion=75;
 inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,entryLanesVersion=77,missedExitVersion=78,
     derivedLineVersion=79, // D594 (STOP_LINES): an empty conflict side waitingLineId, rightOfWay.frontStopDistance
     visibilityVersion=80, // D607 (VISIBILITY): a priority rule's visibility
@@ -87,6 +92,8 @@ inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=s
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}
 std::span<const Field> fields(Object);
+// The Macro sets' and procedures' rows (macro_set_fields.cpp); empty for any other object.
+std::span<const Field> macroSetFields(Object);
 // D563: every key either behaviour model may carry (the from-21 closure in parseBehaviourLibrary).
 bool behaviourKey(std::string_view key);
 bool allowsAdditionalFields(Object,int version);

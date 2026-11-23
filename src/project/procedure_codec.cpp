@@ -1,5 +1,6 @@
 #include "procedure_codec.hpp"
 #include "../core/text.hpp"
+#include "network_fields.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <set>
@@ -9,11 +10,7 @@
 namespace multra {
 namespace {
 using Issues = std::vector<ValidationIssue>;
-bool onlyKeys(const Json& j, std::initializer_list<const char*> allowed) {
-    for (const auto& [key, value] : j.items())
-        if (std::none_of(allowed.begin(), allowed.end(), [&](const char* a) { return key == a; })) return false;
-    return true;
-}
+// D636: row keys come from the shared tables (macro_set_fields.cpp); the floors stay with document.cpp.
 void bad(Issues& issues, const std::string& path) { issues.push_back({"INVALID_PROCEDURE", path}); }
 std::optional<std::string> id(const Json& j, const char* key, const std::string& at, Issues& issues, bool required) {
     if (!j.contains(key)) { if (required) bad(issues, at + "." + key); return std::nullopt; }
@@ -35,17 +32,17 @@ ProcedureStep step(const Json& j, const std::string& at, Issues& issues) {
     }
     switch (s.kind) {
     case ProcedureStepKind::tripGeneration:
-        if (!onlyKeys(j, {"kind", "active", "rateSet"})) bad(issues, at);
+        if (!networkCodec::onlyKnownKeys(j, networkCodec::Object::generationStep)) bad(issues, at);
         s.set = id(j, "rateSet", at, issues, true).value_or("");
         break;
     case ProcedureStepKind::tripDistribution:
-        if (!onlyKeys(j, {"kind", "active", "deterrenceSet", "skimMode", "costMatrix"})) bad(issues, at);
+        if (!networkCodec::onlyKnownKeys(j, networkCodec::Object::distributionStep)) bad(issues, at);
         s.set = id(j, "deterrenceSet", at, issues, true).value_or("");
         s.skimMode = id(j, "skimMode", at, issues, false);
         s.costMatrix = id(j, "costMatrix", at, issues, false);
         break;
     case ProcedureStepKind::modeChoice:
-        if (!onlyKeys(j, {"kind", "active", "modeChoiceSet", "periods"})) bad(issues, at);
+        if (!networkCodec::onlyKnownKeys(j, networkCodec::Object::modeChoiceStep)) bad(issues, at);
         s.set = id(j, "modeChoiceSet", at, issues, true).value_or("");
         if (j.contains("periods")) {
             const auto& list = j.at("periods");
@@ -57,7 +54,7 @@ ProcedureStep step(const Json& j, const std::string& at, Issues& issues) {
         }
         break;
     case ProcedureStepKind::assignment:
-        if (!onlyKeys(j, {"kind", "active", "period", "macroRun"})) bad(issues, at);
+        if (!networkCodec::onlyKnownKeys(j, networkCodec::Object::assignmentStep)) bad(issues, at);
         s.period = id(j, "period", at, issues, false);
         s.macroRun = id(j, "macroRun", at, issues, false);
         if (j.contains("period") == j.contains("macroRun")) bad(issues, at);
@@ -68,7 +65,7 @@ ProcedureStep step(const Json& j, const std::string& at, Issues& issues) {
 ProcedureFeedback feedback(const Json& j, const std::string& at, Issues& issues) {
     ProcedureFeedback f;
     if (!j.is_object()) { bad(issues, at); return f; }
-    if (!onlyKeys(j, {"method", "weight", "maxIterations", "tolerance"})) bad(issues, at);
+    if (!networkCodec::onlyKnownKeys(j, networkCodec::Object::procedureFeedback)) bad(issues, at);
     const auto method = j.contains("method") && j.at("method").is_string() ? j.at("method").get<std::string>() : "";
     if (method == "msa") f.method = FeedbackMethod::msa;
     else if (method != "constantWeight") bad(issues, at + ".method");
@@ -106,7 +103,7 @@ std::vector<Procedure> parseProcedures(const Json& file) {
         const auto at = "procedures[" + std::to_string(i) + "]";
         const auto& j = list[i];
         Procedure p;
-        if (!j.is_object() || !onlyKeys(j, {"id", "name", "steps", "feedback"})) { bad(issues, at); continue; }
+        if (!j.is_object() || !networkCodec::onlyKnownKeys(j, networkCodec::Object::procedure)) { bad(issues, at); continue; }
         if (!j.contains("id") || !j.at("id").is_string()) issues.push_back({"INVALID_ID", at + ".id"});
         else p.id = j.at("id").get<std::string>();
         if (!j.contains("name") || !j.at("name").is_string()) bad(issues, at + ".name");
