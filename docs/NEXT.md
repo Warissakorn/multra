@@ -36,7 +36,7 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 Briefs, branches, reserved decision numbers (626–641) and merge order: [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md).
 Each session edits only its own line here.
 
-- A — leader order kept across ticks (`claude/cool-shannon-btynrs-leader-order`): started.
+- A — leader order kept across ticks (`claude/cool-shannon-btynrs-leader-order`): done — measured, not shipped (D627); long routes bisect (D626).
 - B — split `CMakeLists.txt` (`claude/cool-shannon-btynrs-cmake-split`): started.
 - C — Results tab strip at 1024 in Thai; clamp note (`claude/cool-shannon-btynrs-results-tabs`): started.
 - D — ARCHITECTURE's *Editor boundary* into the contracts (`claude/cool-shannon-btynrs-architecture-prose`): started.
@@ -142,10 +142,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Owner check (D597, D598):** MSVC Release wall time, now part of OWNER_SITTING_WINDOWS C12.
 - **D599:** the build is warning-free on GCC 13; the next GCC 14+ or MSVC `/W4` build may show new ones:
   fix them in the code, never widen the GCC < 14 exemption.
-- **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-19): `closestVehicle`
-  is 15.7 % of the oversaturated study. A rear-ordered search rebuilt every tick was measured and reverted
-  (study −7.6 %, M2.6 +2.4 %, benchmark +5.0 %); one that keeps the order across ticks is untried. Measure
-  study, M2.6 and the benchmark with callgrind, and hash events (seeds 42–43), before and after.
+- **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-23): `closestVehicle`
+  is 15.7 % of the oversaturated study. A by-rear order rebuilt every tick (2026-11-19) and one seeded from the fleet's
+  order and repaired by insertion (D627: study −8.8 %, benchmark +0.6 to +0.8 %) were measured and not shipped. Left:
+  an order stored in `SimState` (with the `types.hpp` split), and insertion rebuilding every bucket after each arrival
+  (`bucketSpans` about twice per tick). Measure study, M2.6 and the benchmark with callgrind, hash events (seeds 42–43).
 
 ## Canvas style — slices A–C done; stop for owner review
 

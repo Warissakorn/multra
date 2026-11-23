@@ -171,3 +171,34 @@ TEST(straddlerleader, a_covered_lane_section_ahead_of_the_front_is_not_searched_
     CHECK(r.clamps == 0);
     CHECK(byId(state, 1)->distance > 100);
 }
+// D626: on a route of more than 8 parts closestVehicle bisects to the first part not wholly behind the
+// vehicle. It must pick the leader (gap and id) the scan of every part picks, at a join, inside a part
+// and past the last leader. Twelve 10 m parts, one span on every third, none on the follower's own id.
+TEST(straddlerleader, a_long_route_bisects_to_the_same_leader_as_the_full_scan) {
+    std::vector<RoutePart> parts;
+    for (std::size_t i = 0; i < 12; ++i) parts.push_back({"s" + std::to_string(i), i, 10.0 * static_cast<double>(i), 10});
+    CHECK(parts.size() > 8); // the forcing: the bisecting branch is the one taken
+    std::vector<OccupiedSpan> spans;
+    for (std::size_t i = 0; i < 12; i += 3) spans.push_back({100 + i, i, 4.0, 8.5, 3.0});
+    const auto buckets = bucketSpans(spans, parts.size());
+    const auto scan = [&](double distance) { // the pre-D626 search, every part from the first
+        std::optional<std::pair<double, std::uint64_t>> best;
+        for (const auto& part : parts)
+            for (const auto& span : spans)
+                if (span.segmentIndex == part.segmentIndex && part.start + span.front >= distance - 1e-9) {
+                    const double gap = part.start + span.rear - distance;
+                    if (!best || gap < best->first) best = std::pair{gap, span.vehicleId};
+                }
+        return best;
+    };
+    int compared = 0;
+    for (double distance = 0; distance <= 125; distance += 0.25) {
+        Vehicle vehicle; vehicle.id = 1; vehicle.distance = distance;
+        std::uint64_t id = 0;
+        const auto leader = closestVehicle(vehicle, parts, spans, buckets, &id);
+        const auto expected = scan(distance);
+        CHECK(leader.has_value() == expected.has_value());
+        if (leader && expected) { CHECK(leader->gap == expected->first); CHECK(id == expected->second); ++compared; }
+    }
+    CHECK(compared > 300); // most positions have a leader ahead; the last ones none
+}
