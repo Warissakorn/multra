@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-23 — Windows package; branching stays read-only (D624)
+
+- **Package:** *Package binaries* run #144 on this branch (`088955e`), both jobs green (their ctest passed on Linux and
+  Windows); artifacts `multra-windows-x64` and `multra-linux-x86_64`, kept to 2026-12-07.
+- **Owner, on the package:** asked whether branching should be adjustable like other conflict areas; after reading
+  Vissim's manual ([review](evidence/vissim-branching-review.md)): "คงไว้แบบนี้ (แนะนำ)". **D624:** branching stays derived
+  and read-only; a visibility key waits for a study and a cited default (Vissim prints none). Item 54's verdict is open.
+- Docs only; `multra-check-docs` passes.
+
 ## 2026-11-22 — Red-red branching enforced: A64 passes (D623)
 
 - **Owner:** "อ่าน sumo ก่อน", then "ทำตามแนะนำ" on item 53: option (a), the extent being the branching area the editor
@@ -150,16 +159,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows:** `priority_rule` PR1–PR6, PR10–PR13 (10 tests). Without the engine change PR11 and PR12 fail. PR9:
   `multra-cli 42` keeps 45 / 31.75870154816726 / 1; no shipped file uses the form.
 - **Checks:** `check` passes on desktop 365/365 and headless 248/248. Windows not run.
-
-## 2026-11-21 — G3 as Vissim: a vehicle stuck at its dead end is removed and counted (D613)
-
-- **Owner, in chat on G3 (as recommended):** as Vissim, remove and count separately, off by default per behaviour.
-- **D613, [DIFFUSION](reference/DIFFUSION.md):** a behaviour's `diffusionTime` (schema 82) removes a vehicle waiting
-  that long at its stub's dead end (`DiffusedEvent`); runs with the key report `removed` (summary, evaluation, batch).
-  Editor row beside `missedExitAfter`. Also PROJECT_SCHEMA's missing rows 80 and 81.
-- **Unchanged without the key:** `multra-cli 42` keeps 45 / 31.75870154816726 / 1.
-- **Measured** on the study's spread probe, seeds 42–45: at 60 s, 165 removed, completed 4,501 → 5,010.
-- **Checks:** `diffusion` 6/6; headless `check` 247/247. Desktop `check` alone failed `behaviour-lab-ui`
-  (SIGSEGV in `~DriverBehaviour`) and `cli-consistency`: both binaries were never `check` dependencies and ran
-  stale. `cmake/check_builds_all.cmake` now makes `check` depend on every executable. Verified: after touching
-  `types.hpp`, `check` alone gives desktop 364/364 and headless 247/247.

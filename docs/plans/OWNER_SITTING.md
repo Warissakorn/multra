@@ -266,7 +266,10 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     `t-junction-priority`, Run, and watch the minor approach (one lane, splitting into its two turns): a car
     waiting at its line inside the split now holds a car for the other turn behind it; before D623 that car
     drove through it (minor → eastbound 9.9 → 14.2 s, seeds 42–51). Is that plausible for a one-lane
-    approach? *Owner:*
+    approach? Package: run #144 of *Package binaries*, artifact `multra-windows-x64` (expires 2026-12-07).
+    *Owner, 2026-11-23, on the package (picture of a split):* asked whether the dark-red branching area could
+    be adjustable like other conflict areas; after the Vissim review, "คงไว้แบบนี้ (แนะนำ)" (D624). The
+    plausibility verdict itself is still open. *Owner:*
 
 ## C–I — on the Windows machine
 

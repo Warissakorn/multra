@@ -116,6 +116,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [w74-clamps.md](w74-clamps.md) | M3.3.3a: where the extra W74 safety clamps come from — 2026-10-08 | — |
 | [w74-codec.md](w74-codec.md) | M3.3.3a W74 schema-25 codec evidence — 2026-10-08 | D135, D136 |
 | [w74-composition.md](w74-composition.md) | M3.3.3a W74 composition evidence — 2026-10-08 | D137, D138 |
+| [vissim-branching-review.md](vissim-branching-review.md) | Vissim's manual on branching conflict areas: red-red, original order, gap attributes Merge/Crossing only, visibility with no printed default — 2026-11-23 | D624, D623 |
 | [w74-discharge.md](w74-discharge.md) | M3.3.3a BA27: W74 queue-discharge timestep sensitivity — 2026-10-08 | — |
 | [w74-preset.md](w74-preset.md) | M3.3.3a: a cited, uncalibrated `w74` preset and its discharge and clamps — 2026-10-15 | D176 |
 | [w74-pure-function.md](w74-pure-function.md) | M3.3.3a W74 pure-function evidence — 2026-10-08 | D135 |

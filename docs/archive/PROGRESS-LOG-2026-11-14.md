@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-21 — G3 as Vissim: a vehicle stuck at its dead end is removed and counted (D613)
+
+- **Owner, in chat on G3 (as recommended):** as Vissim, remove and count separately, off by default per behaviour.
+- **D613, [DIFFUSION](../reference/DIFFUSION.md):** a behaviour's `diffusionTime` (schema 82) removes a vehicle waiting
+  that long at its stub's dead end (`DiffusedEvent`); runs with the key report `removed` (summary, evaluation, batch).
+  Editor row beside `missedExitAfter`. Also PROJECT_SCHEMA's missing rows 80 and 81.
+- **Unchanged without the key:** `multra-cli 42` keeps 45 / 31.75870154816726 / 1.
+- **Measured** on the study's spread probe, seeds 42–45: at 60 s, 165 removed, completed 4,501 → 5,010.
+- **Checks:** `diffusion` 6/6; headless `check` 247/247. Desktop `check` alone failed `behaviour-lab-ui`
+  (SIGSEGV in `~DriverBehaviour`) and `cli-consistency`: both binaries were never `check` dependencies and ran
+  stale. `cmake/check_builds_all.cmake` now makes `check` depend on every executable. Verified: after touching
+  `types.hpp`, `check` alone gives desktop 364/364 and headless 247/247.
+
 ## 2026-11-21 — M3.2.7d passes on attempt 2 (D612)
 
 - **Owner, step 4 and the verdict (verbatim):** "ทดลองแล้วสมจริง", after Stop and Yield were explained here and in

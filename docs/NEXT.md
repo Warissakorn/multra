@@ -36,8 +36,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 A62–A70 are written and pass on Linux: red-red branching is enforced (D623, [evidence](evidence/branching-leaders.md)),
 so a body inside a split also occupies the sibling Connector. **Owner:** [OWNER_SITTING](plans/OWNER_SITTING.md) item 54,
 the T-junction's one-lane minor approach on Windows. M3.2 is still closed only by the owner (rule 8); nothing else
-is booked for it. **Follow-ups, none started:** a per-area visibility like Vissim's only if a study needs a
-flared approach; the per-tick cost (+1.8 to +3.2 % `stepSimulation` on networks with diverges) is under the bar.
+is booked for it. **Follow-ups, none started:** branching stays read-only (D624); a per-area visibility like Vissim's only if a
+study needs a flared approach and a cited default exists (Vissim prints none); the per-tick cost (+1.8 to +3.2 % `stepSimulation` on networks with diverges) is under the bar.
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
