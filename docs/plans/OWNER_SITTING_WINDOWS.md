@@ -55,7 +55,8 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
 7. **W99 in the Driving behaviours dialog** (listed 2026-11-23, D640, W99 §9). Open a project, *Driving
     behaviours*, edit a behaviour and choose *W99 (Wiedemann 99)*, in Thai and English at 100/150 %: are
     the ten cc fields empty, the help note readable, an empty field named in the error, and do the tab and
-    footer fit without clipping? *Owner:*
+    footer fit without clipping? Package: run #145 of *Package binaries*, artifact `multra-windows-x64`
+    (expires 2026-12-07). *Owner:*
 
 ## G — Object interchange
 
