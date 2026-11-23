@@ -1,6 +1,6 @@
 # M3 acceptance design and evidence record
 
-**Status: automated rows recorded through A46 (M3.2.8c, §4); A47–A58 implemented and off (D102); owner exercise M3.2.7d passed on attempt 2 (owner, 2026-11-21, D612).** This is a prepared engineering test matrix and owner exercise,
+**Status: automated rows recorded through A46 (M3.2.8c, §4); A47–A58 implemented and off (D102); owner exercise M3.2.7d passed on attempt 2 (owner, 2026-11-21, D612); diverge rows A62–A70 pass (D622, D623); M3.2 closed by the owner's ruling, 2026-11-23 (D625).** This is a prepared engineering test matrix and owner exercise,
 not a passed gate or a scientific validation result. The M2 gate passed 2026-09-25 (D53). [M3_CONTRACT.md](../reference/M3_CONTRACT.md) defines the proposed behavior;
 [M3_PLAN.md](M3_PLAN.md) names the slices. New tests and runnable fixtures are not added by
 this documentation change. Record actual evidence below as each slice is implemented.
@@ -304,7 +304,7 @@ decision on D of 60:40.
 | Observed priority, crossing, Stop/Yield and queue behavior | Pending |
 | Save/reopen/repeat-seed outcome | Pending |
 | Plausibility verdict and unresolved defects | Pending |
-| **M3 right-of-way done-condition** | **Open** |
+| **M3 right-of-way done-condition** | **Closed by the owner's ruling, 2026-11-23 (D625)** |
 | **M3.2.8 remaining behavior** | **Open** |
 | **M6 scientific validation** | **Open; not assessed here** |
 

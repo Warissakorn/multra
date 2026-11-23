@@ -24,7 +24,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 
 2. **M3.2.7d T-junction exercise** (listed 2026-09-26). Fill the sheet in
    [M3_ACCEPTANCE](M3_ACCEPTANCE.md) §3 on `data/projects/t-junction-priority.traffic.json`. Does
-   minor-road delay respond to gap time as an engineer expects? It is what M3.2 closes on (R7).
+   minor-road delay respond to gap time as an engineer expects? It is what M3.2 closed on (R7; closed 2026-11-23, D625).
    *Owner:* 2026-11-18, attempt 1, step 1 only (verbatim): "พบว่า conflict area แสดงถูกต้อง แต่เส้นหยุดผิดตำแหน่ง
    link ทิศมุ่งตะวันตก ควรตั้งเส้นหยุดไว้ทางทิศตะวันออกของ conflict area และเส้นหยุดของ conflict area บน
    connector ควรอยู่ก่อนเข้า Link". **Fail at step 1, kept** (§3: fixes are separate attempts).

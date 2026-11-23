@@ -2,6 +2,21 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-21 — PRIORITY_RULES slice 1: a stop line with conflict markers, no area (D614)
+
+- **Owner:** "ทำงานถัดไป" (D609's order: PRIORITY_RULES slice 1, choices D606).
+- **D614, [PRIORITY_RULES](../reference/PRIORITY_RULES.md):** schema 83 adds a priority rule's marker form
+  (`waitingLineId`, `vehicleClassIds`, `markers` with `gapTime`, `headway`, optional `maxSpeed` in km/h and
+  `vehicleClassIds`). Each marker compiles to one core `PriorityRule` at the line (`priority_markers.cpp`);
+  classes become type ids in the project layer (`priority_rule_classes.cpp`). The engine's rule loop skips a
+  type outside the line's classes, a major vehicle outside the marker's, and a major vehicle above `maxSpeed` in
+  the headway test. No UI.
+- **Left from §3:** the Stop at the line (a Stop control names only areas; next, before slice 2) and the Problems
+  row for a marker no route reaches (with the table).
+- **Rows:** `priority_rule` PR1–PR6, PR10–PR13 (10 tests). Without the engine change PR11 and PR12 fail. PR9:
+  `multra-cli 42` keeps 45 / 31.75870154816726 / 1; no shipped file uses the form.
+- **Checks:** `check` passes on desktop 365/365 and headless 248/248. Windows not run.
+
 ## 2026-11-21 — G3 as Vissim: a vehicle stuck at its dead end is removed and counted (D613)
 
 - **Owner, in chat on G3 (as recommended):** as Vissim, remove and count separately, off by default per behaviour.

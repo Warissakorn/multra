@@ -31,13 +31,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2 — diverge rows pass (D622, D623); the owner's look passed (item 54)
+## M3.2 — closed by the owner (D625)
 
-A62–A70 are written and pass on Linux: red-red branching is enforced (D623, [evidence](evidence/branching-leaders.md)),
-so a body inside a split also occupies the sibling Connector. **Owner:** [OWNER_SITTING](plans/OWNER_SITTING.md) item 54 passed
-("สมจริง", 2026-11-23): the T-junction's one-lane minor approach on Windows. M3.2 is still closed only by the owner (rule 8); nothing else
-is booked for it. **Follow-ups, none started:** branching stays read-only (D624); a per-area visibility like Vissim's only if a
-study needs a flared approach and a cited default exists (Vissim prints none); the per-tick cost (+1.8 to +3.2 % `stepSimulation` on networks with diverges) is under the bar.
+Closed 2026-11-23. Still open on their own gates: [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) M3.2.10 and M3.2.13
+(now with item 4, M3.2.4e/M3.2.12 on Windows), M3.2.8a.1, M3.4, M6. Branching stays read-only (D624); a visibility
+key only for a study with a flared approach and a cited default.
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 

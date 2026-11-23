@@ -39,15 +39,17 @@ downstream decision on the four-leg West pocket: changes toward the turn with no
 on Windows 118 : 41 : 0)? (3) D86/D72 conflict areas follow a dragged Link and go, with Yield and
 line, when it is dragged clear; Ctrl+Z restores them. (4) D80 four-point mouths at 45–179°, 1–3
 lanes, kerb/median lanes added or dropped; fixed lane-index pairing holds. **Gate:** the owner's yes
-on each. This does not close M3.2, which still closes on M3.2.7d.
+on each. M3.2 closed without it (D625).
 
 ## M3.2.13 — Owner looks carved out of the sitting (D602)
 
 **Open, owner.** Carved 2026-11-20 from OWNER_SITTING_WINDOWS under R4 (b) (full steps: `git log -p`
 on it, before D602). (1) C3 rear-axle turning, phases 1–3, and the D102 lane-change display. (2) D3
 edited Connector lane centres (D114): do vehicles, heads, waiting bars and coverage follow? (3) D4
-overlap display (D115/D117/D118) on oblique, mid-Link and curved mouths. **Gate:** the owner's yes on
-each. This does not close M3.2; M3.2.7d's attempt 2 stays on the sheet (A2).
+overlap display (D115/D117/D118) on oblique, mid-Link and curved mouths. (4) Added 2026-11-23 by D625: M3.2.4e
+merge admission over the mouth ([MERGE_MOUTH](../reference/MERGE_MOUTH.md), MM1–MM7) and M3.2.12 derived stop
+lines with the Stop line tool ([STOP_LINES](../reference/STOP_LINES.md), SL1–SL8) on Windows, never given a verdict of
+their own. **Gate:** the owner's yes on each. M3.2 closed without it (D625).
 ---
 
 ## M14
