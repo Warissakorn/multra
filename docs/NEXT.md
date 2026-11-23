@@ -31,15 +31,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## Parallel sessions of 2026-11-23 — four slices in flight
+## Parallel sessions of 2026-11-23 — merged
 
-Briefs, branches, reserved decision numbers (626–641) and merge order: [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md).
-Each session edits only its own line here.
-
-- A — leader order kept across ticks (`claude/cool-shannon-btynrs-leader-order`): done — measured, not shipped (D627); long routes bisect (D626).
-- B — split `CMakeLists.txt` (`claude/cool-shannon-btynrs-cmake-split`): done (D630), root 498 → 194 lines.
-- C — Results tab strip at 1024 in Thai; clamp note (`claude/cool-shannon-btynrs-results-tabs`): done (D634), Linux-verified; Windows look is the owner's.
-- D — ARCHITECTURE's *Editor boundary* into the contracts (`claude/cool-shannon-btynrs-architecture-prose`): done, ready to merge.
+Briefs: [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md). All four merged (A D626–D627, B D630, C D634, D no ID).
+**Left:** the owner's look at the Thai Results strip at 1024 on Windows (C); the second bucket build after
+each source insertion (`insertion.cpp`), recorded by A in ENGINEERING_NOTES, untried.
 
 ## M3.2 — closed by the owner (D625)
 
