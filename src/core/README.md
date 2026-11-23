@@ -29,6 +29,7 @@ and then the step is unchanged to the bit.
 | `routing.*` | Station route decisions: `routingIssues`, `nextRouteDecision`, `applyRouteDecision` (one seeded draw per selection) | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
 | `following.*` | `followingAcceleration` and `follow`, the one car-following entry every model runs through | [SIMULATION](../../docs/reference/SIMULATION.md), [W74 §6](../../docs/reference/W74.md) |
 | `w74.*` | Wiedemann-74-structured car-following | [W74](../../docs/reference/W74.md) |
+| `w99.*` | Wiedemann-99-structured car-following: the pure function, its thresholds and the CC0–CC9 key list (not yet composed into the tick) | [W99](../../docs/reference/W99.md) |
 | `leaders.*` | Leader searches: `forCoveredSpans` over every lane a straddling body covers | [LATERAL §6](../../docs/reference/LATERAL.md) |
 | `lanes.*` | Lane changes: mandatory changes off stub routes, discretionary changes, keep-to-kerb (`kerbParameterIssues`), `decideLaneChanges`, `recordLaneChange`; `lane_swap.cpp` holds the D207/D446 swap partner (`yieldMutual`) and `acceptsAsLeader` | [M3_8_CONTRACT §2](../../docs/reference/M3_8_CONTRACT.md), [OVERTAKING](../../docs/reference/OVERTAKING.md), [MERGE_DECELERATION](../../docs/reference/MERGE_DECELERATION.md); `courtesy.cpp` holds `courtesyHolds`, cooperation and gap seeking (D458) |
 | `missed_exit.*` | A vehicle held `missedExitAfter` at its stub's dead end takes the full route sharing its lane (`applyMissedExits`, `missedExitRoute`, `MissedExitEvent`) | [LANE_LOCKS §2c](../../docs/reference/LANE_LOCKS.md) |
@@ -39,6 +40,7 @@ and then the step is unchanged to the bit.
 | `diffusion.*` | A vehicle held `diffusionTime` at its stub's dead end leaves the run with a `DiffusedEvent` (`applyDiffusion`, `diffusionIssues`) | [DIFFUSION](../../docs/reference/DIFFUSION.md) |
 | `yield_time.*` | Aimsun's gap reduction over a driver's hashed yield time and SUMO's impatience at conflict areas (`requiredGap`, `impatienceAfter`, `majorCanYield`, `countStandstill`) | [YIELD_IMPATIENCE](../../docs/reference/YIELD_IMPATIENCE.md) |
 | `yield_types.hpp` | `GapReduction`, the place's final gap and timing factors | [YIELD_IMPATIENCE](../../docs/reference/YIELD_IMPATIENCE.md) §3 |
+| `w99_types.hpp` | `W99Parameters` (CC0–CC9) | [W99](../../docs/reference/W99.md) §5 |
 | `w74_types.hpp` | `W74Parameters`, a driver's `W74Traits` and `W74State`, `PerceptionParameters` | [W74](../../docs/reference/W74.md), [PERCEPTION](../../docs/reference/PERCEPTION.md) §6 |
 | `join_anticipation.*` | `indexJoins`, `joinEntries`, `anticipateJoin`: a second following law across a join, only with `clampRules.joinAnticipation` | [JOIN_ANTICIPATION](../../docs/reference/JOIN_ANTICIPATION.md) |
 | `perception.*` | Perception keys and ranges, the reaction-time action FIFO, `perceivedLeaders` | [PERCEPTION](../../docs/reference/PERCEPTION.md) |

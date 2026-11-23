@@ -106,3 +106,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D635](RECORD.md#d635) — insertion rebuilds span buckets only for a later candidate, not after every arrival: benchmark −0.81 %, same events.
 [D636](RECORD.md#d636) — `procedures` (73) and feedback (75) in the composed schema; step rows by kind, exclusive assignment; zero disagreements.
 [D637](RECORD.md#d637) — the W99 contract before code: demo thresholds and regimes, PTV meanings, seven recorded deviations, rows BA224–BA232.
+[D638](RECORD.md#d638) — W99 slice 1: the pure function, thresholds and key list; BA224, BA225, BA227 pass; not composed.

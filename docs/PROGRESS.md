@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-23 — W99 slice 1: the pure function (D638)
+
+- **Owner:** "ok" to the W99 contract (D637).
+- **Code:** `src/core/w99_types.hpp` (`W99Parameters`, CC0–CC9) and `src/core/w99.*`: `w99Thresholds`, `w99Acceleration`
+  (W99 §3–§4, the type bounds and D105, as W74's pure function), `w99ParameterKeys()` and `w99ParameterIssues` (§5).
+  Nothing calls it yet: no codec, trait draw or composition; `types.hpp` untouched.
+- **Rows:** `tests/w99_tests.cpp`, group `w99`. BA224: §8's ten cases and the threshold cases to 10⁻¹², plus the free
+  rule, the type bounds and D105. BA225: both sides of all five equalities, with binary-exact values. BA227: a
+  18,144-point grid over four parameter sets (every range edge included); closing only beyond `SDXc`, its denominator
+  ≤ −0.1, every result finite. Shown to bite: dropping the standstill creep, `≤ SDXc` as `<`, the `vSlow` floor or the
+  linear CC8 → CC9 rule each fails one or two tests.
+- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 369/369 (the new `w99` group), `check` passes.
+
 ## 2026-11-23 — The W99 contract, before code (D637, M3.3.3b)
 
 - **Owner:** chose "W99 contract (M3.3.3b)" from the offered picks.
@@ -156,15 +169,5 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **D625:** ROADMAP, M3_ACCEPTANCE and NEXT say closed. The one Windows look with no verdict of its own (M3.2.4e merge
   mouth, M3.2.12 stop lines and tool) was added to M3.2.13 as item 4 rather than read into A2. Still open on their own
   gates: M3.2.10, M3.2.13, M3.2.8a.1, M3.4, M6; the not-yet-validated marker stays.
-- Docs only; `multra-check-docs` passes.
-
-## 2026-11-23 — Windows package; branching stays read-only (D624)
-
-- **Package:** *Package binaries* run #144 on this branch (`088955e`), both jobs green (their ctest passed on Linux and
-  Windows); artifacts `multra-windows-x64` and `multra-linux-x86_64`, kept to 2026-12-07.
-- **Owner, on the package:** asked whether branching should be adjustable like other conflict areas; after reading
-  Vissim's manual ([review](evidence/vissim-branching-review.md)): "คงไว้แบบนี้ (แนะนำ)". **D624:** branching stays derived
-  and read-only; a visibility key waits for a study and a cited default (Vissim prints none).
-- **Item 54 passed:** the owner, after watching the T-junction's one-lane minor approach on Windows: "สมจริง".
 - Docs only; `multra-check-docs` passes.
 

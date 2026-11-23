@@ -132,3 +132,13 @@ Whole entries moved from the live PROGRESS log.
   callgrind study +2.5 %, M2.6 +3.1 %, benchmark +2.0 %.
   [Evidence](../evidence/branching-leaders.md).
 - **Verified (Linux, offscreen):** desktop ctest 368/368; docs, sizes, architecture pass; 682 units build without the PCH.
+
+## 2026-11-23 — Windows package; branching stays read-only (D624)
+
+- **Package:** *Package binaries* run #144 on this branch (`088955e`), both jobs green (their ctest passed on Linux and
+  Windows); artifacts `multra-windows-x64` and `multra-linux-x86_64`, kept to 2026-12-07.
+- **Owner, on the package:** asked whether branching should be adjustable like other conflict areas; after reading
+  Vissim's manual ([review](../evidence/vissim-branching-review.md)): "คงไว้แบบนี้ (แนะนำ)". **D624:** branching stays derived
+  and read-only; a visibility key waits for a study and a cited default (Vissim prints none).
+- **Item 54 passed:** the owner, after watching the T-junction's one-lane minor approach on Windows: "สมจริง".
+- Docs only; `multra-check-docs` passes.
