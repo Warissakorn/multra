@@ -5,6 +5,25 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-23 — The W99 contract, before code (D637, M3.3.3b)
+
+- **Owner:** chose "W99 contract (M3.3.3b)" from the offered picks.
+- **Sources read 2026-11-23:** PTV's public Wiedemann 99 parameter page (CC0–CC9 meanings and units, the safety
+  distance, the free acceleration's CC8→CC9 rule and its `z` term); `glgh/w99-demo` `js/model.js` (MIT, commit
+  `80eb392`), the threshold set and decision tree SUMO's `MSCFModel_W99` credits as its source; SUMO for one rule
+  (the slower-speed floor). Nothing copied: the contract is our formulation, as W74's was.
+- **[W99](reference/W99.md):** inputs and W99's sign of `dv`; six thresholds; four regimes with equality sides; ten
+  keys `cc0`–`cc9` with ranges that make the closing division exact; one hashed trait `zW` (index 15) and the existing
+  `driverFactor`; no new state (`aPrev` is the published acceleration); composition through `follow` and the two
+  accessors; persistence and dialog for the codec slice; a five-slice delivery order.
+- **Seven deviations from the demo, each with its reason (§4):** the demo's free acceleration is dimensionally wrong
+  (35 m/s² at 80 km/h), its `−10` floors are code constants, its `vDes − v` cap mixes units, one branch is dead code;
+  a negative slower speed is floored (SUMO); a driver at rest in the following band creeps (as W74 §7), or a Stop line
+  is never served.
+- **Ten hand-checked cases** (§8), checked by hand and by a scratch transcription (not committed). Rows BA224–BA232
+  written failure-first in the delivery plan; all pending.
+- **Verified:** docs check passes. No code changed, so no build or test was needed.
+
 ## 2026-11-23 — `procedures` in the composed project schema (D636)
 
 - **Owner:** "ok" to D573–D574, which released the briefed slice ([PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md)).
@@ -149,17 +168,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Item 54 passed:** the owner, after watching the T-junction's one-lane minor approach on Windows: "สมจริง".
 - Docs only; `multra-check-docs` passes.
 
-## 2026-11-22 — Red-red branching enforced: A64 passes (D623)
-
-- **Owner:** "อ่าน sumo ก่อน", then "ทำตามแนะนำ" on item 53: option (a), the extent being the branching area the editor
-  draws. Read first: Vissim's manual (branching red-red, vehicles see each other) and SUMO's `MSLink.cpp` (same-source
-  sibling lanes are foes, car-following until the foe's back passes the divergence point).
-- **D623:** `compiledBranchings` (`src/model/network/branching_compile.cpp`) gives `Scenario::branchings` from the
-  Connector pairs leaving one lane; `appendVehicleSpans` copies a body whose rear is inside its area onto the sibling
-  (`own = false`). Rows A64, A67–A70 written first; all nine `diverge` rows pass, A64 with 0 overlaps on every seed.
-- **Measured:** completed trips unchanged except the study (−1.5 %); clamps unchanged; `multra-cli 42` byte-identical;
-  three movements beyond their noise, the T-junction's minor → eastbound 9.9 → 14.2 s (owner item 54). The first
-  version compiled through `automaticConflicts` (+18.8 % on the benchmark); compiling only same-lane pairs fixed that:
-  callgrind study +2.5 %, M2.6 +3.1 %, benchmark +2.0 %.
-  [Evidence](evidence/branching-leaders.md).
-- **Verified (Linux, offscreen):** desktop ctest 368/368; docs, sizes, architecture pass; 682 units build without the PCH.

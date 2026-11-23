@@ -282,8 +282,8 @@ tracking (D121–D125, [DISCHARGE](reference/DISCHARGE.md)); M3.3.2 library, cla
 prototype selection and dialog (D126–D128; owner visual review open); M3.3.3a W74 contract and
 implementation, runnable in schema 25 and **not validated** (D129, D135–D139, [W74](reference/W74.md)).
 A cited, uncalibrated preset (SUMO's defaults, not auto-loaded) is recorded (D176,
-[evidence](evidence/w74-preset.md)). **Next:** the M3.3.3b W99 contract before code, seventh in
-the [review](audits/DRIVING_BEHAVIOUR_REVIEW.md)'s order (D177) so it consumes M3.5's observation. Evidence:
+[evidence](evidence/w74-preset.md)). **M3.3.3b:** the W99 contract is written ([W99](reference/W99.md), D637; rows BA224–BA232
+pending, no code); it consumes M3.5's observation through `follow`, as the review's order (D177) asked. **Next:** its pure-function slice (W99 §10). Evidence:
 [delivery rows](plans/DRIVING_BEHAVIOUR.md), [interface](reference/DRIVING_BEHAVIOUR.md). M0/M6
 gates, D102's off state and legacy baselines are unchanged.
 

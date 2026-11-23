@@ -277,10 +277,12 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), the procedure
   sequence, is done (D484, D485).
-- **M3.3.3b — the W99 contract before code** (ROADMAP M3.3, D177): read the following-model
-  requirements in [DRIVING_BEHAVIOUR](reference/DRIVING_BEHAVIOUR.md), then write a sourced state,
-  equation and parameter contract with hand-checkable acceptance cases. Keep the unvalidated
-  marker (D13, D369) and the owner gates; this item does not authorize closing those gates.
+- **M3.3.3b W99 — contract written (D637), no code:** [W99](reference/W99.md), rows BA224–BA232 (all pending). The
+  equations follow `glgh/w99-demo` (MIT, which SUMO's W99 adapts) and PTV's public parameter page, with seven recorded
+  deviations (§4). **Next, one per session:** the pure function `w99Acceleration` (BA224, BA225, BA227), then codec
+  and dialog (BA228), trait `zW` (BA229), composition (BA226, BA230, BA232), BA231's record. **Owner, before any
+  preset:** whether CC1 becomes a per-driver distribution (Vissim 2025) and whether heavy vehicles halve the free
+  acceleration (PTV), which needs a type attribute; neither is in the contract. The unvalidated marker stays.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.

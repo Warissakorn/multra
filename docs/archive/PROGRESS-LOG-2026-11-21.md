@@ -117,3 +117,18 @@ Whole entries moved from the live PROGRESS log.
 - **Not done:** the engine is unchanged; the remedy changes runs at every diverge, so it is the owner's choice
   (OWNER_SITTING item 53; recommended (a), sibling-branch leaders). [Evidence](../evidence/diverge-acceptance.md).
 - **Verified (Linux, offscreen):** desktop ctest 368/368 (the new `diverge` group included); docs, file sizes pass.
+
+## 2026-11-22 — Red-red branching enforced: A64 passes (D623)
+
+- **Owner:** "อ่าน sumo ก่อน", then "ทำตามแนะนำ" on item 53: option (a), the extent being the branching area the editor
+  draws. Read first: Vissim's manual (branching red-red, vehicles see each other) and SUMO's `MSLink.cpp` (same-source
+  sibling lanes are foes, car-following until the foe's back passes the divergence point).
+- **D623:** `compiledBranchings` (`src/model/network/branching_compile.cpp`) gives `Scenario::branchings` from the
+  Connector pairs leaving one lane; `appendVehicleSpans` copies a body whose rear is inside its area onto the sibling
+  (`own = false`). Rows A64, A67–A70 written first; all nine `diverge` rows pass, A64 with 0 overlaps on every seed.
+- **Measured:** completed trips unchanged except the study (−1.5 %); clamps unchanged; `multra-cli 42` byte-identical;
+  three movements beyond their noise, the T-junction's minor → eastbound 9.9 → 14.2 s (owner item 54). The first
+  version compiled through `automaticConflicts` (+18.8 % on the benchmark); compiling only same-lane pairs fixed that:
+  callgrind study +2.5 %, M2.6 +3.1 %, benchmark +2.0 %.
+  [Evidence](../evidence/branching-leaders.md).
+- **Verified (Linux, offscreen):** desktop ctest 368/368; docs, sizes, architecture pass; 682 units build without the PCH.

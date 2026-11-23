@@ -78,6 +78,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [WEAVING_FIXTURE.md](WEAVING_FIXTURE.md) | The weaving lab: three Type A weaves as a synthetic fixture, demand and lateral variants, measures, rows BA179–BA183; mechanism evidence, not validation (M3.4, D449) |
 | [PERCEPTION.md](PERCEPTION.md) | Look-ahead, observed vehicles, look-back, rear time-to-collision and reaction time (M3.5.0 contract, D179; not implemented) |
 | [W74.md](W74.md) | W74 car-following equations, parameters, traits, state and model switch (runs since D138; not validated) |
+| [W99.md](W99.md) | W99 (CC0–CC9) car-following equations, parameters, trait, state and model switch; hand-checked cases (contract only, D637; no code) |
 | [POSITIONED_ROUTING.md](POSITIONED_ROUTING.md) | Positioned Route recognition and schema 20 |
 | [SIMULATION.md](SIMULATION.md) | Simulation core and network model |
 | [ENGINEERING_NOTES.md](ENGINEERING_NOTES.md) | Dated measurements, recipes, labs, test notes and the do-not-retry list (moved from NEXT 2026-10-15) |
