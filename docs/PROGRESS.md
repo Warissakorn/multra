@@ -15,7 +15,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **No behaviour change**, on `desktop` (Qt 6) and `headless`: sorted `ctest -N`, `--target help`, sorted
   `compile_commands.json`, `cmake_install.cmake` and sorted `ninja -t commands` identical before and after;
   `CTestTestfile.cmake` differs only in each test's backtrace (file and line).
-- Checks: see the commit that follows (full build, ctest and `check` on both presets).
+- Checks (Linux only, GCC 13.3): full build, `ctest` and `check` pass on `headless` (251/251) and `desktop` (368/368).
 
 ## 2026-11-23 — Four slices briefed for parallel sessions
 
