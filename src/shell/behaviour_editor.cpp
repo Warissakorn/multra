@@ -4,6 +4,7 @@
 #include "../core/lateral.hpp"
 #include "../core/perception.hpp"
 #include "../core/w74.hpp"
+#include "../core/w99.hpp"
 #include "../editor/ui_design_tokens.hpp"
 #include <QCheckBox>
 #include <QComboBox>
@@ -15,7 +16,6 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QLocale>
-#include <QMessageBox>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QTabWidget>
@@ -42,15 +42,35 @@ Optional optional(QWidget* page, QFormLayout* form, const char* key, std::option
     QObject::connect(on, &QCheckBox::toggled, spin, &QWidget::setEnabled);
     form->addRow(on, spin); return {value, on, spin};
 }
+using Rows = std::vector<std::pair<QFormLayout*, QWidget*>>; // (form, field) pairs of one model
+// W74 §5 and W99 §5: every key required, each a text field so that one with no value can be
+// empty. Values a behaviour of another model does not have stay empty until the author enters them.
+template <class Key, class Parameters>
+std::vector<std::pair<const Key*, QLineEdit*>> keyFields(QWidget* page, QFormLayout* form, const std::vector<Key>& list,
+                                                         const std::optional<Parameters>& values, Rows& rows) {
+    std::vector<std::pair<const Key*, QLineEdit*>> result;
+    for (const auto& key : list) {
+        auto* edit = new QLineEdit(page); edit->setObjectName(key.name); edit->setFont(editorDesign::numericFont());
+        auto* validator = new QDoubleValidator(edit); validator->setLocale(QLocale::c()); edit->setValidator(validator);
+        if (values) edit->setText(figure((*values).*key.member));
+        form->addRow(key.name, edit); result.push_back({&key, edit}); rows.push_back({form, edit});
+    }
+    return result;
+}
+// Every key a number, or the first empty one named in the error and focused.
+template <class Parameters, class Key>
+std::optional<Parameters> readKeys(const std::vector<std::pair<const Key*, QLineEdit*>>& keys, QLabel* error, const QString& missing) {
+    Parameters parameters{};
+    for (const auto& [key, edit] : keys) {
+        bool ok = false; const double value = edit->text().trimmed().toDouble(&ok);
+        if (!ok) { error->setText(QString(missing).arg(key->name)); edit->setFocus(); return std::nullopt; }
+        parameters.*key->member = value;
+    }
+    return parameters;
+}
 }
 bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const std::string& users,
                    const std::vector<DriverBehaviour>& library, const CatalogText& text) {
-    if (b.w99) { // W99 §9 (D639): its own dialog slice comes next; until then nothing here may rewrite its keys
-        QMessageBox note(QMessageBox::Information, text("editorBehaviourTabBehaviours"), text("editorBehaviourW99NotYetEditable"),
-                         QMessageBox::Ok, parent);
-        note.setObjectName("editorBehaviourW99NotYetEditable"); note.exec();
-        return false;
-    }
     QDialog dialog(parent); dialog.setObjectName("editorBehaviourEditDialog"); dialog.setWindowTitle(text("editorBehaviourTabBehaviours"));
     // Header, tabs, footer: the header names what is edited, each tab scrolls on its own and the
     // footer keeps the error and the buttons on screen, however many keys a tab holds.
@@ -63,6 +83,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
     auto* label = new QLineEdit(q(name), &dialog); label->setObjectName("editorBehaviourName"); form->addRow(text("editorColumnName"), label);
     auto* model = new QComboBox(&dialog); model->setObjectName("editorBehaviourModel");
     model->addItem(text("editorBehaviourModelPrototype")); model->addItem(text("editorBehaviourModelW74"));
+    model->addItem(text("editorBehaviourModelW99")); // W99 §9 (D640)
     form->addRow(text("editorBehaviourModel"), model);
     note(&dialog, form, text("editorBehaviourEitherModel"), "editorBehaviourEitherModel");
     auto* tabs = new QTabWidget(&dialog); tabs->setObjectName("editorBehaviourEditTabs"); tabs->setUsesScrollButtons(false); // every title readable
@@ -76,16 +97,16 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
     const auto [lanePage, lanes] = tab("editorBehaviourTabLaneChanges", "editorBehaviourLaneChanges");
     const auto [perceptionPage, perception] = tab("editorBehaviourTabPerception", "editorBehaviourPerception");
     const auto [junctionPage, junctions] = tab("editorBehaviourTabJunctions", "editorBehaviourJunctions");
-    // Rows of one model only, shown while that model is chosen: (form, field) pairs.
-    std::vector<std::pair<QFormLayout*, QWidget*>> prototypeRows, w74Rows;
-    auto* w74Help = note(followingPage, following, text("editorBehaviourW74Help"), "editorBehaviourW74Help");
-    w74Rows.push_back({following, w74Help});
+    // Rows of one model only, shown while that model is chosen; `otherRows` while W74 or W99 is.
+    Rows prototypeRows, w74Rows, w99Rows, otherRows;
+    w74Rows.push_back({following, note(followingPage, following, text("editorBehaviourW74Help"), "editorBehaviourW74Help")});
+    w99Rows.push_back({following, note(followingPage, following, text("editorBehaviourW99Help"), "editorBehaviourW99Help")});
     auto staged = b;
     // Prototype values: the behaviour's own when it is prototype; a w74 behaviour has none (its
-    // prototype fields are unused), so the library's first prototype behaviour supplies them.
+    // prototype fields are unused), nor has a w99 one, so the library's first prototype behaviour supplies them.
     auto prototype = b;
-    if (b.w74) {
-        const auto from = std::find_if(library.begin(), library.end(), [](const auto& x) { return !x.w74; });
+    if (b.w74 || b.w99) {
+        const auto from = std::find_if(library.begin(), library.end(), [](const auto& x) { return !x.w74 && !x.w99; });
         prototype = from == library.end() ? DriverBehaviour{} : *from;
         prototype.maxDecelerationCooperativeBraking = b.maxDecelerationCooperativeBraking;
         prototype.amberDeceleration = b.amberDeceleration;
@@ -112,36 +133,31 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
              {"amberDeceleration", &prototype.amberDeceleration, junctionPage, junctions}}) { // M4.2 (D147)
         optionals.push_back(optional(page, rows, key, value)); prototypeRows.push_back({rows, optionals.back().spin});
     }
-    // W74 rows (W74.md §5): every key required, each a text field so that one with no value can
-    // be empty. Values a w74 behaviour does not have stay empty until the author enters them.
-    std::vector<std::pair<const W74Key*, QLineEdit*>> keys;
-    for (const auto& key : w74ParameterKeys()) {
-        auto* edit = new QLineEdit(followingPage); edit->setObjectName(key.name); edit->setFont(editorDesign::numericFont());
-        auto* validator = new QDoubleValidator(edit); validator->setLocale(QLocale::c()); edit->setValidator(validator);
-        if (b.w74) edit->setText(figure((*b.w74).*key.member));
-        following->addRow(key.name, edit); keys.push_back({&key, edit}); w74Rows.push_back({following, edit});
-    }
-    // The one optional key a w74 behaviour may carry; the discretionary keys are refused (§5).
+    const auto w74Keys = keyFields(followingPage, following, w74ParameterKeys(), b.w74, w74Rows);
+    const auto w99Keys = keyFields(followingPage, following, w99ParameterKeys(), b.w99, w99Rows); // W99 §5
+    // The one optional key a w74 or w99 behaviour may carry; the discretionary keys are refused (§5).
     auto cooperative = b.maxDecelerationCooperativeBraking;
-    const auto w74Cooperative = optional(followingPage, following, "maxDecelerationCooperativeBraking", &cooperative);
-    w74Cooperative.on->setObjectName("w74MaxDecelerationCooperativeBrakingSet");
-    w74Cooperative.spin->setObjectName("w74MaxDecelerationCooperativeBraking"); w74Rows.push_back({following, w74Cooperative.spin});
-    w74Rows.push_back({lanes, note(lanePage, lanes, text("editorBehaviourPrototypeOnly"), "editorBehaviourPrototypeOnly")});
+    const auto otherCooperative = optional(followingPage, following, "maxDecelerationCooperativeBraking", &cooperative);
+    otherCooperative.on->setObjectName("modelMaxDecelerationCooperativeBrakingSet");
+    otherCooperative.spin->setObjectName("modelMaxDecelerationCooperativeBraking"); otherRows.push_back({following, otherCooperative.spin});
+    otherRows.push_back({lanes, note(lanePage, lanes, text("editorBehaviourPrototypeOnly"), "editorBehaviourPrototypeOnly")});
     // M4.2 (D147): the amber decision is the same for every model.
     auto amber = b.amberDeceleration;
-    const auto w74Amber = optional(junctionPage, junctions, "amberDeceleration", &amber);
-    w74Amber.on->setObjectName("w74AmberDecelerationSet"); w74Amber.spin->setObjectName("w74AmberDeceleration");
-    w74Rows.push_back({junctions, w74Amber.spin});
+    const auto otherAmber = optional(junctionPage, junctions, "amberDeceleration", &amber);
+    otherAmber.on->setObjectName("modelAmberDecelerationSet"); otherAmber.spin->setObjectName("modelAmberDeceleration");
+    otherRows.push_back({junctions, otherAmber.spin});
     const auto showModel = [=](int index) {
         // Qt 6.4.2's setRowVisible on a shown dialog re-lays the form out between a row's label and
         // its field and writes past its row table (valgrind); the forms stay still until all are set.
         for (auto* rows : {following, lanes, junctions}) rows->setEnabled(false);
         for (const auto& [rows, field] : prototypeRows) rows->setRowVisible(field, index == 0);
         for (const auto& [rows, field] : w74Rows) rows->setRowVisible(field, index == 1);
+        for (const auto& [rows, field] : w99Rows) rows->setRowVisible(field, index == 2);
+        for (const auto& [rows, field] : otherRows) rows->setRowVisible(field, index != 0);
         for (auto* rows : {following, lanes, junctions}) { rows->setEnabled(true); rows->activate(); }
     };
     QObject::connect(model, &QComboBox::currentIndexChanged, &dialog, showModel);
-    model->setCurrentIndex(b.w74 ? 1 : 0); showModel(model->currentIndex());
+    model->setCurrentIndex(b.w99 ? 2 : b.w74 ? 1 : 0); showModel(model->currentIndex());
     // D217: keys either model may carry (perception, lateral, curve, commitment, mandatory
     // lane-change decelerations), from `b` itself. Lateral is all or none (LATERAL §9), so one box
     // sets its three keys.
@@ -206,24 +222,30 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
             staged.discretionaryLaneChangeHoldTime = prototype.discretionaryLaneChangeHoldTime;
             staged.kerbLaneBias = prototype.kerbLaneBias;
             staged.amberDeceleration = prototype.amberDeceleration;
-            staged.w74.reset(); keepShared(staged); dialog.accept(); return;
+            staged.w74.reset(); staged.w99.reset(); keepShared(staged); dialog.accept(); return;
         }
-        // A w74 behaviour: all 18 keys, in range; its prototype fields are unused and not written.
-        W74Parameters parameters;
-        for (const auto& [key, edit] : keys) {
-            bool ok = false; const double value = edit->text().trimmed().toDouble(&ok);
-            if (!ok) { error->setText(text("editorBehaviourW74Missing").arg(key->name)); edit->setFocus(); return; }
-            parameters.*key->member = value;
-        }
-        if (const auto issues = w74ParameterIssues(parameters, "behaviour"); !issues.empty()) {
-            error->setText(text(issues.front().code.c_str()) + " · " + q(issues.front().path)); return;
-        }
+        // A w74 behaviour (all 18 keys) or a w99 one (all ten), in range; its prototype fields are
+        // unused and not written, and the other model's keys are dropped.
+        const auto refused = [&](const std::vector<ValidationIssue>& issues) {
+            if (issues.empty()) return false;
+            error->setText(text(issues.front().code.c_str()) + " · " + q(issues.front().path)); return true;
+        };
         auto result = DriverBehaviour{staged.id};
-        result.maxDecelerationCooperativeBraking = w74Cooperative.on->isChecked()
-            ? std::optional<double>(w74Cooperative.spin->value()) : std::nullopt;
-        result.amberDeceleration = w74Amber.on->isChecked() ? std::optional<double>(w74Amber.spin->value()) : std::nullopt;
+        const auto missing = text("editorBehaviourKeyMissing");
+        if (model->currentIndex() == 1) {
+            const auto parameters = readKeys<W74Parameters>(w74Keys, error, missing);
+            if (!parameters || refused(w74ParameterIssues(*parameters, "behaviour"))) return;
+            result.w74 = parameters;
+        } else {
+            const auto parameters = readKeys<W99Parameters>(w99Keys, error, missing);
+            if (!parameters || refused(w99ParameterIssues(*parameters, "behaviour"))) return;
+            result.w99 = parameters;
+        }
+        result.maxDecelerationCooperativeBraking = otherCooperative.on->isChecked()
+            ? std::optional<double>(otherCooperative.spin->value()) : std::nullopt;
+        result.amberDeceleration = otherAmber.on->isChecked() ? std::optional<double>(otherAmber.spin->value()) : std::nullopt;
         keepShared(result); // D217 (D213: rebuilt from the id, so nothing else may be dropped)
-        result.w74 = parameters; staged = std::move(result); dialog.accept();
+        staged = std::move(result); dialog.accept();
     });
     fitToScreen(dialog);
     if (dialog.exec() != QDialog::Accepted) return false;

@@ -283,23 +283,76 @@ int main(int argc, char** argv) {
         });
         require(documentJson(w.history().document()) == before, "Cancel changed the behaviour");
         // EN/TH: the model and the W74 help are translated.
-        // D639: a w99 behaviour is not opened in this dialog until its own slice; nothing changes.
+        // D640 (W99 §9): a w99 behaviour is edited in the dialog -- its ten keys, its model, inline range checks.
         {
             auto withW99 = w.history().document();
             DriverBehaviour w99{"w99-set"}; w99.w99 = W99Parameters{1.5, 1.3, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5};
             putBehaviour(withW99, w99, ""); validateDocument(withW99);
             QFile h(path); require(h.open(QIODevice::WriteOnly), "Fixture write failed");
             h.write(QByteArray::fromStdString(documentJson(withW99).dump())); h.close(); w.openFile(path);
-            const auto before = documentJson(w.history().document());
-            require(before["schemaVersion"] == 85, "w99 file not schema 85");
+            require(documentJson(w.history().document())["schemaVersion"] == 85, "w99 file not schema 85");
             library([](QDialog& d) {
-                modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-set"); }, [](QDialog& m) {
-                    require(m.objectName() == "editorBehaviourW99NotYetEditable", "w99 behaviour opened in the editor");
-                    m.reject();
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-set"); }, [](QDialog& e) {
+                    require(item<QComboBox>(e, "editorBehaviourModel")->currentIndex() == 2, "w99 not shown as W99");
+                    requireFitsScreen(e);
+                    require(item<QLineEdit>(e, "cc2")->text() == "4", "w99 value not shown");
+                    item<QLineEdit>(e, "cc0")->setText("0"); confirm(e);
+                    require(e.isVisible(), "Out-of-range w99 value accepted");
+                    require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("behaviour.cc0"), "W99 range error not shown");
+                    item<QLineEdit>(e, "cc0")->setText("1.5"); item<QLineEdit>(e, "cc6")->setText("7");
+                    item<QLineEdit>(e, "editorBehaviourName")->setText("Urban W99"); confirm(e);
                 });
             });
-            require(behaviour("w99-set").w99 && *behaviour("w99-set").w99 == *w99.w99, "w99 behaviour changed");
-            require(documentJson(w.history().document()) == before, "w99 document changed");
+            auto edited = *w99.w99; edited.cc6 = 7;
+            require(behaviour("w99-set").w99 && *behaviour("w99-set").w99 == edited && !behaviour("w99-set").w74, "w99 key not edited");
+            require(w.history().document().definition->behaviourNames.at("w99-set") == "Urban W99", "w99 name not edited");
+            require(documentJson(w.history().document())["schemaVersion"] == 85, "edited w99 file not schema 85");
+            // W99 -> prototype: values come from the library's first prototype behaviour (data).
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-set"); }, [](QDialog& e) {
+                    item<QComboBox>(e, "editorBehaviourModel")->setCurrentIndex(0); confirm(e);
+                });
+            });
+            const auto& all = w.history().document().definition->behaviours;
+            const auto& first = *std::find_if(all.begin(), all.end(), [](const auto& b) { return !b.w74 && !b.w99 && b.id != "w99-set"; });
+            require(!behaviour("w99-set").w99 && !behaviour("w99-set").w74 && behaviour("w99-set").followingTime == first.followingTime,
+                    "W99 -> Prototype kept the w99 keys or did not take the library's values");
+            // Prototype -> W99: the fields start empty (no code defaults); an empty one is refused.
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                    item<QComboBox>(e, "editorBehaviourModel")->setCurrentIndex(2);
+                    for (const char* key : {"cc0", "cc1", "cc2", "cc3", "cc4", "cc5", "cc6", "cc7", "cc8", "cc9"})
+                        require(item<QLineEdit>(e, key)->text().isEmpty(), "W99 field pre-filled by code");
+                    confirm(e); require(e.isVisible(), "Empty w99 field accepted");
+                    require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc0"), "Empty W99 field error not shown");
+                    const std::vector<std::pair<const char*, const char*>> values{{"cc0", "1.5"}, {"cc1", "0.9"}, {"cc2", "4"},
+                        {"cc3", "-8"}, {"cc4", "-0.35"}, {"cc5", "0.35"}, {"cc6", "11.44"}, {"cc7", "0.25"}, {"cc8", "3.5"}, {"cc9", "1.5"}};
+                    for (const auto& [key, value] : values) item<QLineEdit>(e, key)->setText(value);
+                    confirm(e);
+                });
+            });
+            require(behaviour(kDefault).w99 && behaviour(kDefault).w99->cc6 == 11.44 && !behaviour(kDefault).w74, "Model not switched to w99");
+            require(behaviour(kDefault).followingTime == 0 && !behaviour(kDefault).discretionaryLaneChangeThreshold,
+                    "Prototype keys kept on a w99 behaviour");
+            const auto unchanged = documentJson(w.history().document());
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                    item<QLineEdit>(e, "cc9")->setText("2"); e.reject();
+                });
+            });
+            require(documentJson(w.history().document()) == unchanged, "Cancel changed the w99 behaviour");
+            // W99 -> prototype with the w99 behaviour first in the library: the values come from the first
+            // prototype one, never from a w99 entry (whose prototype fields are unused).
+            require(w.history().document().definition->behaviours.front().id == kDefault, "Default behaviour not first");
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                    item<QComboBox>(e, "editorBehaviourModel")->setCurrentIndex(0); confirm(e);
+                });
+            });
+            const auto& now = w.history().document().definition->behaviours; // re-read: the edit replaced the document
+            const auto& prototypeSource = *std::find_if(now.begin(), now.end(), [](const auto& b) { return !b.w74 && !b.w99 && b.id != kDefault; });
+            require(!behaviour(kDefault).w99 && behaviour(kDefault).followingTime > 0
+                    && behaviour(kDefault).followingTime == prototypeSource.followingTime, "Prototype values taken from a w99 entry");
         }
         item<QComboBox>(w, "editorLanguage")->setCurrentIndex(1); QApplication::processEvents();
         const std::string shot = argc > 2 ? argv[2] : "";
@@ -309,6 +362,13 @@ int main(int argc, char** argv) {
                 if (!shot.empty()) { QApplication::processEvents(); require(e.grab().save(QString::fromStdString(shot)), "Screenshot failed"); }
                 require(item<QLabel>(e, "editorBehaviourW74Help")->text().contains("W74"), "W74 help missing");
                 require(item<QComboBox>(e, "editorBehaviourModel")->itemText(0) == "Prototype", "Model item missing");
+                e.reject();
+            });
+        });
+        library([](QDialog& d) { // D640: the W99 item and help, in Thai
+            modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                require(item<QComboBox>(e, "editorBehaviourModel")->itemText(2) == "W99 (Wiedemann 99)", "W99 item missing");
+                require(item<QLabel>(e, "editorBehaviourW99Help")->text().startsWith(QString::fromUtf8("ทุกคีย์ของ W99")), "W99 help not in Thai");
                 e.reject();
             });
         });

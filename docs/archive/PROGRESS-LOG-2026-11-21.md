@@ -2,6 +2,18 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-23 — Four slices briefed for parallel sessions
+
+- **User:** "พัฒนาต่อ โดยเปิด Branch และเขียน prompt เพื่อให้ Agent ทำงาน พิจารณาการทำหลายงานพร้อมกันด้วย".
+- Of NEXT's open items, four need no owner choice and touch disjoint files: the leader order kept across
+  ticks (A), the `CMakeLists.txt` split (B), the Results tab strip at 1024 in Thai and the clamp note (C),
+  and ARCHITECTURE's *Editor boundary* prose into the contracts (D). Briefs:
+  [PARALLEL_SESSIONS](../plans/PARALLEL_SESSIONS.md); one branch and one cloud session each.
+- To keep four merges trivial: decision numbers 626–641 and BA216–BA223 reserved per slice; only B edits
+  `CMakeLists.txt`; the four oldest PROGRESS entries moved whole to
+  [PROGRESS-LOG-2026-11-21](../archive/PROGRESS-LOG-2026-11-21.md) to leave room for four new ones.
+- Docs only; `multra-check-docs` and `multra-check-file-sizes` pass.
+
 ## 2026-11-22 — Windows items 51 and 52 passed; conflict-area display as Vissim (D620)
 
 - **Owner (verbatim):** "4. 51 ok"; on item 52: "5. สมจริง แต่สามารถใช้ตาม Aimsun next ได้อย่างถูกต้องตามกฎหมายใช่หรือไม่".

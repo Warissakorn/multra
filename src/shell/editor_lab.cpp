@@ -24,8 +24,8 @@ void EditorWindow::openBehaviourLab() {
         labTypeId_ = type.id; labBehaviourId_ = type.behaviourId;
         const auto behaviour = std::find_if(catalog.behaviours.begin(), catalog.behaviours.end(),
                                             [&](const auto& b) { return b.id == labBehaviourId_; });
-        // The lab tunes the prototype only: a w74 behaviour cannot take its values (§3).
-        const bool writable = behaviour != catalog.behaviours.end() && !behaviour->w74;
+        // The lab tunes the prototype only: a w74 or w99 behaviour cannot take its values (§3, D640).
+        const bool writable = behaviour != catalog.behaviours.end() && !behaviour->w74 && !behaviour->w99;
         lab_ = new BehaviourLabWindow(settings, data_, [this](const char* key) { return text(key); }, this);
         lab_->setAttribute(Qt::WA_DeleteOnClose);
         lab_->applyToProject = [this](const lab::FocusSettings& focus) { return applyLabFocus(focus); };
@@ -46,7 +46,7 @@ QString EditorWindow::applyLabFocus(const lab::FocusSettings& focus) {
         }
         const auto type = std::find_if(def.vehicleTypes.begin(), def.vehicleTypes.end(), [&](const auto& t) { return t.id == labTypeId_; });
         const auto behaviour = std::find_if(def.behaviours.begin(), def.behaviours.end(), [&](const auto& b) { return b.id == labBehaviourId_; });
-        if (type == def.vehicleTypes.end() || behaviour == def.behaviours.end() || behaviour->w74)
+        if (type == def.vehicleTypes.end() || behaviour == def.behaviours.end() || behaviour->w74 || behaviour->w99)
             return text("labApplyUnavailable");
         // Physical values together; identity and behaviour reference stay the project's.
         type->length = focus.type.length; type->width = focus.type.width; type->desiredSpeed = focus.type.desiredSpeed;

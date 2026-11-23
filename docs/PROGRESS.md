@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-23 — W99 slice 3: the W99 dialog (D640)
+
+- **Owner:** "พัฒนาต่อ" after slice 2; the plan (dialog plus the lab guard) approved.
+- **Dialog:** the decline is gone. *W99 (Wiedemann 99)* is the third model item: a help note, one empty text field per
+  `w99ParameterKeys()` entry (filled only from the behaviour's own values), and the cooperative and amber options shared
+  with W74. Confirm names the first empty key (`editorBehaviourKeyMissing`, renamed from the W74-only key), then shows
+  `w99ParameterIssues`' first issue; the result is rebuilt from the id, so switching model drops the other's keys. W74
+  and W99 share one key-field builder and one reader.
+- **Prototype source:** the library's first behaviour of neither model (it was "not W74", which could pick a w99 one).
+- **Lab (a gap from D639):** Apply was offered for a car on a `w99` behaviour and wrote prototype fields the writer
+  then dropped. Both guards now refuse `w99` as `w74`; a new lab does not open on one, since Run refuses it.
+- **Rows:** `behaviour-library-ui` edits a w99 behaviour (out-of-range refused, one key and the name saved, schema 85),
+  switches W99 → Prototype (library values, also with the w99 entry first), Prototype → W99 (fields empty, an empty
+  one refused), Cancel, and the Thai item and help. `behaviour-lab-ui` checks the refused Apply. Mutations bite: the
+  lab guard, the w99 reset on the prototype branch, the starting model index and the prototype source.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 370/370. No Windows run; the owner's
+  look is [F7](plans/OWNER_SITTING_WINDOWS.md).
+
 ## 2026-11-23 — W99 slice 2: codec, schema 85 and the Run refusal (D639)
 
 - **Owner:** "ทำงานถัดไป" after slice 1. Contract §10 grouped codec and dialog; W74 split them (D136, D139), so this
@@ -170,17 +188,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   `compile_commands.json`, `cmake_install.cmake` and sorted `ninja -t commands` identical before and after;
   `CTestTestfile.cmake` differs only in each test's backtrace (file and line).
 - Checks (Linux only, GCC 13.3): full build, `ctest` and `check` pass on `headless` (251/251) and `desktop` (368/368).
-
-
-## 2026-11-23 — Four slices briefed for parallel sessions
-
-- **User:** "พัฒนาต่อ โดยเปิด Branch และเขียน prompt เพื่อให้ Agent ทำงาน พิจารณาการทำหลายงานพร้อมกันด้วย".
-- Of NEXT's open items, four need no owner choice and touch disjoint files: the leader order kept across
-  ticks (A), the `CMakeLists.txt` split (B), the Results tab strip at 1024 in Thai and the clamp note (C),
-  and ARCHITECTURE's *Editor boundary* prose into the contracts (D). Briefs:
-  [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md); one branch and one cloud session each.
-- To keep four merges trivial: decision numbers 626–641 and BA216–BA223 reserved per slice; only B edits
-  `CMakeLists.txt`; the four oldest PROGRESS entries moved whole to
-  [PROGRESS-LOG-2026-11-21](archive/PROGRESS-LOG-2026-11-21.md) to leave room for four new ones.
-- Docs only; `multra-check-docs` and `multra-check-file-sizes` pass.
-

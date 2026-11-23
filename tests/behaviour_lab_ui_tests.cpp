@@ -5,6 +5,11 @@
 #include "../src/shell/behaviour_lab_panel.hpp"
 #include "../src/shell/editor_window.hpp"
 #include "../src/editor/canvas.hpp"
+#include "../src/commands/catalog_commands.hpp"
+#include "../src/project/demand_catalog.hpp"
+#include <nlohmann/json.hpp>
+#include <QFile>
+#include <QTemporaryDir>
 #include <QAction>
 #include <QApplication>
 #include <QCheckBox>
@@ -172,7 +177,31 @@ int main(int argc, char** argv) {
             item<QAction>(*lab, "labFollow")->trigger(); lab->canvas()->fitNetwork(); QApplication::processEvents(); QTest::qWait(50);
             lab->grab().save(QString(argv[2]).replace(".png", "-overview.png"));
         }
-        lab->close(); QApplication::processEvents();
+        // D640: a car on a w99 behaviour cannot take the lab's prototype values. A lab open on the
+        // same behaviour id when the project turns it into w99 refuses Apply; a new lab does not open,
+        // because it runs that behaviour and Run refuses w99 until composition (W99 §9).
+        {
+            auto project = w.history().document();
+            auto catalog = resolveDemandCatalog(project.definition.value_or(AuthoringDefinition{}), data);
+            std::string target;
+            for (const auto& t : catalog.vehicleTypes) if (t.id == "car") target = t.behaviourId;
+            for (auto& b : catalog.behaviours) if (b.id == target) {
+                DriverBehaviour w99{target}; w99.w99 = W99Parameters{1.5, 1.3, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5}; b = w99;
+            }
+            putDemandCatalog(project, catalog); validateDocument(project);
+            QTemporaryDir dir; require(dir.isValid(), "No temporary directory");
+            const auto path = dir.filePath("w99.multra.json");
+            QFile f(path); require(f.open(QIODevice::WriteOnly), "Fixture write failed");
+            f.write(QByteArray::fromStdString(documentJson(project).dump())); f.close(); w.openFile(path);
+            const auto before = w.history().document();
+            require(before == project, "w99 project not opened");
+            require(w.behaviourLab() == lab, "Opening a project closed the lab");
+            item<QAction>(*lab, "labApply")->trigger(); QApplication::processEvents();
+            require(w.history().document() == before, "Apply changed a w99 behaviour");
+            lab->close(); QTest::qWait(10); QApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+            open->trigger(); QApplication::processEvents();
+            require(!w.behaviourLab(), "The lab opened on a w99 behaviour");
+        }
         std::cout << "behaviour-lab-ui passed\n";
         return 0;
     } catch (const std::exception& e) {

@@ -108,3 +108,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D637](RECORD.md#d637) — the W99 contract before code: demo thresholds and regimes, PTV meanings, seven recorded deviations, rows BA224–BA232.
 [D638](RECORD.md#d638) — W99 slice 1: the pure function, thresholds and key list; BA224, BA225, BA227 pass; not composed.
 [D639](RECORD.md#d639) — W99 slice 2: schema 85 codec and composed-schema row; Run refuses a used w99 behaviour; the dialog declines it until its slice.
+[D640](RECORD.md#d640) — W99 slice 3: the behaviour dialog edits a w99 behaviour (ten empty fields, range-checked); the lab refuses Apply to one

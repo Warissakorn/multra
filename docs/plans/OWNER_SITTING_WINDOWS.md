@@ -7,7 +7,7 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 and never reused; an item that took in an older one says so.
 
 **Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
-I.5 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
+I.5 → F7 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
 2026-11-22: P51 and P52 (words in PROGRESS; their findings D620).
 
@@ -49,6 +49,13 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
     window; mismatched window/T disables Confirm, Cancel is unchanged, Manual counts labels and
     CSV countsSource are clear. Re-Analyse/reopen requires confirmation again and Save adds no
     field. Are tables, notes, scrollbars and fixed footers readable without clipping? *Owner:*
+
+## F — Dialogs
+
+7. **W99 in the Driving behaviours dialog** (listed 2026-11-23, D640, W99 §9). Open a project, *Driving
+    behaviours*, edit a behaviour and choose *W99 (Wiedemann 99)*, in Thai and English at 100/150 %: are
+    the ten cc fields empty, the help note readable, an empty field named in the error, and do the tab and
+    footer fit without clipping? *Owner:*
 
 ## G — Object interchange
 

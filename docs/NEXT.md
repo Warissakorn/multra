@@ -277,15 +277,14 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), the procedure
   sequence, is done (D484, D485).
-- **M3.3.3b W99 — contract (D637), pure function (D638) and codec (D639) delivered; nothing runs W99:**
-  [W99](reference/W99.md). Groups `w99` (BA224, BA225, BA227) and `w99codec` (BA228) pass; schema 85 stores `model:
-  "w99"` and `cc0`–`cc9`; Run refuses a `w99` behaviour a type or road names (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`). The
-  behaviour dialog declines to open one (`editorBehaviourW99NotYetEditable`) until its slice. **Next, one per
-  session:** the W99 dialog (D139's pattern: a *W99* model item, ten empty key fields, Confirm checks
-  `w99ParameterIssues`; remove the decline and extend `behaviour-library-ui`); trait `zW` (BA229); composition
-  (BA226, BA230, BA232), which lifts the Run refusal; BA231's record. **Owner, before any preset:** CC1 as a
-  per-driver distribution, and heavy vehicles' halved acceleration; neither is in the contract. The unvalidated
-  marker stays. **Owner (Windows):** the decline message in Thai at the next sitting, with the dialog.
+- **M3.3.3b W99 — contract (D637), pure function (D638), codec (D639) and dialog (D640) delivered; nothing runs
+  W99:** [W99](reference/W99.md). Groups `w99` (BA224, BA225, BA227) and `w99codec` (BA228) pass; schema 85 stores
+  `model: "w99"` and `cc0`–`cc9`; the behaviour dialog edits one (*W99* item, ten empty fields, Confirm checks
+  `w99ParameterIssues`); Run refuses a `w99` behaviour a type or road names (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`), so the
+  behaviour lab does not open on one and refuses Apply to one. **Next, one per session:** trait `zW` (BA229);
+  composition (BA226, BA230, BA232), which lifts the Run refusal; BA231's record. **Owner, before any preset:** CC1 as
+  a per-driver distribution, and heavy vehicles' halved acceleration; neither is in the contract. The unvalidated
+  marker stays. **Owner (Windows):** [F7](plans/OWNER_SITTING_WINDOWS.md), the W99 dialog in Thai and English.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.
