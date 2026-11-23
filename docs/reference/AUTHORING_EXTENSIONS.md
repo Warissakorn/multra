@@ -7,7 +7,8 @@ material, not implementation or validation claims.
 
 ## Link geometry actions
 
-Select a Link, then use its Properties tab. Each successful action is one History command;
+Select a Link, then use its Properties tab. Each successful action is one History command
+(`link_geometry_commands.cpp`);
 Undo restores the full document, including references removed by an ordinary reshape.
 
 | Action | Behavior |
@@ -38,7 +39,7 @@ and dashes boundary 2. Parameter tokens remain English in the Thai UI.
 Connector `laneMarkings` still describes N−1 **interior** dividers, now with the same four
 kinds. Its two outer edges stay solid. Empty lists retain the old defaults.
 
-`markingStrokes` is shared by both renderers: `none` produces no stroke, `double` produces
+`markingStrokes` (`markings.cpp`) is shared by both renderers: `none` produces no stroke, `double` produces
 two solid strokes separated by 0.15 m. It never changes surfaces, hit-test boundaries,
 Connector mouths, runtime paths or lane widths. Lane-changing legality is not inferred from
 paint; changing the existing lane-change safety/routing rules requires its own contract.

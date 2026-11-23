@@ -171,32 +171,7 @@ typed is not a width they chose. A partial list is refused.
 
 ## Geometry and end handles
 
-Geometry handles sit on the **centreline of the whole bundle**, as Vissim shows them, not on
-the stored reference polyline — which ends up at one edge as soon as lanes are added to a
-single side — and not on a Connector's first lane path. Dragging one moves the stored point
-by the same offset, so what the pointer holds is what moves.
-
-A Connector's two end handles are dark squares at the middle of its end cross-section, and
-they are draggable: drop one on any lane to re-attach that end, anywhere along the lane. The
-range is centred on the lane under the pointer and slides to stay inside the Link. If the new
-end has fewer lanes than the Connector carries, the range is narrowed to what is there rather
-than the move being rejected; a wider Link never widens the range on its own. Dropping outside
-a Link leaves the attachment alone, Esc cancels, and one release is one undo entry. A
-Connector used by a route or head still cannot be re-attached. Properties shows both lane
-counts beside the length, so a 3 → 2 lane drop is visible without opening the inspector.
-Connector path count is the larger of its source and target counts, not a third independent
-lane topology. Its cross-section is built from the widths of the lanes it carries, not blended
-between its two mouths: a lane that continues keeps the width its links give it from end to end,
-and a lane the far end has no room for is drawn as a taper closing onto its neighbour, the way
-Vissim draws a lane drop. Which lane continues follows the selected ranges, pairing them in lane
-order, so a lane range anchored one lane over moves the taper to the other side. The taper runs
-the whole length of the Connector; there is no separate taper length to set. Those widths are stacked
-along the same mitered offset a Link's own lane edges use (`offsetGeometry`), so every lane is its
-full width square to the road at every point, through a bend and past a poly point the author has
-dragged. Ordinary mouths fit the Link cross-section; steep or reversed arrivals use a
-full-width square fallback with an advisory (see below). Properties exposes both counts as an alternative. Retargeting
-or resizing a connector used by a route or head is rejected; revise those references
-first. Reshaping its curve remains allowed if the whole document validates.
+Moved to [`NETWORK_EDITOR_CONNECTORS.md`](NETWORK_EDITOR_CONNECTORS.md) §"Geometry and end handles", which keeps this file under the size limit.
 
 ## Connector shape: intermediate points and the mouth
 
@@ -204,48 +179,7 @@ Moved to [`NETWORK_EDITOR_CONNECTORS.md`](NETWORK_EDITOR_CONNECTORS.md) §"Conne
 
 ## Attachment stations, Link edits and deletion
 
-**A Connector keeps its own position.** Its geometry is what the author drew; it is not recomputed
-from its Links on every edit. Moving or reshaping a Link therefore leaves the Connector standing
-where it is, and what changes is which station of the Link each end now sits on:
-
-- **The end is still on the Link's carriageway** — it snaps onto the middle of the lane under it,
-  and its stored station moves to match. The lane it names may change where a lane bundle edit has
-  slid the lanes sideways under a standing end; the Link never does.
-- **The end is off the Link** — by more than half a lane width, which is where the carriageway
-  stops — the Connector has nothing left to connect. It is **deleted**, with the routes and signal
-  heads that named it, inside the same transaction as the edit that moved it, so one Undo brings
-  the Link edit and the Connector back together.
-
-That is the rule for an edit that MOVES a road: reshaping a Link, translating a selection, dragging
-a Connector's body. An edit that RE-LAYS a Link's lanes without moving the road — a lane added or
-removed, a width changed, the driving side flipped — is not a move: every Connector follows the lane
-it names to where that lane now is, at the same station. Deleting a Connector because the author
-added a lane to the Link beside it would be a surprise, not a rule.
-
-Shortening a Link past an attachment now deletes the Connector that hung off it, rather than
-clamping the attachment to the new end. Clamping moved a Connector to somewhere the author had not
-put it; this leaves it where they did and says so by removing it. (A Signal head still rides its
-station and is not moved: its position is validated against its lane, so an edit that would strand
-one is rejected instead.) Reset curve re-derives the whole shape when that is what is wanted.
-
-Splitting remaps both source and target attachments to the appropriate child Link by arithmetic
-alone — the upstream child's polyline is a prefix, so its stations are unchanged, and downstream
-stations shift by the cut. A cut through an attachment inside the 0.2 m continuity span is
-rejected; move the split at least 0.1 m away.
-
-**Runtime:** body attachments run (M1.11.1). The lane is cut into sections at every station a
-Connector attaches to, so a vehicle leaving part way along travels only that far, and one arriving
-part way along joins at the drawn metre rather than at the start of the lane. An arrival is a
-merge, and the arriving Connector gives way to the traffic already on the lane under a priority
-rule derived from the drawing, whose gap time and headway come from `data/priority-rules/`;
-Run reports `EDIT_NO_PRIORITY_DEFAULTS` if those cannot be read, and never invents a zero gap
-time. Run and Diagnostics still report `UNSUPPORTED_CONNECTOR_POSITION` for one case: an
-attachment within 0.2 m of a lane end or of another attachment on the same lane, which leaves no
-section between them. A lane with nothing attached to its body compiles exactly as it always did,
-so existing endpoint-only projects keep their runtime behavior and capability guards.
-
-Deleting a connector removes heads on its paths, affected routes and their vehicle
-inputs in the same undoable transaction. Heads on unaffected links remain.
+Moved to [`NETWORK_EDITOR_CONNECTORS.md`](NETWORK_EDITOR_CONNECTORS.md) §"Attachment stations, Link edits and deletion", which keeps this file under the size limit.
 
 ## Selection, tables and display
 
@@ -359,7 +293,12 @@ lane by its sideways over forward speed (forward floored at 5 m/s). Display only
 engine decides or the results measure changes; a second change inside the 3 s restarts the slide
 from the lane it left.
 
-Successful edits, Undo/Redo, opening/new documents and seed changes invalidate the run; the next Run compiles the current document.
+`compileDocument(document, dataDirectory)` resolves catalogs once and returns a `RunSnapshot` holding
+the revision, network and scenario values. `AuthoringDefinition` reuses the core value contracts for
+routes, inputs and fixed-time programs, with explicit flags separating external catalogs from embedded
+overrides. Successful edits, Undo/Redo, opening/new documents and seed changes clear the snapshot; the
+next Run compiles the current document. Dynamic vehicle and head scene items are ordered by their
+authored level.
 
 **Results** tab (M2.5, D39/D40; inner pages since D144: *Movements*, *Queue discharge*, *Safety clamps*): per-movement vehicles, mean delay and mean travel time beside
 per-approach mean and maximum queue, for the current run. While the run is still going it shows
@@ -471,7 +410,8 @@ rejected before replacing the current document, not silently dropped. See
 [Link authoring and markings](AUTHORING_EXTENSIONS.md) for geometry actions, reference-safe
 reversal and markings. The supplied spec's schema snippets are not a complete codec contract.
 
-Save uses atomic QSaveFile replacement without direct-write fallback. A failed save keeps the
+Save and recovery share `editor_storage`: bounded asset decoding and atomic QSaveFile
+replacement, without direct-write fallback. A failed save keeps the
 previous destination and dirty state; a failed load keeps the current model. An empty or
 unrunnable drawing can be saved, and New/Open/Close prompt Save/Discard/Cancel. Undo history is
 in memory, bounded to 100 operations; saved-revision tracking drives the title's asterisk, and
@@ -480,7 +420,7 @@ The **History** toolbar button or **Ctrl+Shift+H** opens named states with curre
 Double-click or Enter restores a state; browsing does not edit. See [the workflow guide](EDITOR_WORKFLOW.md).
 
 Every 15 seconds a dirty revision is atomically written to a recovery copy in the platform's
-application-data recovery directory. Per-window UUIDs and process locks prevent offering copies
+application-data recovery directory. Per-window UUID recovery files and `QLockFile`s prevent offering copies
 owned by active editors; startup offers stale ones and Recover can inspect them later. Recovery
 validates before replacing the document, then opens untitled and dirty so Save asks for a real
 destination, and a successful save or intentional discard removes the consumed copy. It is a

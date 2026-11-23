@@ -58,7 +58,10 @@ replies; the server does not deduplicate requests or guarantee exactly-once exec
 
 Each request is one UTF-8 JSON object followed by a newline. A connection may carry
 several requests; the client executable sends one request per invocation. Request lines
-are limited to 1 MiB. The desktop processes commands on its GUI thread.
+are limited to 1 MiB. The desktop processes commands on its GUI thread: the optional
+`AutomationServer` dispatches each request to `EditorWindow::automationRequest`, which inspects the
+live document or applies a patch through `History`, so no alternate editor model is maintained.
+Playback uses the editor's own fixed steps, accumulators and canvas; batched stepping paints once.
 
 ```json
 {

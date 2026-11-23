@@ -31,6 +31,12 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Parallel sessions of 2026-11-23 — merged
+
+Briefs: [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md). All four merged (A D626–D627, B D630, C D634, D no ID).
+**Left:** the owner's look at the Thai Results strip at 1024 on Windows (C); the second bucket build after
+each source insertion (`insertion.cpp`), recorded by A in ENGINEERING_NOTES, untried.
+
 ## M3.2 — closed by the owner (D625)
 
 Closed 2026-11-23. Still open on their own gates: [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) M3.2.10 and M3.2.13
@@ -87,8 +93,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     [OBJECT_TABLE](plans/OBJECT_TABLE.md)) is piloted on Study periods; the other tabs wait for the
     owner's verdict (OWNER_SITTING B48). `src/project/` (codecs, runs, outputs; `src/report/` is
     reserved) waits until report work starts.
-  - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
-    per-decision notes) still belongs in the contracts.
+  - ARCHITECTURE has the dependency table; its *Editor boundary* is a 22-line summary with one link
+    per contract (slice D, 2026-11-23).
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
   - Random streams per input (D506–D512, D526): slice 4's cost was not measured with callgrind
@@ -115,8 +121,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 ## Tables like Excel (D490) — done; E35 passed on paste (2026-11-20), one selection defect above
 
 - Contract: [EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md).
-- **Left from the compactness review:** the Results tab strip still scrolls at 1024 in Thai, and
-  the clamp note has no not-validated statement of its own (both predate D490).
+- **Left from the compactness review:** done on Linux (D634): every Results level's strip fits at 1024 × 768 in
+  Thai with no label changed, and the clamp note opens with its not-validated statement. **Owner:** the same
+  strip in Thai at 1024 on Windows (its Thai font may measure wider); if it scrolls, shorten labels first.
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
   (each list's `selectRow()` callers would need rewriting first).
 
@@ -124,7 +131,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 - **2026-11-22:** GCC/Clang Debug builds compile with `-Og` (D621): the desktop suite 331 → ~140 s, results
   byte-identical; `-DMULTRA_DEBUG_OG=OFF` restores `-O0`. The schema-label dump streams case by case (peak memory
-  2.2 GB → 0.6 GB). `CMakeLists.txt` is at 498 lines: split before adding to it.
+  2.2 GB → 0.6 GB). The root `CMakeLists.txt` is split by responsibility into `cmake/` includes (D630, [BUILDING](BUILDING.md#where-the-build-rules-live)): add a test or tool to the include that owns it.
 - C14 passed (2026-11-20, "นิ่ง"). A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
   source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the
@@ -132,10 +139,11 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Owner check (D597, D598):** MSVC Release wall time, now part of OWNER_SITTING_WINDOWS C12.
 - **D599:** the build is warning-free on GCC 13; the next GCC 14+ or MSVC `/W4` build may show new ones:
   fix them in the code, never widen the GCC < 14 exemption.
-- **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-19): `closestVehicle`
-  is 15.7 % of the oversaturated study. A rear-ordered search rebuilt every tick was measured and reverted
-  (study −7.6 %, M2.6 +2.4 %, benchmark +5.0 %); one that keeps the order across ticks is untried. Measure
-  study, M2.6 and the benchmark with callgrind, and hash events (seeds 42–43), before and after.
+- **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-23): `closestVehicle`
+  is 15.7 % of the oversaturated study. A by-rear order rebuilt every tick (2026-11-19) and one seeded from the fleet's
+  order and repaired by insertion (D627: study −8.8 %, benchmark +0.6 to +0.8 %) were measured and not shipped. Left:
+  an order stored in `SimState` (with the `types.hpp` split), and insertion rebuilding every bucket after each arrival
+  (`bucketSpans` about twice per tick). Measure study, M2.6 and the benchmark with callgrind, hash events (seeds 42–43).
 
 ## Canvas style — slices A–C done; stop for owner review
 

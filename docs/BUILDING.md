@@ -169,6 +169,25 @@ GPL-3.0-or-later and links Qt dynamically under the LGPL-3.0. A package must car
 [THIRD-PARTY-NOTICES.md](../THIRD-PARTY-NOTICES.md) and the texts in `licenses/`; the package
 workflow copies them with each component's copyright file (D285).
 
+## Where the build rules live
+
+The root `CMakeLists.txt` is a table of contents (D630): options and compiler flags, the libraries,
+runtime data and build info, then one `include()` per responsibility. Add a rule to the file that owns it:
+
+| File | Holds |
+|---|---|
+| `cmake/tools.cmake` | the CLI, schema dump, benchmarks, fixture builders and evidence sweeps |
+| `cmake/right_of_way_fixtures.cmake` | the right-of-way fixture builders (included from `tools.cmake`) |
+| `cmake/check_target.cmake` | the check tools and the `check` target |
+| `cmake/model_tests.cmake` | `multra-tests`, its sources and its ctest groups (`MULTRA_TEST_GROUPS`) |
+| `cmake/cli_tests.cmake` | tests that run a tool, the CLI or a CMake script; it includes `schema_tests.cmake` |
+| `cmake/check_builds_all.cmake` | makes `check` build every executable (last line of the root) |
+| `src/shell/CMakeLists.txt` and its `*.cmake` | the desktop and its UI tests |
+
+The includes keep CMake 3.24 features only. A move between these files is checked by comparing, before
+and after on the `desktop` and `headless` presets, sorted `ctest -N`, `--target help` and
+`compile_commands.json`.
+
 ## Network editor
 
 `multra-desktop` opens the editor (add `--language th` for Thai).

@@ -2,6 +2,7 @@
 #include "following.hpp"
 #include "lateral.hpp"
 #include "routes.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <vector>
@@ -44,7 +45,13 @@ inline std::optional<Leader> closestVehicle(const Vehicle& vehicle, const std::v
                                             const std::vector<OccupiedSpan>& spans, const SpanBuckets& buckets,
                                             std::uint64_t* id = nullptr, const LateralFilter* lateral = nullptr) {
     std::optional<Leader> nearest;
-    for (const auto& part : parts) {
+    // Part ends ascend (contiguous parts of positive length, frontPart), so a long route bisects to the
+    // first part that is not wholly behind the vehicle; a short one keeps the scan, as frontPart (D598).
+    auto first = parts.begin();
+    if (parts.size() > 8) [[unlikely]]
+        first = std::partition_point(parts.begin(), parts.end(), [&](const RoutePart& p) { return p.start + p.length < vehicle.distance; });
+    for (auto it = first; it != parts.end(); ++it) {
+        const auto& part = *it;
         if (part.start + part.length < vehicle.distance) continue;
         // Parts ascend by start and every span's rear is at least 0, so no span on this part or
         // any later one can have a gap strictly below the nearest already found: stop, and the
