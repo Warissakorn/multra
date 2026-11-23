@@ -277,6 +277,26 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
   threshold of 8, and −6.2 % / +2.3 % / +4.9 % at 24: the fixed cost per tick (the extra pass in
   `bucketSpans`, the size branch in the inline scan) outweighs the saving where queues are short.
   A version that keeps the order across ticks (vehicles rarely overtake in a lane) is the lever left.
+  - **Kept-order attempt, measured and reverted (2026-11-23, D627; GCC 13.3, Release `-g1`, seed 42):**
+    baseline study 34,553.6 M Ir, M2.6 4,031.1 M, `48 900` 10,226.8 M. Each bucket held by (rear, span
+    index), filled back to front so the fleet's id order (older vehicles further along) carries last
+    tick's order, repaired by insertion; the scan stops at the first span that passes. Event hashes
+    (every event of every shipped project that runs and the study, seeds 42 and 43) identical in all
+    variants. Study / M2.6 / benchmark: a full insertion pass −8.2 % / +0.3 % / +1.8 %; the same with the
+    last key in registers −8.9 % / −0.2 % / +0.9 %; a per-segment last-rear array marking buckets to
+    repair −8.8 % / +0.2 % / +1.1 % (the benchmark has more segments than spans per tick); the fill
+    comparing with the bucket's previous item and repairing only marked buckets −8.8 % / −0.1 % / +0.6 %;
+    on top of D626 −8.8 % / −0.2 % / **+0.8 %**. The bar (benchmark at most +0.5 %) is missed: the fill's
+    check is ≈49 M Ir and register allocation around the inlined scan ≈+50 M, against a ≈60 M saving
+    where queues are one or two long. A per-bucket order stored in `SimState` was not built: it needs
+    the `types.hpp` split and an id-to-span map per tick, and would still pay the per-item check after
+    every move. Also seen: insertion rebuilds every bucket after
+    each inserted arrival (`insertion.cpp`), so `bucketSpans` runs about twice per tick.
+- **Leader search bisects long routes (D626, 2026-11-23):** `closestVehicle` walked every route part
+  behind the vehicle (`part.start + part.length < distance`: 583 M Ir, 5.7 % of `48 900`). Routes of more
+  than 8 parts now `partition_point` to the first part not wholly behind, as `frontPart` (D598); short
+  ones keep the scan. Benchmark 10,226.8 → 9,623.7 M Ir (−5.9 %), study +0.15 %, M2.6 +0.25 %; event
+  hashes identical.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time

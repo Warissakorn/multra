@@ -99,4 +99,9 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D623](RECORD.md#d623) — red-red branching enforced: a body inside the split occupies the sibling branch; A64 passes.
 [D624](RECORD.md#d624) — branching stays read-only; a Vissim-like visibility waits for a study and a cited default.
 [D625](RECORD.md#d625) — M3.2 closed by the owner; carved looks, clamps, M3.4 and M6 stay open.
+<<<<<<< HEAD
 [D634](RECORD.md#d634) — Results tabs fit at 1024 in Thai without shorter labels (proved, every tab forced); the clamp note opens with not-validated.
+=======
+[D626](RECORD.md#d626) — the leader search bisects long routes to the first part not behind the vehicle: benchmark −5.9 %, same leaders.
+[D627](RECORD.md#d627) — the by-rear leader order kept across ticks, measured and not shipped: study −8.8 %, benchmark +0.6 to +0.8 %.
+>>>>>>> origin/claude/cool-shannon-btynrs-leader-order
