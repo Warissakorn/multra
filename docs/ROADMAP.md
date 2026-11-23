@@ -159,7 +159,7 @@ LOS, warm-up and multiple-seed summaries belong to M5.
 
 ### M3.2 — Lane changing and crossing-conflict control
 
-**Open.** Explicit priority rules/conflict areas, lane-change distances/emergency stopping and cooperation. By D143 (R7), calibrated gap acceptance moved to M6 and the M3.2.8c remainder to M3.4; M3.2 closes on the M3.2.7d owner exercise and its gate rows. The diverge rows are written (A62–A70, D622, D623): A64 failed (bodies overlapping inside a split) and passes since D623, which enforces red-red branching; the owner's Windows look at it is OWNER_SITTING item 54. Specify signal/right-of-way interaction without disabling collision constraints; account explicitly for any removed blocked vehicle. **Gate:** controlled merges, diverges and crossing conflicts, congestion/no-overlap regression, deterministic replay and the M3 owner exercise; scientific claims remain gated by M6.
+**Open.** Explicit priority rules/conflict areas, lane-change distances/emergency stopping and cooperation. By D143 (R7), calibrated gap acceptance moved to M6 and the M3.2.8c remainder to M3.4; M3.2 closes on the M3.2.7d owner exercise and its gate rows. The diverge rows are written (A62–A70, D622, D623): A64 failed (bodies overlapping inside a split) and passes since D623, which enforces red-red branching; the owner's Windows look passed (item 54, "สมจริง", 2026-11-23). Specify signal/right-of-way interaction without disabling collision constraints; account explicitly for any removed blocked vehicle. **Gate:** controlled merges, diverges and crossing conflicts, congestion/no-overlap regression, deterministic replay and the M3 owner exercise; scientific claims remain gated by M6.
 
 #### M3.2.1–M3.2.9 — Ordered implementation slices
 

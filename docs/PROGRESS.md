@@ -11,7 +11,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Windows); artifacts `multra-windows-x64` and `multra-linux-x86_64`, kept to 2026-12-07.
 - **Owner, on the package:** asked whether branching should be adjustable like other conflict areas; after reading
   Vissim's manual ([review](evidence/vissim-branching-review.md)): "คงไว้แบบนี้ (แนะนำ)". **D624:** branching stays derived
-  and read-only; a visibility key waits for a study and a cited default (Vissim prints none). Item 54's verdict is open.
+  and read-only; a visibility key waits for a study and a cited default (Vissim prints none).
+- **Item 54 passed:** the owner, after watching the T-junction's one-lane minor approach on Windows: "สมจริง".
 - Docs only; `multra-check-docs` passes.
 
 ## 2026-11-22 — Red-red branching enforced: A64 passes (D623)

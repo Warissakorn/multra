@@ -269,7 +269,7 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     approach? Package: run #144 of *Package binaries*, artifact `multra-windows-x64` (expires 2026-12-07).
     *Owner, 2026-11-23, on the package (picture of a split):* asked whether the dark-red branching area could
     be adjustable like other conflict areas; after the Vissim review, "คงไว้แบบนี้ (แนะนำ)" (D624). The
-    plausibility verdict itself is still open. *Owner:*
+    plausibility verdict itself is still open. *Owner:* **"สมจริง", 2026-11-23. Passed; closed.**
 
 ## C–I — on the Windows machine
 

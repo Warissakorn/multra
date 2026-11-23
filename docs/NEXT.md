@@ -31,11 +31,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2 — diverge rows pass (D622, D623); wait for the owner's look (item 54)
+## M3.2 — diverge rows pass (D622, D623); the owner's look passed (item 54)
 
 A62–A70 are written and pass on Linux: red-red branching is enforced (D623, [evidence](evidence/branching-leaders.md)),
-so a body inside a split also occupies the sibling Connector. **Owner:** [OWNER_SITTING](plans/OWNER_SITTING.md) item 54,
-the T-junction's one-lane minor approach on Windows. M3.2 is still closed only by the owner (rule 8); nothing else
+so a body inside a split also occupies the sibling Connector. **Owner:** [OWNER_SITTING](plans/OWNER_SITTING.md) item 54 passed
+("สมจริง", 2026-11-23): the T-junction's one-lane minor approach on Windows. M3.2 is still closed only by the owner (rule 8); nothing else
 is booked for it. **Follow-ups, none started:** branching stays read-only (D624); a per-area visibility like Vissim's only if a
 study needs a flared approach and a cited default exists (Vissim prints none); the per-tick cost (+1.8 to +3.2 % `stepSimulation` on networks with diverges) is under the bar.
 
