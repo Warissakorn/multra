@@ -19,6 +19,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Labels:** `tests/procedure_schema_cases.hpp` in `schema-labels`: 138,710 labels and 20 projects, zero
   disagreements. By hand (temporary, deleted): writer output at 73/75 and 20 probes with jsonschema 4.26.0; zero
   schema-refused/codec-accepted.
+- **Owner:** "ok" to D636 and its review fixes (2026-11-23).
 - **Review fixes (owner: "แก้ตามแนะนำ"):** feedback's `weight` and `tolerance` have their own kinds rather than
   deterrence's `intrazonalShare` and trip rates' `rate`; PRS3's probe tally corrected to 5 / 2 / 13; the D636 constants'
   comment moved off D573's. The emitted schema is byte-identical to the first D636 commit.

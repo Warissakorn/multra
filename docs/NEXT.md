@@ -200,8 +200,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
   Macro settings and runs, trip rates, deterrence sets and cost matrices, period factors, mode
   choice. Rows: [PROJECT_SCHEMA_DEMAND](reference/PROJECT_SCHEMA_DEMAND.md) and
   [PROJECT_SCHEMA_FEATURES](reference/PROJECT_SCHEMA_FEATURES.md).
-- **`procedures` (73, feedback 75) is mapped (D636, PRS1–PRS3)** after the owner's "ok" to D573–D574; it waits for
-  the owner's review of D636. The Macro sets' and procedures' tables are in `macro_set_fields.cpp`. No further
+- **`procedures` (73, feedback 75) is mapped (D636, PRS1–PRS3)** after the owner's "ok" to D573–D574; the owner accepted
+  D636 and its review fixes (2026-11-23, "ok"). The Macro sets' and procedures' tables are in `macro_set_fields.cpp`. No further
   schema slice is briefed: the next is the owner's pick (an uncovered root feature, or the proposal below).
 - **Proposed, not booked (review finding 7, deferred by D574):** the per-row "nonempty array of
   Object" kinds (`tripRateSets`, `deterrencePurposes`, `modeChoiceNests`, …; about 15 since D566)
