@@ -1,4 +1,4 @@
-# The composed project schema's tests (included from CMakeLists.txt inside BUILD_TESTING).
+# The composed project schema's tests (included from cmake/cli_tests.cmake inside BUILD_TESTING).
 add_test(NAME project-schema-cli COMMAND "${CMAKE_COMMAND}"
     "-DTOOL=$<TARGET_FILE:multra-project-schema>"
     -P "${PROJECT_SOURCE_DIR}/tests/project_schema_cli.cmake")

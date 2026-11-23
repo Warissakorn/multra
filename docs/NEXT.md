@@ -37,7 +37,7 @@ Briefs, branches, reserved decision numbers (626–641) and merge order: [PARALL
 Each session edits only its own line here.
 
 - A — leader order kept across ticks (`claude/cool-shannon-btynrs-leader-order`): done — measured, not shipped (D627); long routes bisect (D626).
-- B — split `CMakeLists.txt` (`claude/cool-shannon-btynrs-cmake-split`): started.
+- B — split `CMakeLists.txt` (`claude/cool-shannon-btynrs-cmake-split`): done (D630), root 498 → 194 lines.
 - C — Results tab strip at 1024 in Thai; clamp note (`claude/cool-shannon-btynrs-results-tabs`): done (D634), Linux-verified; Windows look is the owner's.
 - D — ARCHITECTURE's *Editor boundary* into the contracts (`claude/cool-shannon-btynrs-architecture-prose`): done, ready to merge.
 
@@ -135,7 +135,7 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 
 - **2026-11-22:** GCC/Clang Debug builds compile with `-Og` (D621): the desktop suite 331 → ~140 s, results
   byte-identical; `-DMULTRA_DEBUG_OG=OFF` restores `-O0`. The schema-label dump streams case by case (peak memory
-  2.2 GB → 0.6 GB). `CMakeLists.txt` is at 498 lines: split before adding to it.
+  2.2 GB → 0.6 GB). The root `CMakeLists.txt` is split by responsibility into `cmake/` includes (D630, [BUILDING](BUILDING.md#where-the-build-rules-live)): add a test or tool to the include that owns it.
 - C14 passed (2026-11-20, "นิ่ง"). A `run-presentation-ui` failure on Windows CI only is a Windows LayoutRequest
   source, not a flaky test.
 - The next CI run: read `linux (desktop)`'s `ccache -s`; hits should rise after D489. If not, the

@@ -100,8 +100,12 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D624](RECORD.md#d624) — branching stays read-only; a Vissim-like visibility waits for a study and a cited default.
 [D625](RECORD.md#d625) — M3.2 closed by the owner; carved looks, clamps, M3.4 and M6 stay open.
 <<<<<<< HEAD
+<<<<<<< HEAD
 [D634](RECORD.md#d634) — Results tabs fit at 1024 in Thai without shorter labels (proved, every tab forced); the clamp note opens with not-validated.
 =======
 [D626](RECORD.md#d626) — the leader search bisects long routes to the first part not behind the vehicle: benchmark −5.9 %, same leaders.
 [D627](RECORD.md#d627) — the by-rear leader order kept across ticks, measured and not shipped: study −8.8 %, benchmark +0.6 to +0.8 %.
 >>>>>>> origin/claude/cool-shannon-btynrs-leader-order
+=======
+[D630](RECORD.md#d630) — the root `CMakeLists.txt` split into `cmake/` includes by responsibility (498 → 194 lines); generated build byte-identical.
+>>>>>>> origin/claude/cool-shannon-btynrs-cmake-split

@@ -64,6 +64,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   bar). New test in `straddlerleader` compares it with the full scan at 501 positions.
 - **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No Windows run.
 
+## 2026-11-23 — `CMakeLists.txt` split by responsibility (D630, parallel slice B)
+
+- **Brief:** [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md) B. The root file was at 498 of 500 lines.
+- **Moved whole, in place and order:** tool executables → `cmake/tools.cmake`; check tools and `check` →
+  `cmake/check_target.cmake`; `multra-tests` and its groups → `cmake/model_tests.cmake`; tool, CLI and script
+  tests → `cmake/cli_tests.cmake`. Root 498 → 194 lines; the map is in
+  [BUILDING](BUILDING.md#where-the-build-rules-live).
+- **No behaviour change**, on `desktop` (Qt 6) and `headless`: sorted `ctest -N`, `--target help`, sorted
+  `compile_commands.json`, `cmake_install.cmake` and sorted `ninja -t commands` identical before and after;
+  `CTestTestfile.cmake` differs only in each test's backtrace (file and line).
+- Checks (Linux only, GCC 13.3): full build, `ctest` and `check` pass on `headless` (251/251) and `desktop` (368/368).
+
 
 ## 2026-11-23 — Four slices briefed for parallel sessions
 
