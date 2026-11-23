@@ -142,3 +142,11 @@ Whole entries moved from the live PROGRESS log.
   and read-only; a visibility key waits for a study and a cited default (Vissim prints none).
 - **Item 54 passed:** the owner, after watching the T-junction's one-lane minor approach on Windows: "สมจริง".
 - Docs only; `multra-check-docs` passes.
+
+## 2026-11-23 — M3.2 closed by the owner (D625)
+
+- **Owner:** item 54 "สมจริง"; then, shown each gate piece with its evidence, "ตกลง" to closing M3.2.
+- **D625:** ROADMAP, M3_ACCEPTANCE and NEXT say closed. The one Windows look with no verdict of its own (M3.2.4e merge
+  mouth, M3.2.12 stop lines and tool) was added to M3.2.13 as item 4 rather than read into A2. Still open on their own
+  gates: M3.2.10, M3.2.13, M3.2.8a.1, M3.4, M6; the not-yet-validated marker stays.
+- Docs only; `multra-check-docs` passes.

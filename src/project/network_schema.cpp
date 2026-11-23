@@ -49,15 +49,20 @@ class NetworkSchema {
         case Kind::axles:rule=reference(Object::axles,version);break;
         case Kind::pcu:rule=reference(Object::pcu,version);break;
         case Kind::kerbLanes:rule={{"type","integer"},{"x-multra-nativeType","integer-token"}};break;
-        case Kind::behaviours: { // D563: from 25 the model selects the W74 row
+        case Kind::behaviours: { // D563: from 25 the model selects the W74 row; D639: from 85 the W99 row
             Json items=reference(Object::behaviour,version);
+            if(version>=w99ModelVersion)items={{"if",{{"required",Json::array({"model"})},{"properties",{{"model",{{"const",kW99BehaviourModel}}}}}}},
+                {"then",reference(Object::w99Behaviour,version)},{"else",items}};
             if(version>=w74ModelVersion)items={{"if",{{"required",Json::array({"model"})},{"properties",{{"model",{{"const",kW74BehaviourModel}}}}}}},
                 {"then",reference(Object::w74Behaviour,version)},{"else",items}};
             rule={{"type","array"},{"items",items}};break;
         }
         case Kind::behaviourModel:
-            rule={{"type","string"},{"enum",version<w74ModelVersion?Json::array({kPrototypeBehaviourModel}):Json::array({kPrototypeBehaviourModel,kW74BehaviourModel})}};break;
+            rule={{"type","string"},{"enum",version<w74ModelVersion?Json::array({kPrototypeBehaviourModel})
+                :version<w99ModelVersion?Json::array({kPrototypeBehaviourModel,kW74BehaviourModel})
+                :Json::array({kPrototypeBehaviourModel,kW74BehaviourModel,kW99BehaviourModel})}};break;
         case Kind::w74Model:rule={{"type","string"},{"const",kW74BehaviourModel}};break;
+        case Kind::w99Model:rule={{"type","string"},{"const",kW99BehaviourModel}};break;
         case Kind::integerToken:rule={{"type","integer"},{"x-multra-nativeType","integer-token"}};break;
         case Kind::vehicleClasses:rule={{"type","array"},{"items",reference(Object::vehicleClass,version)}};break;
         case Kind::linkBehaviourTypes:rule={{"type","array"},{"items",reference(Object::linkBehaviourType,version)}};break;
@@ -314,6 +319,7 @@ public:
                 case Object::pcu:return "pcu";
                 case Object::behaviour:return "behaviour";
                 case Object::w74Behaviour:return "w74Behaviour";
+                case Object::w99Behaviour:return "w99Behaviour";
                 case Object::vehicleClass:return "vehicleClass";
                 case Object::linkBehaviourType:return "linkBehaviourType";
                 case Object::behaviourOverride:return "behaviourOverride";

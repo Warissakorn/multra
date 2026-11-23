@@ -15,6 +15,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QLocale>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QTabWidget>
@@ -44,6 +45,12 @@ Optional optional(QWidget* page, QFormLayout* form, const char* key, std::option
 }
 bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const std::string& users,
                    const std::vector<DriverBehaviour>& library, const CatalogText& text) {
+    if (b.w99) { // W99 §9 (D639): its own dialog slice comes next; until then nothing here may rewrite its keys
+        QMessageBox note(QMessageBox::Information, text("editorBehaviourTabBehaviours"), text("editorBehaviourW99NotYetEditable"),
+                         QMessageBox::Ok, parent);
+        note.setObjectName("editorBehaviourW99NotYetEditable"); note.exec();
+        return false;
+    }
     QDialog dialog(parent); dialog.setObjectName("editorBehaviourEditDialog"); dialog.setWindowTitle(text("editorBehaviourTabBehaviours"));
     // Header, tabs, footer: the header names what is edited, each tab scrolls on its own and the
     // footer keeps the error and the buttons on screen, however many keys a tab holds.

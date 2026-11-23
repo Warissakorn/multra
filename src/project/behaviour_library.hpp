@@ -12,6 +12,13 @@ void rejectBehaviourLibraryBefore21(const Json& document);
 void rejectW74Before25(const Json& document);
 // Schema 25 is needed exactly when an owned behaviour is `w74`.
 bool ownsW74Behaviour(const ProjectDocument&);
+// W99.md §9 (D639): schema 85 exactly when an owned behaviour is `w99`; a file below it naming the
+// model is refused (UNSUPPORTED_BEHAVIOUR_MODEL).
+bool ownsW99Behaviour(const ProjectDocument&);
+void rejectW99Before85(const Json& document);
+// W99 §9 (D639): the Run refusal of an owned w99 behaviour a road's behaviour type names, for
+// runDiagnostics; compileScenario's assertion refuses it too, but runtime rows never compile roads.
+std::vector<ValidationIssue> w99RoadRunIssues(const ProjectDocument&);
 // M4.2 (D147): schema 28 exactly when an owned behaviour carries `amberDeceleration`; a file below
 // 28 carrying the key in an owned behaviour is refused (EDIT_UNSUPPORTED_FIELD).
 bool ownsAmberBehaviour(const ProjectDocument&);

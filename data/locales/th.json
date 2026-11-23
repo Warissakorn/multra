@@ -791,6 +791,7 @@
   "editorBehaviourModelPrototype": "Prototype",
   "editorBehaviourModelW74": "W74 (Wiedemann 74)",
   "editorBehaviourW74Help": "ทุกคีย์ของ W74 ต้องมีค่า ระบบไม่เติมค่าให้ ค่าเหล่านี้ยังไม่ผ่านการสอบเทียบ งานศึกษาต้องมีแหล่งอ้างอิงของแต่ละค่า",
+  "editorBehaviourW99NotYetEditable": "พฤติกรรมแบบ W99 ยังแก้ไขในหน้าต่างนี้ไม่ได้ ค่าในไฟล์จะคงไว้ตามเดิม",
   "editorBehaviourEitherModel": "คีย์ที่ไม่ได้ติ๊กจะไม่ถูกใช้ แบบจำลองเป็นตัวกำหนดคีย์การขับตามคันหน้า คีย์อื่นทั้งหมดใช้ได้กับทั้งสองแบบจำลอง ยกเว้นการเปลี่ยนช่องจราจรตามความสมัครใจ (เฉพาะ Prototype)",
   "editorBehaviourTabFollowing": "การขับตามคันหน้า",
   "editorBehaviourTabLaneChanges": "การเปลี่ยนช่องจราจร",

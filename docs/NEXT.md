@@ -277,13 +277,15 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), the procedure
   sequence, is done (D484, D485).
-- **M3.3.3b W99 — contract written (D637); pure function delivered (D638):** [W99](reference/W99.md); `src/core/w99.*`,
-  group `w99` passes BA224, BA225, BA227; BA226, BA228–BA232 pending; nothing runs W99 yet. The
-  equations follow `glgh/w99-demo` (MIT, which SUMO's W99 adapts) and PTV's public parameter page, with seven recorded
-  deviations (§4). **Next, one per session:** codec, schema floor and dialog (BA228; `DriverBehaviour` gains
-  `std::optional<W99Parameters>`, keys from `w99ParameterKeys()`), trait `zW` (BA229), composition (BA226, BA230, BA232), BA231's record. **Owner, before any
-  preset:** whether CC1 becomes a per-driver distribution (Vissim 2025) and whether heavy vehicles halve the free
-  acceleration (PTV), which needs a type attribute; neither is in the contract. The unvalidated marker stays.
+- **M3.3.3b W99 — contract (D637), pure function (D638) and codec (D639) delivered; nothing runs W99:**
+  [W99](reference/W99.md). Groups `w99` (BA224, BA225, BA227) and `w99codec` (BA228) pass; schema 85 stores `model:
+  "w99"` and `cc0`–`cc9`; Run refuses a `w99` behaviour a type or road names (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`). The
+  behaviour dialog declines to open one (`editorBehaviourW99NotYetEditable`) until its slice. **Next, one per
+  session:** the W99 dialog (D139's pattern: a *W99* model item, ten empty key fields, Confirm checks
+  `w99ParameterIssues`; remove the decline and extend `behaviour-library-ui`); trait `zW` (BA229); composition
+  (BA226, BA230, BA232), which lifts the Run refusal; BA231's record. **Owner, before any preset:** CC1 as a
+  per-driver distribution, and heavy vehicles' halved acceleration; neither is in the contract. The unvalidated
+  marker stays. **Owner (Windows):** the decline message in Thai at the next sitting, with the dialog.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.

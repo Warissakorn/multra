@@ -3,6 +3,7 @@
 #include "node_codec.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
+#include "../core/w99.hpp"
 #include "../core/perception.hpp"
 #include "../core/lateral.hpp"
 #include <nlohmann/json.hpp>
@@ -122,17 +123,28 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         if (!b.at("model").is_string()) throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
         model = b.at("model").get<std::string>();
     }
-    if (model == kW74BehaviourModel) {
+    const auto refuse = [&](const auto& keys) {
+        for (const auto& key : keys)
+            if (b.contains(key.name)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + "." + key.name}});
+    };
+    const auto read = [&](const auto& keys, auto& parameters) {
+        for (const auto& key : keys) {
+            if (!b.contains(key.name) || !b.at(key.name).is_number())
+                throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key.name}});
+            parameters.*key.member = b.at(key.name).template get<double>();
+        }
+    };
+    if (model == kW74BehaviourModel || model == kW99BehaviourModel) {
         for (const char* key : prototypeKeys)
             if (b.contains(key)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + "." + key}});
         DriverBehaviour behaviour{field<std::string>(b, "id")};
-        W74Parameters parameters{};
-        for (const auto& key : w74ParameterKeys()) {
-            if (!b.contains(key.name) || !b.at(key.name).is_number())
-                throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + "." + key.name}});
-            parameters.*key.member = b.at(key.name).get<double>();
+        if (model == kW74BehaviourModel) { // D136
+            refuse(w99ParameterKeys());
+            W74Parameters parameters{}; read(w74ParameterKeys(), parameters); behaviour.w74 = parameters;
+        } else { // W99.md §5 and §9 (D639): every cc key required; no key is another model's alias
+            refuse(w74ParameterKeys());
+            W99Parameters parameters{}; read(w99ParameterKeys(), parameters); behaviour.w99 = parameters;
         }
-        behaviour.w74 = parameters;
         if (b.contains("maxDecelerationCooperativeBraking"))
             behaviour.maxDecelerationCooperativeBraking = field<double>(b, "maxDecelerationCooperativeBraking");
         if (b.contains("amberDeceleration")) behaviour.amberDeceleration = field<double>(b, "amberDeceleration"); // M4.2
@@ -141,8 +153,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         return behaviour;
     }
     if (model != kPrototypeBehaviourModel) throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
-    for (const auto& key : w74ParameterKeys())
-        if (b.contains(key.name)) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + "." + key.name}});
+    refuse(w74ParameterKeys()); refuse(w99ParameterKeys());
     DriverBehaviour behaviour{field<std::string>(b, "id"), field<double>(b, "standstillDistance"),
         field<double>(b, "additiveSafetyDistance"), field<double>(b, "multiplicativeSafetyDistance"),
         field<double>(b, "followingTime"), field<double>(b, "speedThreshold"), std::nullopt};

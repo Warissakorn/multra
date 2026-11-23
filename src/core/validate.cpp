@@ -9,6 +9,7 @@
 #include "parking.hpp"
 #include "routing.hpp"
 #include "w74.hpp"
+#include "w99.hpp"
 #include "perception.hpp"
 #include "lateral.hpp"
 #include "speed_control.hpp"
@@ -282,8 +283,16 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
     for (std::size_t i = 0; i < s.behaviours.size(); ++i) {
         const auto& b = s.behaviours[i];
         const auto p = "behaviours[" + std::to_string(i) + "]";
-        if (b.w74) {
-            for (auto& issue : w74ParameterIssues(*b.w74, p)) issues.push_back(std::move(issue));
+        if (b.w74 || b.w99) {
+            if (b.w74) for (auto& issue : w74ParameterIssues(*b.w74, p)) issues.push_back(std::move(issue));
+            else {
+                for (auto& issue : w99ParameterIssues(*b.w99, p)) issues.push_back(std::move(issue)); // W99 §5
+                // W99 §9 (D639): until composition (BA230) a w99 behaviour that a vehicle type or a road
+                // names cannot run; authoring drops UNSUPPORTED_* codes, so save and load accept it.
+                const bool named = std::any_of(s.vehicleTypes.begin(), s.vehicleTypes.end(), [&](const auto& t) { return t.behaviourId == b.id; }) ||
+                    std::any_of(s.segmentBehaviours.begin(), s.segmentBehaviours.end(), [&](const auto& x) { return x.behaviourId == b.id; });
+                if (named) add("UNSUPPORTED_BEHAVIOUR_MODEL_RUN", p + ".model");
+            }
             if (b.maxDecelerationCooperativeBraking)
                 number(*b.maxDecelerationCooperativeBraking, p + ".maxDecelerationCooperativeBraking");
             if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2

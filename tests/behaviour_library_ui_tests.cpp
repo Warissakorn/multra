@@ -283,6 +283,24 @@ int main(int argc, char** argv) {
         });
         require(documentJson(w.history().document()) == before, "Cancel changed the behaviour");
         // EN/TH: the model and the W74 help are translated.
+        // D639: a w99 behaviour is not opened in this dialog until its own slice; nothing changes.
+        {
+            auto withW99 = w.history().document();
+            DriverBehaviour w99{"w99-set"}; w99.w99 = W99Parameters{1.5, 1.3, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5};
+            putBehaviour(withW99, w99, ""); validateDocument(withW99);
+            QFile h(path); require(h.open(QIODevice::WriteOnly), "Fixture write failed");
+            h.write(QByteArray::fromStdString(documentJson(withW99).dump())); h.close(); w.openFile(path);
+            const auto before = documentJson(w.history().document());
+            require(before["schemaVersion"] == 85, "w99 file not schema 85");
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-set"); }, [](QDialog& m) {
+                    require(m.objectName() == "editorBehaviourW99NotYetEditable", "w99 behaviour opened in the editor");
+                    m.reject();
+                });
+            });
+            require(behaviour("w99-set").w99 && *behaviour("w99-set").w99 == *w99.w99, "w99 behaviour changed");
+            require(documentJson(w.history().document()) == before, "w99 document changed");
+        }
         item<QComboBox>(w, "editorLanguage")->setCurrentIndex(1); QApplication::processEvents();
         const std::string shot = argc > 2 ? argv[2] : "";
         library([&](QDialog& d) {

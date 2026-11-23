@@ -64,6 +64,9 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
         // A route is not a network object, and neither is an input: the row names its path.
         for(const auto& issue:compositionIssues(def,data))
             rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
+        for(const auto& issue:w99RoadRunIssues(d)) // D639: once, beside a vehicle type's row on the same behaviour
+            if(std::none_of(rows.begin(),rows.end(),[&](const auto& r){return r.code==issue.code && r.path==issue.path;}))
+                rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
         if (def.inputs.empty() && !holdsVehicles(d))
             rows.push_back({"EDIT_NO_INPUTS","inputs",{},{},DiagnosticSeverity::runtime});
         return rows;

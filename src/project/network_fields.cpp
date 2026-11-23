@@ -2,6 +2,7 @@
 #include "latest_schema.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
+#include "../core/w99.hpp"
 #include "../core/perception.hpp"
 #include "../core/lateral.hpp"
 #include <nlohmann/json.hpp>
@@ -221,13 +222,17 @@ const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B:
     {"yieldTime",&B::yieldTime,yieldVersion,true},{"yieldTimeDeviation",&B::yieldTimeDeviation,yieldVersion,true},
     {"yieldTimeMinimum",&B::yieldTimeMinimum,yieldVersion,true},{"yieldTimeMaximum",&B::yieldTimeMaximum,yieldVersion,true},
     {"impatience",&B::impatience,yieldVersion,true},{"timeToImpatience",&B::timeToImpatience,yieldVersion,true}}; // D618
-std::vector<Field> behaviourRow(bool w74) {
-    const int notThis=w74?1:0,notOther=w74?0:1;
+enum class Model { prototype, w74, w99 };
+std::vector<Field> behaviourRow(Model model) {
+    // rejectFrom 1: refused at every version, on the rows of the models that do not own the key.
+    const auto own=[&](Model m){return model==m;};
+    const auto refused=[&](Model m){return own(m)?0:1;};
     std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},
-        {"model",w74?Kind::w74Model:Kind::behaviourModel,true,0,behaviourVersion}};
-    for(const auto* key:prototypeRequired)row.push_back({key,Kind::number,!w74,0,0,false,notThis});
-    for(const auto* key:prototypeOptional)row.push_back({key,Kind::number,false,0,0,false,notThis});
-    for(const auto& key:w74ParameterKeys())row.push_back({key.name,Kind::number,w74,0,0,false,notOther});
+        {"model",own(Model::w74)?Kind::w74Model:own(Model::w99)?Kind::w99Model:Kind::behaviourModel,true,0,behaviourVersion}};
+    for(const auto* key:prototypeRequired)row.push_back({key,Kind::number,own(Model::prototype),0,0,false,refused(Model::prototype)});
+    for(const auto* key:prototypeOptional)row.push_back({key,Kind::number,false,0,0,false,refused(Model::prototype)});
+    for(const auto& key:w74ParameterKeys())row.push_back({key.name,Kind::number,own(Model::w74),0,0,false,refused(Model::w74)});
+    for(const auto& key:w99ParameterKeys())row.push_back({key.name,Kind::number,own(Model::w99),0,0,false,refused(Model::w99)}); // D639
     for(const auto& key:sharedOptional)row.push_back({key.name,Kind::number,false,0,key.floor});
     for(const auto& key:perceptionParameterKeys())row.push_back({key.name,key.integer?Kind::integerToken:Kind::number,false,0,perceptionVersion});
     for(const auto& key:lateralParameterKeys())row.push_back({key.name,Kind::number,false,0,lateralVersion});
@@ -278,8 +283,9 @@ std::span<const Field> fields(Object object) {
     case Object::accelerationPoint:return accelerationPointFields;
     case Object::axles:return axleFields;
     case Object::pcu:return pcuFields;
-    case Object::behaviour:{static const auto row=behaviourRow(false);return row;}
-    case Object::w74Behaviour:{static const auto row=behaviourRow(true);return row;}
+    case Object::behaviour:{static const auto row=behaviourRow(Model::prototype);return row;}
+    case Object::w74Behaviour:{static const auto row=behaviourRow(Model::w74);return row;}
+    case Object::w99Behaviour:{static const auto row=behaviourRow(Model::w99);return row;}
     case Object::vehicleClass:return vehicleClassFields;
     case Object::linkBehaviourType:return linkBehaviourTypeFields;
     case Object::behaviourOverride:return behaviourOverrideFields;
@@ -323,7 +329,7 @@ bool allowsAdditionalFields(Object object,int version) {
        !macroSetFields(object).empty())return false; // every Macro set and procedure row is closed
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
-    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint || object==Object::accelerationPoint)return version<behaviourVersion;
+    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::w99Behaviour || object==Object::speedRange || object==Object::speedPoint || object==Object::accelerationPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
@@ -380,7 +386,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     if(found==list.end())throw std::logic_error("Unknown network codec field");
     const char* expected=nullptr;
     switch(found->kind) {
-    case Kind::text:case Kind::behaviourModel:case Kind::w74Model:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
+    case Kind::text:case Kind::behaviourModel:case Kind::w74Model:case Kind::w99Model:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
     case Kind::boolean:if(!v.is_boolean())expected="Expected true or false: ";break;
     case Kind::number:if(!v.is_number())expected="Expected number: ";break;
     case Kind::level:

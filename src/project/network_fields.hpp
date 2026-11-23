@@ -11,7 +11,7 @@ enum class Object { network,link,lane,point,connector,reference,signalHead,signa
     rightOfWay,waitingLine,controlPoint,controlPath,conflictArea,conflictSide,priorityRule,priorityMarker,stopControl,queueCounter,measurementLine,travelTimeSection,sectionLine,route,vehicleInput,volumeInterval,
     routingDecision,routingRoute,routingInterval,routingTypeRule,composition,compositionShare,compositionInterval,mode,
     vehicleType,speedRange,speedPoint,accelerationPoint,axles,pcu,behaviour,w74Behaviour,vehicleClass,linkBehaviourType,behaviourOverride,
-    rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings,
+    w99Behaviour,rootFeatures,zone,zoneLinkConnector,zoneStreetConnector,odMatrix,parkingLot,studyPeriod,studyArea,gateFlow,map,mapReference,macroRun,macroSettings,
     tripRateSet,citedSource,tripRatePurpose,tripRateCrossSide,tripRateRegressionSide,tripRateCategory,tripRateTerm,deterrenceSet,deterrencePurpose,costMatrix,costMatrixSource,periodFactor,
     modeChoiceSet,modeChoicePurpose,modeChoiceAlternative,modeChoiceNest,
     procedure,generationStep,distributionStep,modeChoiceStep,assignmentStep,procedureFeedback };
@@ -20,7 +20,7 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     conflictKind,conflictPriority,stopMode,texts,queueCounters,measurementLines,travelTimeSections,sectionLine,sectionControl,boolean,routes,inputs,volumeIntervals,
     routingDecisions,routingRoutes,routingIntervals,routingTypeRules,numberMatrix,
     compositions,compositionShares,compositionIntervals,modes,vehicleTypes,speedRange,speedCurve,accelerationCurve,axles,kerbLanes,pcu,
-    behaviours,behaviourModel,w74Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
+    behaviours,behaviourModel,w74Model,w99Model,integerToken,vehicleClasses,linkBehaviourTypes,behaviourOverrides,
     zones,zoneConnectors,odMatrices,parkingLots,pairs,numberMap,zoneDirection,travelDirection,segmentId,unsignedCount,generatedBy,
     studyPeriods,studyArea,nonemptyTexts,flowSource,gateFlows,
     map,mapReference,providerId,opacity,utmCrs,longitude,latitude,worldAnchor,rotation,
@@ -84,7 +84,8 @@ inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,en
     startUpVersion=81, // D608 (START_UP): a vehicle type's accelerationCurve, a behaviour's inattention pair
     diffusionVersion=82, // D613 (DIFFUSION): a behaviour's diffusionTime
     priorityMarkerVersion=83, // D606 (PRIORITY_RULES): a priority rule's waitingLineId, vehicleClassIds and markers
-    yieldVersion=84; // D618 (YIELD_IMPATIENCE): gap reduction on a rule or marker, a behaviour's yield time and impatience
+    yieldVersion=84, // D618 (YIELD_IMPATIENCE): gap reduction on a rule or marker, a behaviour's yield time and impatience
+    w99ModelVersion=85; // D639 (W99 §9): an owned behaviour's model `w99` and its cc keys
 // D636: the root procedures (D484) is refused below 73, even null; a procedure's feedback (D547) below 75,
 // checked after parsing (document.cpp).
 inline constexpr int procedureVersion=73,feedbackVersion=75;

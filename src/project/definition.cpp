@@ -2,6 +2,7 @@
 #include "../core/text.hpp"
 #include "document.hpp"
 #include "../core/w74.hpp"
+#include "../core/w99.hpp"
 #include "../core/perception.hpp"
 #include "../core/lateral.hpp"
 #include "demand_catalog.hpp"
@@ -185,9 +186,10 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.inattentionProbability) item["inattentionProbability"] = *b.inattentionProbability; // D608
         };
         for (const auto& b : d.behaviours) {
-            if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model
+            if (b.w74 || b.w99) { // D136, D639: the model's own keys only; addBehaviourLibraryJson tags the model
                 Json item{{"id",b.id}};
-                for (const auto& key : w74ParameterKeys()) item[key.name] = (*b.w74).*key.member;
+                if (b.w74) for (const auto& key : w74ParameterKeys()) item[key.name] = (*b.w74).*key.member;
+                else for (const auto& key : w99ParameterKeys()) item[key.name] = (*b.w99).*key.member;
                 if (b.maxDecelerationCooperativeBraking) item["maxDecelerationCooperativeBraking"] = *b.maxDecelerationCooperativeBraking;
                 if (b.amberDeceleration) item["amberDeceleration"] = *b.amberDeceleration; // M4.2, schema 28
                 optionalKeys(b, item);
