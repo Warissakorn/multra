@@ -1,5 +1,6 @@
 #pragma once
 
+#include "branching_types.hpp"
 #include "event_types.hpp"
 #include "lateral_types.hpp"
 #include "line_state_types.hpp"
@@ -239,6 +240,7 @@ struct ScenarioDefinition {
     std::vector<ParkingLotSpec> parkingLots;
     ClampRules clampRules; // M3.2.8a.1 (MERGE_CLAMPS §3, D250/D251): last again; all on by default
     RandomStreams randomStreams{}; // INPUT_STREAMS §3 (D505): last again; shared unless set
+    std::vector<BranchingSpan> branchings; // D623, last again: compiled; empty without a diverge
     // Value equality, so callers can tell "this edit changed nothing" without serialising.
     bool operator==(const ScenarioDefinition&) const = default;
 };
@@ -318,6 +320,7 @@ struct ScenarioIndex {
     // M8.4a: the lot slot whose gate a route ends at, SIZE_MAX for none; empty without a lot.
     std::vector<std::size_t> lotOfRoute;
     LateralIndex lateral; // M3.7 (LATERAL §5, D188): off and empty without a lateral key
+    std::vector<std::vector<BranchSibling>> siblingsOfSegment; bool branchings{}; // D623: empty and off without a diverge
     std::vector<char> joinOfSegment; std::vector<std::size_t> yieldSegmentOfRule; // JOIN_ANTICIPATION §2 (D255): empty unless clampRules.joinAnticipation
 };
 // Scenario lookups for one vehicle, resolved once per tick instead of once per use.

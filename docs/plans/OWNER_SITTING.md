@@ -24,7 +24,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
 
 2. **M3.2.7d T-junction exercise** (listed 2026-09-26). Fill the sheet in
    [M3_ACCEPTANCE](M3_ACCEPTANCE.md) §3 on `data/projects/t-junction-priority.traffic.json`. Does
-   minor-road delay respond to gap time as an engineer expects? It is what M3.2 closes on (R7).
+   minor-road delay respond to gap time as an engineer expects? It is what M3.2 closed on (R7; closed 2026-11-23, D625).
    *Owner:* 2026-11-18, attempt 1, step 1 only (verbatim): "พบว่า conflict area แสดงถูกต้อง แต่เส้นหยุดผิดตำแหน่ง
    link ทิศมุ่งตะวันตก ควรตั้งเส้นหยุดไว้ทางทิศตะวันออกของ conflict area และเส้นหยุดของ conflict area บน
    connector ควรอยู่ก่อนเข้า Link". **Fail at step 1, kept** (§3: fixes are separate attempts).
@@ -92,7 +92,7 @@ Build for the sitting: `cmake --preset desktop`, `cmake --build --preset desktop
    note:* D611.
    *Owner:* 2026-11-21, attempt 2, step 4 and the verdict (verbatim), after asking how Stop and Yield differ
    here and in SUMO and Aimsun: "ทดลองแล้วสมจริง". **Attempt 2 passes (D612):** the minor road's behaviour is
-   plausible. Windows version and timings were not given. M3.2 still waits on its diverge acceptance row.
+   plausible. Windows version and timings were not given. M3.2's diverge rows are written and pass since D623 (items 53, 54).
 3. **M5.7 rehearsal** (listed 2026-10-08). The PROBLEM §4 sentence on a real aerial image and the
    M2.6 template with real volumes (B4), Run seeds 42-51, Copy into the report. Record file,
    commit, table and the image size against the 32 MiB cap; labelled partial until M6. Did any
@@ -251,6 +251,25 @@ Answered 2026-10-14 and moved out: B7 and B10 ([D158](../decisions/RECORD-D001-D
     driven and `diverted` on the counted one (D582). Closed.** Still to see in the editor (with item
     C/E checks): the decision dialog's "enters on the lanes that serve it" checkbox and the
     behaviour editor's `missedExitAfter` field.
+53. **Bodies overlapping inside a diverge** (listed 2026-11-22, D622, [evidence](../evidence/diverge-acceptance.md)).
+    M3.2's diverge row A64 fails: when one branch's queue reaches back into the split, a car to the other
+    branch stops seeing the car ahead once that car's rear has left the shared lane, and drives through its
+    rear where the two lanes still overlap (8 of 10 seeds, up to 1.69 m, no clamp). Pick: **(a)** the
+    compiler gives each pair of branches the length within which bodies can touch, and a follower also
+    follows a car on the sibling branch inside it (no reservation; runs change only where a queue stands in a
+    split; measured with callgrind and re-published); **(b)** a branching zone in the core, reserved like a
+    conflict area; **(c)** leave it documented, so M3.2's no-overlap gate is unmet at diverges (M3.2 stays
+    open or is carved). *Session's recommendation:* (a). *Owner:* **"ทำตามแนะนำ", 2026-11-22: (a), the extent being
+    the branching area the editor measures and draws; no new key, constant or parameter (D623).** After reading Vissim's
+    manual and SUMO's `MSLink.cpp`, which both keep the two branches in a following relationship inside the split.
+54. **A car waiting inside a split** (listed 2026-11-22, D623, [evidence](../evidence/branching-leaders.md)). Open
+    `t-junction-priority`, Run, and watch the minor approach (one lane, splitting into its two turns): a car
+    waiting at its line inside the split now holds a car for the other turn behind it; before D623 that car
+    drove through it (minor → eastbound 9.9 → 14.2 s, seeds 42–51). Is that plausible for a one-lane
+    approach? Package: run #144 of *Package binaries*, artifact `multra-windows-x64` (expires 2026-12-07).
+    *Owner, 2026-11-23, on the package (picture of a split):* asked whether the dark-red branching area could
+    be adjustable like other conflict areas; after the Vissim review, "คงไว้แบบนี้ (แนะนำ)" (D624). The
+    plausibility verdict itself is still open. *Owner:* **"สมจริง", 2026-11-23. Passed; closed.**
 
 ## C–I — on the Windows machine
 

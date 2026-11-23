@@ -31,11 +31,11 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## M3.2 — closes with its diverge acceptance-fixture row
+## M3.2 — closed by the owner (D625)
 
-M3.2.7d passed on attempt 2 (D612); visibility (D607), G1/G2 (D608), G3 (D613) and the A2 answers (D610, D611)
-are done (history: [NEXT-state-2026-11-22](archive/NEXT-state-2026-11-22.md)). M3.2 still closes only with its
-diverge acceptance-fixture row (ROADMAP M3.2).
+Closed 2026-11-23. Still open on their own gates: [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) M3.2.10 and M3.2.13
+(now with item 4, M3.2.4e/M3.2.12 on Windows), M3.2.8a.1, M3.4, M6. Branching stays read-only (D624); a visibility
+key only for a study with a flared approach and a cited default.
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 

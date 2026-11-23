@@ -23,6 +23,8 @@ or edit evidence in place. A new measurement gets a new note.
 | [discharge-measurement.md](discharge-measurement.md) | M3.3.1a local measurement evidence — 2026-10-06 | — |
 | [discharge-passage.md](discharge-passage.md) | M3.3.1b2b1 proven passage evidence — 2026-10-07 | — |
 | [discharge-provenance.md](discharge-provenance.md) | M3.3.1b2a local evidence — 2026-10-06 | — |
+| [branching-leaders.md](branching-leaders.md) | D623: a body inside a split occupies the sibling branch; A64 passes, shipped-project changes per seed set, callgrind before/after — 2026-11-22 | D623 |
+| [diverge-acceptance.md](diverge-acceptance.md) | M3.2 diverge acceptance rows A62–A66: order, FIFO behind a blocked branch and replay pass; footprints overlap inside the split when a branch queue reaches it (A64 fails) — 2026-11-22 | D622, D109 |
 | [m0-plausibility.md](m0-plausibility.md) | M0 plausibility: `crossing.json` seeds 42–51 against SUMO 1.18 Krauss/IDM; scripts and SUMO inputs `m0-plausibility-*` — 2026-10-27 | D369, D147 |
 | [m3.2.7-sweep.md](m3.2.7-sweep.md) | M3.2.7b — T-junction diagnostic sweep | — |
 | [m3.2.8a-clamps.md](m3.2.8a-clamps.md) | M3.2.8a — the five near-standing minor-road clamps (D105) | D105, D80, D69 |
@@ -114,6 +116,7 @@ or edit evidence in place. A new measurement gets a new note.
 | [w74-clamps.md](w74-clamps.md) | M3.3.3a: where the extra W74 safety clamps come from — 2026-10-08 | — |
 | [w74-codec.md](w74-codec.md) | M3.3.3a W74 schema-25 codec evidence — 2026-10-08 | D135, D136 |
 | [w74-composition.md](w74-composition.md) | M3.3.3a W74 composition evidence — 2026-10-08 | D137, D138 |
+| [vissim-branching-review.md](vissim-branching-review.md) | Vissim's manual on branching conflict areas: red-red, original order, gap attributes Merge/Crossing only, visibility with no printed default — 2026-11-23 | D624, D623 |
 | [w74-discharge.md](w74-discharge.md) | M3.3.3a BA27: W74 queue-discharge timestep sensitivity — 2026-10-08 | — |
 | [w74-preset.md](w74-preset.md) | M3.3.3a: a cited, uncalibrated `w74` preset and its discharge and clamps — 2026-10-15 | D176 |
 | [w74-pure-function.md](w74-pure-function.md) | M3.3.3a W74 pure-function evidence — 2026-10-08 | D135 |

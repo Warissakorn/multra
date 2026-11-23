@@ -94,6 +94,10 @@ std::optional<Located> locate(const Network& n, const RuntimeSections& table, co
     try { return locateChecked(n, table, ref, station); } catch (const std::exception&) { return std::nullopt; }
 }
 }
+std::optional<RuntimeLocation> runtimeLocation(const Network& n, const RuntimeSections& table, const ControlPathRef& ref, double station) {
+    const auto at = locate(n, table, ref, station);
+    return at ? std::optional<RuntimeLocation>(RuntimeLocation{at->segment, at->position, at->length}) : std::nullopt;
+}
 std::vector<ValidationIssue> rightOfWayStructuralIssues(const Network& n) {
     std::vector<ValidationIssue> issues;
     const auto& row = n.rightOfWay;

@@ -159,30 +159,30 @@ LOS, warm-up and multiple-seed summaries belong to M5.
 
 ### M3.2 — Lane changing and crossing-conflict control
 
-**Open.** Explicit priority rules/conflict areas, lane-change distances/emergency stopping and cooperation. By D143 (R7), calibrated gap acceptance moved to M6 and the M3.2.8c remainder to M3.4; M3.2 closes on the M3.2.7d owner exercise and its gate rows, with a diverge acceptance-fixture row still to write. Specify signal/right-of-way interaction without disabling collision constraints; account explicitly for any removed blocked vehicle. **Gate:** controlled merges, diverges and crossing conflicts, congestion/no-overlap regression, deterministic replay and the M3 owner exercise; scientific claims remain gated by M6.
+**Closed by the owner's ruling, 2026-11-23 (D625, "ตกลง").** Met: the M3 owner exercise M3.2.7d (D612); controlled merges and crossings (A01–A61); diverges (A62–A70, D622–D624, owner item 54); the congestion/no-overlap regression and deterministic replay (A25, A64, A66, A70). Carved and still open, each on its own gate: M3.2.10 and M3.2.13 (owner looks), M3.2.8a.1 (clamps), M3.4 (lane-change refinements), calibrated gap acceptance in M6. The not-yet-validated marker stays. Explicit priority rules/conflict areas, lane-change distances/emergency stopping and cooperation. By D143 (R7), calibrated gap acceptance moved to M6 and the M3.2.8c remainder to M3.4; M3.2 closed on the M3.2.7d owner exercise and its gate rows. The diverge rows are written (A62–A70, D622, D623): A64 failed (bodies overlapping inside a split) and passes since D623, which enforces red-red branching; the owner's Windows look passed (item 54, "สมจริง", 2026-11-23). Specify signal/right-of-way interaction without disabling collision constraints; account explicitly for any removed blocked vehicle. **Gate:** controlled merges, diverges and crossing conflicts, congestion/no-overlap regression, deterministic replay and the M3 owner exercise; scientific claims remain gated by M6.
 
 #### M3.2.1–M3.2.9 — Ordered implementation slices
 
 Contracts: [M3_PLAN](plans/M3_PLAN.md), [M3_CONTRACT](reference/M3_CONTRACT.md),
 [M3_8_CONTRACT](reference/M3_8_CONTRACT.md), rows in [M3_ACCEPTANCE](plans/M3_ACCEPTANCE.md).
 The full slice table (scope, evidence files, platforms) is in [archive](archive/ROADMAP-implemented-2026-10-15.md#m321-m329--ordered-implementation-slices).
-Passing M3.2.7 alone does not close M3.2; the not-yet-validated marker remains.
+M3.2.7 alone did not close M3.2 (D625 did); the not-yet-validated marker remains.
 
 | Slice | Status |
 |---|---|
 | M3.2.1 contracts · M3.2.2a–c (D54–D56) · M3.2.3a–c (D57–D59) · M3.2.5a/b Stop/Yield (D62, D63) · M3.2.6a–c signal positions and queue counters (D64, D65) | Implemented 2026-09-25 |
-| M3.2.4a–c conflict-area editor and automatic areas (D60, D61, D68, D72, D84, D86) · M3.2.4d/f measured overlaps and mouth continuation (D115, D117, D118) | Implemented; **owner look pending** |
-| M3.2.4e merge admission over the full mouth overlap ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), then M3.2.12 derived stop positions and a Stop line tool ([STOP_LINES](reference/STOP_LINES.md), D591) | M3.2.4e **implemented** (MM1–MM7); M3.2.12 **implemented** (D594–D595, SL1–SL8); Linux only, the owner's look on Windows pending |
+| M3.2.4a–c conflict-area editor and automatic areas (D60, D61, D68, D72, D84, D86) · M3.2.4d/f measured overlaps and mouth continuation (D115, D117, D118) | Implemented; owner look carved to M3.2.10 (3) and M3.2.13 (3) |
+| M3.2.4e merge admission over the full mouth overlap ([MERGE_MOUTH](reference/MERGE_MOUTH.md), D593), then M3.2.12 derived stop positions and a Stop line tool ([STOP_LINES](reference/STOP_LINES.md), D591) | M3.2.4e **implemented** (MM1–MM7); M3.2.12 **implemented** (D594–D595, SL1–SL8); Linux only; the owner's look on Windows carved to M3.2.13 (4) |
 | M3.2.7a–c T-junction evidence (D66, D67) | Implemented |
 | M3.2.7d owner exercise (§3, Windows) | **Passed on attempt 2 (owner, 2026-11-21, D612)**; attempt 1 (2026-11-18) failed at step 1: merge waiting lines inside the joined lane (M3.2.4e), [OWNER_SITTING](plans/OWNER_SITTING.md) A2 |
 | M3.2.8a commitment (D69) · M3.2.8b mandatory lane change (D71) · M3.2.8c routing-decision changes (D93) and cooperative braking (D90) | Implemented |
 | M3.2.8c discretionary changes (D95) and hold (D101) | Implemented and **off** (D102); remainder moved to M3.4 |
-| M3.2.9a–h lane correspondence and Connector ends (D73–D80, D106, D107) | Implemented; **owner look of D80 pending** |
+| M3.2.9a–h lane correspondence and Connector ends (D73–D80, D106, D107) | Implemented; the D80 look carved to M3.2.10 (4) |
 | M3.2.11 lane locks at dead ends (D578): a wait into a standing queue holds the lane to the run's end (study ratchada-latphrao: 82 waiting, longest 3,411 s) | **Done (D582)**; owner chose A then B (B50); LL1 fixed a dead end past the point of no return (D579); A: `entryLanes`, schema 77 (D580); B: `missedExitAfter`, schema 78 (D581); [LANE_LOCKS](reference/LANE_LOCKS.md) |
 
 ### M3.2.10, M3.2.13 — Owner looks carved out of the sitting (D201, D602)
 
-**Open, owner.** Listed in [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md); they do not close M3.2, which closes on M3.2.7d.
+**Open, owner.** Listed in [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md); M3.2 closed without them (D625).
 
 ### M3.2.8a.1 — Remaining moving merge and source-clearance clamps
 

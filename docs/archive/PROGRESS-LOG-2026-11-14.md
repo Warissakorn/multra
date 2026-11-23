@@ -2,6 +2,54 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-21 — PRIORITY_RULES slice 1: a stop line with conflict markers, no area (D614)
+
+- **Owner:** "ทำงานถัดไป" (D609's order: PRIORITY_RULES slice 1, choices D606).
+- **D614, [PRIORITY_RULES](../reference/PRIORITY_RULES.md):** schema 83 adds a priority rule's marker form
+  (`waitingLineId`, `vehicleClassIds`, `markers` with `gapTime`, `headway`, optional `maxSpeed` in km/h and
+  `vehicleClassIds`). Each marker compiles to one core `PriorityRule` at the line (`priority_markers.cpp`);
+  classes become type ids in the project layer (`priority_rule_classes.cpp`). The engine's rule loop skips a
+  type outside the line's classes, a major vehicle outside the marker's, and a major vehicle above `maxSpeed` in
+  the headway test. No UI.
+- **Left from §3:** the Stop at the line (a Stop control names only areas; next, before slice 2) and the Problems
+  row for a marker no route reaches (with the table).
+- **Rows:** `priority_rule` PR1–PR6, PR10–PR13 (10 tests). Without the engine change PR11 and PR12 fail. PR9:
+  `multra-cli 42` keeps 45 / 31.75870154816726 / 1; no shipped file uses the form.
+- **Checks:** `check` passes on desktop 365/365 and headless 248/248. Windows not run.
+
+## 2026-11-21 — G3 as Vissim: a vehicle stuck at its dead end is removed and counted (D613)
+
+- **Owner, in chat on G3 (as recommended):** as Vissim, remove and count separately, off by default per behaviour.
+- **D613, [DIFFUSION](../reference/DIFFUSION.md):** a behaviour's `diffusionTime` (schema 82) removes a vehicle waiting
+  that long at its stub's dead end (`DiffusedEvent`); runs with the key report `removed` (summary, evaluation, batch).
+  Editor row beside `missedExitAfter`. Also PROJECT_SCHEMA's missing rows 80 and 81.
+- **Unchanged without the key:** `multra-cli 42` keeps 45 / 31.75870154816726 / 1.
+- **Measured** on the study's spread probe, seeds 42–45: at 60 s, 165 removed, completed 4,501 → 5,010.
+- **Checks:** `diffusion` 6/6; headless `check` 247/247. Desktop `check` alone failed `behaviour-lab-ui`
+  (SIGSEGV in `~DriverBehaviour`) and `cli-consistency`: both binaries were never `check` dependencies and ran
+  stale. `cmake/check_builds_all.cmake` now makes `check` depend on every executable. Verified: after touching
+  `types.hpp`, `check` alone gives desktop 364/364 and headless 247/247.
+
+## 2026-11-21 — M3.2.7d passes on attempt 2 (D612)
+
+- **Owner, step 4 and the verdict (verbatim):** "ทดลองแล้วสมจริง", after Stop and Yield were explained here and in
+  SUMO and Aimsun.
+- Recorded in OWNER_SITTING A2 and the M3_ACCEPTANCE sheet; ROADMAP's M3.2.7d row passed. M3.2 stays open on its
+  diverge acceptance-fixture row. Windows version and timings were not given. No code change.
+- **Next (D609):** G3 stuck vehicles, then PRIORITY_RULES slice 1.
+
+## 2026-11-21 — Pointing shows a road's direction; a selected conflict area shows its roads (D611)
+
+- **Owner (verbatim):** "ปรับให้การชี้ที่ Link และ connector แสดงเส้นขอบที่มีลูกศรสีดำ ส่วนการเลือกให้เป็นเป็นสีฟ้า
+  แล้วปรับให้การเลือก conflict area ทำให้ link และ connector ขึ้นสถานะถูกชี้", then "ไม่ปรับสีถนน เพิ่มแค่ข้อ 2"
+  (the rule in every tool; not hovering an area, no road colour change).
+- **D611:** a hovered Link or Connector shows its long edges near-black (`#1F1F1F`) with arrowheads; a selected one
+  stays the accent blue with blue arrows; under the Conflict area tool, the Links and Connectors a selected area
+  runs on are drawn as hovered. D610's arrows on every edge under the right-of-way tools are withdrawn.
+- **Tests:** `priority-canvas` (no arrows with nothing pointed at or selected; the selected area's Links black
+  and pointing downstream; a selected Link blue) and `editor-interaction-ui` (hover black, selection blue; its old
+  "hover draws no arrows" check reversed). Desktop `check` green, 363 tests.
+
 ## 2026-11-20 — Conflict areas in Vissim's colours; direction arrows on every edge (D610)
 
 - **Owner, A2 attempt 2 step 3 (verbatim, with a picture):** "gap/headway สมเหตุสมผล แต่ต้องการปรับการแสดง conflict

@@ -187,6 +187,17 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
                 index.lotOfRoute[static_cast<std::size_t>(&detail::byId(scenario.routes, id) - scenario.routes.data())] = k;
     }
     index.lateral = buildLateralIndex(scenario); // M3.7 (D188): off and empty without a lateral key
+    // D623: each compiled branching, both ways round. Off, with no per-span lookup, without a diverge.
+    if (!scenario.branchings.empty()) {
+        index.siblingsOfSegment.resize(scenario.segments.size());
+        const auto slot = [&](const std::string& id) { return static_cast<std::size_t>(&detail::byId(scenario.segments, id) - scenario.segments.data()); };
+        for (const auto& b : scenario.branchings) {
+            const auto first = slot(b.firstSegmentId), second = slot(b.secondSegmentId);
+            index.siblingsOfSegment[first].push_back({second, b.firstLength});
+            index.siblingsOfSegment[second].push_back({first, b.secondLength});
+        }
+        index.branchings = true;
+    }
     indexJoins(scenario, index); // JOIN_ANTICIPATION §2 (D255): empty unless clampRules.joinAnticipation
     return index;
 }
@@ -217,6 +228,25 @@ std::vector<OccupiedSpan> occupiedSpans(const Scenario& scenario, const std::vec
         appendVehicleSpans(spans, scenario, index, vehicles[i], refs[i]);
     return spans;
 }
+namespace {
+// D623 (M3_CONTRACT, branching): a body whose rear is still inside its branching area occupies the
+// sibling Connector too, at the same metres from the split, so a follower there keeps its order behind
+// it. `own = false`, as D210's covered lanes: the body is on a lane its route does not run on.
+void appendBranchSpans(std::vector<OccupiedSpan>& spans, std::size_t first, const Scenario& scenario, const ScenarioIndex& index) {
+    const auto end = spans.size();
+    for (auto i = first; i < end; ++i) {
+        if (!spans[i].own) continue;
+        for (const auto& sibling : index.siblingsOfSegment[spans[i].segmentIndex]) {
+            if (!(spans[i].rear < sibling.ownTouch)) continue;
+            auto copy = spans[i]; // a copy: push_back may move the vector
+            copy.segmentIndex = sibling.segment;
+            copy.front = std::min(copy.front, scenario.segments[sibling.segment].length);
+            copy.own = false;
+            spans.push_back(copy);
+        }
+    }
+}
+}
 void appendVehicleSpans(std::vector<OccupiedSpan>& spans, const Scenario& scenario,
                         const ScenarioIndex& index, const Vehicle& vehicle, const VehicleRefs& refs) {
     const auto first = spans.size();
@@ -224,6 +254,7 @@ void appendVehicleSpans(std::vector<OccupiedSpan>& spans, const Scenario& scenar
     appendSpans(spans, index.parts[refs.route], vehicle, type.length);
     // LATERAL §5 (D188): the one producer every indexed span list goes through, D108 included.
     if (index.lateral.on) appendLateralSpans(spans, first, scenario, index.lateral, type.width, vehicle.lateral);
+    if (index.branchings) appendBranchSpans(spans, first, scenario, index);
 }
 VehicleLocation locateVehicle(const Scenario& scenario, const Vehicle& vehicle) {
     return locate(routeParts(scenario, scenario.routes[vehicle.routeIndex]), vehicle);

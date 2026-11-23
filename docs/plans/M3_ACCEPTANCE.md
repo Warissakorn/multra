@@ -1,6 +1,6 @@
 # M3 acceptance design and evidence record
 
-**Status: automated rows recorded through A46 (M3.2.8c, §4); A47–A58 implemented and off (D102); owner exercise M3.2.7d passed on attempt 2 (owner, 2026-11-21, D612).** This is a prepared engineering test matrix and owner exercise,
+**Status: automated rows recorded through A46 (M3.2.8c, §4); A47–A58 implemented and off (D102); owner exercise M3.2.7d passed on attempt 2 (owner, 2026-11-21, D612); diverge rows A62–A70 pass (D622, D623); M3.2 closed by the owner's ruling, 2026-11-23 (D625).** This is a prepared engineering test matrix and owner exercise,
 not a passed gate or a scientific validation result. The M2 gate passed 2026-09-25 (D53). [M3_CONTRACT.md](../reference/M3_CONTRACT.md) defines the proposed behavior;
 [M3_PLAN.md](M3_PLAN.md) names the slices. New tests and runnable fixtures are not added by
 this documentation change. Record actual evidence below as each slice is implemented.
@@ -84,6 +84,32 @@ A56–A58 (D101), implemented and off by the owner's choice (D102); A53 fails
 (`docs/evidence/m3.2.8c-discretionary.md`). Visibility, `laneChangeDistance` and any further
 cooperation are **M3.2.8c** and get their rows before their code. Passing A01–A58 alone does not
 close M3.2.
+
+**Diverge acceptance fixture** (M3.2's closure row, review O6/R7; D622). One lane A splits by two
+Connectors into B and C, an authored route and input to each (`tests/diverge_tests.cpp`, `diverge.*`).
+Branching is original order (D109): no zone and no rule. Bodies are checked along each path and, across
+the two branches, as footprints in the plane. Results: [diverge-acceptance](../evidence/diverge-acceptance.md).
+
+| ID | Slice | Case | Must show | Result (2026-11-22, Linux) |
+|---|---|---|---|---|
+| A62 | .2/.4 | The plain diverge, compiled | Only branching areas, one between the two branches; nothing stored; no zone, rule or span compiled | Passes |
+| A63 | .3 | Free flow, seeds 42–51 | Vehicles leave the shared lane in departure order; no clamp; no body overlap along a path or across the split | Passes |
+| A64 | .3 | A branch's queue reaching back over the split, seeds 42–51; the forcing (a vehicle standing with its rear inside the split) asserted first | A63's results under congestion | Failed before D623 (8 seeds, up to 1.69 m, no clamp); **passes after D623**: 0 overlaps, 0 clamps ([branching-leaders](../evidence/branching-leaders.md)) |
+| A65 | .3 | A branch blocked at the split for 90 s | The blocked vehicle holds everyone behind it, whatever their branch (first-in, first-out, as Meso ME21); then all drain in order, no clamp | Passes |
+| A66 | .3 | A64's run copied with a queue across the split | Exact replay; all drain | Passes |
+
+The owner chose the remedy (OWNER_SITTING item 53, D623): a body inside the branching area occupies the
+sibling branch too (M3_CONTRACT, branching). Its rows, written before the code:
+
+| ID | Slice | Case | Must show |
+|---|---|---|---|
+| A64 | .3 | As above, after D623 | No footprint overlap in any seed (`mouthOverlaps == 0`), still no clamp, order kept |
+| A67 | .3 | The diverge compiled; then a two-lane Link whose lanes each split by two Connectors | One `branchings` entry per Connector pair with a branching area, each length the area's `exitStation` located on its runtime segment; the mouth pieces against the Link give none; Connectors from different lanes pair only if the editor draws a branching area between them |
+| A68 | .3 | A car to B standing beyond the branching area (its rear past the extent) | It holds nobody to C. The forcing is asserted first: its rear is past the extent and it is standing |
+| A69 | .3 | Every scenario without a branching: the four TS baselines, `crossing.json`, a straight road | Byte-identical events; `branchings` empty |
+| A70 | .3 | A copied state with a body inside the split | Exact replay; no new `SimState` field |
+
+A64 and A67–A70 pass (2026-11-22, Linux).
 
 ## 2. T-junction fixture specification
 
@@ -278,7 +304,7 @@ decision on D of 60:40.
 | Observed priority, crossing, Stop/Yield and queue behavior | Pending |
 | Save/reopen/repeat-seed outcome | Pending |
 | Plausibility verdict and unresolved defects | Pending |
-| **M3 right-of-way done-condition** | **Open** |
+| **M3 right-of-way done-condition** | **Closed by the owner's ruling, 2026-11-23 (D625)** |
 | **M3.2.8 remaining behavior** | **Open** |
 | **M6 scientific validation** | **Open; not assessed here** |
 

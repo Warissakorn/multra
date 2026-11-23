@@ -162,4 +162,11 @@ struct RightOfWayResolution {
     std::vector<ValidationIssue> issues;
 };
 RightOfWayResolution resolveRightOfWay(const Network&, const RuntimeSections&, const PriorityDefaults&);
+// A station on a control path as the runtime runs it: the segment, metres along it and its length.
+// Empty when the path no longer resolves to exactly one runtime path, or the station is off it.
+struct RuntimeLocation { std::string segment; double position{}, length{}; };
+std::optional<RuntimeLocation> runtimeLocation(const Network&, const RuntimeSections&, const ControlPathRef&, double station);
+// D623 (M3_CONTRACT, branching): each Connector-against-Connector branching area automaticConflicts
+// draws, as the runtime runs it. Mouth pieces against a Link give none; sorted, so the order is stable.
+std::vector<BranchingSpan> compiledBranchings(const Network&, const RuntimeSections&);
 }
