@@ -31,6 +31,16 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
+## Parallel sessions of 2026-11-23 — four slices in flight
+
+Briefs, branches, reserved decision numbers (626–641) and merge order: [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md).
+Each session edits only its own line here.
+
+- A — leader order kept across ticks (`claude/cool-shannon-btynrs-leader-order`): started.
+- B — split `CMakeLists.txt` (`claude/cool-shannon-btynrs-cmake-split`): started.
+- C — Results tab strip at 1024 in Thai; clamp note (`claude/cool-shannon-btynrs-results-tabs`): started.
+- D — ARCHITECTURE's *Editor boundary* into the contracts (`claude/cool-shannon-btynrs-architecture-prose`): started.
+
 ## M3.2 — closed by the owner (D625)
 
 Closed 2026-11-23. Still open on their own gates: [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) M3.2.10 and M3.2.13
