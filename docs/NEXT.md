@@ -39,7 +39,7 @@ Each session edits only its own line here.
 - A — leader order kept across ticks (`claude/cool-shannon-btynrs-leader-order`): started.
 - B — split `CMakeLists.txt` (`claude/cool-shannon-btynrs-cmake-split`): started.
 - C — Results tab strip at 1024 in Thai; clamp note (`claude/cool-shannon-btynrs-results-tabs`): started.
-- D — ARCHITECTURE's *Editor boundary* into the contracts (`claude/cool-shannon-btynrs-architecture-prose`): started.
+- D — ARCHITECTURE's *Editor boundary* into the contracts (`claude/cool-shannon-btynrs-architecture-prose`): done, ready to merge.
 
 ## M3.2 — closed by the owner (D625)
 
@@ -97,8 +97,8 @@ order; none is started. **Ask** marks one the owner chooses before any code.
     [OBJECT_TABLE](plans/OBJECT_TABLE.md)) is piloted on Study periods; the other tabs wait for the
     owner's verdict (OWNER_SITTING B48). `src/project/` (codecs, runs, outputs; `src/report/` is
     reserved) waits until report work starts.
-  - ARCHITECTURE has the dependency table; its *Editor boundary* prose (about 130 lines of
-    per-decision notes) still belongs in the contracts.
+  - ARCHITECTURE has the dependency table; its *Editor boundary* is a 22-line summary with one link
+    per contract (slice D, 2026-11-23).
   - `shell` is not checked: it may include everything, so there is nothing to refuse.
 - **Engine:**
   - Random streams per input (D506–D512, D526): slice 4's cost was not measured with callgrind

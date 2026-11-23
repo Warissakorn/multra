@@ -55,12 +55,20 @@ with the existing Run-blocking diagnostics. No derived group or cap is persisted
 entryStation–exitStation, schema, runtime lane paths and solver extents are unchanged.
 
 Connector coverage uses the same final painted lane rails that define runtime lane centres
-(D114). `surfaceOverlaps` retains clipped convex polygons and corresponding authored station
+(D114). `surfaceOverlaps` (D115) retains clipped convex polygons and corresponding authored station
 intervals. `classifiedOverlaps` retains those pieces and labels an attachment mouth as merge,
 branching or single-stream continuation using directed named-lane attachments. Interior Link
 traffic is the other stream at a mid-body join; Connector pairs must share the same lane AND
 attachment station. Neighbouring lanes swept before a join and separate interior crossings
 remain crossings. `crossingOverlaps` is the crossing-only view used by Add, following and Run.
+`conflictGroups` (D109/D118) derives the connected groups of one road-owner pair across kinds;
+commands author, edit or delete every member atomically, while the resolver keeps individual
+lane-pair zones. `conflictAreaGeometry` (`conflict_display.hpp`) supplies measured polygons and
+separate per-side station spans; `conflictAreaPolygons` and automatic suggestions keep the physical
+geometry for grouping. Display and picking use `conflictBandOutline`'s directional bands (D117);
+`conflictMouthBands` intersects the P1–P4 cap triangles with the named attached Link lane, and
+`conflict_polygon_math` supplies the shared convex clipping and cap triangulation. D114's
+geometry-derived runtime paths use explicit authoring-to-runtime station adapters; the schema is unchanged.
 Unsupported folded strips remain named blockers; tangencies do not create positive areas.
 
 The automatic editor shows crossing, merge and branching separately. A branching band

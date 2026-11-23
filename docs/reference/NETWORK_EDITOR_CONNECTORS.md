@@ -1,7 +1,7 @@
 # Native network editor — Connectors
 
-The Connector sections of [`NETWORK_EDITOR.md`](NETWORK_EDITOR.md), split out on 2026-09-29 so both files stay
-under the 500-line limit. Current, not archived; the same scope and the same caveats apply.
+The Connector sections of [`NETWORK_EDITOR.md`](NETWORK_EDITOR.md), split out on 2026-09-29 (end handles and
+attachment stations on 2026-11-23) so both files stay under the 500-line limit. Current, not archived; the same scope and the same caveats apply.
 
 ## Connector lane ranges
 
@@ -58,6 +58,35 @@ IDs and positions stay fixed, including on curved Links. Connector lane pairs re
 new painted rails and Link attachments (D114). Unequal ranges can intentionally change lane mappings.
 Properties count edits and downstream pocket creation expand the last-lane side.
 
+## Geometry and end handles
+
+Geometry handles sit on the **centreline of the whole bundle**, as Vissim shows them, not on
+the stored reference polyline — which ends up at one edge as soon as lanes are added to a
+single side — and not on a Connector's first lane path. Dragging one moves the stored point
+by the same offset, so what the pointer holds is what moves.
+
+A Connector's two end handles are dark squares at the middle of its end cross-section, and
+they are draggable: drop one on any lane to re-attach that end, anywhere along the lane. The
+range is centred on the lane under the pointer and slides to stay inside the Link. If the new
+end has fewer lanes than the Connector carries, the range is narrowed to what is there rather
+than the move being rejected; a wider Link never widens the range on its own. Dropping outside
+a Link leaves the attachment alone, Esc cancels, and one release is one undo entry. A
+Connector used by a route or head still cannot be re-attached. Properties shows both lane
+counts beside the length, so a 3 → 2 lane drop is visible without opening the inspector.
+Connector path count is the larger of its source and target counts, not a third independent
+lane topology. Its cross-section is built from the widths of the lanes it carries, not blended
+between its two mouths: a lane that continues keeps the width its links give it from end to end,
+and a lane the far end has no room for is drawn as a taper closing onto its neighbour, the way
+Vissim draws a lane drop. Which lane continues follows the selected ranges, pairing them in lane
+order, so a lane range anchored one lane over moves the taper to the other side. The taper runs
+the whole length of the Connector; there is no separate taper length to set. Those widths are stacked
+along the same mitered offset a Link's own lane edges use (`offsetGeometry`), so every lane is its
+full width square to the road at every point, through a bend and past a poly point the author has
+dragged. Ordinary mouths fit the Link cross-section; steep or reversed arrivals use
+the same P1–P4 mouth and may report `WARN_CONNECTOR_ALIGNMENT` (D80, see below). Properties exposes both counts as an alternative. Retargeting
+or resizing a connector used by a route or head is rejected; revise those references
+first. Reshaping its curve remains allowed if the whole document validates.
+
 ## Connector shape: intermediate points and the mouth
 
 The Connector drawing stores its two attachments and a few
@@ -83,8 +112,8 @@ without slide/square fallbacks or an angle cutoff. Singular or folded surfaces r
 An endpoint grip sits on the middle of the Link lanes that end joins (the mouth's P2, D77), where
 a drop is measured too. Dragging it along the lanes it joins keeps the curve, every point shifted
 by its blend weight (D78); onto other lanes, or where a kept end leg would run against its lane
-(the old wrong-way elbow), it rebuilds the turn at its point count. One undoable edit either way. Moving a Link still follows the separate world-position/deletion contract described
-above. Merely opening a file does not regenerate any authored curve.
+(the old wrong-way elbow), it rebuilds the turn at its point count. One undoable edit either way. Moving a Link still follows the separate world-position/deletion contract in
+§"Attachment stations, Link edits and deletion" below. Merely opening a file does not regenerate any authored curve.
 
 Interior points are editable; dragging one moves that corner, its derived lane centres,
 vehicle paths and control positions together. The Inspector tooltip describes this behaviour. Reset curve to
@@ -106,3 +135,80 @@ consecutive points and a positive total length. Coincident endpoints cannot
 generate a default curve; leave a positive gap. Duplicate lane-pair connections at the same source/target stations are
 rejected, including pairs already covered by another connector range. Separate stations
 on the same lane pair may own separate Connectors.
+
+## Attachment stations, Link edits and deletion
+
+**A Connector keeps its own position.** Its geometry is what the author drew; it is not recomputed
+from its Links on every edit. Moving or reshaping a Link therefore leaves the Connector standing
+where it is, and what changes is which station of the Link each end now sits on:
+
+- **The end is still on the Link's carriageway** — it snaps onto the middle of the lane under it,
+  and its stored station moves to match. The lane it names may change where a lane bundle edit has
+  slid the lanes sideways under a standing end; the Link never does.
+- **The end is off the Link** — by more than half a lane width, which is where the carriageway
+  stops — the Connector has nothing left to connect. It is **deleted**, with the routes and signal
+  heads that named it, inside the same transaction as the edit that moved it, so one Undo brings
+  the Link edit and the Connector back together.
+
+That is the rule for an edit that MOVES a road: reshaping a Link, translating a selection, dragging
+a Connector's body. An edit that RE-LAYS a Link's lanes without moving the road — a lane added or
+removed, a width changed, the driving side flipped — is not a move: every Connector follows the lane
+it names to where that lane now is, at the same station. Deleting a Connector because the author
+added a lane to the Link beside it would be a surprise, not a rule.
+
+Shortening a Link past an attachment now deletes the Connector that hung off it, rather than
+clamping the attachment to the new end. Clamping moved a Connector to somewhere the author had not
+put it; this leaves it where they did and says so by removing it. (A Signal head still rides its
+station and is not moved: its position is validated against its lane, so an edit that would strand
+one is rejected instead.) Reset curve re-derives the whole shape when that is what is wanted.
+
+Splitting remaps both source and target attachments to the appropriate child Link by arithmetic
+alone — the upstream child's polyline is a prefix, so its stations are unchanged, and downstream
+stations shift by the cut. A cut through an attachment inside the 0.2 m continuity span is
+rejected; move the split at least 0.1 m away.
+
+**Runtime:** body attachments run (M1.11.1). The lane is cut into sections at every station a
+Connector attaches to, so a vehicle leaving part way along travels only that far, and one arriving
+part way along joins at the drawn metre rather than at the start of the lane. An arrival is a
+merge, and the arriving Connector gives way to the traffic already on the lane under a priority
+rule derived from the drawing, whose gap time and headway come from `data/priority-rules/`;
+Run reports `EDIT_NO_PRIORITY_DEFAULTS` if those cannot be read, and never invents a zero gap
+time. Run and Diagnostics still report `UNSUPPORTED_CONNECTOR_POSITION` for one case: an
+attachment within 0.2 m of a lane end or of another attachment on the same lane, which leaves no
+section between them. A lane with nothing attached to its body compiles exactly as it always did,
+so existing endpoint-only projects keep their runtime behavior and capability guards.
+
+Deleting a connector removes heads on its paths, affected routes and their vehicle
+inputs in the same undoable transaction. Heads on unaffected links remain.
+
+## Code seams
+
+What the sections above describe rests on shared functions, each deciding one thing once:
+
+- `connector_commands.hpp` defines creation, geometry, retargeting, reset and deletion. An explicit
+  endpoint edit and the canvas preview share model `retargetConnector`: both rebuild the directed
+  turn at the current intermediate-point count and narrow ranges to the lanes available. Link
+  geometry movement uses `reanchorConnectors`; lane-bundle and driving-side edits use named-lane
+  anchoring. These are deliberately different operations. Deletion removes affected routes and
+  their inputs through the shared command-side reference cleanup.
+- `connectorCurve` samples the existing cubic only for the persisted drawing and its editable
+  interior handles; `connectorPaths` derives the lane paths and their IDs from the resulting
+  surface, and compilation, heads, validation and reference cleanup share those IDs. No derived
+  path or second curve is persisted as an editable object.
+- `Link::laneOffset` positions the lane bundle independently of its reference polyline.
+  `replaceLaneBundle` anchors the edge opposite the edit; lane geometry and road boundaries share
+  the offset, so resizing a curved road does not move surviving lanes. Leading Connector range
+  edits freeze `laneBlend` weights and rebase the first path; surviving lane pairs keep their
+  curves, and geometry edits clear frozen weights. Schemas 1–3 load with zero offset and legacy
+  arclength weights.
+- `LaneReference::station` is metres along the reference polyline; `matchedStation` maps that one
+  station onto any lane or boundary derived from the same reference. `laneAttachment` is shared by
+  curve construction, derived paths, validation and reanchoring. Side-resize gestures submit one
+  Link/range command on release; preview data never enters History.
+- `runtimeSections` derives the runtime lane sections an interior attachment needs (M1.11.1) and is
+  the single source `buildScenario`, head rebasing and the canvas's vehicle layer read; a lane with
+  nothing attached yields one section carrying the lane's own id. `derivedPriorityRules` arbitrates
+  the merge an arrival creates (M3.1), and `connectorRuntimeIssues` blocks only the too-close
+  attachment named under *Runtime* above.
+- `connectorLaneWidths` is the single place a Connector's width is decided (M1.12.1), read by
+  `connectorBoundaries` for drawing and by `connectorShapeIssues` for `TIGHT_CONNECTOR_RADIUS`.

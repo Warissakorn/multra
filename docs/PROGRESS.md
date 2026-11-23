@@ -5,6 +5,38 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-23 — Slice D: ARCHITECTURE's *Editor boundary* moved into the contracts
+
+- **Brief:** [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md) D. ARCHITECTURE's 130 lines of per-decision notes now
+  sit with the behaviour they describe; ARCHITECTURE keeps 22 lines: `ProjectDocument` owns the document, commands
+  commit through `History`, project never imports commands or Qt, the canvas/window split, and one link per contract.
+- Merged, not copied (rule 3): sentences a contract already said were dropped, only the code seams it lacked were added.
+  NETWORK_EDITOR was at 500 lines, so its *Geometry and end handles* and *Attachment stations* sections moved whole to
+  NETWORK_EDITOR_CONNECTORS (stubs left, as for the earlier two); the moved text's stale "square fallback" now reads as
+  D80's P1–P4 mouth. No link pointed into the old section (`grep 'ARCHITECTURE.md#'`: none).
+
+| Old paragraph (ARCHITECTURE lines) | Now in |
+|---|---|
+| Automation server, GUI-thread dispatch, patches through History (152–158) | DESKTOP_AUTOMATION *Request and response* |
+| `ProjectDocument`, `History` commit, project never imports commands (160–165, 170) | stays in ARCHITECTURE |
+| `History::states`, `restore` (163–165) | EDITOR_WORKFLOW *History* |
+| Keyboard nudge command, level-filter callback, gesture cancel (166–169) | EDITOR_WORKFLOW *Keyboard moves* (cancel already there) |
+| `rotation.cpp`, `rotateObjects` (172–176) | EDITOR_WORKFLOW *Rotate a selection* |
+| `road_crossbar.*`, route hover, `routeDestinations` (178–182) | EDITOR_WORKFLOW *Draw a route* (destinations already there) |
+| `editor_interaction`, `ReflowLabel` (183–184) | EDITOR_WORKFLOW *Safe form and document refreshes* |
+| `EditorCanvas`/`EditorWindow` (186–190) | stays in ARCHITECTURE; immutable background bytes already in NETWORK_EDITOR |
+| Connector commands, `connectorCurve`, `connectorPaths`, path IDs (191–204) | NETWORK_EDITOR_CONNECTORS *Code seams* |
+| `AuthoringDefinition`, `compileDocument`, `RunSnapshot` (206–211) | NETWORK_EDITOR *Check and Run* |
+| `editor_storage`, UUID recovery, `QLockFile`, schema 1–4 reads (213–217, 239) | NETWORK_EDITOR *Save, recovery and formats* |
+| `laneOffset`, `laneBlend`, stations, `laneAttachment`, `runtimeSections`, widths (218–238) | NETWORK_EDITOR_CONNECTORS *Code seams*; copies in EDITOR_WORKFLOW *Selection* |
+| Markings, Link geometry commands, advisories (241–247) | AUTHORING_EXTENSIONS (schema 7 rejection already in NETWORK_EDITOR) |
+| `directionAlong`, D80 axis and surface (249–255) | CONNECTOR_FOUR_POINT_MOUTH *Axis before edges* |
+| D109/D115/D117/D118 conflict groups, overlaps, bands, polygon math, D114 adapters (256–273) | M3_CONTRACT §1 |
+| Surface mouths, `selfIntersecting`, waiting bars (275–280) | already in CONNECTOR_FOUR_POINT_MOUTH; links kept in ARCHITECTURE's table |
+
+- No decision numbers used (638–641 left unused). Docs only; headless preset built for the tools;
+  `multra-check-docs .` and `multra-check-file-sizes .` pass.
+
 ## 2026-11-23 — Four slices briefed for parallel sessions
 
 - **User:** "พัฒนาต่อ โดยเปิด Branch และเขียน prompt เพื่อให้ Agent ทำงาน พิจารณาการทำหลายงานพร้อมกันด้วย".

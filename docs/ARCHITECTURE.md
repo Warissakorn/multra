@@ -149,135 +149,27 @@ renderer.
 
 ## Editor boundary
 
-The optional `AutomationServer` listens on a user-local named pipe/socket and dispatches
-bounded JSONL requests on the GUI thread to `EditorWindow::automationRequest`. The compiled
-`multra-control` client needs no source tree or scripting runtime. Requests inspect the live
-document or apply RFC 6902 patches through `History`; no alternate editor model is maintained.
-Document-session and revision guards reject stale commands. Playback uses the existing fixed
-steps, accumulators and canvas; batched stepping paints once after at most 200 ticks. See
-[desktop automation](reference/DESKTOP_AUTOMATION.md) for the protocol, limits and Windows examples.
+`ProjectDocument` owns the authoring network, the optional typed `AuthoringDefinition`, the
+background, the revision and the ID counter. Every mutation is a named command committed through
+`History`, which publishes a candidate only after it validates; a failed edit never mutates the
+published document. Project never imports commands or Qt types: a boundary check and negative
+fixtures enforce this, and the shell owns atomic file replacement (D16).
 
-`ProjectDocument` owns the authoring network, optional typed AuthoringDefinition, background,
-revision and ID counter. `History` commits a candidate only after validation and keeps
-bounded before/after snapshots. Failed edits never mutate the published document.
-`History::states` exposes only revision/name/save-point metadata; the shell's History dock
-does not duplicate document snapshots. `restore` navigates the existing Undo/Redo stacks,
-rejecting expired revisions before mutation and preserving the monotonic next-revision counter.
-Keyboard nudges submit the same group-translation command as a mouse drag. Filtering a level
-prunes hidden selections; deliberate object selection reveals its level through a canvas
-callback that keeps the shell's filter synchronized. Active mouse gestures are cancelled on
-focus loss, while multi-click drawing/connection drafts remain available between clicks.
-Project never imports commands; a boundary check and negative fixtures enforce this.
+`EditorCanvas` renders a const document and sends gesture callbacks; drag previews are transient
+and one release submits one command. `EditorWindow` is the only editing window: it composes the
+native actions, inspector, translation, save prompts and its own compiled Run revision. Qt stays
+out of project, model and core. Lane paths, surfaces, mouths and conflict bands are derived from
+the document and never persisted as a second editable object. Each contract owns its part:
 
-`src/model/network/rotation.cpp` supplies the affected object set, surface-bounds pivot and point
-transform shared by the rotation preview and command. Alt-drag and the exact-angle dialog
-submit `rotateObjects` through History. Internal Connectors retain authored references under
-a rigid group rotation; only affected partial attachments are re-read. Detached Connectors
-use the existing deletion cascade. No preview geometry is stored, and no schema changes.
-
-`road_crossbar.*` is an editor-only presentation helper: actual rail intersections and
-cosmetic stroke/hit geometry are shared by Routes, inputs and signal heads. Run snapshots
-retain head bars by ID, so the program's colour changes on the same authored stop position.
-Route hover traces remain local until one existing route command commits. Optional schema-30
-`AuthoringDefinition::routeDestinations` stores editor-only marker stations; core/runtime routes
-are unchanged. `editor_interaction` owns application-wide field-wheel protection and bounded
-plain-text tooltips. `ReflowLabel` supplies stable form hints while retaining height-for-width.
-
-`EditorCanvas` renders a const document and sends gesture callbacks. Drag previews are
-transient and one release submits one command. `EditorWindow` composes native actions,
-inspector controls, translation, save prompts and QSaveFile atomic replacement. It is
-the only editing window, and runs its own compiled revision. Qt stays out of
-project/model/core. Embedded background bytes are immutable and shared across history.
-`connectorCurve` samples the existing cubic only for the persisted drawing and its
-editable interior handles. `connectorPaths` derives driving lane centres from the resulting
-editable surface; no second curve is persisted. `connector_commands.hpp` defines creation, geometry, retargeting, reset and
-deletion. Explicit endpoint edits share model `retargetConnector` with the canvas preview:
-they rebuild the directed turn at the current intermediate-point count and narrow ranges to
-available lanes. Link geometry movement uses `reanchorConnectors`; lane-bundle/driving-side
-edits use named-lane anchoring. These are deliberately different operations.
-Retargeting/range changes to a connector used by a route or head are rejected; deletion removes affected routes
-and their inputs through shared command-side reference cleanup. No runtime merge or
-right-of-way support is implied by authoring these connections.
-A connector stores one base polyline plus contiguous source/target lane counts.
-`connectorPaths` derives stable per-lane paths; the first retains the connector ID,
-then `id/lane-2`, `id/lane-3`, etc. Compilation, heads, validation and reference
-cleanup share these IDs. No derived path is persisted as a second editable object.
-
-`AuthoringDefinition` reuses core value contracts for routes, inputs and fixed-time
-programs, with explicit flags distinguishing external catalogs from embedded overrides.
-`compileDocument(document, dataDirectory)` resolves catalogs once and returns a
-`RunSnapshot` containing revision, network and scenario values. The shell schedules
-fixed steps and clears the snapshot after a successful edit, Undo/Redo, open or seed
-change. Dynamic vehicle/head scene items are ordered by their authored level.
-
-`editor_storage` shares bounded asset decoding and atomic QSaveFile replacement
-between Save and recovery. Each editor owns a UUID recovery file and a QLockFile;
-restoration validates before replacing the document and starts untitled and dirty.
-Schema 1 loads with default one-lane connector ranges, level 0 and default display
-type. Schema 1/2 endpoint references retain their default attachments; saves without catalog extensions keep schema 17; owned compositions/names use 18, time/type rules use 19.
-`Link::laneOffset` positions the lane bundle independently of its reference polyline.
-`replaceLaneBundle` anchors the edge opposite the edit; model lane geometry and road
-boundaries share that offset, so resizing curved roads does not move surviving lanes.
-Leading Connector range edits freeze `laneBlend` weights and rebase the first path;
-derived surviving lane pairs retain their curves. Schema 1–3 default to zero offset
-and legacy arclength weights. Geometry edits clear frozen weights when reshaping.
-Canvas Ctrl-click selection is separate from Ctrl-drag copy, committed on release.
-Link/group, independently attached Connector and Signal head copies all use History.
-Optional `LaneReference::station` stores metres along the link's reference polyline, so a
-stretched Link does not slide what is attached part-way along it; `matchedStation` maps that
-one station onto any lane or boundary derived from the same reference.
-`laneAttachment` is shared by curve construction, derived paths, validation and reanchoring.
-The editor's side-resize gestures submit one Link/range command on release; preview data
-never enters History. `runtimeSections` derives the runtime lane sections an interior attachment needs (M1.11.1) and is
-the single source `buildScenario`, head rebasing and the canvas's vehicle layer read; a lane with
-nothing attached yields one section carrying the lane's own id, so uncut networks compile
-unchanged. `derivedPriorityRules` arbitrates the merge an arrival creates (M3.1).
-`connectorRuntimeIssues` now blocks only an attachment too close to a lane end or another
-attachment to leave a section. `connectorLaneWidths` is the single place a Connector's width is
-decided (M1.12.1), read by both `connectorBoundaries` for drawing and `connectorShapeIssues` for
-`TIGHT_CONNECTOR_RADIUS`, which previously derived it independently. Unsupported future versions
-fail before mutation.
-
-M1.21 stores shared Link boundary markings once per boundary in lane order. `markings.cpp`
-derives the solid/dashed/none/double strokes the canvas paints; paint never modifies
-lane/Connector surface geometry or runtime behavior. Schema 7 rejects unsupported network
-object fields instead of dropping them on save. `link_geometry_commands.cpp` adds station
-insertion, midpoint, straighten and unreferenced reverse through the existing History boundary.
-Model validation checks imported Connector cross-section lists, not just command inputs.
-Geometry advisories have their own severity and never enter the Run/save blocking checks.
-
-The Network lifecycle audit supplies `directionAlong` for unambiguous vertex tangents and
-validation of collapsed derived lanes. D80 replaces the old slide/square-mouth correction:
-`connectorCentreline` derives a central axis from the compatible stored first-lane geometry;
-`connectorBodyBoundaries` offsets every lane boundary around it; `connectorSurface` attaches
-those boundaries with P1–P4. Both ends pair by lane index at every angle. `connectorBoundaries`
-returns the same final rails used by paint and lane handles. D114 crossing coverage uses these same final rails, so a geometry edit changes both
-motion and coverage. Authored cross-section stations map onto the derived lane paths.
-D109/D118 `conflictGroups` derives connected groups for one road-owner pair across kinds; commands
-author/edit/delete every member atomically, while the resolver keeps individual lane-pair zones.
-D115 retains the convex polygon clips in `surfaceOverlaps`; `classifiedOverlaps` labels
-mouths as merge, branching or continuation without discarding their geometry. The crossing-only
-`crossingOverlaps` view remains shared by Add, following and Run. `conflictAreaGeometry`
-in `conflict_display.hpp` supplies measured polygons and separate per-side station spans;
-`conflictAreaPolygons` and automatic suggestions retain the physical geometry for grouping.
-D117/D118 canvas display/picking use shared `conflictBandOutline` directional bands, inset
-0.5 m normal to each rail (capped at 20% of local width). `conflictMouthBands` intersects
-P1–P4 cap triangles with the named attached Link lane, deriving Link station spans through
-P3–P4. Physical polygons retain cap intersections; visual bands follow the attached lane.
-`conflict_polygon_math` supplies shared convex clipping and cap triangulation. No Connector
-station extends past its authored length. Mixed-site group controls skip read-only branching;
-commands stage all changes and refuse new merge-order cycles before publishing the candidate.
-Grouping uses physical polygon contact. Branching is a read-only derived editor kind;
-codec/commands reject it as an authored control. Merge runtime extents/rules stay unchanged.
-Separate locations remain separate groups. D114 restores geometry-derived runtime paths;
-project schema remains unchanged, with explicit authoring-to-runtime station adapters.
-
-The surface owns its computed mouths and a `selfIntersecting` flag. Singular intersections
-and folds produce `WARN_CONNECTOR_ALIGNMENT`; they never select a square cap. Open markings
-on an undefined join remain selectable. Waiting-line bars use the actual rails' intersection
-with the normal at the mapped runtime lane station. See
-[CONNECTOR_FOUR_POINT_MOUTH.md](reference/CONNECTOR_FOUR_POINT_MOUTH.md) for the contract and
-[NETWORK_EDITOR.md](reference/NETWORK_EDITOR.md) for user controls/file semantics.
+| Behaviour and its code seams | Contract |
+|---|---|
+| Drawing, Check and Run (`compileDocument`), save, recovery and file formats | [NETWORK_EDITOR](reference/NETWORK_EDITOR.md) |
+| Connector ranges, end handles, attachment stations, lane bundles and runtime sections | [NETWORK_EDITOR_CONNECTORS](reference/NETWORK_EDITOR_CONNECTORS.md#code-seams) |
+| Connector axis, P1–P4 mouths, the surface and runtime lane centres | [CONNECTOR_FOUR_POINT_MOUTH](reference/CONNECTOR_FOUR_POINT_MOUTH.md) |
+| Link geometry actions and shared markings | [AUTHORING_EXTENSIONS](reference/AUTHORING_EXTENSIONS.md) |
+| Conflict-area overlaps, groups and bands | [M3_CONTRACT](reference/M3_CONTRACT.md#1-units-ownership-and-references) |
+| History, keyboard moves, rotation, route crossbars and form refreshes | [EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md) |
+| Live automation through `History` over a local socket | [DESKTOP_AUTOMATION](reference/DESKTOP_AUTOMATION.md) |
 
 ## Remaining systems
 

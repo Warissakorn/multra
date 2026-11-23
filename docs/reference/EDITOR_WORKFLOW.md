@@ -27,7 +27,8 @@ Plain right/middle drag remains pan; Ctrl+right-click or Ctrl+right-drag creates
 in every tool, and a plain left click never authors outside Routes (D116) and Measure/Calibrate,
 except that once a multi-click draft (Zone, Node, Queue counter, Section, two-click Connector) has
 its first point, plain left clicks place the rest (D306). Shift-click toggles, Ctrl-click adds an unselected object, and
-Ctrl-drag of a selected object copies it, retaining the D30 convention.
+Ctrl-drag of a selected object copies it, retaining the D30 convention; the copy commits on release,
+and Link/group, independently attached Connector and Signal head copies all go through History.
 
 ## Examples and an empty drawing
 
@@ -65,11 +66,16 @@ Editing after undo creates a new branch and discards the previous redo future. R
 are not reused. Failed/no-op edits preserve history. Save marks the current state without
 clearing history; New/Open/recovery begin a fresh history. The history is not saved in the file.
 
+`History` keeps bounded before/after snapshots. `History::states` exposes only revision, name and
+save-point metadata, so the dock duplicates no document snapshot. `restore` navigates the existing
+Undo/Redo stacks, rejects an expired revision before any mutation and keeps the next-revision
+counter monotonic.
+
 ## Keyboard moves and cancellation
 
 In **Select (S)** with the canvas focused, arrow keys move selected Links/Connectors by the grid
 interval with Snap on, or by one metre with Snap off (the default, D428). **Shift** multiplies the step by ten.
-Up means increasing world Y; Right means increasing X. Each key step is one undoable edit.
+Up means increasing world Y; Right means increasing X. Each key step is one undoable edit, the same group-translation command a mouse drag submits.
 Text/spin fields keep their normal arrow-key behavior. Ctrl/Alt/Meta arrows do not move objects.
 
 The existing group-move rules apply: internal Connectors move with both parent Links; other
@@ -84,7 +90,8 @@ when simply moving focus between controls between clicks.
 
 Level filtering drops hidden selections and disables their editing controls. Explicit table,
 inspector or diagnostic selection reveals a hidden object by switching the filter to all
-levels. Invalid or deleted object IDs are not accepted as selection targets.
+levels through a canvas callback that keeps the shell's filter synchronized. Invalid or deleted
+object IDs are not accepted as selection targets.
 
 ## Rotate a selection
 
@@ -116,6 +123,12 @@ Rotation clears a compiled run only on a successful change. Save/reopen retains 
 Escape, focus loss, tool/selection/level changes or document replacement cancel the drag;
 a later release cannot commit it. Existing copy, move and vertex gestures keep their chords.
 
+`src/model/network/rotation.cpp` supplies the affected object set, the surface-bounds pivot and the
+point transform that the preview and the command share; the gesture and the dialog both submit
+`rotateObjects` through History. Internal Connectors keep their authored references under the rigid
+rotation; only affected partial attachments are re-read, and detached Connectors use the existing
+deletion cascade. No preview geometry is stored, and the schema does not change.
+
 ## Draw a route and a vehicle input
 
 Routes use an explicit trace gesture (D116, owner request):
@@ -143,7 +156,9 @@ Double-click adds no second commit. Other authoring tools retain D84's Ctrl+righ
 
 Route start/end, vehicle inputs and signal heads share three-pixel cosmetic crossbars (D508: route
 ends no longer widen; D509a: no Base casing either, even on a bar that follows the pointer) with
-wider hit regions. Bars intersect the road normal with the actual lane rails. Route ends use
+wider hit regions. Bars intersect the road normal with the actual lane rails; the editor-only
+`road_crossbar.*` supplies those intersections and the cosmetic stroke and hit geometry to all three,
+and Run snapshots keep head bars by ID, so the program recolours the bar at the same authored stop. Route ends use
 canvas-only tones (D509: green `#5BE39A`, red `#FF6B6B`, at least 2.4:1 on every shipped road
 colour), not the semantic text inks. A route's static yellow surface tint (D509, D509b–D509d: 50 %, a
 preview 35 %; not the accent, which means selection and hover) follows its compiled spans from the
@@ -303,7 +318,9 @@ refuse the active project and recovery destinations through the common path guar
 
 Only the active object/Results page contributes its vertical minimum, so a hidden stacked table
 does not make another task taller. The common Properties section shrinks to its content when
-folded and is bounded when expanded.
+folded and is bounded when expanded. `editor_interaction` owns application-wide field-wheel
+protection and bounded plain-text tooltips; `ReflowLabel` gives form hints a stable height for
+their width.
 
 Fit reserves screen-pixel space for labels. Placement after redraw, pan and resize keeps visible
 labels within the viewport and clear of HUD/map overlays; selected labels retain priority within

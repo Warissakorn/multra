@@ -9,7 +9,9 @@ D79 reach cutoff. This is an owner-defined geometry contract, not measured Vissi
 point by the blend of the two offsets from the first lane's attachment to the attached range
 centre. It does not read any boundary. `connectorBodyBoundaries` stacks the lane widths from
 minus half the total to plus half the total around that axis, using the existing miter offset
-for body corners. A surplus lane has zero width at the narrower end as before.
+for body corners. A surplus lane has zero width at the narrower end as before. `connectorSurface`
+attaches those boundaries with P1–P4 below. `directionAlong` (from the Network lifecycle audit)
+supplies unambiguous vertex tangents and the validation of collapsed derived lanes.
 
 The serialized schema-17 `geometry` still denotes the first authored lane path. It is not
 silently reinterpreted as a centreline: existing files, lane references and
