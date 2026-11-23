@@ -10,6 +10,12 @@
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
+#include <QDir>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QTabBar>
+#include <QToolButton>
+#include "../src/shell/results_levels.hpp"
 #include <QFile>
 #include <QLabel>
 #include <QLineEdit>
@@ -25,6 +31,59 @@ using namespace multra;
 namespace {
 void require(bool ok, const char* message) { if (!ok) throw std::runtime_error(message); }
 template<class T> T* item(QObject& root, const char* name) { auto* p = root.findChild<T*>(name); require(p, name); return p; }
+// D634: at a 1024 x 768 window every Results tab is reachable without the strip scrolling, in
+// Thai and English. Each level is shown with all its tabs, data or not (the widest strip it can
+// have), and the clamp note opens with the locale's not-validated statement.
+void stripsFitAt1024(EditorWindow& w, QTabWidget& inner, QComboBox& level, const std::filesystem::path& data, const QString& shots) {
+    auto* language = item<QComboBox>(w, "editorLanguage");
+    for (const int lang : {1, 0}) {
+        language->setCurrentIndex(lang);
+        w.resize(1024, 768); QTest::qWait(30); QApplication::processEvents();
+        // The forcing first: the size and the language took effect.
+        QFile file(QString::fromStdString((data / "locales" / (lang ? "th.json" : "en.json")).string()));
+        require(file.open(QIODevice::ReadOnly), "Locale catalog missing");
+        const auto catalog = QJsonDocument::fromJson(file.readAll()).object();
+        require(w.width() == 1024 && w.height() == 768, "The window did not take 1024 x 768");
+        require(inner.tabText(inner.indexOf(test::tabPage(&inner, item<QWidget>(w, "editorClampTable"))))
+                    == catalog.value("editorResultsTabClamps").toString() && !catalog.isEmpty(), "The language did not take effect");
+        const auto keyOf = [&](int i) {
+            for (auto it = catalog.begin(); it != catalog.end(); ++it)
+                if (it.key().startsWith("editorResultsTab") && it.value().toString() == inner.tabText(i)) return it.key().toStdString();
+            return std::string{};
+        };
+        for (int l = 0; l < level.count(); ++l) {
+            level.setCurrentIndex(l); QApplication::processEvents();
+            const auto levelKey = level.currentData().toString().toStdString();
+            std::vector<int> tabs;
+            for (int i = 0; i < inner.count(); ++i) if (resultsLevelOf(keyOf(i)) == levelKey) tabs.push_back(i);
+            require(!tabs.empty(), "A level has no tab: the labels did not resolve to their keys");
+            if (tabs.size() == 1) continue; // one tab shows no strip (D462)
+            for (const int i : tabs) inner.setTabVisible(i, true);
+            QApplication::processEvents();
+            auto* bar = inner.tabBar();
+            for (const int i : tabs) require(inner.isTabVisible(i) && bar->isVisible(), "Not every tab of the level could be shown");
+            int right = 0;
+            for (const int i : tabs) right = std::max(right, bar->tabRect(i).right());
+            for (auto* button : bar->findChildren<QToolButton*>())
+                if (button->isVisible()) { std::cerr << levelKey << " lang " << lang << ": " << right << " of " << bar->width() << '\n';
+                                           throw std::runtime_error("The Results strip scrolls at 1024 px"); }
+            // The bar shrinks to its tabs when they fit, so the bound is the Results page's width.
+            require(right < inner.width() && bar->geometry().right() < inner.width(), "A Results tab ends past the strip at 1024 px");
+            if (!shots.isEmpty()) require(w.grab().save(shots + (lang ? "-th-" : "-en-") + QString::number(l) + ".png"), "Screenshot failed");
+            for (const int i : tabs) // nor fits by eliding a label
+                require(bar->tabRect(i).width() > bar->fontMetrics().horizontalAdvance(inner.tabText(i)), "A Results tab label is cut short");
+        }
+        level.setCurrentIndex(0); QApplication::processEvents();
+        inner.setCurrentWidget(test::tabPage(&inner, item<QWidget>(w, "editorClampTable"))); QApplication::processEvents();
+        if (!shots.isEmpty()) require(w.grab().save(shots + (lang ? "-th" : "-en") + "-clamps.png"), "Screenshot failed");
+        const auto note = item<QLabel>(w, "editorClampNote")->text();
+        require(note.startsWith(lang ? QString::fromUtf8("ยังไม่ผ่านการตรวจสอบความถูกต้อง") : QString("Not yet validated.")),
+                "The clamp note does not state that results are not yet validated");
+    }
+    // Every locale: a third catalog must add its statement to the list above.
+    require(QDir(QString::fromStdString((data / "locales").string())).entryList({"*.json"}, QDir::Files).size() == 2,
+            "A locale was added: extend the clamp-note check to it");
+}
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
@@ -100,7 +159,9 @@ int main(int argc, char** argv) {
         require(count > 0, "Seed 42 produced no clamp: the list was not exercised");
         require(clamps->rowCount() == static_cast<int>(count), "Clamp rows differ from the run's count");
         require(!clamps->item(0, 3)->text().isEmpty(), "Clamp row has no route");
-        require(item<QLabel>(w, "editorClampNote")->text().startsWith(QString::number(count)), "Clamp note lacks the count");
+        const auto clampNote = item<QLabel>(w, "editorClampNote")->text();
+        require(clampNote.contains(QString::number(count) + " safety clamps"), "Clamp note lacks the count");
+        require(clampNote.startsWith("Not yet validated."), "Clamp note has no not-validated statement of its own"); // rule 4, D634
         shot("-clamps.png");
 
         // Reset clears both lists; Thai text is present.
@@ -140,14 +201,8 @@ int main(int argc, char** argv) {
         require(level->currentIndex() == 0 && inner->currentWidget() == lotsPage && inner->isTabVisible(inner->indexOf(lotsPage)), "A jump to an empty tab was lost");
         inner->setCurrentIndex(0); QApplication::processEvents();
         require(!inner->isTabVisible(inner->indexOf(lotsPage)), "The empty tab stayed after leaving it");
-        // In Thai at 1024 px the strip fits: twelve tabs in one strip did not (NEXT, D490's review).
         require(level->itemText(3) == "Node (HCM)" && !level->toolTip().isEmpty(), "The level picker is not translated");
-        w.resize(1024, 768); QApplication::processEvents();
-        if (inner->isVisible()) {
-            int width = 0;
-            for (int i = 0; i < inner->count(); ++i) if (inner->isTabVisible(i)) width += inner->tabBar()->tabRect(i).width();
-            require(width <= inner->tabBar()->width(), "The Thai Micro strip still scrolls at 1024 px");
-        }
+        stripsFitAt1024(w, *inner, *level, data, argc > 2 ? QString::fromUtf8(argv[2]) + "-1024" : QString());
         std::cout << "Results discharge and clamp tabs match the observer and the run\n";
         return 0;
     } catch (const std::exception& error) { std::cerr << error.what() << '\n'; return 1; }

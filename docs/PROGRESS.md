@@ -37,6 +37,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - No decision numbers used (638–641 left unused). Docs only; headless preset built for the tools;
   `multra-check-docs .` and `multra-check-file-sizes .` pass.
 
+## 2026-11-23 — Results tabs at 1024 in Thai; the clamp note's marker (slice C, D634)
+
+- **Strip:** measured first, on Linux offscreen at 1024 × 768 with every tab of each level forced visible: Thai Micro
+  605 px, Macro 572 px, English 673 and 483, of a 1008 px Results page. D497's one-level strip had already fixed the
+  scroll NEXT carried from D490's review, so no label changed and no control was added (D634).
+- **Clamp note:** now opens "Not yet validated." / "ยังไม่ผ่านการตรวจสอบความถูกต้อง", as every other Results note does
+  (rule 4); "Safety clamp" stays untranslated.
+- **Test:** `results-tabs-ui` replaces its conditional strip check with one at 1024 × 768 in Thai and English that first
+  asserts the size and language took effect, then per level: no scroll button, no tab past the page, no elided label;
+  and the clamp note's statement in both locales (a third locale fails it until added). Proved to bite: the old
+  locales fail on the note; a 1614 px Thai Micro label fails on the strip.
+- **Verified (Linux only):** desktop build, full `ctest --preset desktop` and `check`. Screenshots taken for the check
+  only, not committed (no contract cites them). The Windows Thai look is the owner's.
+
+
 ## 2026-11-23 — Four slices briefed for parallel sessions
 
 - **User:** "พัฒนาต่อ โดยเปิด Branch และเขียน prompt เพื่อให้ Agent ทำงาน พิจารณาการทำหลายงานพร้อมกันด้วย".

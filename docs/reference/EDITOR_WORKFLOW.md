@@ -257,7 +257,7 @@ Compactness (D490): a fitted column is never narrower than its header in the hea
 (English headers are tracked capitals). The Objects group picker keeps its current language's
 width, so it never covers the first tab. The Tables layout gives the Objects panel ten and a half
 rows of the current density, as far as the preview floor allows. Results notes fold to one line
-that opens with their not-validated statement; the whole note is the tooltip, and a click, Space
+that opens with their not-validated statement (Safety clamps' too since D634); the whole note is the tooltip, and a click, Space
 or Enter opens or folds it. Stacked Results tables give the queue table only its rows' height;
 side by side they split 4:3, so the approach names keep 140 px beside the numbered rows.
 The toolbar row directly above the panels ends in the panels' own separator band (4 px and its
@@ -271,7 +271,9 @@ study chain's order) or Node (HCM) (Node analysis). Parking lots and Nodes are l
 strip while the project has no lot or no Node, and a level with one tab shows no strip. A command
 that opens a tab (Run Macro, Run Meso, Analyse nodes, Run seeds) picks its level. The choice is
 session-only and nothing is stored. A batch replaces the single run's tables and their frame, so
-its tables start directly under its note.
+its tables start directly under its note. At a 1024 × 768 window every level's strip fits
+without scroll buttons or elided labels in Thai and English, with every tab of the level shown
+(D634, `results-tabs-ui`; Linux offscreen, the Windows look is the owner's).
 
 Results stacks movement and queue tables below 1250 logical pixels of content width. Macro,
 Meso and seed-batch commands appear in their own Results tabs; Export/Copy stays common.
