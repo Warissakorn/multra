@@ -5,6 +5,18 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-23 — `CMakeLists.txt` split by responsibility (D630, parallel slice B)
+
+- **Brief:** [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md) B. The root file was at 498 of 500 lines.
+- **Moved whole, in place and order:** tool executables → `cmake/tools.cmake`; check tools and `check` →
+  `cmake/check_target.cmake`; `multra-tests` and its groups → `cmake/model_tests.cmake`; tool, CLI and script
+  tests → `cmake/cli_tests.cmake`. Root 498 → 194 lines; the map is in
+  [BUILDING](BUILDING.md#where-the-build-rules-live).
+- **No behaviour change**, on `desktop` (Qt 6) and `headless`: sorted `ctest -N`, `--target help`, sorted
+  `compile_commands.json`, `cmake_install.cmake` and sorted `ninja -t commands` identical before and after;
+  `CTestTestfile.cmake` differs only in each test's backtrace (file and line).
+- Checks: see the commit that follows (full build, ctest and `check` on both presets).
+
 ## 2026-11-23 — Four slices briefed for parallel sessions
 
 - **User:** "พัฒนาต่อ โดยเปิด Branch และเขียน prompt เพื่อให้ Agent ทำงาน พิจารณาการทำหลายงานพร้อมกันด้วย".

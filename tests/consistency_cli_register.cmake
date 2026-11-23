@@ -1,4 +1,4 @@
-# M12 R1 row SC7 (D553), included from the root CMakeLists beside cli-study-area.
+# M12 R1 row SC7 (D553), included from cmake/cli_tests.cmake beside cli-study-area.
 add_executable(multra-consistency-cli-fixture ${PROJECT_SOURCE_DIR}/tests/consistency_cli_fixture.cpp)
 target_link_libraries(multra-consistency-cli-fixture PRIVATE multra_commands multra_options)
 target_compile_definitions(multra-consistency-cli-fixture PRIVATE MULTRA_SOURCE_DIR="${PROJECT_SOURCE_DIR}")
