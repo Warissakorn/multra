@@ -419,7 +419,8 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::periodFactors:case Kind::periodShare:
     case Kind::modeChoiceSets:case Kind::modeChoicePurposes:case Kind::modeChoiceAlternatives:case Kind::modeChoiceNests:
     case Kind::modeCoefficient:case Kind::modeOccupancy:case Kind::modeNestPhi:case Kind::logsumCost:
-    case Kind::procedures:case Kind::procedureSteps:case Kind::stepKind:case Kind::procedureFeedback:case Kind::feedbackMethod:case Kind::feedbackIterations:break;
+    case Kind::procedures:case Kind::procedureSteps:case Kind::stepKind:case Kind::procedureFeedback:case Kind::feedbackMethod:case Kind::feedbackIterations:
+    case Kind::feedbackWeight:case Kind::feedbackTolerance:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

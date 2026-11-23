@@ -50,9 +50,9 @@ constexpr Field modeChoiceStepFields[]={{"kind",Kind::stepKind,true},{"active",K
     {"periods",Kind::nonemptyTexts}};
 constexpr Field assignmentStepFields[]={{"kind",Kind::stepKind,true},{"active",Kind::boolean},
     {.name="period",.kind=Kind::text,.required=true,.unless="macroRun"},{.name="macroRun",.kind=Kind::text}};
-// weight in [0, 1) and tolerance ≥ 0 share the intrazonal-share and rate rules.
-constexpr Field procedureFeedbackFields[]={{"method",Kind::feedbackMethod,true},{"weight",Kind::intrazonalShare},
-    {"maxIterations",Kind::feedbackIterations,true},{"tolerance",Kind::rate,true}};
+// Feedback's own kinds: its bounds change with PROCEDURE_FEEDBACK, not with deterrence or trip rates.
+constexpr Field procedureFeedbackFields[]={{"method",Kind::feedbackMethod,true},{"weight",Kind::feedbackWeight},
+    {"maxIterations",Kind::feedbackIterations,true},{"tolerance",Kind::feedbackTolerance,true}};
 }
 std::span<const Field> macroSetFields(Object object) {
     switch(object) {

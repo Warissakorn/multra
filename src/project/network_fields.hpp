@@ -29,7 +29,7 @@ enum class Kind { text,number,level,side,array,links,lanes,geometry,markings,unc
     deterrenceSets,deterrencePurposes,exponentialFunction,minuteUnit,deterrenceBeta,intrazonalShare,deterrenceConstraint,
     costMatrices,costMatrixSource,costRows,periodFactors,periodShare,
     modeChoiceSets,modeChoicePurposes,modeChoiceAlternatives,modeChoiceNests,modeCoefficient,modeOccupancy,modeNestPhi,logsumCost,
-    procedures,procedureSteps,stepKind,procedureFeedback,feedbackMethod,feedbackIterations };
+    procedures,procedureSteps,stepKind,procedureFeedback,feedbackMethod,feedbackIterations,feedbackWeight,feedbackTolerance };
 struct Field {
     const char* name;Kind kind;bool required{};int knownFrom{};
     int rejectBefore{};bool nullable{};int rejectFrom{};
@@ -78,9 +78,6 @@ inline constexpr int distributionVersion=67,constraintVersion=68,destinationCons
 // D572: the root periodFactors is refused below 69, even null.
 inline constexpr int periodFactorVersion=69;
 // D573: owned mode-choice sets from 70, nests from 71 and distributionCost from 76.
-// D636: the root procedures (D484) is refused below 73, even null; a procedure's feedback (D547) below 75,
-// checked after parsing (document.cpp).
-inline constexpr int procedureVersion=73,feedbackVersion=75;
 inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,entryLanesVersion=77,missedExitVersion=78,
     derivedLineVersion=79, // D594 (STOP_LINES): an empty conflict side waitingLineId, rightOfWay.frontStopDistance
     visibilityVersion=80, // D607 (VISIBILITY): a priority rule's visibility
@@ -88,6 +85,9 @@ inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,en
     diffusionVersion=82, // D613 (DIFFUSION): a behaviour's diffusionTime
     priorityMarkerVersion=83, // D606 (PRIORITY_RULES): a priority rule's waitingLineId, vehicleClassIds and markers
     yieldVersion=84; // D618 (YIELD_IMPATIENCE): gap reduction on a rule or marker, a behaviour's yield time and impatience
+// D636: the root procedures (D484) is refused below 73, even null; a procedure's feedback (D547) below 75,
+// checked after parsing (document.cpp).
+inline constexpr int procedureVersion=73,feedbackVersion=75;
 inline constexpr int groupMinimum=std::numeric_limits<int>::min(),groupMaximum=std::numeric_limits<int>::max();
 inline constexpr int stationVersion=5,laneSideVersion=17,generatedVersion=54;
 inline const char* positionKey(int version) {return version<stationVersion?"fraction":"station";}

@@ -150,6 +150,8 @@ class NetworkSchema {
         case Kind::procedureFeedback:rule=reference(Object::procedureFeedback,version);break;
         case Kind::feedbackMethod:
             rule={{"type","string"},{"enum",Json::array({feedbackMethodName(FeedbackMethod::msa),feedbackMethodName(FeedbackMethod::constantWeight)})}};break;
+        case Kind::feedbackWeight:rule={{"type","number"},{"minimum",0},{"exclusiveMaximum",1}};break; // constantWeight's, 0 ≤ w < 1
+        case Kind::feedbackTolerance:rule={{"type","number"},{"minimum",0}};break;
         case Kind::feedbackIterations:rule={{"type","integer"},{"minimum",2},{"maximum",1000},{"x-multra-nativeType","integer-token"}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
