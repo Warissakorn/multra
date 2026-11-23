@@ -38,7 +38,7 @@ Each session edits only its own line here.
 
 - A — leader order kept across ticks (`claude/cool-shannon-btynrs-leader-order`): started.
 - B — split `CMakeLists.txt` (`claude/cool-shannon-btynrs-cmake-split`): started.
-- C — Results tab strip at 1024 in Thai; clamp note (`claude/cool-shannon-btynrs-results-tabs`): started.
+- C — Results tab strip at 1024 in Thai; clamp note (`claude/cool-shannon-btynrs-results-tabs`): done (D634), Linux-verified; Windows look is the owner's.
 - D — ARCHITECTURE's *Editor boundary* into the contracts (`claude/cool-shannon-btynrs-architecture-prose`): started.
 
 ## M3.2 — closed by the owner (D625)
@@ -125,8 +125,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 ## Tables like Excel (D490) — done; E35 passed on paste (2026-11-20), one selection defect above
 
 - Contract: [EDITOR_WORKFLOW](reference/EDITOR_WORKFLOW.md).
-- **Left from the compactness review:** the Results tab strip still scrolls at 1024 in Thai, and
-  the clamp note has no not-validated statement of its own (both predate D490).
+- **Left from the compactness review:** done on Linux (D634): every Results level's strip fits at 1024 × 768 in
+  Thai with no label changed, and the clamp note opens with its not-validated statement. **Owner:** the same
+  strip in Thai at 1024 on Windows (its Thai font may measure wider); if it scrolls, shorten labels first.
 - **Not chosen, ask before doing:** sort by header click, and cell selection in one-object lists
   (each list's `selectRow()` callers would need rewriting first).
 

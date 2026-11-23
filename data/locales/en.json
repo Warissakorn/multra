@@ -451,7 +451,7 @@
   "editorClampType": "Vehicle type",
   "editorClampRoute": "Route",
   "editorClampSegment": "Lane segment",
-  "editorClampNote": "%1 safety clamps: steps where a vehicle could not stop within its braking limits and was held at the obstacle. Rows show the vehicle after that step (blank once it has left). Causes: docs/evidence/w74-clamps.md.",
+  "editorClampNote": "Not yet validated. %1 safety clamps: steps where a vehicle could not stop within its braking limits and was held at the obstacle. Rows show the vehicle after that step (blank once it has left). Causes: docs/evidence/w74-clamps.md.",
   "editorExportResults": "Export results (CSV)…",
   "editorCsvFilter": "CSV files (*.csv)",
   "EDIT_CSV_UNFINISHED": "Results can be exported or copied once the run, or every run of a batch or comparison, has reached its end.",
