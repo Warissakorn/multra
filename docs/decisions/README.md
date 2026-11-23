@@ -103,3 +103,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D627](RECORD.md#d627) — the by-rear leader order kept across ticks, measured and not shipped: study −8.8 %, benchmark +0.6 to +0.8 %.
 [D630](RECORD.md#d630) — the root `CMakeLists.txt` split into `cmake/` includes by responsibility (498 → 194 lines); generated build byte-identical.
 [D634](RECORD.md#d634) — Results tabs fit at 1024 in Thai without shorter labels (proved, every tab forced); the clamp note opens with not-validated.
+[D635](RECORD.md#d635) — insertion rebuilds span buckets only for a later candidate, not after every arrival: benchmark −0.81 %, same events.

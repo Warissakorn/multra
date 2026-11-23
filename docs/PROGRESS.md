@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-23 — Insertion's bucket rebuild after the last arrival dropped (D635)
+
+- **User:** "พัฒนาต่อ"; no owner item was free, so the session took NEXT's untried engine lever: insertion rebuilt every
+  span bucket after each inserted arrival (`insertion.cpp`), ENGINEERING_NOTES 2026-11-23.
+- **Change:** the buckets are rebuilt only before a later candidate's leader search; after the last arrival they are
+  left unbuilt and `Snapshot::built` is cleared, as `stepSimulation` already re-resolves a grown fleet (D584's test).
+- **Measured** (callgrind, GCC 13.3, Release `-g1`, seed 42): benchmark `48 900` 9,623.9 → 9,546.0 M Ir (−0.81 %);
+  `stepSimulation` on the study −0.05 %, M2.6 −0.09 %. Event hashes (FNV-1a of every `eventJson`, every shipped
+  project that runs and the study, seeds 42 and 43) identical. The scratch harness was not committed.
+- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No Windows run.
+
 ## 2026-11-23 — The four parallel slices merged (D626 kept)
 
 - **User:** "ตามแนะนำ merge ทั้งหมดเลย", after the review: D626 kept (benchmark −5.9 %, study +0.15 %, M2.6 +0.25 %,
@@ -144,21 +155,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Not done:** the engine is unchanged; the remedy changes runs at every diverge, so it is the owner's choice
   (OWNER_SITTING item 53; recommended (a), sibling-branch leaders). [Evidence](evidence/diverge-acceptance.md).
 - **Verified (Linux, offscreen):** desktop ctest 368/368 (the new `diverge` group included); docs, file sizes pass.
-
-## 2026-11-22 — Three optimisation passes: the test loop, the Debug build, the live docs (D621)
-
-- **Owner:** /optimize-program three times (the third with "เอกสาร"); each plan answered "แก้ตามแนะนำ". The owner did not
-  revert the W74 split of `types.hpp` (line limit only; NEXT keeps the deferred rebuild split).
-- **Pass 1 (after G7):** the schema-label dump streams case by case, output byte-identical (dump 38.3 → 25.3 s, peak memory
-  2,217 → 603 MB, `schema-labels` 84.2 → 71.5 s); merge groups out of `right_of_way.cpp` (500 → 447 lines); comments and the
-  D592/D610 amendment notes brought in line with D620; one misleading-indentation warning fixed. A pickling change for the
-  Python half was measured and dropped (1.1 s of pickling; fork-shared validation was slower, 40.2 → 66.1 s).
-- **Pass 2, D621:** GCC/Clang Debug builds compile with `-Og`: the desktop suite 331 s (313–336) → 138–143 s, `check`
-  336–356 → 148 s, `multra-cli 42` byte-identical; `-DMULTRA_DEBUG_OG=OFF` restores `-O0`. The engine was not touched:
-  Release runs 0.25 µs per vehicle-tick. Two more warnings fixed; `types.hpp` 497 → 471 (`w74_types.hpp`).
-- **Pass 3 (docs):** NEXT's four stale statements corrected; finished-slice history moved verbatim to
-  [NEXT-state-2026-11-22](archive/NEXT-state-2026-11-22.md) and the `procedures` brief to
-  [PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md) (NEXT ~7,100 → ~5,400 tokens); D400–D599 frozen in
-  [RECORD-D400-D599](decisions/RECORD-D400-D599.md) as D486 splits every 200 IDs (RECORD.md ~61,700 → ~5,900 tokens).
-- **Verified (Linux, offscreen):** desktop `check` 367/367 after each pass; docs and sizes pass. Nothing visible changed,
-  so there is no Windows look.

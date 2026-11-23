@@ -34,8 +34,8 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
 ## Parallel sessions of 2026-11-23 — merged
 
 Briefs: [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md). All four merged (A D626–D627, B D630, C D634, D no ID).
-**Left:** the owner's look at the Thai Results strip at 1024 on Windows (C); the second bucket build after
-each source insertion (`insertion.cpp`), recorded by A in ENGINEERING_NOTES, untried.
+**Left:** the owner's look at the Thai Results strip at 1024 on Windows (C). The bucket rebuild after each
+source insertion is done (D635, benchmark −0.81 %).
 
 ## M3.2 — closed by the owner (D625)
 
@@ -142,8 +142,9 @@ order; none is started. **Ask** marks one the owner chooses before any code.
 - **Engine, the lever left** ([ENGINEERING_NOTES](reference/ENGINEERING_NOTES.md), 2026-11-23): `closestVehicle`
   is 15.7 % of the oversaturated study. A by-rear order rebuilt every tick (2026-11-19) and one seeded from the fleet's
   order and repaired by insertion (D627: study −8.8 %, benchmark +0.6 to +0.8 %) were measured and not shipped. Left:
-  an order stored in `SimState` (with the `types.hpp` split), and insertion rebuilding every bucket after each arrival
-  (`bucketSpans` about twice per tick). Measure study, M2.6 and the benchmark with callgrind, hash events (seeds 42–43).
+  an order stored in `SimState` (with the `types.hpp` split). Insertion's per-arrival rebuild is gone (D635); an arrival
+  tick still resolves refs, spans and buckets twice, and reusing insertion's would need them permuted into id order.
+  Measure study, M2.6 and the benchmark with callgrind, hash events (seeds 42–43).
 
 ## Canvas style — slices A–C done; stop for owner review
 

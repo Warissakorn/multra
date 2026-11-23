@@ -86,3 +86,21 @@ Whole entries moved from the live PROGRESS log.
   rule alone.
 - **Rows:** `priority_rule` PR14–PR16 and PR10 with a Stop (13 tests). Without the hold PR14 fails.
 - **Checks:** `multra-cli 42` keeps 45 / 31.75870154816726 / 1; `check` desktop 365/365, headless 248/248. Windows not run.
+
+## 2026-11-22 — Three optimisation passes: the test loop, the Debug build, the live docs (D621)
+
+- **Owner:** /optimize-program three times (the third with "เอกสาร"); each plan answered "แก้ตามแนะนำ". The owner did not
+  revert the W74 split of `types.hpp` (line limit only; NEXT keeps the deferred rebuild split).
+- **Pass 1 (after G7):** the schema-label dump streams case by case, output byte-identical (dump 38.3 → 25.3 s, peak memory
+  2,217 → 603 MB, `schema-labels` 84.2 → 71.5 s); merge groups out of `right_of_way.cpp` (500 → 447 lines); comments and the
+  D592/D610 amendment notes brought in line with D620; one misleading-indentation warning fixed. A pickling change for the
+  Python half was measured and dropped (1.1 s of pickling; fork-shared validation was slower, 40.2 → 66.1 s).
+- **Pass 2, D621:** GCC/Clang Debug builds compile with `-Og`: the desktop suite 331 s (313–336) → 138–143 s, `check`
+  336–356 → 148 s, `multra-cli 42` byte-identical; `-DMULTRA_DEBUG_OG=OFF` restores `-O0`. The engine was not touched:
+  Release runs 0.25 µs per vehicle-tick. Two more warnings fixed; `types.hpp` 497 → 471 (`w74_types.hpp`).
+- **Pass 3 (docs):** NEXT's four stale statements corrected; finished-slice history moved verbatim to
+  [NEXT-state-2026-11-22](NEXT-state-2026-11-22.md) and the `procedures` brief to
+  [PROCEDURE_SCHEMA_SLICE](../plans/PROCEDURE_SCHEMA_SLICE.md) (NEXT ~7,100 → ~5,400 tokens); D400–D599 frozen in
+  [RECORD-D400-D599](../decisions/RECORD-D400-D599.md) as D486 splits every 200 IDs (RECORD.md ~61,700 → ~5,900 tokens).
+- **Verified (Linux, offscreen):** desktop `check` 367/367 after each pass; docs and sizes pass. Nothing visible changed,
+  so there is no Windows look.
