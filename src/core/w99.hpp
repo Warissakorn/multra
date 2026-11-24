@@ -30,6 +30,11 @@ W99Result w99Acceleration(double speed, double desiredSpeed, double previousAcce
     double driverFactor, double zW, const VehicleType& type, const W99Parameters& parameters,
     std::optional<Leader> obstacle = {});
 
+// §5's driver trait zW: W74 §5's hash at index 15, one past W74's 0–14, so a vehicle carrying both
+// models' traits has independent draws; integer arithmetic only, and the run's stream is never touched.
+inline constexpr std::uint64_t kW99TraitIndex = 15;
+double w99Trait(std::uint32_t seed, std::uint64_t vehicleId);
+
 // The ten keys in §5 order: the one list the codec, the validator and the serializer will read,
 // so a key name exists once (hard rule 3).
 struct W99Key { const char* name; double W99Parameters::* member; };

@@ -121,4 +121,5 @@ or edit evidence in place. A new measurement gets a new note.
 | [w74-preset.md](w74-preset.md) | M3.3.3a: a cited, uncalibrated `w74` preset and its discharge and clamps — 2026-10-15 | D176 |
 | [w74-pure-function.md](w74-pure-function.md) | M3.3.3a W74 pure-function evidence — 2026-10-08 | D135 |
 | [w74-traits.md](w74-traits.md) | M3.3.3a W74 driver-trait evidence — 2026-10-08 | D136, D137 |
+| [w99-traits.md](w99-traits.md) | M3.3.3b W99 driver trait `zW` (BA229) — 2026-11-24 | D641 |
 | [windows-session-check-2026-10-02.md](windows-session-check-2026-10-02.md) | Windows session check of the owner's items — 2026-10-02 | — |

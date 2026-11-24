@@ -1,4 +1,5 @@
 #include "w99.hpp"
+#include "w74.hpp"
 #include "start_up.hpp"
 #include <algorithm>
 #include <cmath>
@@ -122,4 +123,5 @@ std::vector<ValidationIssue> w99ParameterIssues(const W99Parameters& p, const st
         if (!inRange(p.*k.key.member, k.range)) issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", path + "." + k.key.name});
     return issues;
 }
+double w99Trait(std::uint32_t seed, std::uint64_t vehicleId) { return w74Uniform(seed, vehicleId, kW99TraitIndex); }
 }

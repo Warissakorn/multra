@@ -3,6 +3,7 @@
 #include "speed_distribution.hpp"
 #include "simulation.hpp"
 #include "w74.hpp"
+#include "w99.hpp"
 #include <cmath>
 #include <numbers>
 
@@ -49,6 +50,7 @@ PendingVehicle samplePending(SimState& state, std::uint32_t& rng, std::uint32_t 
     v.streamKey = origin; v.ordinal = ordinal;
     // Hashed, not drawn: randomState's sequence is the same with or without W74 (D129).
     if (state.index->w74) v.w74Traits = w74Traits(state.seed, traitIdentity(v.id, origin, ordinal), v.driverFactor);
+    if (state.index->w99) v.w99Trait = w99Trait(state.seed, traitIdentity(v.id, origin, ordinal)); // W99 §5 (D641)
     return v;
 }
 void initializeInputs(SimState& state) {

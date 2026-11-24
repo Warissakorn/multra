@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — W99 slice 4: trait `zW` (D641)
+
+- **Owner:** "ทำ 1 เลย" (W99 next); the plan approved.
+- **Trait:** `w99Trait(seed, id)` is W74 §5's hash at index 15, through a factored `w74Uniform` that `w74Traits`
+  now calls (its values unchanged). `PendingVehicle::w99Trait` is set at generation from `traitIdentity` when
+  `ScenarioIndex::w99` (any `w99` behaviour); it never touches `randomState`. Checkpoints write `w99Trait` only
+  when present. Nothing reads it until composition.
+- **Rows:** `tests/w99_traits_tests.cpp` (group `w99traits`, BA229, 6 tests): Python golden values, independence
+  from W74's draws 0–14, unchanged draws and events beside a prototype-only and a W74-only run, a copied state,
+  `perInput` identity, checkpoints. `w99codec`'s unused-behaviour run strips the trait and asserts it is present.
+  Mutations bite: index 14, the trait on every scenario, drawn from the stream, checkpoint key always, `>> 12`.
+- **Two compilers:** 1,000 values from g++ 13.3 and clang++ 18.1 identical (`d206e1ac8a8750ac`) and equal to Python
+  ([evidence](evidence/w99-traits.md)). `multra-cli 42` summary and events byte-identical.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 371/371; the build without the PCH
+  compiles every unit. No Windows run.
+
 ## 2026-11-23 — W99 slice 3: the W99 dialog (D640)
 
 - **Owner:** "พัฒนาต่อ" after slice 2; the plan (dialog plus the lab guard) approved.
@@ -176,15 +192,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   The walk over passed parts was 5.7 % of the benchmark. Benchmark −5.9 %, study +0.15 %, M2.6 +0.25 % (D598's
   bar). New test in `straddlerleader` compares it with the full scan at 501 positions.
 - **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No Windows run.
-
-## 2026-11-23 — `CMakeLists.txt` split by responsibility (D630, parallel slice B)
-
-- **Brief:** [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md) B. The root file was at 498 of 500 lines.
-- **Moved whole, in place and order:** tool executables → `cmake/tools.cmake`; check tools and `check` →
-  `cmake/check_target.cmake`; `multra-tests` and its groups → `cmake/model_tests.cmake`; tool, CLI and script
-  tests → `cmake/cli_tests.cmake`. Root 498 → 194 lines; the map is in
-  [BUILDING](BUILDING.md#where-the-build-rules-live).
-- **No behaviour change**, on `desktop` (Qt 6) and `headless`: sorted `ctest -N`, `--target help`, sorted
-  `compile_commands.json`, `cmake_install.cmake` and sorted `ninja -t commands` identical before and after;
-  `CTestTestfile.cmake` differs only in each test's backtrace (file and line).
-- Checks (Linux only, GCC 13.3): full build, `ctest` and `check` pass on `headless` (251/251) and `desktop` (368/368).

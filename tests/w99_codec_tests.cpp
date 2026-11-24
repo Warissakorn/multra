@@ -127,7 +127,10 @@ TEST(w99codec, a_w99_behaviour_in_use_is_refused_on_run_and_an_unused_one_change
     const auto plain = compileDocument(owned(), data).scenario, unused = compileDocument(withW99(), data).scenario;
     CHECK(unused.behaviours.size() == plain.behaviours.size() + 1);
     const auto a = runSimulation(plain, 42), b = runSimulation(unused, 42);
-    CHECK(!a.vehicles.empty()); CHECK(a.vehicles == b.vehicles); CHECK(a.time == b.time); // no trait yet (BA229)
+    CHECK(!a.vehicles.empty()); CHECK(a.time == b.time);
+    auto withoutTrait = b.vehicles; // D641: an unused w99 behaviour adds zW (BA229) and changes nothing else
+    for (auto& v : withoutTrait) { CHECK(v.w99Trait.has_value()); v.w99Trait.reset(); }
+    CHECK(a.vehicles == withoutTrait);
     auto byType = withW99();
     for (auto& t : byType.definition->vehicleTypes) if (t.id == "car") t.behaviourId = "urban-w99";
     auto byRoad = withW99();
