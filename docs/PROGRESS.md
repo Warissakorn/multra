@@ -21,6 +21,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   package for the owner's recheck.
 - **Owner, same day:** asked how other programs treat heavy vehicles' acceleration; after the comparison (Vissim's
   per-type curves, SUMO's per-type `accel`, Aimsun's per-type maxima), "ตกลง" to not halving: D644, W99 §1.
+- **Owner, same day:** "CC1 ทำให้เลือกได้ดีหรือไม่ โดยให้ค่าเริ่มต้น เป็นการสุ่ม", then "ok แบบกราฟสะสม เริ่มสัญญาเลย":
+  W99 §5a contracts CC1 as a per-driver cumulative curve (D645, rows BA233–BA237); nothing implemented.
 
 ## 2026-11-24 — W99 slice 5: composition, the Run refusal lifted (D642)
 

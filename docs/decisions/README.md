@@ -113,3 +113,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D642](RECORD.md#d642) — W99 slice 5: composed into the tick through follow with aPrev and zW; the Run refusal lifted
 [D643](RECORD.md#d643) — the behaviour dialog names the first empty or out-of-range key in order (the owner's F7 finding); a model-neutral range message
 [D644](RECORD.md#d644) — W99 does not halve heavy vehicles' acceleration; the type's own acceleration limit bounds it (owner)
+[D645](RECORD.md#d645) — W99's CC1 may be a per-driver cumulative curve (u(16)), the dialog's default mode; a new schema floor; contract only (BA233–BA237)
