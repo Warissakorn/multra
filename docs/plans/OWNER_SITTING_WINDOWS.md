@@ -62,7 +62,9 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
     ทำข้อ 3–4 ซ้ำทั้งภาษาไทยและอังกฤษ ที่ 100% และ 150% แล้วสามารถทำได้". Empty fields, help, refusal of an
     empty key and the fit passed. The out-of-range finding is fixed by D643 (the first key in order that is
     empty **or** out of range is named and focused; the message no longer says "w74"). **Open for that one
-    check on the next package:** `cc0 = 0`, Confirm: the error ends "· cc0" and the cursor stays in cc0.
+    check on the next package:** `cc0 = 0`, Confirm: the error ends "· cc0" and the cursor stays in cc0. Package for
+    the recheck: run #146 of *Package binaries* (`cc57f2d`, D643; W99 also runs, D642), artifact
+    `multra-windows-x64` (expires 2026-12-08).
 
 ## G — Object interchange
 
