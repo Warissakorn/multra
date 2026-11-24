@@ -283,7 +283,7 @@ prototype selection and dialog (D126–D128; owner visual review open); M3.3.3a 
 implementation, runnable in schema 25 and **not validated** (D129, D135–D139, [W74](reference/W74.md)).
 A cited, uncalibrated preset (SUMO's defaults, not auto-loaded) is recorded (D176,
 [evidence](evidence/w74-preset.md)). **M3.3.3b:** the W99 contract is written ([W99](reference/W99.md), D637; rows BA224–BA232
-pending except BA224, BA225, BA227 (pure function, D638) and BA228 (codec, schema 85, D639); the dialog edits it (D640); BA229 (trait `zW`, D641); BA226, BA230, BA232 (composed, D642), so Run accepts it); it consumes M3.5's observation through `follow`, as the review's order (D177) asked. **Next:** BA231's timestep record (W99 §10). Evidence:
+pending except BA224, BA225, BA227 (pure function, D638) and BA228 (codec, schema 85, D639); the dialog edits it (D640); BA229 (trait `zW`, D641); BA226, BA230, BA232 (composed, D642), so Run accepts it); it consumes M3.5's observation through `follow`, as the review's order (D177) asked. BA231's timestep record (D649). **Next:** §4's standstill creep against the hard cap (the record's clamps). Evidence:
 [delivery rows](plans/DRIVING_BEHAVIOUR.md), [interface](reference/DRIVING_BEHAVIOUR.md). M0/M6
 gates, D102's off state and legacy baselines are unchanged.
 

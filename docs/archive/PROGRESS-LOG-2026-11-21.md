@@ -2,6 +2,27 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-23 — `procedures` in the composed project schema (D636)
+
+- **Owner:** "ok" to D573–D574, which released the briefed slice ([PROCEDURE_SCHEMA_SLICE](../plans/PROCEDURE_SCHEMA_SLICE.md)).
+- **Pins first:** `tests/procedure_schema_tests.cpp` (PRS1) passed on the unchanged reader, project 121/121: both floors
+  (feedback's after parsing), kind → active → keys, exclusive assignment, ids, feedback bounds, a 12-issue order.
+- **Schema:** root `procedures` false below 73; closed procedure rows; four step rows chosen by `kind`; assignment's
+  `period`/`macroRun` exclusive via `unless`; feedback false below 75, one row with a constantWeight/msa weight condition.
+  Coverage `-procedures`. The emitted schema is unchanged outside `procedures` (per-version root and every old `$def`).
+- **One key source:** `procedure_codec.cpp` reads keys with `onlyKnownKeys`; the Macro sets' and procedures' tables
+  moved whole to `src/project/macro_set_fields.cpp` (`network_fields.cpp` 472 → 427 lines). Codes, paths, order, writer
+  bytes and save floors unchanged; `document.cpp` names 73/75 with the new constants.
+- **Labels:** `tests/procedure_schema_cases.hpp` in `schema-labels`: 138,710 labels and 20 projects, zero
+  disagreements. By hand (temporary, deleted): writer output at 73/75 and 20 probes with jsonschema 4.26.0; zero
+  schema-refused/codec-accepted.
+- **Owner:** "ok" to D636 and its review fixes (2026-11-23).
+- **Review fixes (owner: "แก้ตามแนะนำ"):** feedback's `weight` and `tolerance` have their own kinds rather than
+  deterrence's `intrazonalShare` and trip rates' `rate`; PRS3's probe tally corrected to 5 / 2 / 13; the D636 constants'
+  comment moved off D573's. The emitted schema is byte-identical to the first D636 commit.
+- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No-PCH and
+  Windows not run.
+
 ## 2026-11-23 — Insertion's bucket rebuild after the last arrival dropped (D635)
 
 - **User:** "พัฒนาต่อ"; no owner item was free, so the session took NEXT's untried engine lever: insertion rebuilt every

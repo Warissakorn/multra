@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — W99 BA231: queue-discharge timestep record (D649)
+
+- **Owner:** "ทำต่อ"; the plan approved (NEXT's BA231).
+- **Tool:** BA27's sweep loop moved to `tools/discharge_sweep.hpp`; `multra-w99-discharge-sweep` runs prototype and
+  `w99` (`W99_ORIGINAL`, fixed cc1, fixture values) on the four-leg project at dt 0.1/0.25/0.5, seeds 42–81. The W74
+  sweep's per-cycle CSV is byte-identical before and after the move; the W99 sweep repeats byte for byte and its
+  prototype arm equals `multra-cli --discharge` in all 123 cycles of seed 42.
+- **Result** ([evidence](evidence/w99-discharge.md)): W99 headway 1.959 / 1.942 / 1.901 s, falling with dt (every seed
+  at 0.5), where the prototype's rises (2.052 → 2.127 s). W99 clamps 7,870 / 3,056 / 1,512 per run: almost all are
+  standing cars clamped every tick, because §4's creep asks +cc7 at a gap 10⁻⁹–10⁻⁷ m above cc0 that D105's `g ≤ cc0`
+  misses. Recorded, not fixed; no engine change; nothing bounded or calibrated.
+- **Verified (Linux only, Release `perf` tree, GCC 13.3):** the sweeps above; `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.
+
 ## 2026-11-24 — CC1 curve slice 3: the dialog (D648)
 
 - **Owner:** "ทำ CC1 เซสชันถัดไปเลย"; the plan approved.
@@ -177,23 +190,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   written failure-first in the delivery plan; all pending.
 - **Verified:** docs check passes. No code changed, so no build or test was needed.
 
-## 2026-11-23 — `procedures` in the composed project schema (D636)
-
-- **Owner:** "ok" to D573–D574, which released the briefed slice ([PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md)).
-- **Pins first:** `tests/procedure_schema_tests.cpp` (PRS1) passed on the unchanged reader, project 121/121: both floors
-  (feedback's after parsing), kind → active → keys, exclusive assignment, ids, feedback bounds, a 12-issue order.
-- **Schema:** root `procedures` false below 73; closed procedure rows; four step rows chosen by `kind`; assignment's
-  `period`/`macroRun` exclusive via `unless`; feedback false below 75, one row with a constantWeight/msa weight condition.
-  Coverage `-procedures`. The emitted schema is unchanged outside `procedures` (per-version root and every old `$def`).
-- **One key source:** `procedure_codec.cpp` reads keys with `onlyKnownKeys`; the Macro sets' and procedures' tables
-  moved whole to `src/project/macro_set_fields.cpp` (`network_fields.cpp` 472 → 427 lines). Codes, paths, order, writer
-  bytes and save floors unchanged; `document.cpp` names 73/75 with the new constants.
-- **Labels:** `tests/procedure_schema_cases.hpp` in `schema-labels`: 138,710 labels and 20 projects, zero
-  disagreements. By hand (temporary, deleted): writer output at 73/75 and 20 probes with jsonschema 4.26.0; zero
-  schema-refused/codec-accepted.
-- **Owner:** "ok" to D636 and its review fixes (2026-11-23).
-- **Review fixes (owner: "แก้ตามแนะนำ"):** feedback's `weight` and `tolerance` have their own kinds rather than
-  deterrence's `intrazonalShare` and trip rates' `rate`; PRS3's probe tally corrected to 5 / 2 / 13; the D636 constants'
-  comment moved off D573's. The emitted schema is byte-identical to the first D636 commit.
-- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No-PCH and
-  Windows not run.

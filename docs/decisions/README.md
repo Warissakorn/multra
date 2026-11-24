@@ -117,3 +117,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D646](RECORD.md#d646) — CC1 curve slice 1: codec and schema 86; Run and the dialog refuse a curve until their slices (BA233)
 [D647](RECORD.md#d647) — CC1 curve slice 2: the per-driver share u(16), the shared curve inverse and composition; a curved behaviour runs (BA234–BA236)
 [D648](RECORD.md#d648) — CC1 curve slice 3: the dialog's Fixed / Distribution (default) and curve table; the decline removed (BA237)
+[D649](RECORD.md#d649) — BA231 recorded: W99 queue discharge at three timesteps; headway falls with dt; standing-creep clamps traced, not fixed

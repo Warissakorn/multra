@@ -46,6 +46,9 @@ target_precompile_headers(multra-t-junction-sweep REUSE_FROM multra-four-leg-fix
 add_executable(multra-w74-discharge-sweep tools/w74_discharge_sweep.cpp)
 target_link_libraries(multra-w74-discharge-sweep PRIVATE multra_commands multra_options)
 target_precompile_headers(multra-w74-discharge-sweep REUSE_FROM multra-four-leg-fixture)
+add_executable(multra-w99-discharge-sweep tools/w99_discharge_sweep.cpp)
+target_link_libraries(multra-w99-discharge-sweep PRIVATE multra_commands multra_options)
+target_precompile_headers(multra-w99-discharge-sweep REUSE_FROM multra-four-leg-fixture)
 # M6 (D535, D538; docs/reference/M6_S1_RUN.md, M6_S2_RUN.md): the S1 project's builder and the run tools.
 add_executable(multra-m6-s1-fixture tools/m6_s1_fixture.cpp)
 target_link_libraries(multra-m6-s1-fixture PRIVATE multra_commands multra_options)
