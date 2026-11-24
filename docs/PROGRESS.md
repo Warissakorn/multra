@@ -19,6 +19,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   the next empty key; it fails on the old order.
 - **Verified (Linux only):** `check` passes (372/372); the build without the PCH compiles every unit. A new
   package for the owner's recheck.
+- **Owner, same day:** asked how other programs treat heavy vehicles' acceleration; after the comparison (Vissim's
+  per-type curves, SUMO's per-type `accel`, Aimsun's per-type maxima), "ตกลง" to not halving: D644, W99 §1.
 
 ## 2026-11-24 — W99 slice 5: composition, the Run refusal lifted (D642)
 

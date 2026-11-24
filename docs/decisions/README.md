@@ -112,3 +112,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D641](RECORD.md#d641) — W99 slice 4: the hashed driver trait zW (index 15), only when a w99 behaviour exists; legacy runs byte-identical
 [D642](RECORD.md#d642) — W99 slice 5: composed into the tick through follow with aPrev and zW; the Run refusal lifted
 [D643](RECORD.md#d643) — the behaviour dialog names the first empty or out-of-range key in order (the owner's F7 finding); a model-neutral range message
+[D644](RECORD.md#d644) — W99 does not halve heavy vehicles' acceleration; the type's own acceleration limit bounds it (owner)
