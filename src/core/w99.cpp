@@ -1,4 +1,5 @@
 #include "w99.hpp"
+#include "line_stop.hpp"
 #include "w74.hpp"
 #include "speed_distribution.hpp"
 #include <stdexcept>
@@ -15,6 +16,9 @@ constexpr double kCc6Scale = 1e-4;
 constexpr double kCc9Speed = 80.0 / 3.6;
 // §4, closing: the source's margin below SDXc.
 constexpr double kClosingMargin = 0.1;
+// §4 (D654): how far short of CC0 the stop behind a standing obstacle aims, against position rounding.
+// A numerical tolerance, as D596's 10⁻⁶ m, not behaviour.
+constexpr double kStopMargin = 1e-9;
 
 enum class Range { positive, nonNegative, nonPositive };
 struct KeyRange { W99Key key; Range range; };
@@ -105,6 +109,18 @@ W99Result w99Acceleration(double speed, double desiredSpeed, double aPrev, doubl
             }
             break;
         }
+    }
+    // §4 (D654): behind a standing obstacle a moving driver asks no more than the exact stop at CC0 at the
+    // type's comfortable deceleration (LINE_STOP's law). Closing aims 0.1 m past SDXc = CC0 and following
+    // creeps at +CC7, so without this the arrival met the hard cap still moving.
+    // When the stop falls inside this tick (v·dt/2 ≥ room), it is the exact one, v²/(2·room): the tick's
+    // motion ends where the speed reaches zero (`integrate`). It aims 1 nm short (half the room below 2 nm)
+    // so the rounding of position cannot pass CC0; D650's hold keeps the car there.
+    if (obstacle && obstacle->speed <= 0 && speed > 0 && obstacle->gap > p.cc0) {
+        const double room = obstacle->gap - p.cc0 - std::min(kStopMargin, (obstacle->gap - p.cc0) / 2);
+        a = std::min(a, speed * timeStep / 2 >= room
+            ? std::max(-type.maxDeceleration, -(speed * speed) / (2 * room))
+            : lineStopAcceleration(speed, room, type.comfortableDeceleration, type.maxDeceleration, timeStep));
     }
     a = std::clamp(a, -type.maxDeceleration, maxAccelerationAt(type, speed)); // §6, D608
     // D105, as in the prototype and W74: a stopped vehicle within the standstill gap waits for room.

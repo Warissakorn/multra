@@ -5,6 +5,36 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — W99 stops at CC0 behind a standing car (D654)
+
+- **Owner:** "ทำขั้นต่อไป" (NEXT's W99 §4 slice), plan approved.
+- **Probe (seed 42, four-leg):** the clamps were arrivals behind standing cars, at 0.03–0.14 m/s with millimetres
+  left:
+  - *closing* aims 0.1 m past CC0;
+  - *following* creeps at +CC7;
+  - D652's floor skipped them.
+- **Rule (W99 §4):**
+  - Behind a standing obstacle, a moving driver asks no more than the exact stop at CC0 at the type's
+    comfortable deceleration (`lineStopAcceleration`).
+  - The exact `−v²/(2·room)` applies when the stop falls inside the tick.
+  - It aims 1 nm short of CC0 against rounding.
+  - It is not gated by `lineRest`.
+- **Rows:**
+  - BA249 in `w99run`: 33 arrivals over dt × room × speed, no clamp, rest within `CC7·dt²` of CC0.
+  - BA250 and BA251 in `w99`: not binding far away or behind a moving leader; hand-checked numbers.
+  - BA238's dt row now uses a moving leader.
+  - Five mutations each fail a row.
+- **Measured** ([evidence](evidence/w99-discharge.md#after-d654)):
+  - BA231's W99 clamps: 345 / 222 / 145 → 42 / 25 / 32 per run.
+  - Four-leg 337.5 → 39.2, M2.6 1,258.9 → 150.2.
+  - Headway is unchanged.
+  - About 22 of the 48 left at seed 42 are behind leaders still moving when they stop. The leader's braking is
+    unknown, so this stays open.
+- **Verified (Linux only):**
+  - `multra-cli 42` is byte-identical, and so are the prototype and W74 sweeps.
+  - Each sweep, run twice, gives identical output.
+  - `check` passes.
+
 ## 2026-11-24 — A front at the line has not passed it; BA27/BA231 and the SUMO look re-run (D653)
 
 - **Owner:** "ทำต่อไป ตามแนะนำ" (re-run the sweeps under D652, then the SUMO comparison).
@@ -166,22 +196,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   per-type curves, SUMO's per-type `accel`, Aimsun's per-type maxima), "ตกลง" to not halving: D644, W99 §1.
 - **Owner, same day:** "CC1 ทำให้เลือกได้ดีหรือไม่ โดยให้ค่าเริ่มต้น เป็นการสุ่ม", then "ok แบบกราฟสะสม เริ่มสัญญาเลย":
   W99 §5a contracts CC1 as a per-driver cumulative curve (D645, rows BA233–BA237); nothing implemented.
-
-## 2026-11-24 — W99 slice 5: composition, the Run refusal lifted (D642)
-
-- **Owner:** "ทำต่อ" after the trait slice; the plan approved.
-- **Composition:** `follow` gains `previousAcceleration` (every caller passes the vehicle's published
-  acceleration; insertion's first-step check passes 0) and dispatches a `w99` behaviour to `w99Acceleration` with
-  `zW`, returning no W74 state. `standstillGap` is `cc0`, `desiredGap` `cc0 + cc1·v`; the prototype's standing-body
-  floor skips w99. `retune` compares w99 presence (traits are drawn at generation); the lab's prototype fallback
-  skips w99.
-- **Run:** D639's refusal is removed from `validateScenario` and `runDiagnostics` (`w99RoadRunIssues` deleted). The
-  dialog's W99 help drops its "Run refuses" sentence (en, th).
-- **Rows:** `tests/w99_run_tests.cpp` (group `w99run`, 9 tests): BA226 (standstill creep serves a Stop line;
-  stops within `SDXc` of a red head), BA230 (hard cap, D105, source D108, queue discharge, an open platoon without a
-  clamp, multi-anticipation, reaction time, courtesy, replay), BA232 (prototype → w99 → w74 → w99 with `aPrev`). The
-  codec test now runs a used w99 behaviour; the lab test opens a lab beside a w99 car and Apply is refused.
-  Mutations bite: no creep, `aPrev` 0, `standstillGap` without w99, the dispatch skipped
-  ([evidence](evidence/w99-composition.md)). `multra-cli 42` summary and events byte-identical.
-- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 372/372; the build without the PCH
-  compiles every unit. No Windows run; package #145 predates this.

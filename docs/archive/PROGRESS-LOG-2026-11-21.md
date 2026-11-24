@@ -2,6 +2,25 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-24 — W99 slice 5: composition, the Run refusal lifted (D642)
+
+- **Owner:** "ทำต่อ" after the trait slice; the plan approved.
+- **Composition:** `follow` gains `previousAcceleration` (every caller passes the vehicle's published
+  acceleration; insertion's first-step check passes 0) and dispatches a `w99` behaviour to `w99Acceleration` with
+  `zW`, returning no W74 state. `standstillGap` is `cc0`, `desiredGap` `cc0 + cc1·v`; the prototype's standing-body
+  floor skips w99. `retune` compares w99 presence (traits are drawn at generation); the lab's prototype fallback
+  skips w99.
+- **Run:** D639's refusal is removed from `validateScenario` and `runDiagnostics` (`w99RoadRunIssues` deleted). The
+  dialog's W99 help drops its "Run refuses" sentence (en, th).
+- **Rows:** `tests/w99_run_tests.cpp` (group `w99run`, 9 tests): BA226 (standstill creep serves a Stop line;
+  stops within `SDXc` of a red head), BA230 (hard cap, D105, source D108, queue discharge, an open platoon without a
+  clamp, multi-anticipation, reaction time, courtesy, replay), BA232 (prototype → w99 → w74 → w99 with `aPrev`). The
+  codec test now runs a used w99 behaviour; the lab test opens a lab beside a w99 car and Apply is refused.
+  Mutations bite: no creep, `aPrev` 0, `standstillGap` without w99, the dispatch skipped
+  ([evidence](../evidence/w99-composition.md)). `multra-cli 42` summary and events byte-identical.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 372/372; the build without the PCH
+  compiles every unit. No Windows run; package #145 predates this.
+
 ## 2026-11-24 — W99 slice 4: trait `zW` (D641)
 
 - **Owner:** "ทำ 1 เลย" (W99 next); the plan approved.

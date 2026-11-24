@@ -278,7 +278,7 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), the procedure
   sequence, is done (D484, D485).
 - **M3.3.3b W99 — contract (D637) through composition (D642), CC1 as a curve (D645–D648), BA231's timestep
-  record (D649) and the creep's hold (D650); W99 runs, unvalidated:** [W99](reference/W99.md). Groups `w99`,
+  record (D649), the creep's hold (D650) and the stop at CC0 (D654); W99 runs, unvalidated:** [W99](reference/W99.md). Groups `w99`,
   `w99codec`, `w99traits`, `w99run`, `w99cc1codec`, `w99cc1run` and `behaviour-library-ui` pass. Heavy vehicles are
   bounded by their type's acceleration, not halved (D644). The unvalidated marker stays.
   **Stopping at the line (D651–D653):** [LINE_STOP](reference/LINE_STOP.md) L3F is in, as `clampRules.lineRest`
@@ -289,8 +289,10 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   against SUMO are re-run ([W99](evidence/w99-discharge.md#after-d652-and-d653),
   [M0 under project rules](evidence/m0-plausibility.md#under-project-rules-d652-d653)).
   **Next:**
-  - **W99 §4: creep only while it can still stop.** These are the arrival clamps: about 345 per run on the
-    four-leg (BA231 sweep, dt 0.1) and about 1,260 on M2.6.
+  - **W99 behind a moving leader.** D654 stops W99 exactly at CC0 behind a standing obstacle, which takes
+    BA231's clamps from 345 to 42 per run, the four-leg from 337 to 39 and M2.6 from 1,259 to 150. Most of the
+    rest are behind leaders still creeping when they stop. Capping those needs the leader's braking, which
+    `Leader` does not carry. It is a contract question before code.
   - **Startup lost time below HCM's 2.0 s** in every model and in SUMO is the absence of a reaction at green, not
     a line question. PERCEPTION's `reactionTime` is the existing mechanism; any value needs a citation (D178).
     Not proposed until the owner asks.

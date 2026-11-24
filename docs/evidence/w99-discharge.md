@@ -211,3 +211,46 @@ re-run at that commit. The tables above stay as D649 and D650 recorded them. Run
 - **The clamps are W99's arrival clamps** (LINE_STOP §6), about 345 per run at dt 0.1. Their fix is a W99 §4
   slice.
 - Nothing is bounded or calibrated, and the unvalidated marker stays.
+
+## After D654
+
+D654 caps a moving W99 driver behind a standing obstacle at the exact stop at CC0 (W99 §4, rows BA249–BA251).
+The same sweep, inputs and build flags are re-run at that commit. Runs:
+[`w99-discharge-runs-d654.csv`](w99-discharge-runs-d654.csv) (switch on).
+
+- **Repeatability.** Two runs give byte-identical per-cycle CSVs.
+  - Switch on: `b274704bafbd97f3d2366b508a727954e951703e69254d017a7bada579002349`.
+  - Switch off: `a7d313cf7b4c4a26c23df40b706343b6322676da3028b64dea3c6f37b2bb3a70`.
+- **Other arms unchanged.**
+  - The prototype arm's rows equal D653's.
+  - The W74 sweep is byte-identical, on (`31aeb91d…`) and off (`cf733d09…`).
+  - `multra-cli 42` is byte-identical.
+
+| Switch | dt (s) | W99 headway mean / median / SD (s) | Startup lost time mean (s) | Clamps per run, mean (min–max) | D653's clamps |
+|---|---|---|---|---|---|
+| on | 0.1 | 2.002 / 2.000 / 0.050 | −0.650 | 41.83 (12–90) | 344.82 |
+| on | 0.25 | 1.976 / 2.000 / 0.059 | −0.447 | 25.23 (10–40) | 222.28 |
+| on | 0.5 | 2.016 / 2.000 / 0.051 | −0.522 | 31.57 (17–47) | 145.05 |
+| off | 0.1 | 1.967 / 1.967 / 0.053 | −0.321 | 21.52 (3–90) | 330.73 |
+| off | 0.25 | 1.950 / 1.917 / 0.060 | −0.169 | 17.82 (7–34) | 324.45 |
+| off | 0.5 | 1.914 / 1.833 / 0.088 | +0.114 | 26.30 (11–40) | 329.60 |
+
+- **Headway and startup lost time** are unchanged to three decimals with the switch on, and within 0.008 s with
+  it off. The cap binds only in the last centimetres of an approach.
+- **The four-leg and M2.6** (the LINE_STOP probe, seeds 42–51), W99 clamps per run:
+
+  | Project | Switch on | Switch off |
+  |---|---|---|
+  | Four-leg | 337.5 → 39.2 | 322.6 → 15.9 |
+  | M2.6 | 1,258.9 → 150.2 | 1,205.9 → 73.5 |
+
+  - Delay is unchanged except on M2.6 with the switch off: 48.24 → 50.13 s.
+  - The prototype and both W74 arms are unchanged.
+- **What remains** (a seed-42 probe on the four-leg, 48 clamps, by the vehicle's state before the tick):
+  - **Moving leaders:** 22 are behind a leader still moving at 0.0001–0.06 m/s, which then stops. The leader
+    is itself creeping.
+  - **Unidentified leaders:** about 25 are behind a leader on another route or behind a hold the probe could
+    not see.
+  - **The gap is not covered.** Capping behind a moving leader needs that leader's braking, which `Leader`
+    does not carry. It is left open, not guessed.
+- Nothing is bounded or calibrated, and the unvalidated marker stays.

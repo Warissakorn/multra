@@ -256,3 +256,25 @@ TEST(w99run, a_queued_car_at_rest_is_never_clamped_and_closes_up_to_cc0) { // BA
     CHECK(find(queued, 1).speed == 0); CHECK(room(queued) >= -1e-9); CHECK(room(queued) <= cap);
     CHECK(clamps <= 1); // never the every-tick standing clamp
 }
+
+TEST(w99run, ba249_an_arrival_behind_a_standing_car_is_never_clamped) { // BA249, W99 §4 (D654)
+    // From 5 cm to 3 m past CC0, at 0.1 to 1.5 m/s and accelerating, behind a prototype truck standing at a
+    // red line, at dt 0.1, 0.25 and 0.5: no clamp, and the car rests within CC7·dt² of CC0.
+    int closeMoves = 0; // forcing: the arrivals do come within 1 cm of CC0 while still moving
+    for (const double dt : {0.1, 0.25, 0.5})
+        for (const double room0 : {0.05, 0.3, 1.0, 3.0})
+            for (const double v0 : {0.1, 0.5, 1.5}) {
+                if (v0 * v0 > 2 * 6 * room0) continue; // a stop the type's maximum (6) cannot make
+                auto red = road({"a", "b", "c", "d"}); red.timeStep = dt;
+                red.signalPrograms = {{"p", 0, {{600, SignalColor::red}}}};
+                red.signalHeads = {{"h", "c", 1, "p"}};
+                auto s = placed(red, {{1, 101 - 4 - kP.cc0 - room0, v0, 0.4}, {2, 101, 0, 0, "truck"}});
+                const auto room = [&] { return find(s, 2).distance - 4 - find(s, 1).distance - kP.cc0; };
+                for (int i = 0; i < static_cast<int>(60 / dt); ++i) {
+                    s = stepSimulation(s); CHECK(!clamped(s));
+                    closeMoves += find(s, 1).speed > 0 && room() < 0.01;
+                }
+                CHECK(find(s, 1).speed == 0); CHECK(room() >= -1e-9); CHECK(room() <= kP.cc7 * dt * dt + 1e-12);
+            }
+    CHECK(closeMoves > 0);
+}

@@ -102,7 +102,8 @@ Negative startup lost time is the head start a car gets from standing metres sho
 
 - **W99's arrival clamps.** About 320 per run on the four-leg and about 1,200 on M2.6, under every option. §4's
   creep keeps `max(aPrev, CC7) > 0` until the stop is infeasible. That is a W99 §4 question: creep only while it
-  can still stop. It is its own slice.
+  can still stop. It is its own slice. **Done as D654** (W99 §4): about 39 per run remain on the four-leg and
+  about 150 on M2.6, mostly behind slowly moving leaders.
 - **Calibration** of the comfortable deceleration used by the line law.
 - **M0, and the amber rule** (D147, D369).
 - **L2's distance**, until a cited value exists.

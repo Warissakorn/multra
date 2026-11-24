@@ -139,8 +139,44 @@ TEST(w99, a_stopped_driver_creeps_only_when_the_whole_creep_fits_before_cc0) { /
     // D649's case: a rounding residue above CC0 is held, at the fixture values and dt 0.1.
     CHECK(at(0, 0, lead(1.5 + 1e-9, 0)).acceleration <= 0); CHECK(at(0, -0.3, lead(1.5 + 3e-9, 0)).acceleration <= 0);
     is(at(0, 0, lead(1.5 + 2 * 0.25 * kDt * kDt, 0)), W99Regime::following, 0.25);
-    // Moving, dt changes nothing: the hold is for a driver at rest.
+    // Moving, dt changes nothing: the hold is for a driver at rest. (Behind a moving leader: D654's stop at
+    // CC0 reads dt behind a standing obstacle, BA251.)
     for (const double v : {0.1, 5.0})
-        CHECK(w99Acceleration(v, 30, 0.25, 0.1, 0.5, 0.5, car(), kOriginal, lead(1.5 + 1e-9, 0)).acceleration ==
-              w99Acceleration(v, 30, 0.25, 0.5, 0.5, 0.5, car(), kOriginal, lead(1.5 + 1e-9, 0)).acceleration);
+        CHECK(w99Acceleration(v, 30, 0.25, 0.1, 0.5, 0.5, car(), kOriginal, lead(1.5 + 1e-9, v)).acceleration ==
+              w99Acceleration(v, 30, 0.25, 0.5, 0.5, 0.5, car(), kOriginal, lead(1.5 + 1e-9, v)).acceleration);
+}
+
+// W99 §4 (D654): rows BA250 and BA251. Behind a standing obstacle a moving driver never asks more than the
+// exact discrete stop at CC0 allows, braking at the type's comfortable deceleration (LINE_STOP's law).
+namespace {
+// The law by hand: the tick covers (v + v1)/2·dt, then braking at b covers v1²/(2b); their sum is `room`.
+// The stop aims 1 nm short of CC0 against position rounding (§4).
+double stopAt(double v, double room, double b, double maximum) {
+    room -= 1e-9;
+    const double c = room - v * kDt / 2;
+    const double v1 = c <= 0 ? 0 : b * (-kDt / 2 + std::sqrt(kDt * kDt / 4 + 2 * c / b));
+    return std::max(-maximum, (v1 - v) / kDt);
+}
+}
+TEST(w99, ba250_the_guard_does_not_bind_far_from_a_standing_obstacle_or_behind_a_moving_one) { // BA250
+    // 10 m/s, 60 m behind a standing car: closing, 0.5·100/(1.5 − 60 − 0.1) (§4), as without the guard.
+    is(at(10, 0, lead(60, 0)), W99Regime::closing, 0.5 * 100 / (1.5 - 60 - 0.1));
+    CHECK(stopAt(10, 60 - 1.5, 2, 8) > at(10, 0, lead(60, 0)).acceleration); // the guard is looser here
+    // A moving leader is not guarded: §8's following row 3a keeps +CC7 at 1 m from the leader's SDXc.
+    is(at(10, 0.1, lead(16, 10)), W99Regime::following, 0.25);
+}
+TEST(w99, ba251_a_creep_or_a_soft_close_is_cut_to_the_stop_at_cc0) { // BA251, W99 §8
+    // D653's probe: 0.0957 m/s, 6.943 mm past CC0, closing asks about −0.043 m/s² (forcing: it cannot stop).
+    const double v = 0.0957, room = 0.006943;
+    const auto t = w99Thresholds(v, 0.5, kOriginal, lead(1.5 + room, 0));
+    const double closing = 0.5 * v * v / (t.sdxc - (1.5 + room) - 0.1);
+    CHECK(closing > -v * v / (2 * room)); // forcing: the closing law under-brakes for this room
+    const auto r = at(v, -0.659, lead(1.5 + room, 0));
+    test::near(r.acceleration, stopAt(v, room, 2, 8), 1e-12);
+    test::near(r.acceleration, -0.59202, 1e-4); // c = 2.158 mm; v1 = 2·(−0.05 + √(0.0025 + 0.002158))
+    // An accelerating arrival: 0.5 m/s, 5 cm past CC0, aPrev +0.4, cut to the stop (c = 2.5 cm, a ≈ −2.68).
+    const auto creep = at(0.5, 0.4, lead(1.55, 0));
+    test::near(creep.acceleration, stopAt(0.5, 0.05, 2, 8), 1e-12); test::near(creep.acceleration, -2.6834, 1e-4);
+    // Inside one tick (v·dt/2 = 5 mm ≥ 4 mm): the exact stop v²/(2·room), which the tick's motion ends at.
+    test::near(at(0.1, 0, lead(1.504, 0)).acceleration, -0.01 / (2 * (0.004 - 1e-9)), 1e-12);
 }
