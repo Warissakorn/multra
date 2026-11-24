@@ -191,7 +191,7 @@ bool deadEndGoverns(const ScenarioIndex& index, std::size_t route, const Vehicle
 bool waitingAtDeadEnd(const ScenarioIndex& index, std::size_t route, const Vehicle& vehicle,
                       const DriverBehaviour& behaviour) {
     return index.remainingOfRoute[route] != 0 && vehicle.speed < kWaitingSpeed &&
-           index.deadEndOfRoute[route] - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor);
+           index.deadEndOfRoute[route] - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor, vehicle.w99Cc1Share);
 }
 std::vector<std::uint32_t> laneChangesRemaining(const Scenario& s) {
     std::vector<std::uint32_t> remaining(s.routes.size(), 0);

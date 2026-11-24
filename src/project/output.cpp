@@ -26,6 +26,7 @@ Json pendingJson(const Scenario& scenario, const PendingVehicle& v) {
     if (const auto& t = v.w74Traits)
         j["w74Traits"] = {{"zBx", t->zBx}, {"zEx", t->zEx}, {"zCx", t->zCx}, {"zOp", t->zOp}, {"zOsc", t->zOsc}};
     if (v.w99Trait) j["w99Trait"] = *v.w99Trait; // W99 §5 (D641), only when present
+    if (v.w99Cc1Share) j["w99Cc1Share"] = *v.w99Cc1Share; // §5a (D647), only when present
     if (scenario.randomStreams == RandomStreams::perInput) j["ordinal"] = v.ordinal; // INPUT_STREAMS §4
     return j;
 }

@@ -2,6 +2,16 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-23 — The four parallel slices merged (D626 kept)
+
+- **User:** "ตามแนะนำ merge ทั้งหมดเลย", after the review: D626 kept (benchmark −5.9 %, study +0.15 %, M2.6 +0.25 %,
+  inside D598's 0.5 % for the same trade, though outside slice A's brief).
+- Merged D, C, A, B in that order. Conflicts only in PROGRESS, NEXT's slice lines and the RECORD/index tails
+  (rows ordered by ID). Three entries moved whole to [PROGRESS-LOG-2026-11-21](../archive/PROGRESS-LOG-2026-11-21.md).
+- **Review before merging (Linux):** B's configure output equals the base's (368 tests and their commands, the
+  target list and `compile_commands.json`); C's `results-tabs-ui` re-run with screenshots; D's moved prose
+  spot-checked against its contracts. Merged tree: see the checks recorded with the merge commit.
+
 ## 2026-11-23 — Slice D: ARCHITECTURE's *Editor boundary* moved into the contracts
 
 - **Brief:** [PARALLEL_SESSIONS](../plans/PARALLEL_SESSIONS.md) D. ARCHITECTURE's 130 lines of per-decision notes now

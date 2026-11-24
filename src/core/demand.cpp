@@ -51,6 +51,7 @@ PendingVehicle samplePending(SimState& state, std::uint32_t& rng, std::uint32_t 
     // Hashed, not drawn: randomState's sequence is the same with or without W74 (D129).
     if (state.index->w74) v.w74Traits = w74Traits(state.seed, traitIdentity(v.id, origin, ordinal), v.driverFactor);
     if (state.index->w99) v.w99Trait = w99Trait(state.seed, traitIdentity(v.id, origin, ordinal)); // W99 §5 (D641)
+    if (state.index->w99Cc1Curve) v.w99Cc1Share = w99Cc1Share(state.seed, traitIdentity(v.id, origin, ordinal)); // §5a (D647)
     return v;
 }
 void initializeInputs(SimState& state) {

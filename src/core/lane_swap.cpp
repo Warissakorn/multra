@@ -125,7 +125,7 @@ bool landsInWaitingPlace(const Scenario& s, const ScenarioIndex& index, const st
             // D451: one not yet waiting is taken where it will wait -- its front anywhere within its
             // stop-line reach of its dead end -- not where it is now; one waiting, where it stands.
             const double dead = index.deadEndOfRoute[refs[w].route];
-            const double lo = waiting ? other.distance : dead - stopLineReach(behaviour, other.driverFactor);
+            const double lo = waiting ? other.distance : dead - stopLineReach(behaviour, other.driverFactor, other.w99Cc1Share);
             const double hi = waiting ? other.distance : dead;
             const double wFront = mappedOnto(*theirs, hi) - on->start, wRear = mappedOnto(*theirs, lo) - on->start - type.length;
             if (reach > wRear - room && rear < wFront + room) return true;

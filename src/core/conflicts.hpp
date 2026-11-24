@@ -91,7 +91,7 @@ std::optional<double> zoneHold(const Scenario&, const ScenarioIndex&, const std:
 // more before it has served the line (the one-tick minimum of §5; no dwell parameter is added).
 // How far short of a line a vehicle at walking pace is still "at" it: the gap car-following keeps
 // behind a standing obstacle at kStoppedSpeed, plus kLineReach.
-double stopLineReach(const DriverBehaviour&, double driverFactor);
+double stopLineReach(const DriverBehaviour&, double driverFactor, std::optional<double> cc1Share = {});
 // Come to the line, in that sense: below walking pace with the front within stopLineReach. A Stop and a
 // parking lot's gate (M8.4a) use this one test.
 bool atStopLine(const Vehicle&, double line, const DriverBehaviour&);

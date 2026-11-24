@@ -315,6 +315,7 @@ struct ScenarioIndex {
     std::vector<std::size_t> behaviourOfSegmentType;
     bool w74{};                                      // any behaviour is w74: vehicles carry traits
     bool w99{};                                      // any behaviour is w99: vehicles carry zW (D641)
+    bool w99Cc1Curve{};                              // any w99 behaviour has cc1Curve: vehicles carry a CC1 share (D647)
     // The slots a released vehicle is stamped with. An input's route and type never change, so
     // resolving them per input per tick -- which is what generateArrivals did once the vehicle
     // stopped carrying ids -- was the same lookup in a new place.
@@ -353,6 +354,8 @@ struct PendingVehicle {
     // M3.3.3b (D641): zW, hashed at generation and never redrawn; present iff the scenario holds any
     // w99 behaviour (docs/reference/W99.md §5). After w74Traits for the same reason.
     std::optional<double> w99Trait;
+    // W99 §5a (D647): the driver's CC1 share u(16), present iff a w99 behaviour has cc1Curve.
+    std::optional<double> w99Cc1Share;
     // INPUT_STREAMS §4, set only under perInput: the key of the input or lot that made the vehicle and
     // its ordinal there, which its hashed routing draws use. Zero under shared, so states are unchanged.
     std::uint64_t streamKey{}; std::uint32_t ordinal{};

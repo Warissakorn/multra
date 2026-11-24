@@ -12,7 +12,7 @@
 #include "../src/project/run.hpp"
 using namespace multra;
 // W99 §5a (D646): row BA233 of docs/plans/DRIVING_BEHAVIOUR.md -- CC1 as a cumulative curve, the
-// codec, the schema floor 86 and the interim Run refusal until the draw is composed (BA236).
+// codec and the schema floor 86. D647 composed the draw, lifting the interim Run refusal.
 namespace {
 W99Parameters curved() {
     W99Parameters p{1.5, 0, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5};
@@ -106,19 +106,15 @@ TEST(w99cc1codec, the_curve_is_refused_below_86_and_on_other_models) { // BA233
     test::throws([&] { parseBehaviour(w74); }, "EDIT_UNSUPPORTED_FIELD");
 }
 
-TEST(w99cc1codec, a_curved_behaviour_is_saved_but_not_run_until_its_draw_is_composed) { // BA233, W99 §5a
+TEST(w99cc1codec, a_curved_behaviour_in_use_is_saved_and_runs) { // BA233, BA236 (D647 lifted D646's refusal)
     const auto data = test::root() / "data";
-    auto d = with(curved()); // unused, and still refused: the check is unconditional
+    auto d = with(curved());
+    for (auto& t : d.definition->vehicleTypes) if (t.id == "car") t.behaviourId = "urban-w99";
     validateDocument(d);
     CHECK(parseDocument(documentJson(d)).definition->behaviours == d.definition->behaviours);
-    test::throws([&] { (void)compileDocument(d, data); }, "UNSUPPORTED_BEHAVIOUR_MODEL_RUN");
-    const auto rows = runDiagnostics(d, data);
-    CHECK(std::count_if(rows.begin(), rows.end(), [](const auto& r) { return r.code == "UNSUPPORTED_BEHAVIOUR_MODEL_RUN"; }) == 1);
-    // A fixed cc1 still runs (D642).
-    W99Parameters fixed{1.5, 1.3, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5};
-    auto f = with(fixed);
-    for (auto& t : f.definition->vehicleTypes) if (t.id == "car") t.behaviourId = "urban-w99";
-    CHECK(test::finish(createSimulation(compileDocument(f, data).scenario, 42)).completed > 0);
+    const auto run = test::finish(createSimulation(compileDocument(d, data).scenario, 42));
+    CHECK(run.completed > 0);
+    for (const auto& r : runDiagnostics(d, data)) CHECK(r.code.rfind("UNSUPPORTED", 0) != 0);
 }
 
 TEST(w99cc1codec, the_validator_checks_the_curve_in_the_core) { // BA233, W99 §5a

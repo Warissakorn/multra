@@ -62,9 +62,9 @@ void standingVehicleFloor(FollowingResult& r, double speed, const Leader& body, 
     const double room = std::max(0.01, body.gap - b.standstillDistance);
     r.acceleration = std::max(-type.maxDeceleration, std::min(r.acceleration, -(speed * speed) / (2 * room)));
 }
-double desiredGap(const DriverBehaviour& b, double driverFactor, double speed) {
+double desiredGap(const DriverBehaviour& b, double driverFactor, double speed, std::optional<double> cc1Share) {
     if (b.w74) return b.w74->ax + (b.w74->bxAdd + b.w74->bxMult * driverFactor) * std::sqrt(std::max(speed, 0.1));
-    if (b.w99) return b.w99->cc0 + b.w99->cc1 * std::max(speed, 0.0); // W99 §6: SDXc with vSlow = v
+    if (b.w99) return b.w99->cc0 + w99DriverParameters(*b.w99, cc1Share).cc1 * std::max(speed, 0.0); // W99 §6: SDXc with vSlow = v
     return b.standstillDistance + (b.additiveSafetyDistance + b.multiplicativeSafetyDistance * driverFactor) *
            std::sqrt(std::max(0.0, speed));
 }
@@ -73,7 +73,7 @@ FollowingResult follow(double speed, const PendingVehicle& driver, std::optional
     if (behaviour.w99) { // W99 §6-§7 (D642): no state of its own, so the result carries none
         if (!driver.w99Trait) throw std::logic_error("w99 behaviour without driver trait");
         const auto r = w99Acceleration(speed, driver.desiredSpeed, previousAcceleration, driver.driverFactor,
-                                       *driver.w99Trait, type, *behaviour.w99, leader);
+                                       *driver.w99Trait, type, w99DriverParameters(*behaviour.w99, driver.w99Cc1Share), leader);
         return {r.acceleration, r.mode, std::nullopt};
     }
     if (!behaviour.w74)

@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — CC1 curve slice 2: draw, rule and composition (D647)
+
+- **Owner:** "ทำ CC1 เซสชันถัดไปเลย"; the plan approved.
+- **Draw:** `w99Cc1Share = u(16)` per driver at generation when a w99 behaviour has a curve
+  (`ScenarioIndex::w99Cc1Curve`, `PendingVehicle::w99Cc1Share`); a checkpoint key only when present.
+- **Rule:** SPEED_DISTRIBUTION §3's inverse is now `cumulativeInverse`, shared by `speedAt` (unchanged to the bit)
+  and `w99Cc1At`.
+- **Composition:** `w99DriverParameters` gives `follow`, `desiredGap` and `stopLineReach` the driver's CC1;
+  the four `stopLineReach` callers pass the vehicle's share; retune compares curve presence. D646's Run refusal
+  is removed; the dialog's decline stays until BA237.
+- **Rows:** `tests/w99_cc1_run_tests.cpp` (group `w99cc1run`, BA234–BA236, 6 tests); `w99cc1codec`'s refusal case
+  now runs a curved behaviour. Mutations bite: index 15, the share always drawn, CC1 not replaced, `desiredGap`
+  ignoring the share, the refusal kept ([evidence](evidence/w99-cc1-draw.md)).
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 374/374; the build without the PCH
+  compiles every unit; `multra-cli 42` summary and events byte-identical.
+
 ## 2026-11-24 — CC1 curve slice 1: codec and schema 86 (D646)
 
 - **Owner:** "ทำ CC1 เซสชันแรกเลย"; the plan approved.
@@ -179,13 +195,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   `stepSimulation` on the study −0.05 %, M2.6 −0.09 %. Event hashes (FNV-1a of every `eventJson`, every shipped
   project that runs and the study, seeds 42 and 43) identical. The scratch harness was not committed.
 - **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No Windows run.
-
-## 2026-11-23 — The four parallel slices merged (D626 kept)
-
-- **User:** "ตามแนะนำ merge ทั้งหมดเลย", after the review: D626 kept (benchmark −5.9 %, study +0.15 %, M2.6 +0.25 %,
-  inside D598's 0.5 % for the same trade, though outside slice A's brief).
-- Merged D, C, A, B in that order. Conflicts only in PROGRESS, NEXT's slice lines and the RECORD/index tails
-  (rows ordered by ID). Three entries moved whole to [PROGRESS-LOG-2026-11-21](archive/PROGRESS-LOG-2026-11-21.md).
-- **Review before merging (Linux):** B's configure output equals the base's (368 tests and their commands, the
-  target list and `compile_commands.json`); C's `results-tabs-ui` re-run with screenshots; D's moved prose
-  spot-checked against its contracts. Merged tree: see the checks recorded with the merge commit.

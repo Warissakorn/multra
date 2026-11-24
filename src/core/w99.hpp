@@ -34,6 +34,14 @@ W99Result w99Acceleration(double speed, double desiredSpeed, double previousAcce
 // models' traits has independent draws; integer arithmetic only, and the run's stream is never touched.
 inline constexpr std::uint64_t kW99TraitIndex = 15;
 double w99Trait(std::uint32_t seed, std::uint64_t vehicleId);
+// §5a (D647): the driver's CC1 share, index 16 (one past zW), drawn only when a curved behaviour exists.
+inline constexpr std::uint64_t kW99Cc1Index = 16;
+double w99Cc1Share(std::uint32_t seed, std::uint64_t vehicleId);
+// The curve's inverse at share u (SPEED_DISTRIBUTION §3's rule, shared).
+double w99Cc1At(const std::vector<W99Cc1Point>& curve, double u);
+// The parameters one driver runs with: cc1 is the curve's value at the driver's share when the
+// behaviour has a curve (a missing share there is a logic error), else the behaviour's own.
+W99Parameters w99DriverParameters(const W99Parameters& p, std::optional<double> cc1Share);
 
 // The ten keys in §5 order: the one list the codec, the validator and the serializer will read,
 // so a key name exists once (hard rule 3).

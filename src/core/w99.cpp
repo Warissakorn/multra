@@ -1,5 +1,7 @@
 #include "w99.hpp"
 #include "w74.hpp"
+#include "speed_distribution.hpp"
+#include <stdexcept>
 #include "start_up.hpp"
 #include <algorithm>
 #include <cmath>
@@ -137,4 +139,16 @@ std::vector<ValidationIssue> w99ParameterIssues(const W99Parameters& p, const st
     return issues;
 }
 double w99Trait(std::uint32_t seed, std::uint64_t vehicleId) { return w74Uniform(seed, vehicleId, kW99TraitIndex); }
+double w99Cc1Share(std::uint32_t seed, std::uint64_t vehicleId) { return w74Uniform(seed, vehicleId, kW99Cc1Index); }
+double w99Cc1At(const std::vector<W99Cc1Point>& curve, double u) {
+    return cumulativeInverse(curve, u, [](const W99Cc1Point& p) { return p.value; });
+}
+W99Parameters w99DriverParameters(const W99Parameters& p, std::optional<double> cc1Share) {
+    double cc1 = p.cc1;
+    if (!p.cc1Curve.empty()) {
+        if (!cc1Share) throw std::logic_error("w99 cc1Curve without a driver share");
+        cc1 = w99Cc1At(p.cc1Curve, *cc1Share);
+    }
+    return {p.cc0, cc1, p.cc2, p.cc3, p.cc4, p.cc5, p.cc6, p.cc7, p.cc8, p.cc9, {}}; // no curve copied
+}
 }

@@ -17,7 +17,7 @@ double standstillGap(const DriverBehaviour&);
 // distance short of the vehicle's rear, so the floor stops there, not at the rear. `body` is the
 // physical vehicle leader; only with stopFloor, the prototype law's braking mode and `body` standing.
 void standingVehicleFloor(FollowingResult& result, double speed, const Leader& body, const VehicleType&, const DriverBehaviour&);
-double desiredGap(const DriverBehaviour&, double driverFactor, double speed);
+double desiredGap(const DriverBehaviour&, double driverFactor, double speed, std::optional<double> cc1Share = {}); // D647: W99 reads the driver's CC1
 // The one dispatcher for every car-following evaluation, own motion and hypothetical alike: the
 // prototype above, w74Acceleration with the driver's traits and the previous tick's state, or
 // w99Acceleration (W99.md §6, D642) with zW and `previousAcceleration`, the vehicle's published
