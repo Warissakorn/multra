@@ -186,7 +186,9 @@ Evidence for [LINE_STOP](../reference/LINE_STOP.md) (D651).
   - The maximum is up to 3.9 m on M2.6, where a vehicle stands short of a line it is still releasing from.
   - Crawls fall from 10–14 s to about 0.5 s.
   - Startup lost time moves from about −0.1 to −1.8 s to about +1.4 to +2.1 s, toward HCM's default 2.0 s. The
-    estimator's ranks differ from HCM's definition, so this is a direction, not a match.
+    estimator's ranks differ from HCM's definition, so this is a direction, not a match. **Withdrawn (D653):** the
+    measurement counted a front exactly at the line as across it, so a queue head resting there was dropped from
+    its cycle. Corrected, startup lost time falls (see [After D653](#after-d653)).
   - W74's delay at the priority lab falls from 19.8 / 24.7 s to 5.8 / 5.9 s: its 11–14 s crawl at the line is
     gone.
 - **L1 is the prototype's D596, extended.** It brings the prototype to the line, but on M2.6 it clamps 225 times
@@ -223,3 +225,33 @@ columns. The rows are clamps per run, delay per vehicle, and headway / startup l
   all its clamp counts.
 - **The lane lab's other arms:** delay is lower by 0.01–0.02 s, with no clamps.
 - **Bare M0:** `multra-cli 42` is byte-identical.
+
+## After D653
+
+D653 corrects the observers: a front exactly at a line has not passed it. The engine is unchanged. Clamps and delay
+equal the D652 table above to the digit. Only headway and startup lost time move. The same probe, seeds 42–51,
+gives headway / startup lost time (s) with the switch on (D652) and off (a schema-87 copy, `lineRest: false`):
+
+| Project | Model | Switch on | Switch off | D652's table (old measurement) |
+|---|---|---|---|---|
+| Four-leg | prototype | 2.112 / −0.600 | 2.052 / −0.108 | 1.976 / 1.982 |
+| Four-leg | W74 fixture | 3.235 / −1.714 | 3.136 / −1.129 | 3.077 / 2.040 |
+| Four-leg | W74 SUMO preset | 3.566 / −2.144 | 3.444 / −1.338 | 3.412 / 1.949 |
+| Four-leg | W99 | 2.004 / −0.652 | 1.969 / −0.340 | 1.932 / 1.619 |
+| M2.6 | prototype | 2.522 / −1.176 | 2.443 / −0.383 | 2.343 / 1.926 |
+| M2.6 | W74 fixture | 3.882 / −2.742 | 3.787 / −1.919 | 3.655 / 1.696 |
+| M2.6 | W74 SUMO preset | 4.210 / −3.163 | 4.087 / −2.155 | 3.970 / 1.597 |
+| M2.6 | W99 | 2.452 / −1.293 | 2.419 / −0.952 | 2.386 / 1.390 |
+
+- **Startup lost time does not move toward HCM.** It falls by 0.3–1.0 s, because the queue head now starts at
+  the line, not metres short of it. No model has a reaction time at green (D369). The line contract was never the
+  place for HCM's 2.0 s.
+- **Headway rises by 0.03–0.12 s** with the switch on. Each queued car now starts a standstill gap farther from
+  its line than the head does.
+- **What D652 still gives:**
+  - the front at the line, for every model and line type;
+  - no crawls;
+  - no line clamps.
+
+  Its realism claim rests on those, not on startup lost time.
+- **The M0 scene against SUMO under project rules** is in [m0-plausibility](m0-plausibility.md#under-project-rules-d652-d653).

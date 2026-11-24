@@ -69,7 +69,7 @@ Negative startup lost time is the head start a car gets from standing metres sho
 - It is the one option that meets §2 for every model and every line type.
 - It matches how SUMO separates the two.
 - It removes the long crawls.
-- It moves startup lost time toward HCM's range.
+- It moves startup lost time toward HCM's range. **Withdrawn by D653 (§8):** that was a measurement artefact.
 - Its cost is +1.1 % instructions on the four-leg.
 
 ## 5. Scope, switch and rows (for the code session, once chosen)
@@ -159,3 +159,21 @@ The owner chose **L3F** on 2026-11-24 ("เลือก L3F ทำเลย").
 - **Rows moved to the new behaviour:**
   - diverge A68: its standing car is held at its own front, not 2.5 m ahead;
   - visibility VS5: the hold shows over 20 ticks, not 3, because the law brakes later.
+
+## 8. Correction: the measurement at the line (D653)
+
+The discharge, stop-line and priority-line observers counted a front exactly at a line as having passed it. Under
+§2 the front stops at the line, so D652's queue heads were counted as crossing during red and dropped from their
+cycle.
+
+- **The rule.** `pastLine` (`src/eval/line_passage.hpp`): a front exactly at a line has not passed it. A line at a
+  route's start is passed on insertion. An arrival is past every line on its route.
+- **Rows.** BA246–BA248 in `tests/line_passage_tests.cpp` (`linepassage`). The old rule fails all three. The
+  independent counter in PL1–PL9 (`priority_lines_tests`) takes the same rule.
+- **What it changes.**
+  - **Startup lost time.** §3's "+1.4 to +2.1 s" and §7's measured startup lost times were artefacts. Corrected,
+    the switch lowers startup lost time by 0.3–1.0 s
+    ([evidence](../evidence/line-stop-options.md#after-d653)).
+  - **Unchanged:** the engine, clamps, delay, the rest at the line and the crawls.
+  - **D652's choice stands** on those.
+- **M0:** `multra-cli 42` is byte-identical.

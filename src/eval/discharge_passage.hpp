@@ -9,7 +9,7 @@ using DischargePositions=std::map<std::uint64_t,DischargePosition>;
 struct DischargeMotion {
     std::optional<DischargePosition> start,end;
     std::vector<std::pair<DischargePosition,DischargePosition>> remaps;
-    bool source{},ambiguous{};
+    bool source{},ambiguous{},arrived{}; // arrived: past every line on its route (D653)
 };
 // Replay start-of-tick remaps using unique engine span mappings. End-of-tick
 // routing preserves distance. Missing/contradictory terminal/type evidence is

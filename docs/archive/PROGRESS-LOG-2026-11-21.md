@@ -2,6 +2,40 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-24 — W99 slice 4: trait `zW` (D641)
+
+- **Owner:** "ทำ 1 เลย" (W99 next); the plan approved.
+- **Trait:** `w99Trait(seed, id)` is W74 §5's hash at index 15, through a factored `w74Uniform` that `w74Traits`
+  now calls (its values unchanged). `PendingVehicle::w99Trait` is set at generation from `traitIdentity` when
+  `ScenarioIndex::w99` (any `w99` behaviour); it never touches `randomState`. Checkpoints write `w99Trait` only
+  when present. Nothing reads it until composition.
+- **Rows:** `tests/w99_traits_tests.cpp` (group `w99traits`, BA229, 6 tests): Python golden values, independence
+  from W74's draws 0–14, unchanged draws and events beside a prototype-only and a W74-only run, a copied state,
+  `perInput` identity, checkpoints. `w99codec`'s unused-behaviour run strips the trait and asserts it is present.
+  Mutations bite: index 14, the trait on every scenario, drawn from the stream, checkpoint key always, `>> 12`.
+- **Two compilers:** 1,000 values from g++ 13.3 and clang++ 18.1 identical (`d206e1ac8a8750ac`) and equal to Python
+  ([evidence](../evidence/w99-traits.md)). `multra-cli 42` summary and events byte-identical.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 371/371; the build without the PCH
+  compiles every unit. No Windows run.
+
+## 2026-11-23 — W99 slice 3: the W99 dialog (D640)
+
+- **Owner:** "พัฒนาต่อ" after slice 2; the plan (dialog plus the lab guard) approved.
+- **Dialog:** the decline is gone. *W99 (Wiedemann 99)* is the third model item: a help note, one empty text field per
+  `w99ParameterKeys()` entry (filled only from the behaviour's own values), and the cooperative and amber options shared
+  with W74. Confirm names the first empty key (`editorBehaviourKeyMissing`, renamed from the W74-only key), then shows
+  `w99ParameterIssues`' first issue; the result is rebuilt from the id, so switching model drops the other's keys. W74
+  and W99 share one key-field builder and one reader.
+- **Prototype source:** the library's first behaviour of neither model (it was "not W74", which could pick a w99 one).
+- **Lab (a gap from D639):** Apply was offered for a car on a `w99` behaviour and wrote prototype fields the writer
+  then dropped. Both guards now refuse `w99` as `w74`; a new lab does not open on one, since Run refuses it.
+- **Rows:** `behaviour-library-ui` edits a w99 behaviour (out-of-range refused, one key and the name saved, schema 85),
+  switches W99 → Prototype (library values, also with the w99 entry first), Prototype → W99 (fields empty, an empty
+  one refused), Cancel, and the Thai item and help. `behaviour-lab-ui` checks the refused Apply. Mutations bite: the
+  lab guard, the w99 reset on the prototype branch, the starting model index and the prototype source.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 370/370. No Windows run; the owner's
+  look is [F7](../plans/OWNER_SITTING_WINDOWS.md).
+
 ## 2026-11-23 — W99 slice 2: codec, schema 85 and the Run refusal (D639)
 
 - **Owner:** "ทำงานถัดไป" after slice 1. Contract §10 grouped codec and dialog; W74 split them (D136, D139), so this

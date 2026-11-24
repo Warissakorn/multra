@@ -159,3 +159,55 @@ as D649 recorded it. Runs: [`w99-discharge-runs-d650.csv`](w99-discharge-runs-d6
   −0.005 m/s². That is the soft approach to a standing obstacle, not the hold. It is left for a
   stop-at-the-line contract covering every line and model (NEXT).
 - Nothing is bounded or calibrated, and the unvalidated marker stays.
+
+## After D652 and D653
+
+D652 stops every W99 and project prototype at the line (LINE_STOP L3F). D653 corrects the measurement: a front
+exactly at the line has not passed it (`src/eval/line_passage.hpp`). The same sweep, inputs and build flags are
+re-run at that commit. The tables above stay as D649 and D650 recorded them. Runs:
+[`w99-discharge-runs-d653.csv`](w99-discharge-runs-d653.csv) (same columns).
+
+- **Repeatability.** Two runs give byte-identical per-cycle CSVs. SHA-256:
+  `54cb2243901c959206c07382cf437d0b84f36039c503274de69fadc279ac2f84`.
+- **Why D653 was needed.** Measured with the old rule, D652's queue head, standing exactly at the line, was
+  counted as having crossed while the light was still red. It never appeared at Go. The ranks shifted by one car,
+  available cycles fell (prototype 1,316 → 998), and startup lost time read about +1.6 to +2.0 s. That number
+  was an artefact.
+
+| Model | dt (s) | Available headways / cycles | Mean headway mean / median / SD (s) | Startup lost time mean / median / SD (s) | Safety clamps per run, mean (min–max) |
+|---|---|---|---|---|---|
+| prototype | 0.1 | 1,323 / 4,920 | 2.113 / 2.100 / 0.047 | −0.602 / −0.600 / 0.128 | 0.00 (0–0) |
+| prototype | 0.25 | 1,309 / 4,920 | 2.119 / 2.083 / 0.053 | −0.511 / −0.417 / 0.146 | 0.00 (0–0) |
+| prototype | 0.5 | 1,265 / 4,920 | 2.114 / 2.167 / 0.080 | −0.250 / −0.333 / 0.208 | 0.00 (0–0) |
+| w99 | 0.1 | 1,342 / 4,920 | 2.002 / 2.000 / 0.050 | −0.650 / −0.633 / 0.106 | 344.82 (253–471) |
+| w99 | 0.25 | 1,325 / 4,920 | 1.976 / 2.000 / 0.059 | −0.447 / −0.500 / 0.120 | 222.28 (154–274) |
+| w99 | 0.5 | 1,300 / 4,920 | 2.016 / 2.000 / 0.051 | −0.522 / −0.500 / 0.132 | 145.05 (105–192) |
+
+**Paired per-seed difference** against dt 0.1 (n = 40):
+
+| Model | dt 0.25 − 0.1 (s) | dt 0.5 − 0.1 (s) |
+|---|---|---|
+| prototype | +0.007 ± 0.010 [−0.011, +0.035], 33/40 positive | +0.002 ± 0.016 [−0.034, +0.033], 24/40 positive |
+| w99 | −0.026 ± 0.011 [−0.049, −0.002], 0/40 positive | +0.014 ± 0.013 [−0.015, +0.040], 34/40 positive |
+
+**The switch off, measured with D653** (a project copy at schema 87 with `clampRules.lineRest: false`):
+
+- **The engine is unchanged with the switch off.** The old rule on this copy gives D650's per-cycle CSV byte for
+  byte (`4cf7b07f…`).
+- **D653 alone moves cycles where a car happened to stand exactly at the line,** having been clamped there or
+  having reached it in its last tick.
+  - W99 at dt 0.1: startup lost time −0.116 ± 0.577 → −0.329 ± 0.148 s. Its wide spread was largely this
+    artefact.
+  - Headway: 1.966 / 1.948 / 1.910 s.
+  - The paired dt 0.5 difference is still −0.056 s, 0/40 seeds positive.
+
+**Reading:**
+- **W99's headway no longer falls with dt once it stops at the line.** At dt 0.5 the paired difference is
+  +0.014 s, against −0.056 s with the switch off. D649's candidate cause, the creep toward the line, is the one
+  the switch removes. The prototype's headway is flat across dt as well, against +0.075 s with the switch off.
+- **Startup lost time stays negative,** about −0.5 to −0.65 s, under the corrected measurement. A car at the line
+  crosses one tick after Go, and no model has a reaction time at green (D369's reading). HCM's default 2.0 s is
+  not approached by stopping at the line. A start-up reaction is the place for it, not the line.
+- **The clamps are W99's arrival clamps** (LINE_STOP §6), about 345 per run at dt 0.1. Their fix is a W99 §4
+  slice.
+- Nothing is bounded or calibrated, and the unvalidated marker stays.

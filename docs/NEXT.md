@@ -281,22 +281,25 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   record (D649) and the creep's hold (D650); W99 runs, unvalidated:** [W99](reference/W99.md). Groups `w99`,
   `w99codec`, `w99traits`, `w99run`, `w99cc1codec`, `w99cc1run` and `behaviour-library-ui` pass. Heavy vehicles are
   bounded by their type's acceleration, not halved (D644). The unvalidated marker stays.
-  **Stopping at the line (D651, D652):** [LINE_STOP](reference/LINE_STOP.md) L3F is in, as `clampRules.lineRest`
+  **Stopping at the line (D651–D653):** [LINE_STOP](reference/LINE_STOP.md) L3F is in, as `clampRules.lineRest`
   (schema 87, on by default for projects). Every W74/W99 behaviour, and every prototype carrying
   `amberDeceleration`, stops at signal, give-way, Stop, zone and gate lines; dead ends stay leaders; bare M0 keeps
-  its bytes. Startup lost time on the four-leg moves from −0.1 to −1.2 s up to +1.6 to +2.0 s
-  ([evidence](evidence/line-stop-options.md#after-d652)).
+  its bytes. D653: a front exactly at a line has not passed it (`pastLine`, three observers). With it, D652's
+  "startup lost time toward HCM" is withdrawn: the switch lowers it by 0.3–1.0 s. BA27/BA231 and the M0 scene
+  against SUMO are re-run ([W99](evidence/w99-discharge.md#after-d652-and-d653),
+  [M0 under project rules](evidence/m0-plausibility.md#under-project-rules-d652-d653)).
   **Next:**
-  - **Re-run the BA27/BA231 sweeps** under D652 (both records predate it), then D369's SUMO comparison on a
-    project copy. It is an M0-style plausibility look, not a gate.
-  - **W99 §4: creep only while it can still stop.** These are the arrival clamps, about 340 per run on the
-    four-leg and about 1,260 on M2.6.
-  - **The M6 U record and sweep (D543, D546)** run with the switch off; re-measure them under D652 if M6
+  - **W99 §4: creep only while it can still stop.** These are the arrival clamps: about 345 per run on the
+    four-leg (BA231 sweep, dt 0.1) and about 1,260 on M2.6.
+  - **Startup lost time below HCM's 2.0 s** in every model and in SUMO is the absence of a reaction at green, not
+    a line question. PERCEPTION's `reactionTime` is the existing mechanism; any value needs a citation (D178).
+    Not proposed until the owner asks.
+  - **The M6 U record and sweep (D543, D546)** run with the switch off; re-measure them under D652/D653 if M6
     work resumes.
   - **A cited W99 preset** only if one exists (D178).
-  - **Owner (Windows):** the lineRest checkbox and the four-leg queues at the line, next package.
+  - **Owner (Windows):** the lineRest checkbox and the four-leg queues at the line, on the next package.
   **Owner (Windows):** [F8](plans/OWNER_SITTING_WINDOWS.md), the CC1 table; [F7](plans/OWNER_SITTING_WINDOWS.md)'s
-  out-of-range recheck (D643). Both need a package newer than #146.
+  out-of-range recheck (D643), on package #147.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.

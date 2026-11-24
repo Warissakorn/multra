@@ -1,4 +1,5 @@
 #include "discharge.hpp"
+#include "line_passage.hpp"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -85,10 +86,10 @@ void DischargeAccumulator::observe(const SimState& state) {
         std::map<std::uint64_t,double> nextUpstream;
         for(const auto& v:state.vehicles) {
             const auto at=h.atRoute.at(v.routeIndex);
-            if(std::isfinite(at)&&v.distance<at)nextUpstream.emplace(v.id,at-v.distance);
+            if(std::isfinite(at)&&!pastLine(v.distance,at))nextUpstream.emplace(v.id,at-v.distance);
         }
         const auto upstream=[&](const DischargePosition& p) {
-            return p.route<h.atRoute.size()&&std::isfinite(h.atRoute[p.route])&&p.distance<h.atRoute[p.route];
+            return p.route<h.atRoute.size()&&std::isfinite(h.atRoute[p.route])&&!pastLine(p.distance,h.atRoute[p.route]);
         };
         // D125: only ranks 1..steadyLast feed an estimate, and estimateDischarge already rejects a
         // vehicle there that was not queued at Go. Once those ranks are recorded nothing can change
@@ -120,7 +121,7 @@ void DischargeAccumulator::observe(const SimState& state) {
                 if(ranksOpen&&affected)h.cycle->unavailable=m.source?"untracked_source_passage":"route_or_lane_change";
                 continue;
             }
-            if(!h.cycle||!m.start||!m.end||!upstream(*m.start)||m.end->distance<h.atRoute[m.start->route])continue;
+            if(!h.cycle||!m.start||!m.end||!upstream(*m.start)||!(m.arrived||pastLine(m.end->distance,h.atRoute[m.start->route])))continue;
             if(std::any_of(h.cycle->crossings.begin(),h.cycle->crossings.end(),[&](const auto& c){return c.vehicleId==id;})) {
                 h.cycle->unavailable="repeated_head_passage";continue;
             }

@@ -5,6 +5,37 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — A front at the line has not passed it; BA27/BA231 and the SUMO look re-run (D653)
+
+- **Owner:** "ทำต่อไป ตามแนะนำ" (re-run the sweeps under D652, then the SUMO comparison).
+- **Found:**
+  - With D652, the sweeps' available cycles fell (prototype 1,316 → 998).
+  - The discharge, stop-line and priority-line observers counted a front exactly at a line as passed. So a
+    queue head resting there under LINE_STOP was counted as crossing during red and dropped from its cycle.
+  - D652's "startup lost time +1.6 to +2.0 s, toward HCM" was this artefact. It is withdrawn in RECORD,
+    LINE_STOP §8 and the evidence.
+- **Fix:** `pastLine` (`src/eval/line_passage.hpp`) is used by all three observers:
+  - a front at a line has not passed it;
+  - a line at a route's start is passed on insertion;
+  - an arrival is past every line.
+- **Rows:** BA246–BA248 (`linepassage`), all three failing under the old rule. PL1–PL9's independent counter
+  takes the same rule.
+- **Re-measured:**
+  - [W99](evidence/w99-discharge.md#after-d652-and-d653) and [W74](evidence/w74-discharge.md#after-d652-and-d653-2026-11-24)
+    sweeps.
+  - With the switch on, the prototype's and W99's headway are flat across dt. W99 no longer falls.
+  - Startup lost time is −0.6 s (prototype) and −1.7 s (W74), lower than with the switch off.
+  - [Four-leg and M2.6](evidence/line-stop-options.md#after-d653): clamps and delay are unchanged to the digit.
+- **SUMO:** the [M0 scene under project rules](evidence/m0-plausibility.md#under-project-rules-d652-d653):
+  - no clamps, no red passes;
+  - start-up lost time 0.74 s, between SUMO Krauss 0.69 s and IDM 0.44 s;
+  - the amber rule without the line rule passed on red 6 times in 10 runs.
+- **Verified (Linux only):**
+  - `multra-cli 42` is byte-identical.
+  - The switch-off sweeps with the old rule reproduce D650's per-cycle CSVs byte for byte.
+  - Each sweep, run twice, gives identical output.
+  - `check` passes.
+
 ## 2026-11-24 — Stopping at the line: L3F implemented (D652)
 
 - **Owner:** "เลือก L3F ทำเลย".
@@ -25,7 +56,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   Diverge A68 and visibility VS5 move to the new behaviour.
 - **Measured** ([evidence](evidence/line-stop-options.md#after-d652)): the T-junction and the priority lab equal
   D651's L3F byte for byte; on the four-leg the prototype's startup lost time is +1.98 s (was −0.11) with 0
-  clamps.
+  clamps. (That startup figure is withdrawn: a measurement artefact, D653.)
 - **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (375/375); the build without the PCH compiles 692 units, 0 failed. Package #147 (`c193433`) recorded for F7/F8.
 
 ## 2026-11-24 — Stopping at the line: the contract and its measured options (D651)
@@ -34,7 +65,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Measured** ([evidence](evidence/line-stop-options.md); a temporary [patch](evidence/line-stop-options.patch), reverted):
   - five projects × prototype, W74 fixture, W74 SUMO preset, W99 × L0 / L1 / L1F / L3 / L3F, seeds 42–51;
   - L3 rests every model at every line type (0 m), cuts crawls from 10–14 s to about 0.5 s and moves startup lost
-    time to +1.4 to +2.1 s, at +1.1 % instructions;
+    time to +1.4 to +2.1 s (withdrawn by D653: a measurement artefact), at +1.1 % instructions;
   - L1 leaves W74 1 m short and clamps 225 per run on M2.6;
   - a first run counted rounding residues at the line as clamps, so the finish (D596's, GIVE_WAY_STOP §2) is part
     of every option.
@@ -154,38 +185,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   ([evidence](evidence/w99-composition.md)). `multra-cli 42` summary and events byte-identical.
 - **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 372/372; the build without the PCH
   compiles every unit. No Windows run; package #145 predates this.
-
-## 2026-11-24 — W99 slice 4: trait `zW` (D641)
-
-- **Owner:** "ทำ 1 เลย" (W99 next); the plan approved.
-- **Trait:** `w99Trait(seed, id)` is W74 §5's hash at index 15, through a factored `w74Uniform` that `w74Traits`
-  now calls (its values unchanged). `PendingVehicle::w99Trait` is set at generation from `traitIdentity` when
-  `ScenarioIndex::w99` (any `w99` behaviour); it never touches `randomState`. Checkpoints write `w99Trait` only
-  when present. Nothing reads it until composition.
-- **Rows:** `tests/w99_traits_tests.cpp` (group `w99traits`, BA229, 6 tests): Python golden values, independence
-  from W74's draws 0–14, unchanged draws and events beside a prototype-only and a W74-only run, a copied state,
-  `perInput` identity, checkpoints. `w99codec`'s unused-behaviour run strips the trait and asserts it is present.
-  Mutations bite: index 14, the trait on every scenario, drawn from the stream, checkpoint key always, `>> 12`.
-- **Two compilers:** 1,000 values from g++ 13.3 and clang++ 18.1 identical (`d206e1ac8a8750ac`) and equal to Python
-  ([evidence](evidence/w99-traits.md)). `multra-cli 42` summary and events byte-identical.
-- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 371/371; the build without the PCH
-  compiles every unit. No Windows run.
-
-## 2026-11-23 — W99 slice 3: the W99 dialog (D640)
-
-- **Owner:** "พัฒนาต่อ" after slice 2; the plan (dialog plus the lab guard) approved.
-- **Dialog:** the decline is gone. *W99 (Wiedemann 99)* is the third model item: a help note, one empty text field per
-  `w99ParameterKeys()` entry (filled only from the behaviour's own values), and the cooperative and amber options shared
-  with W74. Confirm names the first empty key (`editorBehaviourKeyMissing`, renamed from the W74-only key), then shows
-  `w99ParameterIssues`' first issue; the result is rebuilt from the id, so switching model drops the other's keys. W74
-  and W99 share one key-field builder and one reader.
-- **Prototype source:** the library's first behaviour of neither model (it was "not W74", which could pick a w99 one).
-- **Lab (a gap from D639):** Apply was offered for a car on a `w99` behaviour and wrote prototype fields the writer
-  then dropped. Both guards now refuse `w99` as `w74`; a new lab does not open on one, since Run refuses it.
-- **Rows:** `behaviour-library-ui` edits a w99 behaviour (out-of-range refused, one key and the name saved, schema 85),
-  switches W99 → Prototype (library values, also with the w99 entry first), Prototype → W99 (fields empty, an empty
-  one refused), Cancel, and the Thai item and help. `behaviour-lab-ui` checks the refused Apply. Mutations bite: the
-  lab guard, the w99 reset on the prototype branch, the starting model index and the prototype source.
-- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 370/370. No Windows run; the owner's
-  look is [F7](plans/OWNER_SITTING_WINDOWS.md).
-
