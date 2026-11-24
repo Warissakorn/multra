@@ -281,14 +281,13 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   record (D649) and the creep's hold (D650); W99 runs, unvalidated:** [W99](reference/W99.md). Groups `w99`,
   `w99codec`, `w99traits`, `w99run`, `w99cc1codec`, `w99cc1run` and `behaviour-library-ui` pass. Heavy vehicles are
   bounded by their type's acceleration, not halved (D644). The unvalidated marker stays.
-  **Next (owner's choice, a contract before code):** stopping at the line. Every line (signal head, priority rule,
-  zone, dead end, lot gate) reaches the models as a standing leader, so each rests its own standstill gap short:
-  four-leg red, seeds 42–51, first car's median 1.65 m (prototype), 3.4 m (W74 fixture), 5.2 m (W74 SUMO preset).
-  W99 reaches the line and clamps on arrival, about 330 per run after D650 ([evidence](evidence/w99-discharge.md#after-d650)).
-  Only the prototype at a zone's line rests at the line (D596), which is what the owner saw on the T-junction.
-  SUMO (`stopSpeed`) and Vissim (a separate standstill distance for static obstacles) keep the line apart from
-  following. Measure options first, as LINE_APPROACH did. The four-leg and M2.6 bytes would move, and M0 may
-  reopen. Then a cited preset only if one exists (D178). W99's headway falling with dt is recorded, not explained.
+  **Next (owner's choice):** [LINE_STOP](reference/LINE_STOP.md) (D651), stopping at the line for every line type
+  and model, is written and measured ([evidence](evidence/line-stop-options.md)). The recommendation is L3F, a
+  SUMO-style line law plus the extended floor, as `clampRules.lineRest`, on for projects, with M0 untouched. The
+  owner picks L3F, L3, L1, L1F or L0; then the code session (rows BA239–BA245) and a re-run of the BA27/BA231
+  sweeps. Separately, W99's arrival clamps (about 320 per run on the four-leg, 1,200 on M2.6, under every
+  option): §4's creep should accelerate only while it can still stop. That is a W99 §4 slice. Then a cited
+  preset only if one exists (D178). W99's headway falling with dt is recorded, not explained.
   **Owner (Windows):** [F8](plans/OWNER_SITTING_WINDOWS.md), the CC1 table; [F7](plans/OWNER_SITTING_WINDOWS.md)'s
   out-of-range recheck (D643). Both need a package newer than #146.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane

@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — Stopping at the line: the contract and its measured options (D651)
+
+- **Owner:** reviewed line stops, M0 and other programs, then: "ถ้าต้องการให้โปรแกรมสมจริง มีประสิทธิภาพที่สุด"; "ทำตามแผนเขียนสัญญา".
+- **Measured** ([evidence](evidence/line-stop-options.md); a temporary [patch](evidence/line-stop-options.patch), reverted):
+  - five projects × prototype, W74 fixture, W74 SUMO preset, W99 × L0 / L1 / L1F / L3 / L3F, seeds 42–51;
+  - L3 rests every model at every line type (0 m), cuts crawls from 10–14 s to about 0.5 s and moves startup lost
+    time to +1.4 to +2.1 s, at +1.1 % instructions;
+  - L1 leaves W74 1 m short and clamps 225 per run on M2.6;
+  - a first run counted rounding residues at the line as clamps, so the finish (D596's, GIVE_WAY_STOP §2) is part
+    of every option.
+- **Contract** [LINE_STOP](reference/LINE_STOP.md): L3F recommended as `clampRules.lineRest`, scoped like D257 so
+  M0 keeps its bytes (an unscoped rule moves bare M0, 1 → 5 clamps); rows BA239–BA245; W99's arrival clamps left to
+  a W99 §4 slice. **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-24 — W99's standstill creep waits until it fits (D650)
 
 - **Owner:** reviewed creep in SUMO, Vissim and W74, then stopping at lines; "เริ่มเลย" to the creep's hold.
@@ -171,17 +186,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   fails without it.
 - **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 370/370, `check` passes (`schema-labels`
   141,694 labels, 0 disagreements). No Windows run.
-
-## 2026-11-23 — W99 slice 1: the pure function (D638)
-
-- **Owner:** "ok" to the W99 contract (D637).
-- **Code:** `src/core/w99_types.hpp` (`W99Parameters`, CC0–CC9) and `src/core/w99.*`: `w99Thresholds`, `w99Acceleration`
-  (W99 §3–§4, the type bounds and D105, as W74's pure function), `w99ParameterKeys()` and `w99ParameterIssues` (§5).
-  Nothing calls it yet: no codec, trait draw or composition; `types.hpp` untouched.
-- **Rows:** `tests/w99_tests.cpp`, group `w99`. BA224: §8's ten cases and the threshold cases to 10⁻¹², plus the free
-  rule, the type bounds and D105. BA225: both sides of all five equalities, with binary-exact values. BA227: a
-  18,144-point grid over four parameter sets (every range edge included); closing only beyond `SDXc`, its denominator
-  ≤ −0.1, every result finite. Shown to bite: dropping the standstill creep, `≤ SDXc` as `<`, the `vSlow` floor or the
-  linear CC8 → CC9 rule each fails one or two tests.
-- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 369/369 (the new `w99` group), `check` passes.
 

@@ -119,3 +119,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D648](RECORD.md#d648) — CC1 curve slice 3: the dialog's Fixed / Distribution (default) and curve table; the decline removed (BA237)
 [D649](RECORD.md#d649) — BA231 recorded: W99 queue discharge at three timesteps; headway falls with dt; standing-creep clamps traced, not fixed
 [D650](RECORD.md#d650) — W99's standstill creep waits until one creep fits before CC0 (`CC7·dt²`); the every-tick clamps gone (BA238)
+[D651](RECORD.md#d651) — Stopping at the line: contract and measured options (L1, L3, floors); L3F recommended as `clampRules.lineRest`, M0 untouched; the owner chooses

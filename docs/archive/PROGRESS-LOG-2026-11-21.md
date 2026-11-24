@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-23 — W99 slice 1: the pure function (D638)
+
+- **Owner:** "ok" to the W99 contract (D637).
+- **Code:** `src/core/w99_types.hpp` (`W99Parameters`, CC0–CC9) and `src/core/w99.*`: `w99Thresholds`, `w99Acceleration`
+  (W99 §3–§4, the type bounds and D105, as W74's pure function), `w99ParameterKeys()` and `w99ParameterIssues` (§5).
+  Nothing calls it yet: no codec, trait draw or composition; `types.hpp` untouched.
+- **Rows:** `tests/w99_tests.cpp`, group `w99`. BA224: §8's ten cases and the threshold cases to 10⁻¹², plus the free
+  rule, the type bounds and D105. BA225: both sides of all five equalities, with binary-exact values. BA227: a
+  18,144-point grid over four parameter sets (every range edge included); closing only beyond `SDXc`, its denominator
+  ≤ −0.1, every result finite. Shown to bite: dropping the standstill creep, `≤ SDXc` as `<`, the `vSlow` floor or the
+  linear CC8 → CC9 rule each fails one or two tests.
+- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 369/369 (the new `w99` group), `check` passes.
+
 ## 2026-11-23 — The W99 contract, before code (D637, M3.3.3b)
 
 - **Owner:** chose "W99 contract (M3.3.3b)" from the offered picks.
