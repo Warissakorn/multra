@@ -17,7 +17,7 @@ bool acceptsAsLeader(const Scenario& s, const std::vector<Vehicle>& vehicles, co
     const auto& who = vehicles[f];
     const auto& type = s.vehicleTypes[refs[f].type];
     const auto& behaviour = s.behaviours[refs[f].behaviour];
-    const double a = follow(who.speed, who, who.w74State, who.acceleration, type, behaviour, leader).acceleration;
+    const double a = follow(who.speed, who, who.w74State, who.acceleration, s.timeStep, type, behaviour, leader).acceleration;
     return a >= -type.comfortableDeceleration && integrate(who.speed, a, s.timeStep).distance <= leader.gap - standstillGap(behaviour);
 }
 // D207 (M3_8_CONTRACT §2, "Cooperation"): stub vehicle `x`'s mutual partner -- a stub alongside or
@@ -36,7 +36,7 @@ void yieldMutualAs(const Scenario& s, const ScenarioIndex& index, const std::vec
     const auto& xType = s.vehicleTypes[refs[x].type];
     const auto& xBehaviour = s.behaviours[refs[x].behaviour];
     const bool closing = waitingAtDeadEnd(index, route, front, xBehaviour) ||
-                         deadEndGoverns(index, route, front, xType, xBehaviour); // D450
+                         deadEndGoverns(index, route, front, xType, xBehaviour, s.timeStep); // D450
     for (const auto& part : index.parts[change.target])
         for (auto i = buckets.start[part.segmentIndex]; i < buckets.start[part.segmentIndex + 1]; ++i) {
             const auto& span = spans[buckets.items[i]];
@@ -120,7 +120,7 @@ bool landsInWaitingPlace(const Scenario& s, const ScenarioIndex& index, const st
             if (on == parts.end()) continue;
             // D450: a partner counts while it waits or is inside its look-ahead.
             const bool waiting = waitingAtDeadEnd(index, refs[w].route, other, behaviour);
-            if (!waiting && !deadEndGoverns(index, refs[w].route, other, type, behaviour)) continue;
+            if (!waiting && !deadEndGoverns(index, refs[w].route, other, type, behaviour, s.timeStep)) continue;
             const double room = standstillGap(behaviour);
             // D451: one not yet waiting is taken where it will wait -- its front anywhere within its
             // stop-line reach of its dead end -- not where it is now; one waiting, where it stands.

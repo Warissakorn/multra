@@ -243,7 +243,7 @@ TEST(perceptiondelay, ba36_d108_source_admission_uses_the_undelayed_first_step) 
         PendingVehicle p; p.id = 2; p.inputIndex = 0; p.desiredSpeed = 15; p.driverFactor = .5;
         state.inputs[0].queue.push_back(p); state.nextVehicleId = 3;
         const auto& b = state.scenario->behaviours[0];
-        const auto first = follow(0, p, {}, 0, s.vehicleTypes[0], b, Leader{2 + room, 12, 0});
+        const auto first = follow(0, p, {}, 0, s.timeStep, s.vehicleTypes[0], b, Leader{2 + room, 12, 0});
         CHECK(integrate(0, first.acceleration, .5).distance == .25); // forcing, before admission
         state = stepSimulation(std::move(state));
         if (room < .25) { CHECK(state.inputs[0].queue.size() == 1); CHECK(state.vehicles.size() == 1); }

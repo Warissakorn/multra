@@ -125,3 +125,37 @@ The prototype has no creep, and W74's creep sits in a wider band, so neither sho
 - **The clamps are counted, never hidden (D105).** The creep at `g` just above cc0 is a contract question
   for W99 §4, the next engine question before any preset. This record does not change it.
 - Nothing here bounds the sensitivity or calibrates anything. The M0/M6 gates are unchanged.
+
+## After D650
+
+D650 holds a stopped W99 driver while one creep would not fit before CC0 (`g − CC0 ≤ CC7 · dt²`, W99 §4,
+row BA238). The same sweep, the same inputs and build flags, re-run at that commit. The table above stays
+as D649 recorded it. Runs: [`w99-discharge-runs-d650.csv`](w99-discharge-runs-d650.csv) (same columns).
+
+- **Repeatability.** Two runs give byte-identical per-cycle CSVs. SHA-256:
+  `4cf7b07f8dfbc22b3d6d9da5f5f7227ce1a0d7f3c05f02f16412c364be18fcb8`.
+- **Other arms unchanged.** The prototype arm is unchanged, and the W74 sweep on BA27's inputs is
+  byte-identical (`ed764e2a…72b2e`).
+
+| Model | dt (s) | Mean headway mean / median / SD (s) | Startup lost time mean (s) | Safety clamps per run, mean (min–max) | D649's clamps |
+|---|---|---|---|---|---|
+| w99 | 0.1 | 1.959 / 1.967 / 0.059 | −0.116 | 330.73 (256–434) | 7,870.18 |
+| w99 | 0.25 | 1.942 / 1.917 / 0.064 | 0.055 | 324.45 (242–382) | 3,056.38 |
+| w99 | 0.5 | 1.901 / 1.833 / 0.085 | 0.342 | 329.60 (257–385) | 1,512.15 |
+
+- **Headway is unchanged** to three decimals, with the same paired differences against dt 0.1. Startup lost
+  time moves by at most 0.001 s, at dt 0.5. The hold changes where a standing car rests, by at most `CC7 · dt²`,
+  not when the queue moves.
+- **What the remaining clamps are.** The seed-42 probe now finds each clamped car clamped once:
+
+  | dt (s) | Cars clamped once | Cars clamped more than once |
+  |---|---|---|
+  | 0.1 | 322 | 1 |
+  | 0.25 | 317 | 4 |
+  | 0.5 | 307 | 4 |
+
+  Almost all are below 1 m/s before the tick: a car arriving at its line or at CC0 while still creeping.
+  BA238's queued-car case shows one at 0.03 m/s with 0.9 mm left, after *closing* braked at only
+  −0.005 m/s². That is the soft approach to a standing obstacle, not the hold. It is left for a
+  stop-at-the-line contract covering every line and model (NEXT).
+- Nothing is bounded or calibrated, and the unvalidated marker stays.

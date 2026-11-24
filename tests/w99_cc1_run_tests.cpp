@@ -106,7 +106,7 @@ TEST(w99cc1run, each_driver_runs_its_own_cc1_and_keeps_its_share_across_curves) 
         const auto& after = *std::find_if(next.vehicles.begin(), next.vehicles.end(), [&](const auto& v) { return v.id == id; });
         const auto& curve = s.behaviours[slot].w99->cc1Curve;
         auto p = curved(curve); p.cc1 = w99Cc1At(curve, *before.w99Cc1Share); p.cc1Curve.clear();
-        const auto expected = w99Acceleration(8, before.desiredSpeed, 0, before.driverFactor, *before.w99Trait,
+        const auto expected = w99Acceleration(8, before.desiredSpeed, 0, s.timeStep, before.driverFactor, *before.w99Trait,
                                               s.vehicleTypes[0], p, Leader{12, 0, 0});
         CHECK(after.acceleration == expected.acceleration);
         CHECK(after.w99Cc1Share == before.w99Cc1Share); // the share, not the value, is the driver's
@@ -129,11 +129,11 @@ TEST(w99cc1run, drivers_with_different_shares_follow_differently_and_the_accesso
     PendingVehicle low{}, high{}; low.desiredSpeed = high.desiredSpeed = 15; low.driverFactor = high.driverFactor = 0.5;
     low.w99Trait = high.w99Trait = 0.5; low.w99Cc1Share = 0.1; high.w99Cc1Share = 0.9;
     const Leader leader{14, 8, 0};
-    const auto a = follow(8, low, std::nullopt, 0, s.vehicleTypes[0], b, leader), c = follow(8, high, std::nullopt, 0, s.vehicleTypes[0], b, leader);
+    const auto a = follow(8, low, std::nullopt, 0, s.timeStep, s.vehicleTypes[0], b, leader), c = follow(8, high, std::nullopt, 0, s.timeStep, s.vehicleTypes[0], b, leader);
     CHECK(a.acceleration != c.acceleration);
     for (const auto& [driver, result] : {std::pair{&low, a}, std::pair{&high, c}}) {
         auto p = curved(); p.cc1 = w99Cc1At(kCurve, *driver->w99Cc1Share); p.cc1Curve.clear();
-        CHECK(result.acceleration == w99Acceleration(8, 15, 0, 0.5, 0.5, s.vehicleTypes[0], p, leader).acceleration);
+        CHECK(result.acceleration == w99Acceleration(8, 15, 0, s.timeStep, 0.5, 0.5, s.vehicleTypes[0], p, leader).acceleration);
     }
 }
 

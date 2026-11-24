@@ -69,7 +69,7 @@ W99Thresholds w99Thresholds(double speed, double zW, const W99Parameters& p, con
     t.sdvo = speed > p.cc5 ? t.sdv + p.cc5 : t.sdv;
     return t;
 }
-W99Result w99Acceleration(double speed, double desiredSpeed, double aPrev, double driverFactor,
+W99Result w99Acceleration(double speed, double desiredSpeed, double aPrev, double timeStep, double driverFactor,
     double zW, const VehicleType& type, const W99Parameters& p, std::optional<Leader> obstacle) {
     W99Regime regime = W99Regime::free;
     double a{};
@@ -108,7 +108,9 @@ W99Result w99Acceleration(double speed, double desiredSpeed, double aPrev, doubl
     }
     a = std::clamp(a, -type.maxDeceleration, maxAccelerationAt(type, speed)); // §6, D608
     // D105, as in the prototype and W74: a stopped vehicle within the standstill gap waits for room.
-    if (speed == 0 && obstacle && obstacle->gap <= p.cc0) a = std::min(0.0, a);
+    // §4 (D650): it also waits while one whole creep (a tick of +CC7, then braking to rest, at most
+    // CC7·dt²) would not fit before CC0, where the hard cap would clamp it every tick.
+    if (speed == 0 && obstacle && obstacle->gap - p.cc0 <= p.cc7 * timeStep * timeStep) a = std::min(0.0, a);
     return {a, regime, modeOf(regime)};
 }
 const std::vector<W99Key>& w99ParameterKeys() {

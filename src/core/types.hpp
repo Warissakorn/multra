@@ -465,7 +465,7 @@ bool waitingAtDeadEnd(const ScenarioIndex&, std::size_t route, const Vehicle&, c
 // - laneChangeTargetOf: the first span target a vehicle with this front and rear may change to,
 //   in the index's order (fewest changes left, then the lower slot); null inside no span.
 // - mappedOnto: a distance along a span's source, as a distance along its target.
-bool deadEndGoverns(const ScenarioIndex&, std::size_t route, const Vehicle&, const VehicleType&, const DriverBehaviour&);
+bool deadEndGoverns(const ScenarioIndex&, std::size_t route, const Vehicle&, const VehicleType&, const DriverBehaviour&, double timeStep);
 const RouteLaneChange* laneChangeTargetOf(const ScenarioIndex&, std::size_t route, double front, double rear);
 double mappedOnto(const RouteLaneChange&, double at);
 // M3.3.2b (D127, DRIVING_BEHAVIOUR.md §3): the one behaviour every consumer uses -- following,

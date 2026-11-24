@@ -38,7 +38,7 @@ bool accepts(const SimState& s, std::uint64_t id) {
 struct Ask { double a; bool fits; };
 Ask ask(const SimState& s, std::uint64_t driver, double gap, double speed, double acceleration = 0) {
     const auto& v = find(s, driver);
-    const double a = follow(v.speed, v, v.w74State, v.acceleration, typeOf(s, driver), behaviourOf(s, driver), Leader{gap, speed, acceleration}).acceleration;
+    const double a = follow(v.speed, v, v.w74State, v.acceleration, s.scenario->timeStep, typeOf(s, driver), behaviourOf(s, driver), Leader{gap, speed, acceleration}).acceleration;
     return {a, integrate(v.speed, a, s.scenario->timeStep).distance <= gap - standstillGap(behaviourOf(s, driver))};
 }
 void traits(SimState& s) { for (auto& v : s.vehicles) v.w74Traits = w74Traits(s.seed, v.id, v.driverFactor); }

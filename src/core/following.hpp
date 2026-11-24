@@ -21,8 +21,8 @@ double desiredGap(const DriverBehaviour&, double driverFactor, double speed, std
 // The one dispatcher for every car-following evaluation, own motion and hypothetical alike: the
 // prototype above, w74Acceleration with the driver's traits and the previous tick's state, or
 // w99Acceleration (W99.md §6, D642) with zW and `previousAcceleration`, the vehicle's published
-// acceleration (0 before insertion). A hypothetical caller passes the vehicle's carried values and
-// discards the result's state.
+// acceleration (0 before insertion), and the run's `timeStep` (D650; read by W99 only). A
+// hypothetical caller passes the vehicle's carried values and discards the result's state.
 FollowingResult follow(double speed, const PendingVehicle& driver, std::optional<W74State> previous,
-    double previousAcceleration, const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader = {});
+    double previousAcceleration, double timeStep, const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader = {});
 }

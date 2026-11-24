@@ -188,7 +188,7 @@ TEST(w99run, a_courtesy_hold_composes_and_writes_nothing) { // BA230, the second
         for (std::size_t v = 0; v < holds.size(); ++v)
             if (std::isfinite(holds[v].gap)) {
                 const auto& x = s.vehicles[v];
-                held[x.id] = follow(x.speed, x, x.w74State, x.acceleration, s.scenario->vehicleTypes[refs[v].type],
+                held[x.id] = follow(x.speed, x, x.w74State, x.acceleration, s.scenario->timeStep, s.scenario->vehicleTypes[refs[v].type],
                                     s.scenario->behaviours[refs[v].behaviour], Leader{holds[v].gap, holds[v].speed, holds[v].acceleration}).acceleration;
             }
         CHECK(s.vehicles == before); // hypothetical evaluations write nothing
@@ -212,7 +212,7 @@ TEST(w99run, model_switches_carry_the_published_acceleration) { // BA232, W99 §
         for (const double aPrev : {-0.3, 0.3, 0.0}) {
             const auto state = placed(s, {{1, front, 4, aPrev}, {2, front + 14, 4, 0, "truck"}});
             const auto& v = state.vehicles.front().id == 1 ? state.vehicles.front() : state.vehicles.back();
-            const auto expected = w99Acceleration(4, v.desiredSpeed, aPrev, v.driverFactor, *v.w99Trait,
+            const auto expected = w99Acceleration(4, v.desiredSpeed, aPrev, s.timeStep, v.driverFactor, *v.w99Trait,
                                                   state.scenario->vehicleTypes[v.typeIndex], kP, Leader{10, 4, 0});
             const auto next = step(front, aPrev, W74State{W74Regime::following, -1});
             CHECK(next.acceleration == expected.acceleration); CHECK(!next.w74State); // leaving w74 clears its state
@@ -235,4 +235,24 @@ TEST(w99run, a_w99_run_replays_exactly) { // BA230
         CHECK(a.vehicles == b.vehicles); CHECK(a.events == b.events);
     }
     CHECK(test::finish(createSimulation(s, 42)).vehicles == test::finish(createSimulation(s, 42)).vehicles);
+}
+
+TEST(w99run, a_queued_car_at_rest_is_never_clamped_and_closes_up_to_cc0) { // BA238, W99 §4 (D650); D649's clamps
+    auto red = road({"a", "b", "c", "d"});
+    red.signalPrograms = {{"p", 0, {{600, SignalColor::red}}}};
+    red.signalHeads = {{"h", "c", 1, "p"}};
+    const double cap = kP.cc7 * red.timeStep * red.timeStep;
+    const auto room = [](const SimState& s) { return find(s, 2).distance - 4 - find(s, 1).distance - kP.cc0; };
+    // D649's case: a w99 car at rest a rounding residue past CC0 behind a prototype truck standing at the
+    // red line (101). Before D650 the creep asked +CC7 and the hard cap clamped it every tick.
+    auto residue = placed(red, {{1, 101 - 4 - 1.5 - 3e-9, 0}, {2, 101, 0, 0, "truck"}});
+    for (int i = 0; i < 600; ++i) { residue = stepSimulation(residue); CHECK(!clamped(residue)); }
+    CHECK(find(residue, 1).speed == 0); CHECK(room(residue) > 0); CHECK(room(residue) <= cap);
+    // From 3 m past CC0 it still closes up, to rest within CC7·dt² of CC0. (Its arrival may clamp once:
+    // the soft closing approach, a question for the line contract, not this hold.)
+    auto queued = placed(red, {{1, 101 - 4 - 1.5 - 3, 0}, {2, 101, 0, 0, "truck"}});
+    int clamps = 0;
+    for (int i = 0; i < 600; ++i) { queued = stepSimulation(queued); clamps += clamped(queued); }
+    CHECK(find(queued, 1).speed == 0); CHECK(room(queued) >= -1e-9); CHECK(room(queued) <= cap);
+    CHECK(clamps <= 1); // never the every-tick standing clamp
 }

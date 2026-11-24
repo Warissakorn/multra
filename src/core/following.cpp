@@ -69,10 +69,10 @@ double desiredGap(const DriverBehaviour& b, double driverFactor, double speed, s
            std::sqrt(std::max(0.0, speed));
 }
 FollowingResult follow(double speed, const PendingVehicle& driver, std::optional<W74State> previous,
-    double previousAcceleration, const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader) {
+    double previousAcceleration, double timeStep, const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader) {
     if (behaviour.w99) { // W99 §6-§7 (D642): no state of its own, so the result carries none
         if (!driver.w99Trait) throw std::logic_error("w99 behaviour without driver trait");
-        const auto r = w99Acceleration(speed, driver.desiredSpeed, previousAcceleration, driver.driverFactor,
+        const auto r = w99Acceleration(speed, driver.desiredSpeed, previousAcceleration, timeStep, driver.driverFactor,
                                        *driver.w99Trait, type, w99DriverParameters(*behaviour.w99, driver.w99Cc1Share), leader);
         return {r.acceleration, r.mode, std::nullopt};
     }

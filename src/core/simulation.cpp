@@ -316,14 +316,14 @@ SimState stepSimulation(SimState&& state, double dt) {
             holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold); zoneLine = std::min(zoneLine, *hold);
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0, true}; // D596: rest at the line
         }
-        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, leader);
+        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, leader);
         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
         if (yields) {
             // Both from the same previous state; the kept result's state is the one stored, and
             // on a tie the vehicle ahead is kept (strict <), W74.md §7.
-            auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour,
+            auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour,
                                Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration});
             // Cooperative braking never asks for more than the behaviour's maximum (M3.2.8c).
             if (courtesy[v].moving)
@@ -331,7 +331,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (held.acceleration < following.acceleration) following = held;
         }
         if (std::isfinite(deadEnd) && leader->gap < deadEnd) // D456: the dead end behind a nearer leader
-            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
+            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
         if (const auto delay = reactionTicks(sight, dt)) {
             decisions.push_back({v, delay, following});
             auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;

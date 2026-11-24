@@ -105,7 +105,7 @@ std::vector<CourtesyHold> courtesyHolds(const Scenario& s, const ScenarioIndex& 
         const auto& ahead = vehicles[blocker->second];
         const Leader as{std::max(0.0, blocker->first), ahead.speed, ahead.acceleration};
         const double own = behaviour.mandatoryDecelerationOwn.value_or(type.comfortableDeceleration);
-        const double a = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, as).acceleration;
+        const double a = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, s.timeStep, type, behaviour, as).acceleration;
         if (blocker->first > 0 && a >= -own && integrate(vehicle.speed, a, s.timeStep).distance <= as.gap - standstillGap(behaviour))
             continue; // rule 3 holds: the blocker is behind (slice 1's case), not ahead
         const CourtesyHold seek{as.gap, as.speed, true, as.acceleration, type.comfortableDeceleration};

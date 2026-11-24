@@ -277,15 +277,18 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), the procedure
   sequence, is done (D484, D485).
-- **M3.3.3b W99 — contract (D637) through composition (D642), CC1 as a curve (D645–D648) and BA231's timestep
-  record (D649); W99 runs, unvalidated:** [W99](reference/W99.md). Groups `w99`, `w99codec`, `w99traits`, `w99run`,
-  `w99cc1codec`, `w99cc1run` and `behaviour-library-ui` pass. Heavy vehicles are bounded by their type's
-  acceleration, not halved (D644). The unvalidated marker stays.
-  **Next (engine):** the [BA231 record](evidence/w99-discharge.md) found W99 runs clamping 1,512–7,870 times per run,
-  almost all standing cars every tick: §4's standstill creep asks +cc7 at a gap 10⁻⁹–10⁻⁷ m above cc0, which D105's
-  `g ≤ cc0` misses, and the hard cap clamps it. Decide the creep's band in W99 §4 (contract first), fix, and re-run
-  the sweep (`multra-w99-discharge-sweep`) to compare. Then a cited preset only if one exists (D178). W99's
-  headway falling with dt (the prototype's rises) is recorded, not explained.
+- **M3.3.3b W99 — contract (D637) through composition (D642), CC1 as a curve (D645–D648), BA231's timestep
+  record (D649) and the creep's hold (D650); W99 runs, unvalidated:** [W99](reference/W99.md). Groups `w99`,
+  `w99codec`, `w99traits`, `w99run`, `w99cc1codec`, `w99cc1run` and `behaviour-library-ui` pass. Heavy vehicles are
+  bounded by their type's acceleration, not halved (D644). The unvalidated marker stays.
+  **Next (owner's choice, a contract before code):** stopping at the line. Every line (signal head, priority rule,
+  zone, dead end, lot gate) reaches the models as a standing leader, so each rests its own standstill gap short:
+  four-leg red, seeds 42–51, first car's median 1.65 m (prototype), 3.4 m (W74 fixture), 5.2 m (W74 SUMO preset).
+  W99 reaches the line and clamps on arrival, about 330 per run after D650 ([evidence](evidence/w99-discharge.md#after-d650)).
+  Only the prototype at a zone's line rests at the line (D596), which is what the owner saw on the T-junction.
+  SUMO (`stopSpeed`) and Vissim (a separate standstill distance for static obstacles) keep the line apart from
+  following. Measure options first, as LINE_APPROACH did. The four-leg and M2.6 bytes would move, and M0 may
+  reopen. Then a cited preset only if one exists (D178). W99's headway falling with dt is recorded, not explained.
   **Owner (Windows):** [F8](plans/OWNER_SITTING_WINDOWS.md), the CC1 table; [F7](plans/OWNER_SITTING_WINDOWS.md)'s
   out-of-range recheck (D643). Both need a package newer than #146.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane

@@ -5,6 +5,20 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — W99's standstill creep waits until it fits (D650)
+
+- **Owner:** reviewed creep in SUMO, Vissim and W74, then stopping at lines; "เริ่มเลย" to the creep's hold.
+- **Rule (W99 §4):** a stopped driver is held while `g − CC0 ≤ CC7 · dt²`, the most one creep can move (a tick of
+  +CC7, then too-close braking). `w99Acceleration` and `follow` take the run's `timeStep`, read by W99 only;
+  `deadEndGoverns` passes it on. Every caller is updated.
+- **Rows:** BA238 in `w99` (held at `CC0 + CC7·dt²` exactly, +CC7 just above; D649's 10⁻⁹ m residue held; moving
+  unaffected by dt) and `w99run` (a queued car at rest is never clamped in 600 ticks; from 3 m back it closes to
+  within `CC7·dt²` of CC0). Mutations bite: D649's `g ≤ CC0` and half the bound.
+- **Re-run** ([evidence](evidence/w99-discharge.md#after-d650)): W99 clamps 7,870 / 3,056 / 1,512 → 331 / 324 / 330
+  per run, each a car's one arrival (the soft closing approach, NEXT's line contract). Headway unchanged.
+- **Verified (Linux only):** `multra-cli 42` summary and events byte-identical; the W74 sweep byte-identical;
+  `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.
+
 ## 2026-11-24 — W99 BA231: queue-discharge timestep record (D649)
 
 - **Owner:** "ทำต่อ"; the plan approved (NEXT's BA231).
@@ -170,23 +184,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   ≤ −0.1, every result finite. Shown to bite: dropping the standstill creep, `≤ SDXc` as `<`, the `vSlow` floor or the
   linear CC8 → CC9 rule each fails one or two tests.
 - **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 369/369 (the new `w99` group), `check` passes.
-
-## 2026-11-23 — The W99 contract, before code (D637, M3.3.3b)
-
-- **Owner:** chose "W99 contract (M3.3.3b)" from the offered picks.
-- **Sources read 2026-11-23:** PTV's public Wiedemann 99 parameter page (CC0–CC9 meanings and units, the safety
-  distance, the free acceleration's CC8→CC9 rule and its `z` term); `glgh/w99-demo` `js/model.js` (MIT, commit
-  `80eb392`), the threshold set and decision tree SUMO's `MSCFModel_W99` credits as its source; SUMO for one rule
-  (the slower-speed floor). Nothing copied: the contract is our formulation, as W74's was.
-- **[W99](reference/W99.md):** inputs and W99's sign of `dv`; six thresholds; four regimes with equality sides; ten
-  keys `cc0`–`cc9` with ranges that make the closing division exact; one hashed trait `zW` (index 15) and the existing
-  `driverFactor`; no new state (`aPrev` is the published acceleration); composition through `follow` and the two
-  accessors; persistence and dialog for the codec slice; a five-slice delivery order.
-- **Seven deviations from the demo, each with its reason (§4):** the demo's free acceleration is dimensionally wrong
-  (35 m/s² at 80 km/h), its `−10` floors are code constants, its `vDes − v` cap mixes units, one branch is dead code;
-  a negative slower speed is floored (SUMO); a driver at rest in the following band creeps (as W74 §7), or a Stop line
-  is never served.
-- **Ten hand-checked cases** (§8), checked by hand and by a scratch transcription (not committed). Rows BA224–BA232
-  written failure-first in the delivery plan; all pending.
-- **Verified:** docs check passes. No code changed, so no build or test was needed.
 

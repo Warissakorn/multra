@@ -24,9 +24,10 @@ struct W99Result {
     FollowingMode mode{};
 };
 // `previousAcceleration` is aPrev (§2): the vehicle's published acceleration from the previous
-// tick, 0 at insertion. The result is bounded by the type's limits and D105 (§6), as W74's is;
-// integration, caps and Stop rest remain the caller's.
-W99Result w99Acceleration(double speed, double desiredSpeed, double previousAcceleration,
+// tick, 0 at insertion. `timeStep` is the run's dt, read only by §4's standstill hold (D650).
+// The result is bounded by the type's limits and D105 (§6), as W74's is; integration, caps and
+// Stop rest remain the caller's.
+W99Result w99Acceleration(double speed, double desiredSpeed, double previousAcceleration, double timeStep,
     double driverFactor, double zW, const VehicleType& type, const W99Parameters& parameters,
     std::optional<Leader> obstacle = {});
 

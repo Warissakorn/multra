@@ -13,6 +13,7 @@ namespace {
 const W99Parameters kOriginal{1.5, 1.3, 4.0, -12.0, -0.25, 0.35, 6.0, 0.25, 2.0, 1.5};
 // Binary-exact values for BA225's equality sides: cc6 = 0 makes SDV = 0, so SDVc = cc4, SDVo = cc5.
 const W99Parameters kExact{2, 1, 4, -8, -0.25, 0.5, 0, 0.25, 2, 1.5};
+constexpr double kDt = 0.1; // the run's dt; only §4's standstill hold reads it (D650)
 VehicleType car() { // limits wide enough that §8's values are never bounded
     VehicleType t; t.id = "car"; t.length = 4.5;
     t.maxAcceleration = 3; t.comfortableDeceleration = 2; t.maxDeceleration = 8;
@@ -20,7 +21,7 @@ VehicleType car() { // limits wide enough that §8's values are never bounded
 }
 W99Result at(double v, double aPrev, std::optional<Leader> leader, double vDes = 30,
              const W99Parameters& p = kOriginal, double zW = 0.5) {
-    return w99Acceleration(v, vDes, aPrev, 0.5, zW, car(), p, leader);
+    return w99Acceleration(v, vDes, aPrev, kDt, 0.5, zW, car(), p, leader);
 }
 Leader lead(double gap, double speed, double acceleration = 0) { return {gap, speed, acceleration}; }
 double up(double x) { return std::nextafter(x, std::numeric_limits<double>::infinity()); }
@@ -67,11 +68,11 @@ TEST(w99, free_acceleration_desired_speed_and_bounds) { // BA224, W99 §4 and §
     test::near(at(80 / 3.6, 0, {}).acceleration, 2.0, 1e-12); // CC9 + df at 80 km/h
     is(at(10, 0, lead(10, 30)), W99Regime::free, 0);         // pulling away but g ≤ SDXc
     auto slow = car(); slow.maxAcceleration = 1;
-    CHECK(w99Acceleration(10, 30, 0, 0.5, 0.5, slow, kOriginal, {}).acceleration == 1);
+    CHECK(w99Acceleration(10, 30, 0, kDt, 0.5, 0.5, slow, kOriginal, {}).acceleration == 1);
     auto soft = car(); soft.maxDeceleration = 0.5;
-    CHECK(w99Acceleration(15, 30, 0, 0.5, 0.5, soft, kOriginal, lead(30, 10)).acceleration == -0.5);
+    CHECK(w99Acceleration(15, 30, 0, kDt, 0.5, 0.5, soft, kOriginal, lead(30, 10)).acceleration == -0.5);
     // D105: at rest within CC0 nothing positive, even from the creep.
-    CHECK(w99Acceleration(0, 30, 1, 0.5, 0.5, car(), kOriginal, lead(1.5, 0)).acceleration <= 0);
+    CHECK(w99Acceleration(0, 30, 1, kDt, 0.5, 0.5, car(), kOriginal, lead(1.5, 0)).acceleration <= 0);
 }
 TEST(w99, equality_sides_are_the_contracts) { // BA225, W99 §4
     // g = SDXc is too close; just above it is following (v = vL = 4: SDXc 6, SDXo 10, SDXv 8).
@@ -105,7 +106,7 @@ TEST(w99, closing_is_reached_only_beyond_the_desired_gap) { // BA227, W99 §3–
                 for (double g : {0.0, 0.05, 1.0, 2.0, 5.0, 10.0, 25.0, 60.0, 150.0})
                     for (double aL : {-4.0, -1.0, 0.0, 1.5})
                         for (double zW : {0.0, 0.5, 0.999}) {
-                            const auto r = w99Acceleration(v, 35, -0.5, 0.5, zW, car(), p, lead(g, vL, aL));
+                            const auto r = w99Acceleration(v, 35, -0.5, kDt, 0.5, zW, car(), p, lead(g, vL, aL));
                             const auto t = w99Thresholds(v, zW, p, lead(g, vL, aL));
                             ++evaluated;
                             if (!std::isfinite(r.acceleration))
@@ -128,4 +129,18 @@ TEST(w99, keys_and_ranges) { // W99 §5; the codec slice reads the same list
         CHECK(std::any_of(issues.begin(), issues.end(), [&](const auto& i) { return i.path == key && i.code == "INVALID_BEHAVIOUR_PARAMETER"; }));
     p = kOriginal; p.cc1 = 0; p.cc2 = 0; p.cc5 = 0; p.cc6 = 0; p.cc9 = 0; p.cc3 = 0; p.cc4 = 0;
     CHECK(w99ParameterIssues(p, "b").empty());                       // every closed edge is accepted
+}
+
+TEST(w99, a_stopped_driver_creeps_only_when_the_whole_creep_fits_before_cc0) { // BA238, W99 §4 (D650)
+    // At dt 0.5 the fixture's cc7·dt² = 0.0625 and cc0 + it = 1.5625 are exact.
+    const auto stopped = [](double gap) { return w99Acceleration(0, 30, 0, 0.5, 0.5, 0.5, car(), kOriginal, lead(gap, 0)); };
+    CHECK(stopped(1.5625).regime == W99Regime::following); CHECK(stopped(1.5625).acceleration <= 0); // fits only just: held
+    is(stopped(up(1.5625)), W99Regime::following, 0.25);                                           // fits: it creeps
+    // D649's case: a rounding residue above CC0 is held, at the fixture values and dt 0.1.
+    CHECK(at(0, 0, lead(1.5 + 1e-9, 0)).acceleration <= 0); CHECK(at(0, -0.3, lead(1.5 + 3e-9, 0)).acceleration <= 0);
+    is(at(0, 0, lead(1.5 + 2 * 0.25 * kDt * kDt, 0)), W99Regime::following, 0.25);
+    // Moving, dt changes nothing: the hold is for a driver at rest.
+    for (const double v : {0.1, 5.0})
+        CHECK(w99Acceleration(v, 30, 0.25, 0.1, 0.5, 0.5, car(), kOriginal, lead(1.5 + 1e-9, 0)).acceleration ==
+              w99Acceleration(v, 30, 0.25, 0.5, 0.5, 0.5, car(), kOriginal, lead(1.5 + 1e-9, 0)).acceleration);
 }

@@ -76,7 +76,7 @@ void DeadEndWaitAccumulator::observe(const SimState& state) {
         const auto& behaviour = s.behaviours[effectiveBehaviour(index, vehicle)]; // as the engine selects it
         if (!waitingAtDeadEnd(index, vehicle.routeIndex, vehicle, behaviour)) {
             tally.waiting.reset();
-            if (vehicle.speed >= kWaitingSpeed && deadEndGoverns(index, vehicle.routeIndex, vehicle, type, behaviour) &&
+            if (vehicle.speed >= kWaitingSpeed && deadEndGoverns(index, vehicle.routeIndex, vehicle, type, behaviour, s.timeStep) &&
                 laneChangeTargetOf(index, vehicle.routeIndex, vehicle.distance, vehicle.distance - type.length))
                 tally.unhelped = false;
             continue;

@@ -95,7 +95,7 @@ TEST(perceptionmotion, ba32_a_second_observed_vehicle_braking_ahead_slows_the_fo
     // n = 2 keeps L2 at 45 - (4 + 2) = 39 m: approaching, -10² / (2 · (39 - desiredGap)).
     const auto s = road(observed(2));
     Vehicle f; f.desiredSpeed = 10; f.driverFactor = 0.5;
-    const auto expected = follow(10, f, std::nullopt, 0, s.vehicleTypes[0], s.behaviours[0], Leader{39, 0, 0});
+    const auto expected = follow(10, f, std::nullopt, 0, s.timeStep, s.vehicleTypes[0], s.behaviours[0], Leader{39, 0, 0});
     CHECK(expected.mode == FollowingMode::approaching);
     test::near(find(two, 1).acceleration, expected.acceleration, 1e-12);
     CHECK(find(two, 1).mode == FollowingMode::approaching);
