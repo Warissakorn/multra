@@ -316,14 +316,14 @@ SimState stepSimulation(SimState&& state, double dt) {
             holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold); zoneLine = std::min(zoneLine, *hold);
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0, true}; // D596: rest at the line
         }
-        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
+        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, leader);
         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
         if (yields) {
             // Both from the same previous state; the kept result's state is the one stored, and
             // on a tie the vehicle ahead is kept (strict <), W74.md §7.
-            auto held = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour,
+            auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour,
                                Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration});
             // Cooperative braking never asks for more than the behaviour's maximum (M3.2.8c).
             if (courtesy[v].moving)
@@ -331,7 +331,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (held.acceleration < following.acceleration) following = held;
         }
         if (std::isfinite(deadEnd) && leader->gap < deadEnd) // D456: the dead end behind a nearer leader
-            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
+            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
         if (const auto delay = reactionTicks(sight, dt)) {
             decisions.push_back({v, delay, following});
             auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;
@@ -360,7 +360,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false, following.w74};
         const double allowedDistance = tickCap(scenario, vehicles, refs, vehicle, parts, spans, buckets, &lateral, vehicleLeader, leaderCap, holdCap, giveWayLine, move.distance, dt); // MERGE_CLAMPS §2
         if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking; §2 Q (D251) at a signal head too, with amberDeceleration
-            const bool standingBody = behaviour.stopFloor && !behaviour.w74 && vehicleLeader && vehicleLeader->speed == 0 && leaderCap == allowedDistance; // §8 (D583)
+            const bool standingBody = behaviour.stopFloor && !behaviour.w74 && !behaviour.w99 && vehicleLeader && vehicleLeader->speed == 0 && leaderCap == allowedDistance; // §8 (D583)
             // D596: at a zone's line with only a rounding residue of speed left (the law's own stop ended
             // exactly there), coming to rest is not an emergency stop.
             if (zoneLine == allowedDistance && vehicle.speed < 1e-6) move = {allowedDistance, 0, -vehicle.speed / dt, FollowingMode::braking, false, following.w74};

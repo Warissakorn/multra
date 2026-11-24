@@ -110,3 +110,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D639](RECORD.md#d639) — W99 slice 2: schema 85 codec and composed-schema row; Run refuses a used w99 behaviour; the dialog declines it until its slice.
 [D640](RECORD.md#d640) — W99 slice 3: the behaviour dialog edits a w99 behaviour (ten empty fields, range-checked); the lab refuses Apply to one
 [D641](RECORD.md#d641) — W99 slice 4: the hashed driver trait zW (index 15), only when a w99 behaviour exists; legacy runs byte-identical
+[D642](RECORD.md#d642) — W99 slice 5: composed into the tick through follow with aPrev and zW; the Run refusal lifted

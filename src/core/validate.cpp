@@ -287,12 +287,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             if (b.w74) for (auto& issue : w74ParameterIssues(*b.w74, p)) issues.push_back(std::move(issue));
             else {
                 for (auto& issue : w99ParameterIssues(*b.w99, p)) issues.push_back(std::move(issue)); // W99 §5
-                // W99 §9 (D639): until composition (BA230) a w99 behaviour that a vehicle type or a road
-                // names cannot run; authoring drops UNSUPPORTED_* codes, so save and load accept it.
-                const bool named = std::any_of(s.vehicleTypes.begin(), s.vehicleTypes.end(), [&](const auto& t) { return t.behaviourId == b.id; }) ||
-                    std::any_of(s.segmentBehaviours.begin(), s.segmentBehaviours.end(), [&](const auto& x) { return x.behaviourId == b.id; });
-                if (named) add("UNSUPPORTED_BEHAVIOUR_MODEL_RUN", p + ".model");
-            }
+            } // D642: composed (BA230), so D639's Run refusal is gone
             if (b.maxDecelerationCooperativeBraking)
                 number(*b.maxDecelerationCooperativeBraking, p + ".maxDecelerationCooperativeBraking");
             if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2

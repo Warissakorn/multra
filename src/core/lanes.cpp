@@ -127,14 +127,14 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
     if (perceivesAhead(behaviour.perception)) {
         if (!near.ahead.empty()) {
             const auto& leader = near.ahead.front().leader;
-            auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
+            auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, leader);
             anticipate(following, s, vehicles, refs, vehicle, type, behaviour, near.ahead);
             const double a = following.acceleration;
             if (a < -own ||
                 integrate(vehicle.speed, a, s.timeStep).distance > leader.gap - standstillGap(behaviour)) return std::nullopt;
         }
     } else if (const auto& leader = near.leader) {
-        const double a = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader).acceleration;
+        const double a = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, leader).acceleration;
         if (a < -own ||
             integrate(vehicle.speed, a, s.timeStep).distance > leader->gap - standstillGap(behaviour)) return std::nullopt;
     }
@@ -149,7 +149,7 @@ std::optional<double> safeAt(const Scenario& s, const std::vector<Vehicle>& vehi
         if (const auto& ttc = behaviour.perception.rearTimeToCollision; ttc && other.speed > vehicle.speed &&
             follower->gap / (other.speed - vehicle.speed) < *ttc) return std::nullopt;
         // Its leader would be the changer itself, with the changer's own snapshot acceleration.
-        const double a = follow(other.speed, other, other.w74State, fType, fBehaviour,
+        const double a = follow(other.speed, other, other.w74State, other.acceleration, fType, fBehaviour,
                                 Leader{follower->gap, vehicle.speed, vehicle.acceleration}).acceleration;
         if (a < -limit(behaviour.mandatoryDecelerationTrailingVehicle, fType) ||
             integrate(other.speed, a, s.timeStep).distance > follower->gap - standstillGap(fBehaviour)) return std::nullopt;
@@ -186,7 +186,7 @@ bool deadEndGoverns(const ScenarioIndex& index, std::size_t route, const Vehicle
                     const DriverBehaviour& behaviour) {
     if (index.remainingOfRoute[route] == 0) return false;
     const double toDeadEnd = index.deadEndOfRoute[route] - vehicle.distance;
-    return follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, Leader{toDeadEnd, 0, 0}).mode != FollowingMode::free;
+    return follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, Leader{toDeadEnd, 0, 0}).mode != FollowingMode::free;
 }
 bool waitingAtDeadEnd(const ScenarioIndex& index, std::size_t route, const Vehicle& vehicle,
                       const DriverBehaviour& behaviour) {
@@ -392,8 +392,8 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         // With forward perception keys, against the perceived leaders on each lane (§7).
         const auto acceleration = [&](const Around& near) {
             if (!perceivesAhead(behaviour.perception))
-                return follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, near.leader).acceleration;
-            auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour,
+                return follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, near.leader).acceleration;
+            auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour,
                 near.ahead.empty() ? std::nullopt : std::optional<Leader>(near.ahead.front().leader));
             anticipate(following, s, vehicles, refs, vehicle, type, behaviour, near.ahead);
             return following.acceleration;
@@ -405,7 +405,7 @@ std::vector<LaneChange> decideLaneChanges(const Scenario& s, const ScenarioIndex
         // D215 (OVERTAKING §4): with a kerb bias, a return toward the kerb while free on its own lane
         // needs the threshold less the bias; passing and undertaking need it plus the bias.
         const bool free = behaviour.kerbLaneBias &&
-            follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, hereNear.leader).mode == FollowingMode::free;
+            follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, hereNear.leader).mode == FollowingMode::free;
         std::optional<LaneChange> best;
         double bestGain = 0;
         for (const auto& change : options) { // target-slot order, so a tie keeps the lower slot

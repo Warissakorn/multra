@@ -792,7 +792,7 @@
   "editorBehaviourModelW74": "W74 (Wiedemann 74)",
   "editorBehaviourModelW99": "W99 (Wiedemann 99)",
   "editorBehaviourW74Help": "Every W74 key needs a value; none is filled in for you. Values are not calibrated: a study needs a cited source for each.",
-  "editorBehaviourW99Help": "Every W99 key needs a value; none is filled in for you. Values are not calibrated: a study needs a cited source for each. Run refuses a W99 behaviour in use until W99 is part of the simulation.",
+  "editorBehaviourW99Help": "Every W99 key needs a value; none is filled in for you. Values are not calibrated: a study needs a cited source for each.",
   "editorBehaviourEitherModel": "Unticked keys are not used. The model chooses the car-following keys; every other key applies to either model, except discretionary lane changes (Prototype only).",
   "editorBehaviourTabFollowing": "Car following",
   "editorBehaviourTabLaneChanges": "Lane changes",

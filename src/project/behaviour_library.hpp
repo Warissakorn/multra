@@ -16,9 +16,6 @@ bool ownsW74Behaviour(const ProjectDocument&);
 // model is refused (UNSUPPORTED_BEHAVIOUR_MODEL).
 bool ownsW99Behaviour(const ProjectDocument&);
 void rejectW99Before85(const Json& document);
-// W99 §9 (D639): the Run refusal of an owned w99 behaviour a road's behaviour type names, for
-// runDiagnostics; compileScenario's assertion refuses it too, but runtime rows never compile roads.
-std::vector<ValidationIssue> w99RoadRunIssues(const ProjectDocument&);
 // M4.2 (D147): schema 28 exactly when an owned behaviour carries `amberDeceleration`; a file below
 // 28 carrying the key in an owned behaviour is refused (EDIT_UNSUPPORTED_FIELD).
 bool ownsAmberBehaviour(const ProjectDocument&);

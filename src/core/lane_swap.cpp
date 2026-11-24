@@ -17,7 +17,7 @@ bool acceptsAsLeader(const Scenario& s, const std::vector<Vehicle>& vehicles, co
     const auto& who = vehicles[f];
     const auto& type = s.vehicleTypes[refs[f].type];
     const auto& behaviour = s.behaviours[refs[f].behaviour];
-    const double a = follow(who.speed, who, who.w74State, type, behaviour, leader).acceleration;
+    const double a = follow(who.speed, who, who.w74State, who.acceleration, type, behaviour, leader).acceleration;
     return a >= -type.comfortableDeceleration && integrate(who.speed, a, s.timeStep).distance <= leader.gap - standstillGap(behaviour);
 }
 // D207 (M3_8_CONTRACT §2, "Cooperation"): stub vehicle `x`'s mutual partner -- a stub alongside or

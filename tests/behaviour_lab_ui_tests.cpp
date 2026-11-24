@@ -178,8 +178,7 @@ int main(int argc, char** argv) {
             lab->grab().save(QString(argv[2]).replace(".png", "-overview.png"));
         }
         // D640: a car on a w99 behaviour cannot take the lab's prototype values. A lab open on the
-        // same behaviour id when the project turns it into w99 refuses Apply; a new lab does not open,
-        // because it runs that behaviour and Run refuses w99 until composition (W99 §9).
+        // same behaviour id when the project turns it into w99 refuses Apply, and so does a new one (D642).
         {
             auto project = w.history().document();
             auto catalog = resolveDemandCatalog(project.definition.value_or(AuthoringDefinition{}), data);
@@ -200,7 +199,22 @@ int main(int argc, char** argv) {
             require(w.history().document() == before, "Apply changed a w99 behaviour");
             lab->close(); QTest::qWait(10); QApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
             open->trigger(); QApplication::processEvents();
-            require(!w.behaviourLab(), "The lab opened on a w99 behaviour");
+            require(!w.behaviourLab(), "The lab opened with no prototype behaviour"); // as with only w74 (D165)
+            // D642: with a prototype behaviour left, a new lab opens on it and refuses Apply to the car's w99 one.
+            auto withPrototype = w.history().document();
+            auto both = resolveDemandCatalog(project.definition.value_or(AuthoringDefinition{}), data);
+            both.behaviours = resolveDemandCatalog(AuthoringDefinition{}, data).behaviours;
+            DriverBehaviour car{"w99-car"}; car.w99 = W99Parameters{1.5, 1.3, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5};
+            both.behaviours.push_back(car);
+            for (auto& t : both.vehicleTypes) t.behaviourId = t.id == "car" ? "w99-car" : both.behaviours.front().id;
+            putDemandCatalog(withPrototype, both); validateDocument(withPrototype);
+            QFile g(path); require(g.open(QIODevice::WriteOnly), "Fixture write failed");
+            g.write(QByteArray::fromStdString(documentJson(withPrototype).dump())); g.close(); w.openFile(path);
+            open->trigger(); QApplication::processEvents();
+            auto* again = w.behaviourLab(); require(again && again->isVisible(), "The lab did not open beside a w99 behaviour");
+            auto* applyAgain = item<QAction>(*again, "labApply");
+            require(applyAgain->isVisible() && !applyAgain->isEnabled() && applyAgain->toolTip().contains("W99"), "Apply offered for a w99 behaviour");
+            again->close(); QApplication::processEvents();
         }
         std::cout << "behaviour-lab-ui passed\n";
         return 0;

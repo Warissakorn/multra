@@ -150,10 +150,10 @@ void trace(std::ostream& out, const std::string& model, double dt, std::uint32_t
             if (const auto hold = zoneHold(scenario, index, zones, vehicle, refs[v], vehicleLeader, stop, before.tick)) {
                 obstacles.push_back({"zone", *hold, {{"gap", *hold}}}); stopLine(*hold);
             }
-        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
+        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour, leader);
         std::string kept = "leader";
         if (yields) {
-            auto held = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour,
+            auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, type, behaviour,
                                Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration});
             if (courtesy[v].moving)
                 held.acceleration = std::max(held.acceleration, -*behaviour.maxDecelerationCooperativeBraking);

@@ -122,7 +122,7 @@ TEST(w99codec, external_catalog_entries_read_the_w99_model) { // W99 §9
     item.erase("cc4"); test::throws([&] { parseBehaviour(item); }, "INVALID_BEHAVIOUR_PARAMETER");
 }
 
-TEST(w99codec, a_w99_behaviour_in_use_is_refused_on_run_and_an_unused_one_changes_nothing) { // BA228
+TEST(w99codec, a_w99_behaviour_in_use_runs_and_an_unused_one_changes_nothing) { // BA228, D642
     const auto data = test::root() / "data";
     const auto plain = compileDocument(owned(), data).scenario, unused = compileDocument(withW99(), data).scenario;
     CHECK(unused.behaviours.size() == plain.behaviours.size() + 1);
@@ -137,11 +137,12 @@ TEST(w99codec, a_w99_behaviour_in_use_is_refused_on_run_and_an_unused_one_change
     putLinkBehaviourType(byRoad, {"urban", "Urban", "urban-w99", {}});
     assignBehaviourType(byRoad, byRoad.network.links[0].id, "urban");
     for (auto* d : {&byType, &byRoad}) {
-        validateDocument(*d); // authoring accepts it
+        validateDocument(*d);
         CHECK(parseDocument(documentJson(*d)).definition->behaviours == d->definition->behaviours);
-        // Compiling for a run asserts the scenario (compileScenario), so Run is refused there.
-        test::throws([&] { (void)compileDocument(*d, data); }, "UNSUPPORTED_BEHAVIOUR_MODEL_RUN");
-        const auto rows = runDiagnostics(*d, data);
-        CHECK(std::count_if(rows.begin(), rows.end(), [](const auto& r) { return r.code == "UNSUPPORTED_BEHAVIOUR_MODEL_RUN"; }) == 1);
+        // D642: composed (BA230), so D639's Run refusal is gone; the run differs from the prototype's.
+        const auto scenario = compileDocument(*d, data).scenario;
+        const auto run = test::finish(createSimulation(scenario, 42));
+        CHECK(run.completed > 0); CHECK(run.vehicles != a.vehicles || run.completed != a.completed);
+        for (const auto& r : runDiagnostics(*d, data)) CHECK(r.code.rfind("UNSUPPORTED", 0) != 0);
     }
 }

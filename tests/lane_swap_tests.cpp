@@ -365,7 +365,7 @@ TEST(laneswap, ba196_a_nearer_leader_does_not_hide_the_dead_end) {
     const auto& a = *byId(state, 1);
     const auto& type = state.scenario->vehicleTypes[a.typeIndex];
     const auto& behaviour = state.scenario->behaviours.front();
-    CHECK(follow(a.speed, a, a.w74State, type, behaviour, Leader{250 - 184, 0, 0}).acceleration < -1);
+    CHECK(follow(a.speed, a, a.w74State, a.acceleration, type, behaviour, Leader{250 - 184, 0, 0}).acceleration < -1);
     state = stepSimulation(std::move(state));
     CHECK(routeOf(state, 1) == "A-stub"); // its change is refused
     CHECK(byId(state, 1)->acceleration < -1); // it brakes for the dead end now (before: 0)

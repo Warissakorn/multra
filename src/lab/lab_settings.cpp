@@ -27,8 +27,8 @@ const T* find(const std::vector<T>& items, const std::string& id) {
 // The lab tunes the prototype only in this slice (D165): the type's own behaviour when it is one,
 // else the first prototype behaviour there is. Never invented values (hard rule 5).
 DriverBehaviour behaviourOf(const VehicleType& type, const std::vector<DriverBehaviour>& behaviours) {
-    if (const auto* b = find(behaviours, type.behaviourId); b && !b->w74) return *b;
-    const auto prototype = std::find_if(behaviours.begin(), behaviours.end(), [](const auto& b) { return !b.w74; });
+    if (const auto* b = find(behaviours, type.behaviourId); b && !b->w74 && !b->w99) return *b;
+    const auto prototype = std::find_if(behaviours.begin(), behaviours.end(), [](const auto& b) { return !b.w74 && !b.w99; });
     if (prototype == behaviours.end()) throw std::invalid_argument("LAB_NO_PROTOTYPE_BEHAVIOUR");
     return *prototype;
 }

@@ -2,6 +2,19 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-23 — Slice A: the kept leader order measured and not shipped (D627); long routes bisect (D626)
+
+- **Brief:** [PARALLEL_SESSIONS](../plans/PARALLEL_SESSIONS.md) A. Callgrind, GCC 13.3, Release `-g1`, seed 42; baseline study
+  34,553.6 M Ir, M2.6 4,031.1 M, `multra-engine-benchmark 48 900` 10,226.8 M. Event hashes: every event (`eventJson`) of
+  every shipped project that runs and the study, seeds 42 and 43, identical after every variant.
+- **D627, not shipped:** buckets ordered by (rear, span index), seeded from the fleet's id order and repaired by
+  insertion, the scan stopping at the first pass. The best variant cut the study 8.8 % but cost the benchmark 0.6 %
+  (0.8 % on top of D626), over the 0.5 % bar; code reverted, five variants' numbers in ENGINEERING_NOTES.
+- **D626, shipped:** `closestVehicle` bisects routes of more than 8 parts to the first part not behind the vehicle.
+  The walk over passed parts was 5.7 % of the benchmark. Benchmark −5.9 %, study +0.15 %, M2.6 +0.25 % (D598's
+  bar). New test in `straddlerleader` compares it with the full scan at 501 positions.
+- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No Windows run.
+
 ## 2026-11-23 — `CMakeLists.txt` split by responsibility (D630, parallel slice B)
 
 - **Brief:** [PARALLEL_SESSIONS](../plans/PARALLEL_SESSIONS.md) B. The root file was at 498 of 500 lines.

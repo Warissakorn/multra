@@ -5,6 +5,25 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — W99 slice 5: composition, the Run refusal lifted (D642)
+
+- **Owner:** "ทำต่อ" after the trait slice; the plan approved.
+- **Composition:** `follow` gains `previousAcceleration` (every caller passes the vehicle's published
+  acceleration; insertion's first-step check passes 0) and dispatches a `w99` behaviour to `w99Acceleration` with
+  `zW`, returning no W74 state. `standstillGap` is `cc0`, `desiredGap` `cc0 + cc1·v`; the prototype's standing-body
+  floor skips w99. `retune` compares w99 presence (traits are drawn at generation); the lab's prototype fallback
+  skips w99.
+- **Run:** D639's refusal is removed from `validateScenario` and `runDiagnostics` (`w99RoadRunIssues` deleted). The
+  dialog's W99 help drops its "Run refuses" sentence (en, th).
+- **Rows:** `tests/w99_run_tests.cpp` (group `w99run`, 9 tests): BA226 (standstill creep serves a Stop line;
+  stops within `SDXc` of a red head), BA230 (hard cap, D105, source D108, queue discharge, an open platoon without a
+  clamp, multi-anticipation, reaction time, courtesy, replay), BA232 (prototype → w99 → w74 → w99 with `aPrev`). The
+  codec test now runs a used w99 behaviour; the lab test opens a lab beside a w99 car and Apply is refused.
+  Mutations bite: no creep, `aPrev` 0, `standstillGap` without w99, the dispatch skipped
+  ([evidence](evidence/w99-composition.md)). `multra-cli 42` summary and events byte-identical.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 372/372; the build without the PCH
+  compiles every unit. No Windows run; package #145 predates this.
+
 ## 2026-11-24 — W99 slice 4: trait `zW` (D641)
 
 - **Owner:** "ทำ 1 เลย" (W99 next); the plan approved.
@@ -179,16 +198,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   locales fail on the note; a 1614 px Thai Micro label fails on the strip.
 - **Verified (Linux only):** desktop build, full `ctest --preset desktop` and `check`. Screenshots taken for the check
   only, not committed (no contract cites them). The Windows Thai look is the owner's.
-
-## 2026-11-23 — Slice A: the kept leader order measured and not shipped (D627); long routes bisect (D626)
-
-- **Brief:** [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md) A. Callgrind, GCC 13.3, Release `-g1`, seed 42; baseline study
-  34,553.6 M Ir, M2.6 4,031.1 M, `multra-engine-benchmark 48 900` 10,226.8 M. Event hashes: every event (`eventJson`) of
-  every shipped project that runs and the study, seeds 42 and 43, identical after every variant.
-- **D627, not shipped:** buckets ordered by (rear, span index), seeded from the fleet's id order and repaired by
-  insertion, the scan stopping at the first pass. The best variant cut the study 8.8 % but cost the benchmark 0.6 %
-  (0.8 % on top of D626), over the 0.5 % bar; code reverted, five variants' numbers in ENGINEERING_NOTES.
-- **D626, shipped:** `closestVehicle` bisects routes of more than 8 parts to the first part not behind the vehicle.
-  The walk over passed parts was 5.7 % of the benchmark. Benchmark −5.9 %, study +0.15 %, M2.6 +0.25 % (D598's
-  bar). New test in `straddlerleader` compares it with the full scan at 501 positions.
-- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No Windows run.

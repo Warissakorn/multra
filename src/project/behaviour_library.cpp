@@ -53,23 +53,6 @@ bool ownsW99Behaviour(const ProjectDocument& d) { // W99.md §9 (D639)
     return d.definition && !d.definition->externalBehaviours &&
         std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.w99.has_value(); });
 }
-std::vector<ValidationIssue> w99RoadRunIssues(const ProjectDocument& d) {
-    std::vector<ValidationIssue> issues;
-    if (!d.definition || d.definition->externalBehaviours) return issues;
-    const auto& def = *d.definition;
-    std::set<std::string> roadTypes; // the behaviour types some Link or Connector carries
-    for (const auto& l : d.network.links) if (l.behaviourTypeId) roadTypes.insert(*l.behaviourTypeId);
-    for (const auto& c : d.network.connectors) if (c.behaviourTypeId) roadTypes.insert(*c.behaviourTypeId);
-    for (std::size_t i = 0; i < def.behaviours.size(); ++i) {
-        const auto& b = def.behaviours[i];
-        if (!b.w99) continue;
-        const bool named = std::any_of(def.linkBehaviourTypes.begin(), def.linkBehaviourTypes.end(), [&](const auto& t) {
-            return roadTypes.contains(t.id) && (t.defaultBehaviourId == b.id ||
-                std::any_of(t.overrides.begin(), t.overrides.end(), [&](const auto& o) { return o.behaviourId == b.id; })); });
-        if (named) issues.push_back({"UNSUPPORTED_BEHAVIOUR_MODEL_RUN", at("behaviours", i) + ".model"});
-    }
-    return issues;
-}
 bool ownsAmberBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&
         std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.amberDeceleration.has_value(); });

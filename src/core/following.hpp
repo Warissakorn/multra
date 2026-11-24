@@ -19,8 +19,10 @@ double standstillGap(const DriverBehaviour&);
 void standingVehicleFloor(FollowingResult& result, double speed, const Leader& body, const VehicleType&, const DriverBehaviour&);
 double desiredGap(const DriverBehaviour&, double driverFactor, double speed);
 // The one dispatcher for every car-following evaluation, own motion and hypothetical alike: the
-// prototype above, or w74Acceleration with the driver's traits and the previous tick's state.
-// A hypothetical caller passes the vehicle's carried state and discards the result's.
+// prototype above, w74Acceleration with the driver's traits and the previous tick's state, or
+// w99Acceleration (W99.md §6, D642) with zW and `previousAcceleration`, the vehicle's published
+// acceleration (0 before insertion). A hypothetical caller passes the vehicle's carried values and
+// discards the result's state.
 FollowingResult follow(double speed, const PendingVehicle& driver, std::optional<W74State> previous,
-    const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader = {});
+    double previousAcceleration, const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader = {});
 }

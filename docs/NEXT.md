@@ -277,14 +277,14 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   waits on M9, whose two-route fixture has a published candidate (Ortúzar Example 11.1).
 - **Macro (S2):** B21, Sheffi Fig 5.1's capacities, for the owner. §19 (c), the procedure
   sequence, is done (D484, D485).
-- **M3.3.3b W99 — contract (D637), pure function (D638), codec (D639), dialog (D640) and trait `zW` (D641)
-  delivered; nothing runs W99:** [W99](reference/W99.md). Groups `w99` (BA224, BA225, BA227), `w99codec` (BA228) and
-  `w99traits` (BA229) pass; schema 85 stores `model: "w99"` and `cc0`–`cc9`; the behaviour dialog edits one; vehicles
-  carry a hashed `zW` when the scenario holds a `w99` behaviour. Run refuses a `w99` behaviour a type or road names
-  (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`). **Next:** composition (BA226, BA230, BA232: `follow`, the accessors, `aPrev`
-  and the standstill creep), which lifts the Run refusal; then BA231's record. **Owner, before any preset:** CC1 as
-  a per-driver distribution, and heavy vehicles' halved acceleration; neither is in the contract. The unvalidated
-  marker stays. **Owner (Windows):** [F7](plans/OWNER_SITTING_WINDOWS.md), the W99 dialog (package run #145).
+- **M3.3.3b W99 — contract (D637), pure function (D638), codec (D639), dialog (D640), trait `zW` (D641) and
+  composition (D642) delivered; W99 runs, unvalidated:** [W99](reference/W99.md). Groups `w99` (BA224, BA225,
+  BA227), `w99codec` (BA228), `w99traits` (BA229) and `w99run` (BA226, BA230, BA232) pass. `follow` dispatches to
+  `w99Acceleration` with `zW` and the published acceleration; D639's Run refusal is gone. **Next:** BA231, the
+  queue-discharge timestep record (dt 0.1/0.25/0.5, seeds 42–81, `--discharge`), as W74's BA27; then a cited
+  preset only if one exists (D178). **Owner, before any preset:** CC1 as a per-driver distribution, and heavy
+  vehicles' halved acceleration; neither is in the contract. The unvalidated marker stays. **Owner (Windows):**
+  [F7](plans/OWNER_SITTING_WINDOWS.md), the W99 dialog (package run #145 predates composition).
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.

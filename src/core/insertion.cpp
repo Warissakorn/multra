@@ -61,7 +61,7 @@ void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const Scenar
         // later lane-change/signal/conflict constraints still use the normal safety checks.
         if (leader) {
             // A vehicle entering has no w74 state: its first evaluation initialises one (W74.md §7).
-            const auto first=follow(0,vehicle,std::nullopt,type,behaviour,leader);
+            const auto first=follow(0, vehicle, std::nullopt, 0,type,behaviour,leader);
             if (integrate(0,first.acceleration,dt).distance > leader->gap-standstillGap(behaviour)) continue;
         }
         const VehicleRefs inserted{static_cast<std::size_t>(&route - scenario.routes.data()),
