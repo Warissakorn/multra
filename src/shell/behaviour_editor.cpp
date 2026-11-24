@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QLocale>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QTabWidget>
@@ -83,6 +84,12 @@ std::optional<Parameters> readKeys(const std::vector<std::pair<const Key*, QLine
 }
 bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const std::string& users,
                    const std::vector<DriverBehaviour>& library, const CatalogText& text) {
+    if (b.w99 && !b.w99->cc1Curve.empty()) { // W99 §5a (D646): its editor is BA237's; until then nothing rewrites the curve
+        QMessageBox note(QMessageBox::Information, text("editorBehaviourTabBehaviours"), text("editorBehaviourCc1CurveNotYetEditable"),
+                         QMessageBox::Ok, parent);
+        note.setObjectName("editorBehaviourCc1CurveNotYetEditable"); note.exec();
+        return false;
+    }
     QDialog dialog(parent); dialog.setObjectName("editorBehaviourEditDialog"); dialog.setWindowTitle(text("editorBehaviourTabBehaviours"));
     // Header, tabs, footer: the header names what is edited, each tab scrolls on its own and the
     // footer keeps the error and the buttons on screen, however many keys a tab holds.

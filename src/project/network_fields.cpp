@@ -152,6 +152,7 @@ constexpr Field vehicleTypeFields[]={
     {"pcu",Kind::pcu,false,0,modeVersion},{"accelerationCurve",Kind::accelerationCurve,false,0,startUpVersion}};
 constexpr Field speedRangeFields[]={{"min",Kind::number,true},{"max",Kind::number,true},{"curve",Kind::speedCurve,false,0,speedCurveVersion}};
 constexpr Field speedPointFields[]={{"speed",Kind::number,true},{"share",Kind::number,true}};
+constexpr Field w99Cc1PointFields[]={{"value",Kind::number,true},{"share",Kind::number,true}}; // W99 §5a (D646)
 constexpr Field accelerationPointFields[]={{"speed",Kind::number,true},{"acceleration",Kind::number,true}}; // D608
 constexpr Field axleFields[]={{"wheelbase",Kind::number,true},{"frontOverhang",Kind::number,true},{"rearOverhang",Kind::number,true}};
 constexpr Field pcuFields[]={{"value",Kind::number,true},{"source",Kind::text,true}};
@@ -232,7 +233,12 @@ std::vector<Field> behaviourRow(Model model) {
     for(const auto* key:prototypeRequired)row.push_back({key,Kind::number,own(Model::prototype),0,0,false,refused(Model::prototype)});
     for(const auto* key:prototypeOptional)row.push_back({key,Kind::number,false,0,0,false,refused(Model::prototype)});
     for(const auto& key:w74ParameterKeys())row.push_back({key.name,Kind::number,own(Model::w74),0,0,false,refused(Model::w74)});
-    for(const auto& key:w99ParameterKeys())row.push_back({key.name,Kind::number,own(Model::w99),0,0,false,refused(Model::w99)}); // D639
+    for(const auto& key:w99ParameterKeys()) { // D639; D646: on the w99 row, cc1 or cc1Curve, exactly one
+        if(own(Model::w99) && std::string_view(key.name)=="cc1")row.push_back({.name=key.name,.kind=Kind::number,.required=true,.unless="cc1Curve"});
+        else row.push_back({key.name,Kind::number,own(Model::w99),0,0,false,refused(Model::w99)});
+    }
+    if(own(Model::w99))row.push_back({.name="cc1Curve",.kind=Kind::w99Cc1Curve,.required=true,.knownFrom=w99Cc1CurveVersion,.unless="cc1"});
+    else row.push_back({.name="cc1Curve",.kind=Kind::w99Cc1Curve,.rejectFrom=1});
     for(const auto& key:sharedOptional)row.push_back({key.name,Kind::number,false,0,key.floor});
     for(const auto& key:perceptionParameterKeys())row.push_back({key.name,key.integer?Kind::integerToken:Kind::number,false,0,perceptionVersion});
     for(const auto& key:lateralParameterKeys())row.push_back({key.name,Kind::number,false,0,lateralVersion});
@@ -280,6 +286,7 @@ std::span<const Field> fields(Object object) {
     case Object::vehicleType:return vehicleTypeFields;
     case Object::speedRange:return speedRangeFields;
     case Object::speedPoint:return speedPointFields;
+    case Object::w99Cc1Point:return w99Cc1PointFields;
     case Object::accelerationPoint:return accelerationPointFields;
     case Object::axles:return axleFields;
     case Object::pcu:return pcuFields;
@@ -329,7 +336,7 @@ bool allowsAdditionalFields(Object object,int version) {
        !macroSetFields(object).empty())return false; // every Macro set and procedure row is closed
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
-    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::w99Behaviour || object==Object::speedRange || object==Object::speedPoint || object==Object::accelerationPoint)return version<behaviourVersion;
+    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::w99Behaviour || object==Object::w99Cc1Point || object==Object::speedRange || object==Object::speedPoint || object==Object::accelerationPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
@@ -403,7 +410,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
     case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:case Kind::modes:
-    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::accelerationCurve:case Kind::behaviours:
+    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::accelerationCurve:case Kind::behaviours:case Kind::w99Cc1Curve:
     case Kind::vehicleClasses:case Kind::linkBehaviourTypes:case Kind::behaviourOverrides:
         if(!v.is_array())expected="Expected array: ";
         break;

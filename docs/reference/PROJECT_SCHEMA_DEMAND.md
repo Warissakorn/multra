@@ -195,6 +195,9 @@ below; B3 needed nothing (B1 already typed perception and lateral).
   a number (`INVALID_BEHAVIOUR_PARAMETER` at the key); the eight prototype-only keys and every W74 key
   are `EDIT_UNSUPPORTED_FIELD`; the same optional and either-model keys as the W74 row. The schema
   selects it with `if model == w99` inside the W74 branch's `else` from 85; ranges stay the validator's.
+  From 86 (D646, W99 §5a) `cc1` is required unless `cc1Curve` is present and refused when it is, and
+  `cc1Curve` (an array of closed `w99Cc1Point` objects, `value` and `share` numbers) the reverse (D566's
+  pattern); the curve's point rules are the validator's (`w99ParameterIssues`), each at its point.
 - **Both models.** `perceptionParameterKeys()` (5; `observedVehiclesAhead` and the integer flag
   make it a JSON integer token), `lateralParameterKeys()` (3) and the `readOptionals` numbers
   (`curveLateralAcceleration`, `kerbLaneBias`, `commitmentDeceleration`, `mandatoryDecelerationOwn`,

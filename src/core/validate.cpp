@@ -287,6 +287,9 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             if (b.w74) for (auto& issue : w74ParameterIssues(*b.w74, p)) issues.push_back(std::move(issue));
             else {
                 for (auto& issue : w99ParameterIssues(*b.w99, p)) issues.push_back(std::move(issue)); // W99 §5
+                // W99 §5a (D646): until the draw is composed (BA236) a curved CC1 cannot run; authoring drops
+                // UNSUPPORTED_* codes, so save and load accept it. Unconditional, so runDiagnostics lists it.
+                if (!b.w99->cc1Curve.empty()) add("UNSUPPORTED_BEHAVIOUR_MODEL_RUN", p + ".cc1Curve");
             } // D642: composed (BA230), so D639's Run refusal is gone
             if (b.maxDecelerationCooperativeBraking)
                 number(*b.maxDecelerationCooperativeBraking, p + ".maxDecelerationCooperativeBraking");

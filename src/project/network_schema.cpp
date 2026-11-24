@@ -45,6 +45,7 @@ class NetworkSchema {
         case Kind::vehicleTypes:rule={{"type","array"},{"items",reference(Object::vehicleType,version)}};break;
         case Kind::speedRange:rule=reference(Object::speedRange,version);break;
         case Kind::speedCurve:rule={{"type","array"},{"items",reference(Object::speedPoint,version)}};break;
+        case Kind::w99Cc1Curve:rule={{"type","array"},{"items",reference(Object::w99Cc1Point,version)}};break;
         case Kind::accelerationCurve:rule={{"type","array"},{"items",reference(Object::accelerationPoint,version)}};break;
         case Kind::axles:rule=reference(Object::axles,version);break;
         case Kind::pcu:rule=reference(Object::pcu,version);break;
@@ -320,6 +321,7 @@ public:
                 case Object::behaviour:return "behaviour";
                 case Object::w74Behaviour:return "w74Behaviour";
                 case Object::w99Behaviour:return "w99Behaviour";
+                case Object::w99Cc1Point:return "w99Cc1Point";
                 case Object::vehicleClass:return "vehicleClass";
                 case Object::linkBehaviourType:return "linkBehaviourType";
                 case Object::behaviourOverride:return "behaviourOverride";

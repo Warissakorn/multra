@@ -51,8 +51,12 @@ TEST(project, behaviour_schema_tags_the_model_and_splits_the_rows) {
             const auto& r=resolve(schema,rest.at("then"));
             for(const auto& k:w99ParameterKeys()) {
                 CHECK(r.at("properties").at(k.name).at("type")=="number");
-                CHECK(std::find(r.at("required").begin(),r.at("required").end(),k.name)!=r.at("required").end());
+                // D646: from 86 cc1 is required unless cc1Curve is present (a condition, not the list)
+                const bool listed=std::find(r.at("required").begin(),r.at("required").end(),k.name)!=r.at("required").end();
+                CHECK(listed==(std::string_view(k.name)!="cc1" || v<bc::w99CurveFrom));
             }
+            if(v<bc::w99CurveFrom)CHECK(!r.at("properties").contains("cc1Curve") || r.at("properties").at("cc1Curve")==false);
+            else CHECK(r.at("properties").at("cc1Curve").at("type")=="array");
             for(const auto* k:bc::prototypeRequired)CHECK(r.at("properties").at(k)==false);
             for(const auto& k:w74ParameterKeys())CHECK(r.at("properties").at(k.name)==false);
             CHECK(r.at("properties").at("discretionaryLaneChangeHoldTime")==false);
@@ -85,7 +89,7 @@ TEST(project, behaviour_schema_lists_every_core_and_library_key) {
     }
     CHECK(prototype.at("properties").size()==w.at("properties").size());CHECK(w99.at("properties").size()==w.at("properties").size());
     for(const auto& [key,rule]:prototype.at("properties").items())CHECK(networkCodec::behaviourKey(key));
-    CHECK(networkCodec::behaviourKey("cc0"));CHECK(!networkCodec::behaviourKey("cc10")); // D639: cc keys are known, on the w99 row
+    CHECK(networkCodec::behaviourKey("cc1Curve"));CHECK(networkCodec::behaviourKey("cc0"));CHECK(!networkCodec::behaviourKey("cc10")); // D639: cc keys are known, on the w99 row
 }
 TEST(project, behaviour_structural_refusals_are_also_refused_by_the_codec) {
     for(int v=1;v<=kLatestSchema;++v) {

@@ -6,7 +6,7 @@
 // stay open and the ten presence floors are B2's, so a case using a floored key is not labelled.
 namespace behaviourCases {
 struct Case {std::string name;multra::Json document;bool schemaAccepts;};
-inline constexpr int libraryFrom=21,w74From=25,w99From=85;
+inline constexpr int libraryFrom=21,w74From=25,w99From=85,w99CurveFrom=86;
 enum class Model {prototype,w74,w99};
 inline const char* const prototypeRequired[]={"standstillDistance","additiveSafetyDistance",
     "multiplicativeSafetyDistance","followingTime","speedThreshold"};
@@ -60,6 +60,16 @@ inline std::vector<Case> cases() {
         if(!isPrototype)for(const auto* key:prototypeRequired)set(b+"/"+key,1,false);
         if(!isW74)for(const auto* key:{"ax","bMinAdd","emergencyLeaderWeight"})set(b+"/"+key,1,false);
         if(!isW99)for(const auto* key:{"cc0","cc6","cc9"})set(b+"/"+key,1,false); // D639: at every version
+        const Json curve=Json::array({{{"value",0.6},{"share",0}},{{"value",1.5},{"share",1}}});
+        if(!isW99)set(b+"/cc1Curve",curve,false); // D646: refused on the other models at every version
+        else { // D646: exactly one of cc1 and cc1Curve, the curve from 86
+            set(b+"/cc1Curve",curve,false); // both
+            auto only=base;only[Json::json_pointer(b)].erase("cc1");only[Json::json_pointer(b+"/cc1Curve")]=curve;
+            result.push_back({"cc1Curve only",only,v>=w99CurveFrom});
+            auto extra=only;extra[Json::json_pointer(b+"/cc1Curve/1/extra")]=1;result.push_back({"cc1Curve point extra",extra,false});
+            auto shareless=only;shareless[Json::json_pointer(b+"/cc1Curve/0")].erase("share");result.push_back({"cc1Curve point without share",shareless,false});
+            auto text=only;text[Json::json_pointer(b+"/cc1Curve/0/value")]="x";result.push_back({"cc1Curve value text",text,false});
+        }
         if(!isPrototype)set(b+"/discretionaryLaneChangeHoldTime",1,false);
         set(b+"/name","Name",lib);set(b+"/name",nullptr,false);set(b+"/name",7,false);
         if(!lib) {set(b+"/model","prototype",false);set(b+"/model",nullptr,false);}

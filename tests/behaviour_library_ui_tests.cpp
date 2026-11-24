@@ -349,6 +349,24 @@ int main(int argc, char** argv) {
                 });
             });
             require(documentJson(w.history().document()) == unchanged, "Cancel changed the w99 behaviour");
+            // D646: a curved CC1 is not opened here until its editor (BA237); nothing changes.
+            {
+                auto withCurve = w.history().document();
+                DriverBehaviour curve{"w99-curve"}; curve.w99 = W99Parameters{1.5, 0, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5};
+                curve.w99->cc1Curve = {{0.6, 0}, {1.5, 1}};
+                putBehaviour(withCurve, curve, ""); validateDocument(withCurve);
+                QFile c(path); require(c.open(QIODevice::WriteOnly), "Fixture write failed");
+                c.write(QByteArray::fromStdString(documentJson(withCurve).dump())); c.close(); w.openFile(path);
+                const auto before = documentJson(w.history().document());
+                require(before["schemaVersion"] == 86, "curved file not schema 86");
+                library([](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [](QDialog& m) {
+                        require(m.objectName() == "editorBehaviourCc1CurveNotYetEditable", "curved behaviour opened in the editor");
+                        m.reject();
+                    });
+                });
+                require(documentJson(w.history().document()) == before, "curved document changed");
+            }
             // W99 -> prototype with the w99 behaviour first in the library: the values come from the first
             // prototype one, never from a w99 entry (whose prototype fields are unused).
             require(w.history().document().definition->behaviours.front().id == kDefault, "Default behaviour not first");

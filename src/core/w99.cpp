@@ -120,7 +120,20 @@ const std::vector<W99Key>& w99ParameterKeys() {
 std::vector<ValidationIssue> w99ParameterIssues(const W99Parameters& p, const std::string& path) {
     std::vector<ValidationIssue> issues;
     for (const auto& k : keyRanges())
-        if (!inRange(p.*k.key.member, k.range)) issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", path + "." + k.key.name});
+        if ((!p.cc1Curve.empty() && k.key.member == &W99Parameters::cc1)) continue; // §5a: the curve stands in for cc1
+        else if (!inRange(p.*k.key.member, k.range)) issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", path + "." + k.key.name});
+    // §5a (D646): SPEED_DISTRIBUTION §2's point rule, `value` for `speed`.
+    const auto& c = p.cc1Curve;
+    if (c.empty()) return issues;
+    const auto at = [&](std::size_t i, const char* key) { return path + ".cc1Curve[" + std::to_string(i) + "]." + key; };
+    if (c.size() < 2) issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", path + ".cc1Curve"});
+    for (std::size_t i = 0; i < c.size(); ++i) {
+        if (!std::isfinite(c[i].value) || c[i].value < 0 || (i > 0 && !(c[i].value > c[i - 1].value)))
+            issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", at(i, "value")});
+        const bool end = (i == 0 && c[i].share != 0) || (i + 1 == c.size() && c[i].share != 1);
+        if (!std::isfinite(c[i].share) || c[i].share < 0 || c[i].share > 1 || end || (i > 0 && c[i].share < c[i - 1].share))
+            issues.push_back({"INVALID_BEHAVIOUR_PARAMETER", at(i, "share")});
+    }
     return issues;
 }
 double w99Trait(std::uint32_t seed, std::uint64_t vehicleId) { return w74Uniform(seed, vehicleId, kW99TraitIndex); }

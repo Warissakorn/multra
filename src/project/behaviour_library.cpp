@@ -285,15 +285,24 @@ void rejectLateralBefore33(const Json& j) {
             if (behaviours[i].is_object() && behaviours[i].contains(key.name))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key.name}});
 }
-void rejectAmberBefore28(const Json& j) {
+namespace {
+// An owned behaviour carrying `key` below its floor: EDIT_UNSUPPORTED_FIELD at the key.
+void rejectBehaviourKey(const Json& j, const char* key) {
     if (!j.contains("definition") || !j.at("definition").is_object()) return;
     const auto& definition = j.at("definition");
     if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
     const auto& behaviours = definition.at("behaviours");
     for (std::size_t i = 0; i < behaviours.size(); ++i)
-        if (behaviours[i].is_object() && behaviours[i].contains("amberDeceleration"))
-            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".amberDeceleration"}});
+        if (behaviours[i].is_object() && behaviours[i].contains(key))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key}});
 }
+}
+void rejectAmberBefore28(const Json& j) { rejectBehaviourKey(j, "amberDeceleration"); }
+bool ownsW99Cc1Curve(const ProjectDocument& d) { // W99 §5a (D646)
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.w99 && !b.w99->cc1Curve.empty(); });
+}
+void rejectW99Cc1CurveBefore86(const Json& j) { rejectBehaviourKey(j, "cc1Curve"); }
 void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
     if (j.contains("behaviours")) {
         const auto& behaviours = list(j, "behaviours");

@@ -49,7 +49,7 @@ TEST(w99codec, schema85_round_trips_only_when_a_w99_behaviour_is_owned) { // BA2
     const auto plain = documentJson(owned());
     CHECK(plain["schemaVersion"] < 85);
     const auto d = withW99(); const auto j = documentJson(d);
-    CHECK(j["schemaVersion"] == 85); CHECK(kLatestSchema == 85);
+    CHECK(j["schemaVersion"] == 85); CHECK(kLatestSchema >= 85); // 86 holds cc1Curve (D646)
     const auto& b = j["definition"]["behaviours"][w99Index(j)];
     CHECK(b["model"] == "w99"); CHECK(b["name"] == "Urban W99"); CHECK(b["maxDecelerationCooperativeBraking"] == 3);
     for (const auto& key : w99ParameterKeys()) CHECK(b.at(key.name) == kP.*key.member);

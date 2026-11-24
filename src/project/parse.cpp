@@ -140,10 +140,30 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
         DriverBehaviour behaviour{field<std::string>(b, "id")};
         if (model == kW74BehaviourModel) { // D136
             refuse(w99ParameterKeys());
+            if (b.contains("cc1Curve")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + ".cc1Curve"}}); // D646
             W74Parameters parameters{}; read(w74ParameterKeys(), parameters); behaviour.w74 = parameters;
         } else { // W99.md §5 and §9 (D639): every cc key required; no key is another model's alias
             refuse(w74ParameterKeys());
-            W99Parameters parameters{}; read(w99ParameterKeys(), parameters); behaviour.w99 = parameters;
+            W99Parameters parameters{};
+            if (b.contains("cc1Curve")) { // §5a (D646): exactly one of cc1 and cc1Curve
+                if (b.contains("cc1")) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + ".cc1"}});
+                std::vector<W99Key> others;
+                for (const auto& key : w99ParameterKeys()) if (std::string_view(key.name) != "cc1") others.push_back(key);
+                read(others, parameters);
+                const auto& curve = b.at("cc1Curve");
+                if (!curve.is_array()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", path + ".cc1Curve"}});
+                for (std::size_t i = 0; i < curve.size(); ++i) {
+                    const auto at = path + ".cc1Curve[" + std::to_string(i) + "]";
+                    const auto& point = curve[i];
+                    if (!point.is_object()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", at}});
+                    for (const auto& [key, unused] : point.items())
+                        if (key != "value" && key != "share") throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at + "." + key}});
+                    for (const char* key : {"value", "share"})
+                        if (!point.contains(key) || !point.at(key).is_number()) throw ValidationError({{"INVALID_BEHAVIOUR_PARAMETER", at + "." + key}});
+                    parameters.cc1Curve.push_back({point.at("value").get<double>(), point.at("share").get<double>()});
+                }
+            } else read(w99ParameterKeys(), parameters);
+            behaviour.w99 = parameters;
         }
         if (b.contains("maxDecelerationCooperativeBraking"))
             behaviour.maxDecelerationCooperativeBraking = field<double>(b, "maxDecelerationCooperativeBraking");
@@ -154,6 +174,7 @@ DriverBehaviour parseBehaviour(const Json& b, const std::string& path) {
     }
     if (model != kPrototypeBehaviourModel) throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
     refuse(w74ParameterKeys()); refuse(w99ParameterKeys());
+    if (b.contains("cc1Curve")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", path + ".cc1Curve"}}); // D646
     DriverBehaviour behaviour{field<std::string>(b, "id"), field<double>(b, "standstillDistance"),
         field<double>(b, "additiveSafetyDistance"), field<double>(b, "multiplicativeSafetyDistance"),
         field<double>(b, "followingTime"), field<double>(b, "speedThreshold"), std::nullopt};

@@ -189,7 +189,13 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.w74 || b.w99) { // D136, D639: the model's own keys only; addBehaviourLibraryJson tags the model
                 Json item{{"id",b.id}};
                 if (b.w74) for (const auto& key : w74ParameterKeys()) item[key.name] = (*b.w74).*key.member;
-                else for (const auto& key : w99ParameterKeys()) item[key.name] = (*b.w99).*key.member;
+                else for (const auto& key : w99ParameterKeys()) {
+                    const auto& p = *b.w99;
+                    if (std::string_view(key.name) != "cc1" || p.cc1Curve.empty()) { item[key.name] = p.*key.member; continue; }
+                    Json curve = Json::array(); // W99 §5a (D646): the curve stands in cc1's place
+                    for (const auto& point : p.cc1Curve) curve.push_back({{"value", point.value}, {"share", point.share}});
+                    item["cc1Curve"] = std::move(curve);
+                }
                 if (b.maxDecelerationCooperativeBraking) item["maxDecelerationCooperativeBraking"] = *b.maxDecelerationCooperativeBraking;
                 if (b.amberDeceleration) item["amberDeceleration"] = *b.amberDeceleration; // M4.2, schema 28
                 optionalKeys(b, item);
