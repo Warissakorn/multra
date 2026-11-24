@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — CC1 curve slice 3: the dialog (D648)
+
+- **Owner:** "ทำ CC1 เซสชันถัดไปเลย"; the plan approved.
+- **Dialog:** a *CC1* choice (*Fixed* / *Distribution (per driver)*, en and th); switching to W99 starts in
+  Distribution with an empty table and `cc1` greyed; a curved behaviour opens with its points, a fixed one in
+  Fixed. The table (`cc1` s, share %) has Add/Remove as the desired-speed table. Confirm names an empty table, a
+  non-number cell or the validator's point and selects its row; Fixed is unchanged. D646's decline is gone.
+- **Rows:** `behaviour-library-ui` checks the default, the refusals ("cc1Curve", "cc1Curve[1].share"), a saved
+  three-point curve at schema 86, Distribution → Fixed, a fixed behaviour opening in Fixed and the Thai item.
+  Mutations bite: Fixed as the default, the curve not saved, the decline restored.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 374/374; the build without the PCH
+  compiles every unit. F8 lists the owner's Windows look.
+
 ## 2026-11-24 — CC1 curve slice 2: draw, rule and composition (D647)
 
 - **Owner:** "ทำ CC1 เซสชันถัดไปเลย"; the plan approved.
@@ -184,14 +197,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   comment moved off D573's. The emitted schema is byte-identical to the first D636 commit.
 - **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No-PCH and
   Windows not run.
-
-## 2026-11-23 — Insertion's bucket rebuild after the last arrival dropped (D635)
-
-- **User:** "พัฒนาต่อ"; no owner item was free, so the session took NEXT's untried engine lever: insertion rebuilt every
-  span bucket after each inserted arrival (`insertion.cpp`), ENGINEERING_NOTES 2026-11-23.
-- **Change:** the buckets are rebuilt only before a later candidate's leader search; after the last arrival they are
-  left unbuilt and `Snapshot::built` is cleared, as `stepSimulation` already re-resolves a grown fleet (D584's test).
-- **Measured** (callgrind, GCC 13.3, Release `-g1`, seed 42): benchmark `48 900` 9,623.9 → 9,546.0 M Ir (−0.81 %);
-  `stepSimulation` on the study −0.05 %, M2.6 −0.09 %. Event hashes (FNV-1a of every `eventJson`, every shipped
-  project that runs and the study, seeds 42 and 43) identical. The scratch harness was not committed.
-- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No Windows run.

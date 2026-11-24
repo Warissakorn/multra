@@ -282,7 +282,7 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   BA227), `w99codec` (BA228), `w99traits` (BA229) and `w99run` (BA226, BA230, BA232) pass. `follow` dispatches to
   `w99Acceleration` with `zW` and the published acceleration; D639's Run refusal is gone. **Next:** BA231, the
   queue-discharge timestep record (dt 0.1/0.25/0.5, seeds 42–81, `--discharge`), as W74's BA27; then a cited
-  preset only if one exists (D178). CC1 as a per-driver cumulative curve (W99 §5a, D645): the codec and schema 86 (D646, BA233) and the draw `u(16)`, rule and composition (D647, BA234–BA236) are in; a curved behaviour runs. **Next:** the dialog (BA237: Fixed / Distribution, starting in Distribution with an empty curve), which lifts its decline. Heavy vehicles are bounded by their type's acceleration, not halved (D644). The unvalidated marker stays. **Owner (Windows):**
+  preset only if one exists (D178). CC1 as a per-driver cumulative curve (W99 §5a, D645): done: codec and schema 86 (D646), draw and composition (D647), the dialog with Fixed / Distribution starting in Distribution (D648); BA233–BA237 pass. **Next:** BA231's timestep record. **Owner (Windows):** [F8](plans/OWNER_SITTING_WINDOWS.md), the CC1 table. Heavy vehicles are bounded by their type's acceleration, not halved (D644). The unvalidated marker stays. **Owner (Windows):**
   [F7](plans/OWNER_SITTING_WINDOWS.md): passed on #145 except the out-of-range check, fixed by D643; recheck that one on the next package.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;

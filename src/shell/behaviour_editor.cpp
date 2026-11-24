@@ -16,7 +16,8 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QLocale>
-#include <QMessageBox>
+#include <QHBoxLayout>
+#include <QTableWidget>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QTabWidget>
@@ -84,12 +85,6 @@ std::optional<Parameters> readKeys(const std::vector<std::pair<const Key*, QLine
 }
 bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const std::string& users,
                    const std::vector<DriverBehaviour>& library, const CatalogText& text) {
-    if (b.w99 && !b.w99->cc1Curve.empty()) { // W99 §5a (D646): its editor is BA237's; until then nothing rewrites the curve
-        QMessageBox note(QMessageBox::Information, text("editorBehaviourTabBehaviours"), text("editorBehaviourCc1CurveNotYetEditable"),
-                         QMessageBox::Ok, parent);
-        note.setObjectName("editorBehaviourCc1CurveNotYetEditable"); note.exec();
-        return false;
-    }
     QDialog dialog(parent); dialog.setObjectName("editorBehaviourEditDialog"); dialog.setWindowTitle(text("editorBehaviourTabBehaviours"));
     // Header, tabs, footer: the header names what is edited, each tab scrolls on its own and the
     // footer keeps the error and the buttons on screen, however many keys a tab holds.
@@ -154,6 +149,42 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
     }
     const auto w74Keys = keyFields(followingPage, following, w74ParameterKeys(), b.w74, w74Rows);
     const auto w99Keys = keyFields(followingPage, following, w99ParameterKeys(), b.w99, w99Rows); // W99 §5
+    // W99 §5a (D648): CC1 fixed, or drawn per driver from a cumulative curve. A behaviour that is not
+    // w99 yet starts in Distribution with no points (the owner's default; no value is a code default).
+    auto* cc1Mode = new QComboBox(followingPage); cc1Mode->setObjectName("editorBehaviourCc1Mode");
+    cc1Mode->addItem(text("editorBehaviourCc1Fixed")); cc1Mode->addItem(text("editorBehaviourCc1Distribution"));
+    following->addRow(text("editorBehaviourCc1Mode"), cc1Mode); w99Rows.push_back({following, cc1Mode});
+    auto* cc1Curve = new QTableWidget(0, 2, followingPage); cc1Curve->setObjectName("editorBehaviourCc1Curve");
+    cc1Curve->setHorizontalHeaderLabels({"cc1 (s)", text("catalogCurveShare")});
+    following->addRow(cc1Curve); w99Rows.push_back({following, cc1Curve});
+    const auto addPoint = [cc1Curve](int at, double value, double percent) {
+        cc1Curve->insertRow(at);
+        cc1Curve->setItem(at, 0, new QTableWidgetItem(QString::number(value, 'g', 12)));
+        cc1Curve->setItem(at, 1, new QTableWidgetItem(QString::number(percent, 'g', 12)));
+    };
+    auto* cc1Buttons = new QWidget(followingPage); auto* cc1ButtonRow = new QHBoxLayout(cc1Buttons); cc1ButtonRow->setContentsMargins(0, 0, 0, 0);
+    auto* cc1Add = new QPushButton(text("catalogCurveAdd"), cc1Buttons); cc1Add->setObjectName("editorBehaviourCc1CurveAdd");
+    auto* cc1Remove = new QPushButton(text("catalogCurveRemove"), cc1Buttons); cc1Remove->setObjectName("editorBehaviourCc1CurveRemove");
+    cc1ButtonRow->addWidget(cc1Add); cc1ButtonRow->addWidget(cc1Remove);
+    following->addRow(cc1Buttons); w99Rows.push_back({following, cc1Buttons});
+    QObject::connect(cc1Add, &QPushButton::clicked, &dialog, [cc1Curve, addPoint] { // the desired-speed table's rule
+        const auto cell = [cc1Curve](int r, int c) { return cc1Curve->item(r, c) ? cc1Curve->item(r, c)->text().toDouble() : 0.; };
+        const int last = cc1Curve->rowCount() - 1; if (last < 0) { addPoint(0, 0, 0); return; }
+        const int at = std::clamp(cc1Curve->currentRow(), 0, std::max(0, last - 1)), next = std::min(at + 1, last);
+        addPoint(at + 1, (cell(at, 0) + cell(next, 0)) / 2, (cell(at, 1) + cell(next, 1)) / 2); cc1Curve->setCurrentCell(at + 1, 0);
+    });
+    QObject::connect(cc1Remove, &QPushButton::clicked, &dialog, [cc1Curve] { if (cc1Curve->currentRow() >= 0) cc1Curve->removeRow(cc1Curve->currentRow()); });
+    const bool curved = b.w99 && !b.w99->cc1Curve.empty();
+    if (curved) for (const auto& point : b.w99->cc1Curve) addPoint(cc1Curve->rowCount(), point.value, point.share * 100);
+    QLineEdit* cc1Edit = nullptr;
+    for (const auto& [key, edit] : w99Keys) if (std::string_view(key->name) == "cc1") cc1Edit = edit;
+    if (curved) cc1Edit->clear(); // its 0 is unused beside a curve
+    const auto syncCc1 = [=](int mode) {
+        cc1Edit->setEnabled(mode == 0);
+        for (QWidget* w : std::initializer_list<QWidget*>{cc1Curve, cc1Add, cc1Remove}) w->setEnabled(mode == 1);
+    };
+    QObject::connect(cc1Mode, &QComboBox::currentIndexChanged, &dialog, syncCc1);
+    cc1Mode->setCurrentIndex(b.w99 && !curved ? 0 : 1); syncCc1(cc1Mode->currentIndex());
     // The one optional key a w74 or w99 behaviour may carry; the discretionary keys are refused (§5).
     auto cooperative = b.maxDecelerationCooperativeBraking;
     const auto otherCooperative = optional(followingPage, following, "maxDecelerationCooperativeBraking", &cooperative);
@@ -252,8 +283,31 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
             if (!parameters) return;
             result.w74 = parameters;
         } else {
-            const auto parameters = readKeys<W99Parameters>(w99Keys, error, missing, outOfRange, w99ParameterIssues);
+            const bool distribution = cc1Mode->currentIndex() == 1;
+            auto keys = w99Keys; // in Distribution the curve stands in for cc1 (W99 §5a, D648)
+            if (distribution) std::erase_if(keys, [](const auto& k) { return std::string_view(k.first->name) == "cc1"; });
+            auto parameters = readKeys<W99Parameters>(keys, error, missing, outOfRange, w99ParameterIssues);
             if (!parameters) return;
+            if (distribution) {
+                parameters->cc1 = 0; parameters->cc1Curve.clear();
+                if (cc1Curve->rowCount() == 0) { error->setText(QString(missing).arg("cc1Curve")); cc1Curve->setFocus(); return; }
+                for (int r = 0; r < cc1Curve->rowCount(); ++r) {
+                    double cells[2]{};
+                    for (int c = 0; c < 2; ++c) {
+                        bool ok = false; cells[c] = cc1Curve->item(r, c) ? cc1Curve->item(r, c)->text().trimmed().toDouble(&ok) : 0;
+                        if (!ok) { error->setText(QString(missing).arg(QString("cc1Curve[%1]").arg(r))); cc1Curve->setCurrentCell(r, c); return; }
+                    }
+                    parameters->cc1Curve.push_back({cells[0], cells[1] / 100});
+                }
+                for (const auto& issue : w99ParameterIssues(*parameters, "behaviour"))
+                    if (issue.path.rfind("behaviour.cc1Curve", 0) == 0) {
+                        const auto tail = issue.path.substr(std::string("behaviour.").size());
+                        error->setText(outOfRange + " · " + q(tail));
+                        const auto open = tail.find('[');
+                        if (open != std::string::npos) cc1Curve->selectRow(std::stoi(tail.substr(open + 1)));
+                        return;
+                    }
+            }
             result.w99 = parameters;
         }
         result.maxDecelerationCooperativeBraking = otherCooperative.on->isChecked()
