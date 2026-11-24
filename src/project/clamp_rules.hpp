@@ -7,12 +7,15 @@ namespace multra {
 // schema 45; a project with all three on keeps its version and bytes. The fourth, joinAnticipation
 // (JOIN_ANTICIPATION §5, D254/D255), is false when absent and written only when true: schema 46. The
 // fifth, standingStopFloor (LINE_APPROACH §7, D257/D258), is true when absent and written only when false: 47.
+// The sixth, lineRest (LINE_STOP §5, D652), likewise: 87.
 bool ownsClampRules(const ProjectDocument&);
 bool ownsJoinAnticipation(const ProjectDocument&);
 bool ownsStandingStopFloor(const ProjectDocument&);
+bool ownsLineRest(const ProjectDocument&);
 void rejectClampRulesBefore45(const Json& file);
 void rejectJoinAnticipationBefore46(const Json& file);
 void rejectStandingStopFloorBefore47(const Json& file);
+void rejectLineRestBefore87(const Json& file);
 // INVALID_CLAMP_RULE at the object's or the key's path for anything but an object of known booleans.
 ClampRules parseClampRules(const Json& definition);
 void addClampRulesJson(const AuthoringDefinition&, Json& definition);

@@ -201,3 +201,25 @@ Evidence for [LINE_STOP](../reference/LINE_STOP.md) (D651).
   accelerating when the stop becomes infeasible. Braking floors cannot reach that. It is W99 §4's question
   (LINE_STOP §6).
 - **Cost:** L3 costs +1.1 % instructions on the four-leg. L1 costs nothing.
+
+## After D652
+
+The owner chose L3F, and D652 implements it with dead ends kept as leaders (LINE_STOP §7). The same
+measurement was re-run with the committed code, which has no observation hook, so there are no rest or crawl
+columns. The rows are clamps per run, delay per vehicle, and headway / startup lost time.
+
+| Project | Model | D652 | L3F above | L0 above |
+|---|---|---|---|---|
+| Four-leg | prototype | 0.0, 47.53 s, 1.976 / 1.982 | 0.0, 47.64 s, 1.980 / 2.019 | 0.0, 47.28 s, 2.052 / −0.108 |
+| Four-leg | W74 fixture | 8.9, 95.01 s, 3.077 / 2.040 | 8.8, 94.35 s, 3.097 / 2.039 | 9.1, 96.29 s, 3.117 / −0.652 |
+| Four-leg | W74 SUMO preset | 3.1, 113.91 s, 3.412 / 1.949 | 3.6, 110.49 s, 3.435 / 1.982 | 3.8, 116.86 s, 3.442 / −1.222 |
+| Four-leg | W99 | 337.5, 50.65 s, 1.932 / 1.619 | 337.8, 50.63 s, 1.939 / 1.628 | 322.6, 50.79 s, 1.961 / −0.107 |
+| M2.6 | prototype | 0.3, 44.88 s, 2.343 / 1.926 | 0.3, 44.85 s, 2.335 / 1.950 | 0.1, 46.15 s, 2.442 / −0.375 |
+| M2.6 | W74 fixture | 27.4, 131.93 s, 3.655 / 1.696 | 30.1, 125.51 s, 3.641 / 1.748 | 29.9, 145.97 s, 3.766 / −1.393 |
+| M2.6 | W74 SUMO preset | 20.9, 171.48 s, 3.970 / 1.597 | 23.2, 149.60 s, 3.988 / 1.553 | 19.5, 186.11 s, 4.079 / −1.841 |
+| M2.6 | W99 | 1,258.9, 47.82 s, 2.386 / 1.390 | 1,256.0, 47.83 s, 2.387 / 1.409 | 1,205.9, 48.24 s, 2.412 / −0.737 |
+
+- **Unchanged from L3F:** the T-junction and the priority lab, byte for byte, as are the lane lab's W74 SUMO arm and
+  all its clamp counts.
+- **The lane lab's other arms:** delay is lower by 0.01–0.02 s, with no clamps.
+- **Bare M0:** `multra-cli 42` is byte-identical.

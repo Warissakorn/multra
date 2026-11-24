@@ -2,6 +2,27 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-23 — W99 slice 2: codec, schema 85 and the Run refusal (D639)
+
+- **Owner:** "ทำงานถัดไป" after slice 1. Contract §10 grouped codec and dialog; W74 split them (D136, D139), so this
+  slice is the codec and the dialog is next (recorded in D639).
+- **Codec:** `DriverBehaviour::w99` (last field); `parseBehaviour` reads `model: "w99"` and the ten cc keys through one
+  generic read/refuse pair shared with W74; the writer and `addBehaviourLibraryJson` tag and write it; schema 85
+  (`w99ModelVersion`, `kLatestSchema` 84 → 85) is selected only when an owned behaviour is `w99`; `rejectW99Before85`.
+  A cc key on a prototype or W74 behaviour is refused at every version (it was accepted and ignored only on an open
+  pre-21 row).
+- **Composed schema:** a `w99Behaviour` row from `behaviourRow(Model::w99)`; from 85 the W74 branch's `else` is a W99
+  dispatch; the model enum gains `w99`; cc keys are `false` on the other rows at every version.
+- **Run:** `validateScenario` refuses a `w99` behaviour a vehicle type or a compiled road assignment names
+  (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`; authoring drops `UNSUPPORTED_*`, so save and load accept it);
+  `w99RoadRunIssues` adds the road case to `runDiagnostics`, once.
+- **Dialog:** declines to open a `w99` behaviour with a message (en, th), so nothing rewrites its keys.
+- **Rows:** `tests/w99_codec_tests.cpp` (group `w99codec`, BA228, 6 tests); `behaviour_schema_cases.hpp` gains the
+  W99 model; `behaviour_schema_tests.cpp` checks the nested dispatch; `behaviour-library-ui` checks the decline and
+  fails without it.
+- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 370/370, `check` passes (`schema-labels`
+  141,694 labels, 0 disagreements). No Windows run.
+
 ## 2026-11-23 — W99 slice 1: the pure function (D638)
 
 - **Owner:** "ok" to the W99 contract (D637).

@@ -47,7 +47,7 @@ void EditorWindow::editRunSettings() {
     streams->addItem(QStringLiteral("shared"),static_cast<int>(RandomStreams::shared));
     streams->addItem(QStringLiteral("perInput"),static_cast<int>(RandomStreams::perInput));
     streams->setCurrentIndex(streams->findData(static_cast<int>(def.randomStreams)));form->addRow(text("editorRandomStreams"),streams);
-    // M3.2.8a.1 (MERGE_CLAMPS §3, D251; JOIN_ANTICIPATION §5, D255; LINE_APPROACH §7, D258): the clamp rules, labelled with their keys like the behaviour rows.
+    // M3.2.8a.1 (MERGE_CLAMPS §3, D251; JOIN_ANTICIPATION §5, D255; LINE_APPROACH §7, D258; LINE_STOP §5, D652): the clamp rules, labelled with their keys like the behaviour rows.
     const auto rule=[&](const char* key,const char* name,bool on){auto* box=new QCheckBox(QString::fromUtf8(key),&dialog);box->setObjectName(name);
         box->setChecked(on);form->addRow(box);return box;};
     auto* leaderTravel=rule("leaderTravel","editorLeaderTravel",def.clampRules.leaderTravel);
@@ -55,6 +55,7 @@ void EditorWindow::editRunSettings() {
     auto* redLineStop=rule("redLineStop","editorRedLineStop",def.clampRules.redLineStop);
     auto* joinAnticipation=rule("joinAnticipation","editorJoinAnticipation",def.clampRules.joinAnticipation);
     auto* standingStopFloor=rule("standingStopFloor","editorStandingStopFloor",def.clampRules.standingStopFloor);
+    auto* lineRest=rule("lineRest","editorLineRest",def.clampRules.lineRest); // LINE_STOP §5 (D652)
     // S2.4 (MACRO_NETWORK §7, D277): the Macro target gap in % and the iteration cap; defaults write nothing.
     const auto macro=def.macroSettings.value_or(kMacroDefaults);
     auto* gap=number(dialog,0.0001,99,macro.targetGap*100,"editorMacroTargetGap");gap->setDecimals(4);setFormNumber(gap,macro.targetGap*100);
@@ -69,7 +70,7 @@ void EditorWindow::editRunSettings() {
         changeEvaluationPeriod(d,formNumber(warmup),period.end,formNumber(cooldown));
         if(clock->time()!=clockShown)demand(d).clockStart=QTime(0,0).secsTo(clock->time()); // untouched keeps a value past midnight
         changeRandomStreams(d,static_cast<RandomStreams>(streams->currentData().toInt()));
-        changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked(),standingStopFloor->isChecked()});});},[this](const char* key){return text(key);});
+        changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked(),standingStopFloor->isChecked(),lineRest->isChecked()});});},[this](const char* key){return text(key);});
     dialog.exec();
 }
 void EditorWindow::editProgram(const std::string& id) {

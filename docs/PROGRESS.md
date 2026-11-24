@@ -5,6 +5,29 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — Stopping at the line: L3F implemented (D652)
+
+- **Owner:** "เลือก L3F ทำเลย".
+- **Engine:**
+  - `src/core/line_stop.*`: with `DriverBehaviour::lineRest` (the switch, and `amberDeceleration` or the w74/w99
+    model), the model follows vehicles and the nearest holding line has its own law (comfortable braking to the
+    line), plus D258's floor for W74/W99.
+  - At the line: `stopAtLine`, or rest, in place of a clamp.
+  - Dead ends stay leaders. As lines they cut the weaving lab's served count from 389 to 341.
+- **File and editor:** `clampRules.lineRest` (absent on, false at schema 87), refused below 87; Run settings'
+  sixth checkbox.
+- **Rows:** BA239–BA245 (`linestop`) and the checkbox in `signal_ui_tests`. Older-mechanics rows run with the
+  switch off:
+  - `stopfloor` and `mergeclamps`;
+  - the W74/W99 composition rows and the M6 U fixture;
+  - red running's output row BA145. Its runs were cars creeping at the line when red began.
+
+  Diverge A68 and visibility VS5 move to the new behaviour.
+- **Measured** ([evidence](evidence/line-stop-options.md#after-d652)): the T-junction and the priority lab equal
+  D651's L3F byte for byte; on the four-leg the prototype's startup lost time is +1.98 s (was −0.11) with 0
+  clamps.
+- **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (375/375); the build without the PCH compiles 692 units, 0 failed. Package #147 (`c193433`) recorded for F7/F8.
+
 ## 2026-11-24 — Stopping at the line: the contract and its measured options (D651)
 
 - **Owner:** reviewed line stops, M0 and other programs, then: "ถ้าต้องการให้โปรแกรมสมจริง มีประสิทธิภาพที่สุด"; "ทำตามแผนเขียนสัญญา".
@@ -165,25 +188,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   lab guard, the w99 reset on the prototype branch, the starting model index and the prototype source.
 - **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 370/370. No Windows run; the owner's
   look is [F7](plans/OWNER_SITTING_WINDOWS.md).
-
-## 2026-11-23 — W99 slice 2: codec, schema 85 and the Run refusal (D639)
-
-- **Owner:** "ทำงานถัดไป" after slice 1. Contract §10 grouped codec and dialog; W74 split them (D136, D139), so this
-  slice is the codec and the dialog is next (recorded in D639).
-- **Codec:** `DriverBehaviour::w99` (last field); `parseBehaviour` reads `model: "w99"` and the ten cc keys through one
-  generic read/refuse pair shared with W74; the writer and `addBehaviourLibraryJson` tag and write it; schema 85
-  (`w99ModelVersion`, `kLatestSchema` 84 → 85) is selected only when an owned behaviour is `w99`; `rejectW99Before85`.
-  A cc key on a prototype or W74 behaviour is refused at every version (it was accepted and ignored only on an open
-  pre-21 row).
-- **Composed schema:** a `w99Behaviour` row from `behaviourRow(Model::w99)`; from 85 the W74 branch's `else` is a W99
-  dispatch; the model enum gains `w99`; cc keys are `false` on the other rows at every version.
-- **Run:** `validateScenario` refuses a `w99` behaviour a vehicle type or a compiled road assignment names
-  (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN`; authoring drops `UNSUPPORTED_*`, so save and load accept it);
-  `w99RoadRunIssues` adds the road case to `runDiagnostics`, once.
-- **Dialog:** declines to open a `w99` behaviour with a message (en, th), so nothing rewrites its keys.
-- **Rows:** `tests/w99_codec_tests.cpp` (group `w99codec`, BA228, 6 tests); `behaviour_schema_cases.hpp` gains the
-  W99 model; `behaviour_schema_tests.cpp` checks the nested dispatch; `behaviour-library-ui` checks the decline and
-  fails without it.
-- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 370/370, `check` passes (`schema-labels`
-  141,694 labels, 0 disagreements). No Windows run.
 

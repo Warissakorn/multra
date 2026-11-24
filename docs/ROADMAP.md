@@ -186,8 +186,8 @@ M3.2.7 alone did not close M3.2 (D625 did); the not-yet-validated marker remains
 
 ### M3.2.8a.1 — Remaining moving merge and source-clearance clamps
 
-**Open (D105/D108, 2026-10-04).** Stopping at the line for every line type and model is contracted and measured
-([LINE_STOP](reference/LINE_STOP.md), D651; the owner chooses). The moving-leader standstill cap ([W74 clamp trace](evidence/w74-clamps.md)) is booked here by D201 (sitting B5).
+**Open (D105/D108, 2026-10-04).** Stopping at the line for every line type and model is contracted, measured and implemented
+([LINE_STOP](reference/LINE_STOP.md), D651; L3F as `clampRules.lineRest`, D652). The moving-leader standstill cap ([W74 clamp trace](evidence/w74-clamps.md)) is booked here by D201 (sitting B5).
 Implemented: source first-step clearance (D108), the give-way stop (D240) and `clampRules` (D251, D258), leaving M2.6 at 5 clamps (pull-out 1, late catch-up 4) and the lane lab at 1; `joinAnticipation` ships off (D255); source clearance remains ([history D105–D258](archive/ROADMAP-implemented-2026-10-27.md#m328a1-clamp-history-d105d258)).
 
 **Scope:** define how a minor approaching a merge anticipates the shared leader's standstill buffer before its span appears, and how a source insertion fits its first acceleration step into a small positive clearance. Keep the 1 m derived setback (D50), buffer and maximum deceleration until an explicit new contract says otherwise; do not suppress events or relax collision checks to remove counts.

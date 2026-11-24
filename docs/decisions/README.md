@@ -120,3 +120,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D649](RECORD.md#d649) — BA231 recorded: W99 queue discharge at three timesteps; headway falls with dt; standing-creep clamps traced, not fixed
 [D650](RECORD.md#d650) — W99's standstill creep waits until one creep fits before CC0 (`CC7·dt²`); the every-tick clamps gone (BA238)
 [D651](RECORD.md#d651) — Stopping at the line: contract and measured options (L1, L3, floors); L3F recommended as `clampRules.lineRest`, M0 untouched; the owner chooses
+[D652](RECORD.md#d652) — LINE_STOP L3F implemented: `clampRules.lineRest` (schema 87), every W74/W99 and amber prototype stops at the line; dead ends stay leaders; M0 bytes kept

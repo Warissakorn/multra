@@ -55,7 +55,7 @@ TEST(w99cc1codec, a_curve_round_trips_at_86_and_a_fixed_cc1_stays_at_85) { // BA
     const auto plain = documentJson(with(fixed));
     CHECK(plain["schemaVersion"] == 85); CHECK(plain.dump().find("cc1Curve") == std::string::npos);
     const auto d = with(curved()); const auto j = documentJson(d);
-    CHECK(j["schemaVersion"] == 86); CHECK(kLatestSchema == 86);
+    CHECK(j["schemaVersion"] == 86); CHECK(kLatestSchema >= 86);
     const auto& b = j["definition"]["behaviours"][index(j)];
     CHECK(!b.contains("cc1")); CHECK(b.at("cc1Curve").size() == 3);
     CHECK(b["cc1Curve"][1]["value"] == 0.9); CHECK(b["cc1Curve"][1]["share"] == 0.5);

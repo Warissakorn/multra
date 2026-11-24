@@ -188,6 +188,9 @@ TEST(redrunning, ba145_the_count_is_written_only_with_the_keys) { // BA145 (outp
     const auto run = [](bool keys) {
         auto d = fourLeg();
         if (keys) for (auto& b : d.definition->behaviours) { b.redRunningShare = 1; b.redRunningTime = 3; }
+        // D652: the counted runs here are cars creeping at their line when red starts; LINE_STOP's law
+        // removes the creep, so the row (an output row) keeps the switch off.
+        d.definition->clampRules.lineRest = false;
         // Held in a local: windows-core once failed rows that looped over a temporary's member (D234).
         auto snapshot = compileDocument(d, test::root() / "data");
         snapshot.scenario.duration = 300;

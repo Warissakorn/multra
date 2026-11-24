@@ -8,11 +8,12 @@ namespace {
 struct Key { const char* name; bool ClampRules::*member; bool absent; };
 constexpr Key kKeys[] = {{"leaderTravel", &ClampRules::leaderTravel, true}, {"sideEntryAtLine", &ClampRules::sideEntryAtLine, true},
                          {"redLineStop", &ClampRules::redLineStop, true}, {"joinAnticipation", &ClampRules::joinAnticipation, false},
-                         {"standingStopFloor", &ClampRules::standingStopFloor, true}};
+                         {"standingStopFloor", &ClampRules::standingStopFloor, true}, {"lineRest", &ClampRules::lineRest, true}};
 }
 bool ownsClampRules(const ProjectDocument& d) { return d.definition && !(d.definition->clampRules == ClampRules{}); }
 bool ownsJoinAnticipation(const ProjectDocument& d) { return d.definition && d.definition->clampRules.joinAnticipation; }
 bool ownsStandingStopFloor(const ProjectDocument& d) { return d.definition && !d.definition->clampRules.standingStopFloor; }
+bool ownsLineRest(const ProjectDocument& d) { return d.definition && !d.definition->clampRules.lineRest; }
 void rejectClampRulesBefore45(const Json& j) {
     if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("clampRules"))
         throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.clampRules"}});
@@ -26,6 +27,11 @@ void rejectStandingStopFloorBefore47(const Json& j) {
     if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("clampRules") &&
         j.at("definition").at("clampRules").is_object() && j.at("definition").at("clampRules").contains("standingStopFloor"))
         throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.clampRules.standingStopFloor"}});
+}
+void rejectLineRestBefore87(const Json& j) {
+    if (j.contains("definition") && j.at("definition").is_object() && j.at("definition").contains("clampRules") &&
+        j.at("definition").at("clampRules").is_object() && j.at("definition").at("clampRules").contains("lineRest"))
+        throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "definition.clampRules.lineRest"}});
 }
 ClampRules parseClampRules(const Json& definition) {
     ClampRules rules;

@@ -31,6 +31,7 @@ Scenario road(const DriverBehaviour& behaviour, double length = 1000) {
     s.routes = {{"route", {"a"}}};
     s.behaviours = {behaviour, {"proto", 2, 2, 3, 1.5, .2}};
     s.vehicleTypes = {{"car", 4, 2, {15, 15}, 3, 2, 6, behaviour.id}, {"truck", 4, 2, {15, 15}, 3, 2, 6, "proto"}};
+    s.clampRules.lineRest = false; // the model's own result, without LINE_STOP's floor (D652)
     return s;
 }
 }

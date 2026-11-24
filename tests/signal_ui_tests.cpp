@@ -247,6 +247,18 @@ int main(int argc,char** argv) {
         require(floored["schemaVersion"]==47 && floored["definition"]["clampRules"]==Json{{"standingStopFloor",false}},"standingStopFloor off did not write schema 47");
         w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
         require(w.history().document().definition->clampRules==ClampRules{},"Undo did not restore standingStopFloor");
+        // LINE_STOP §5 (D652, BA245): the sixth box is ticked by default; unticking it writes false at 87.
+        QTimer::singleShot(0,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            auto* box=dialog?dialog->findChild<QCheckBox*>("editorLineRest"):nullptr;
+            require(box && box->isChecked(),"editorLineRest missing or not ticked by default");
+            box->setChecked(false);dialog->accept();
+        });
+        w.findChild<QAction*>("editorRunSettings")->trigger();QApplication::processEvents();
+        const auto lined=documentJson(w.history().document());
+        require(lined["schemaVersion"]==87 && lined["definition"]["clampRules"]==Json{{"lineRest",false}},"lineRest off did not write schema 87");
+        w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"Undo did not restore lineRest");
         std::cout<<"Signal UI tests passed\n";
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

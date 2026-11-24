@@ -281,13 +281,20 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   record (D649) and the creep's hold (D650); W99 runs, unvalidated:** [W99](reference/W99.md). Groups `w99`,
   `w99codec`, `w99traits`, `w99run`, `w99cc1codec`, `w99cc1run` and `behaviour-library-ui` pass. Heavy vehicles are
   bounded by their type's acceleration, not halved (D644). The unvalidated marker stays.
-  **Next (owner's choice):** [LINE_STOP](reference/LINE_STOP.md) (D651), stopping at the line for every line type
-  and model, is written and measured ([evidence](evidence/line-stop-options.md)). The recommendation is L3F, a
-  SUMO-style line law plus the extended floor, as `clampRules.lineRest`, on for projects, with M0 untouched. The
-  owner picks L3F, L3, L1, L1F or L0; then the code session (rows BA239–BA245) and a re-run of the BA27/BA231
-  sweeps. Separately, W99's arrival clamps (about 320 per run on the four-leg, 1,200 on M2.6, under every
-  option): §4's creep should accelerate only while it can still stop. That is a W99 §4 slice. Then a cited
-  preset only if one exists (D178). W99's headway falling with dt is recorded, not explained.
+  **Stopping at the line (D651, D652):** [LINE_STOP](reference/LINE_STOP.md) L3F is in, as `clampRules.lineRest`
+  (schema 87, on by default for projects). Every W74/W99 behaviour, and every prototype carrying
+  `amberDeceleration`, stops at signal, give-way, Stop, zone and gate lines; dead ends stay leaders; bare M0 keeps
+  its bytes. Startup lost time on the four-leg moves from −0.1 to −1.2 s up to +1.6 to +2.0 s
+  ([evidence](evidence/line-stop-options.md#after-d652)).
+  **Next:**
+  - **Re-run the BA27/BA231 sweeps** under D652 (both records predate it), then D369's SUMO comparison on a
+    project copy. It is an M0-style plausibility look, not a gate.
+  - **W99 §4: creep only while it can still stop.** These are the arrival clamps, about 340 per run on the
+    four-leg and about 1,260 on M2.6.
+  - **The M6 U record and sweep (D543, D546)** run with the switch off; re-measure them under D652 if M6
+    work resumes.
+  - **A cited W99 preset** only if one exists (D178).
+  - **Owner (Windows):** the lineRest checkbox and the four-leg queues at the line, next package.
   **Owner (Windows):** [F8](plans/OWNER_SITTING_WINDOWS.md), the CC1 table; [F7](plans/OWNER_SITTING_WINDOWS.md)'s
   out-of-range recheck (D643). Both need a package newer than #146.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane

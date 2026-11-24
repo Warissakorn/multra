@@ -80,8 +80,9 @@ Negative startup lost time is the head start a car gets from standing metres sho
     with `EDIT_UNSUPPORTED_FIELD`, and a non-boolean is refused with `INVALID_CLAMP_RULE`.
   - Run settings gains a checkbox for it.
 - **M0 is untouched.**
-  - The rule applies only where `standingStopFloor` applies today: behaviours carrying `amberDeceleration`, set by
-    projects and never by bare scenario files.
+  - As proposed, the rule applied only where `standingStopFloor` applies today: behaviours carrying
+    `amberDeceleration`, set by projects and never by bare scenario files. §7 amends this to include every
+    W74 and W99 behaviour.
   - So `multra-cli 42`, the four TypeScript reference rows and `crossing.json` keep their bytes, and D369 stays
     closed.
   - The measurements show that an unscoped rule would move bare M0 (1 → 5 clamps).
@@ -106,6 +107,55 @@ Negative startup lost time is the head start a car gets from standing metres sho
 - **M0, and the amber rule** (D147, D369).
 - **L2's distance**, until a cited value exists.
 
-## 7. The owner's choice
+## 7. The owner's choice and the implementation (D652)
 
-Open. The options are L3F (recommended), L3, L1, L1F, or keep L0.
+The owner chose **L3F** on 2026-11-24 ("เลือก L3F ทำเลย").
+
+- **The key.** `clampRules.lineRest`, the sixth clamp rule. Absent means on; the file writes it only when it is
+  `false`, and that file is **schema 87**. A schema 86 or older file carrying it is refused with
+  `EDIT_UNSUPPORTED_FIELD` at `definition.clampRules.lineRest`; a non-boolean is refused with
+  `INVALID_CLAMP_RULE`. Run settings has a sixth checkbox, `lineRest`, ticked by default; confirming is one Undo
+  step with the other run settings.
+- **Scope (amended from §5).** `DriverBehaviour::lineRest` is runtime only. `createSimulation` sets it to the
+  switch and (`amberDeceleration`, or the `w74` or `w99` model). So:
+  - every W74 and W99 behaviour gets the law, as measured;
+  - a prototype gets it only with `amberDeceleration`;
+  - a prototype without that key is the frozen M0 law, so `multra-cli 42`, the reference rows and
+    `crossing.json` keep their bytes.
+
+  §5's "only where `standingStopFloor` applies" would have left a W99 behaviour made without
+  `amberDeceleration` out.
+- **Lines (amended from §2).** The law covers signal heads, give-way and Stop lines, zone lines and lot gates.
+  **A dead end is not a line here.** Its approach is the lane change's, so it stays a leader as before. With
+  dead ends as lines, the weaving lab's 150 m weave served 341 vehicles instead of 389 (seed 42): a changer
+  kept its speed until the late stop and found fewer gaps. The lane-change lab, measured, had barely moved.
+- **Engine.**
+  - `src/core/line_stop.hpp`/`.cpp` (`lineStopAcceleration`, `applyLineStop`).
+  - In `stepSimulation`, the model follows the vehicle leader (or the perceived one) when a line is the
+    nearer obstacle.
+  - The finish at the line: `stopAtLine` within the type's maximum, and a rounding residue of up to 10⁻⁶ m is
+    rest.
+  - **Against the measured L3F** (clamps, delay, headway and startup lost time, all four behaviours, seeds 42–51):
+    - The T-junction and the priority lab are reproduced byte for byte.
+    - The four-leg, M2.6 and the lane lab, which have dead ends, differ where those dead ends now stay
+      leaders ([evidence](../evidence/line-stop-options.md#after-d652)). The largest change is the W74 SUMO
+      preset on M2.6: delay 149.6 → 171.5 s against L3F, still below L0's 186.1 s.
+- **Rows.** BA239–BA245 in `tests/line_stop_tests.cpp` (`linestop`), and the checkbox in `signal_ui_tests`.
+  BA241 adds W99's floor behind a standing car (−1 m/s² where its closing law asks −0.95). Mutations bite:
+  - the scope narrowed to `amberDeceleration`;
+  - the finish at the line removed;
+  - the floor removed.
+
+  Two rows were amended once they ran:
+  - **BA242:** a prototype with `amberDeceleration` that cannot stop goes, committed (D147); only W74 and W99
+    are held and clamp.
+  - **BA244:** a Stop rests a vehicle from below walking pace (M3.2.5), so it rests within 1 cm, not 10⁻⁶ m.
+- **Rows kept on the old mechanics** (the switch off, each with a comment):
+  - D258's `stopfloor` and the `mergeclamps` rows, which test rules that predate this one;
+  - W74's composition rows (BA23–BA28) and W99 CC1's composition row;
+  - the M6 U record and sweep (D543, D546);
+  - red running's output row BA145. Its counted runs were cars **creeping at the line when red began**, and
+    the law removes the creep.
+- **Rows moved to the new behaviour:**
+  - diverge A68: its standing car is held at its own front, not 2.5 m ahead;
+  - visibility VS5: the hold shows over 20 ticks, not 3, because the law brakes later.

@@ -25,6 +25,7 @@ Scenario redHead(std::optional<double> amber, bool floor) {
     s.signalHeads = {{"h", "road", 100, "p"}};
     for (auto& b : s.behaviours) b.amberDeceleration = amber;
     s.clampRules.redLineStop = false; s.clampRules.standingStopFloor = floor;
+    s.clampRules.lineRest = false; // D258's floor alone; LINE_STOP's line law (D652) is linestop's
     return s;
 }
 SimState tick(std::optional<double> amber, bool floor, const std::vector<test::Placement>& vehicles) {

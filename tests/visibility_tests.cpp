@@ -50,10 +50,11 @@ TEST(visibility, vs4_within_visibility_the_gap_test_decides_as_before) {
 TEST(visibility, vs5_a_driver_who_cannot_stop_goes_unless_the_area_is_taken) {
     // Visibility 2 m, 6 m short of the line. At 14 m/s it can no longer stop there, so the unseen
     // stretch does not hold it (commitment, M3.2.8a): its motion is unlimited's. The forcing: at
-    // 3 m/s it can stop, and it slows where unlimited does not.
+    // 3 m/s it can stop, and it is held where unlimited is not (D652's line law brakes late, so
+    // over 20 ticks rather than 3).
     const auto near = setup(2), open = setup(kUnlimited);
     test::near(after(near, 6, 14, 3), after(open, 6, 14, 3), 1e-12);
-    CHECK(after(near, 6, 3, 3) < after(open, 6, 3, 3) - 0.1);
+    CHECK(after(near, 6, 3, 20) < after(open, 6, 3, 20) - 0.1);
 }
 TEST(visibility, vs1_the_key_round_trips_at_80_and_is_refused_below) {
     auto d = fixture::tJunction().document;
