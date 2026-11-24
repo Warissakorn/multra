@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-24 — F7 on Windows; the W99 dialog names an out-of-range key first (D643)
+
+- **Owner (F7, package #145, verbatim in [OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md)):** empty fields,
+  help, the empty-key refusal and the fit pass in Thai and English at 100/150 %; with `cc0 = 0`, Confirm showed no
+  range message and moved to the next field.
+- **Cause:** the dialog read keys until the first empty one and ran the range check only when all were filled, so
+  a value just typed was never reported while a later key was empty (W74 had the same order). The range message
+  also said "w74".
+- **Fix (D643):** `readKeys` reads every key (empty ones as NaN), runs the model's own check once, and names and
+  focuses the first key in order that is empty or out of range; the message is model-neutral (en, th) and ends
+  with the key. `behaviour-library-ui` checks `cc0 = 0` with later keys empty (error "· cc0", focus on cc0), then
+  the next empty key; it fails on the old order.
+- **Verified (Linux only):** `check` passes (372/372); the build without the PCH compiles every unit. A new
+  package for the owner's recheck.
+
 ## 2026-11-24 — W99 slice 5: composition, the Run refusal lifted (D642)
 
 - **Owner:** "ทำต่อ" after the trait slice; the plan approved.
@@ -184,17 +199,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 - No decision numbers used (638–641 left unused). Docs only; headless preset built for the tools;
   `multra-check-docs .` and `multra-check-file-sizes .` pass.
-
-## 2026-11-23 — Results tabs at 1024 in Thai; the clamp note's marker (slice C, D634)
-
-- **Strip:** measured first, on Linux offscreen at 1024 × 768 with every tab of each level forced visible: Thai Micro
-  605 px, Macro 572 px, English 673 and 483, of a 1008 px Results page. D497's one-level strip had already fixed the
-  scroll NEXT carried from D490's review, so no label changed and no control was added (D634).
-- **Clamp note:** now opens "Not yet validated." / "ยังไม่ผ่านการตรวจสอบความถูกต้อง", as every other Results note does
-  (rule 4); "Safety clamp" stays untranslated.
-- **Test:** `results-tabs-ui` replaces its conditional strip check with one at 1024 × 768 in Thai and English that first
-  asserts the size and language took effect, then per level: no scroll button, no tab past the page, no elided label;
-  and the clamp note's statement in both locales (a third locale fails it until added). Proved to bite: the old
-  locales fail on the note; a 1614 px Thai Micro label fails on the strip.
-- **Verified (Linux only):** desktop build, full `ctest --preset desktop` and `check`. Screenshots taken for the check
-  only, not committed (no contract cites them). The Windows Thai look is the owner's.

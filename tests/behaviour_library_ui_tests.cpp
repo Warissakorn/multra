@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
                 require(item<QLineEdit>(e, "exAdd")->text() == "2", "w74 value not shown");
                 item<QLineEdit>(e, "exAdd")->setText("0.5"); confirm(e);
                 require(e.isVisible(), "Out-of-range w74 value accepted");
-                require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("behaviour.exAdd"), "Range error not shown");
+                require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("exAdd"), "Range error not shown");
                 require(item<QCheckBox>(e, "curveLateralAccelerationSet")->isChecked() && item<QDoubleSpinBox>(e, "curveLateralAcceleration")->value() == 2.5
                         && item<QCheckBox>(e, "reactionTimeSet")->isChecked() && item<QDoubleSpinBox>(e, "reactionTime")->value() == .4
                         && !item<QCheckBox>(e, "lateralSet")->isChecked(), "w74 either-model keys not shown (D217)");
@@ -298,7 +298,7 @@ int main(int argc, char** argv) {
                     require(item<QLineEdit>(e, "cc2")->text() == "4", "w99 value not shown");
                     item<QLineEdit>(e, "cc0")->setText("0"); confirm(e);
                     require(e.isVisible(), "Out-of-range w99 value accepted");
-                    require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("behaviour.cc0"), "W99 range error not shown");
+                    require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc0"), "W99 range error not shown");
                     item<QLineEdit>(e, "cc0")->setText("1.5"); item<QLineEdit>(e, "cc6")->setText("7");
                     item<QLineEdit>(e, "editorBehaviourName")->setText("Urban W99"); confirm(e);
                 });
@@ -325,6 +325,14 @@ int main(int argc, char** argv) {
                         require(item<QLineEdit>(e, key)->text().isEmpty(), "W99 field pre-filled by code");
                     confirm(e); require(e.isVisible(), "Empty w99 field accepted");
                     require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc0"), "Empty W99 field error not shown");
+                    // F7 item 4 (D643): an out-of-range value is reported before a later empty key, at its own field.
+                    item<QLineEdit>(e, "cc0")->setText("0"); confirm(e); require(e.isVisible(), "Out-of-range cc0 accepted");
+                    const auto rangeText = item<QLabel>(e, "editorBehaviourEditError")->text();
+                    require(rangeText.endsWith(" · cc0") && !rangeText.contains("w74") && !rangeText.contains("cc1"), "cc0's range error not shown first");
+                    require(e.focusWidget() == item<QLineEdit>(e, "cc0"), "Focus left the out-of-range field");
+                    item<QLineEdit>(e, "cc0")->setText("1.5"); confirm(e);
+                    require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc1"), "The next empty key not named");
+                    require(e.focusWidget() == item<QLineEdit>(e, "cc1"), "Focus not on the next empty key");
                     const std::vector<std::pair<const char*, const char*>> values{{"cc0", "1.5"}, {"cc1", "0.9"}, {"cc2", "4"},
                         {"cc3", "-8"}, {"cc4", "-0.35"}, {"cc5", "0.35"}, {"cc6", "11.44"}, {"cc7", "0.25"}, {"cc8", "3.5"}, {"cc9", "1.5"}};
                     for (const auto& [key, value] : values) item<QLineEdit>(e, key)->setText(value);

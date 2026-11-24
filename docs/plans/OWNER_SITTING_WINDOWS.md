@@ -56,7 +56,13 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
     behaviours*, edit a behaviour and choose *W99 (Wiedemann 99)*, in Thai and English at 100/150 %: are
     the ten cc fields empty, the help note readable, an empty field named in the error, and do the tab and
     footer fit without clipping? Package: run #145 of *Package binaries*, artifact `multra-windows-x64`
-    (expires 2026-12-07). *Owner:*
+    (expires 2026-12-07). *Owner, 2026-11-24, on #145:* "cc0–cc9 ว่างครบทั้ง 10 ช่อง; หมายเหตุช่วยเหลือของ W99
+    อ่านได้ครบ; กด Confirm ทั้งที่ช่องยังว่าง หน้าต่างไม่ปิด; กรอกค่าที่อยู่นอกช่วง เช่น cc0 = 0 แล้วกด Confirm
+    ข้อความยังไม่แจ้ง แต่เลื่อนไปให้ใส่ค่าถัดไป; แท็บเลื่อนดูได้ และปุ่ม Confirm/Cancel ด้านล่างอยู่ในจอตลอด ไม่ล้นจอ;
+    ทำข้อ 3–4 ซ้ำทั้งภาษาไทยและอังกฤษ ที่ 100% และ 150% แล้วสามารถทำได้". Empty fields, help, refusal of an
+    empty key and the fit passed. The out-of-range finding is fixed by D643 (the first key in order that is
+    empty **or** out of range is named and focused; the message no longer says "w74"). **Open for that one
+    check on the next package:** `cc0 = 0`, Confirm: the error ends "· cc0" and the cursor stays in cc0.
 
 ## G — Object interchange
 

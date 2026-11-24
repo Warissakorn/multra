@@ -20,6 +20,7 @@
 #include <QScrollArea>
 #include <QTabWidget>
 #include <QVBoxLayout>
+#include <limits>
 #include <tuple>
 #include <algorithm>
 namespace multra {
@@ -57,14 +58,25 @@ std::vector<std::pair<const Key*, QLineEdit*>> keyFields(QWidget* page, QFormLay
     }
     return result;
 }
-// Every key a number, or the first empty one named in the error and focused.
-template <class Parameters, class Key>
-std::optional<Parameters> readKeys(const std::vector<std::pair<const Key*, QLineEdit*>>& keys, QLabel* error, const QString& missing) {
+// Every key a number and in range (`issuesOf`, the model's own check), or else the first key in
+// order that is empty or out of range is named in the error and focused (F7 item 4, D643): a value
+// just typed is reported before a later key the author has not reached.
+template <class Parameters, class Key, class Issues>
+std::optional<Parameters> readKeys(const std::vector<std::pair<const Key*, QLineEdit*>>& keys, QLabel* error,
+                                   const QString& missing, const QString& outOfRange, Issues issuesOf) {
     Parameters parameters{};
+    std::vector<bool> empty;
     for (const auto& [key, edit] : keys) {
         bool ok = false; const double value = edit->text().trimmed().toDouble(&ok);
-        if (!ok) { error->setText(QString(missing).arg(key->name)); edit->setFocus(); return std::nullopt; }
-        parameters.*key->member = value;
+        empty.push_back(!ok); parameters.*key->member = ok ? value : std::numeric_limits<double>::quiet_NaN();
+    }
+    const auto issues = issuesOf(parameters, std::string("behaviour"));
+    for (std::size_t i = 0; i < keys.size(); ++i) {
+        const auto& [key, edit] = keys[i];
+        const bool bad = std::any_of(issues.begin(), issues.end(), [&](const auto& x) { return x.path == std::string("behaviour.") + key->name; });
+        if (!empty[i] && !bad) continue;
+        error->setText(empty[i] ? QString(missing).arg(key->name) : outOfRange + " · " + key->name);
+        edit->setFocus(); return std::nullopt;
     }
     return parameters;
 }
@@ -226,19 +238,15 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         }
         // A w74 behaviour (all 18 keys) or a w99 one (all ten), in range; its prototype fields are
         // unused and not written, and the other model's keys are dropped.
-        const auto refused = [&](const std::vector<ValidationIssue>& issues) {
-            if (issues.empty()) return false;
-            error->setText(text(issues.front().code.c_str()) + " · " + q(issues.front().path)); return true;
-        };
         auto result = DriverBehaviour{staged.id};
-        const auto missing = text("editorBehaviourKeyMissing");
+        const auto missing = text("editorBehaviourKeyMissing"), outOfRange = text("INVALID_BEHAVIOUR_PARAMETER");
         if (model->currentIndex() == 1) {
-            const auto parameters = readKeys<W74Parameters>(w74Keys, error, missing);
-            if (!parameters || refused(w74ParameterIssues(*parameters, "behaviour"))) return;
+            const auto parameters = readKeys<W74Parameters>(w74Keys, error, missing, outOfRange, w74ParameterIssues);
+            if (!parameters) return;
             result.w74 = parameters;
         } else {
-            const auto parameters = readKeys<W99Parameters>(w99Keys, error, missing);
-            if (!parameters || refused(w99ParameterIssues(*parameters, "behaviour"))) return;
+            const auto parameters = readKeys<W99Parameters>(w99Keys, error, missing, outOfRange, w99ParameterIssues);
+            if (!parameters) return;
             result.w99 = parameters;
         }
         result.maxDecelerationCooperativeBraking = otherCooperative.on->isChecked()

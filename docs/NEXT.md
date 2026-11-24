@@ -284,7 +284,7 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   queue-discharge timestep record (dt 0.1/0.25/0.5, seeds 42–81, `--discharge`), as W74's BA27; then a cited
   preset only if one exists (D178). **Owner, before any preset:** CC1 as a per-driver distribution, and heavy
   vehicles' halved acceleration; neither is in the contract. The unvalidated marker stays. **Owner (Windows):**
-  [F7](plans/OWNER_SITTING_WINDOWS.md), the W99 dialog (package run #145 predates composition).
+  [F7](plans/OWNER_SITTING_WINDOWS.md): passed on #145 except the out-of-range check, fixed by D643; recheck that one on the next package.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.

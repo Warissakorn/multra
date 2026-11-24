@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-23 — Results tabs at 1024 in Thai; the clamp note's marker (slice C, D634)
+
+- **Strip:** measured first, on Linux offscreen at 1024 × 768 with every tab of each level forced visible: Thai Micro
+  605 px, Macro 572 px, English 673 and 483, of a 1008 px Results page. D497's one-level strip had already fixed the
+  scroll NEXT carried from D490's review, so no label changed and no control was added (D634).
+- **Clamp note:** now opens "Not yet validated." / "ยังไม่ผ่านการตรวจสอบความถูกต้อง", as every other Results note does
+  (rule 4); "Safety clamp" stays untranslated.
+- **Test:** `results-tabs-ui` replaces its conditional strip check with one at 1024 × 768 in Thai and English that first
+  asserts the size and language took effect, then per level: no scroll button, no tab past the page, no elided label;
+  and the clamp note's statement in both locales (a third locale fails it until added). Proved to bite: the old
+  locales fail on the note; a 1614 px Thai Micro label fails on the strip.
+- **Verified (Linux only):** desktop build, full `ctest --preset desktop` and `check`. Screenshots taken for the check
+  only, not committed (no contract cites them). The Windows Thai look is the owner's.
+
 ## 2026-11-23 — Slice A: the kept leader order measured and not shipped (D627); long routes bisect (D626)
 
 - **Brief:** [PARALLEL_SESSIONS](../plans/PARALLEL_SESSIONS.md) A. Callgrind, GCC 13.3, Release `-g1`, seed 42; baseline study
