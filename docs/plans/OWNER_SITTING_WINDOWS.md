@@ -7,7 +7,7 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 and never reused; an item that took in an older one says so.
 
 **Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
-I.5 → F7 → F8 → F9 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
+I.5 → F7 → F8 → F9 → F10 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
 2026-11-22: P51 and P52 (words in PROGRESS; their findings D620).
 
@@ -108,6 +108,35 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
         end (confirmed on Linux).
       - **c and d:** not reported.
       - Open: [LINE_STOP §9](../reference/LINE_STOP.md#9-the-owners-look-on-windows-and-a-queue-behind-a-standing-car-open).
+
+10. **Queues at rest, with and without a reaction time** (listed 2026-11-25; D655–D661;
+    [LINE_QUEUE](../reference/LINE_QUEUE.md) §6, [REACTION_STOP](../reference/REACTION_STOP.md) §7). It re-checks F9 b
+    and c after the owner's F9 findings.
+    - **Package:** run #150 of *Package binaries* (`a5abe16`, D652–D661), artifact `multra-windows-x64`.
+    - **Not changed yet,** so not a finding:
+      - the stop itself is still constant braking at 2 m/s², then rest (B is open);
+      - the prototype's followers behind a standing car still crawl (PROTOTYPE_QUEUE, P17 not done).
+    - **a. The prototype at the line.** Open `four-leg-signalised` with `lineRest` ticked (*ตั้งค่าการจำลอง / Run
+      settings*), run, and pause during a red. Does the first car of each queue still stand with its front at the
+      stop line?
+    - **b. A W99 queue (D656).**
+      - In *Driving behaviours*, add a W99 behaviour with F9 c's values: cc0 1.5, cc1 *Fixed* 1.3, cc2 4, cc3 −12,
+        cc4 −0.25, cc5 0.35, cc6 6, cc7 0.25, cc8 2, cc9 1.5.
+      - Give the car type that behaviour, run, and pause during a red.
+      - Does every queued car stand **still**, about 1.5 m behind the car ahead, with no slow creep forward? Watch
+        one queue for about 20 s.
+      - At the end, note the safety-stop count (*การหยุดป้องกัน*) on the Results strip. On Linux it is about 8 per
+        run (seeds 42–51, with every vehicle type on W99, so a count with the car type alone will differ).
+    - **c. The same W99 queue with a reaction time (D661).**
+      - Edit that behaviour. On the tab *การรับรู้และผู้ขับ / Perception and drivers*, tick `reactionTime` and enter
+        0.5. Confirm and run.
+      - Pause during a red. Do the queued cars still stand still, without creeping? Does the first car stand at the
+        line, and does no car pass the line while it is red?
+      - Note the safety-stop count. On Linux it is about 8 per run.
+      - For comparison, untick `lineRest` in *Run settings* and run again. On Linux the count is about 550 per run,
+        so a much larger number is expected here.
+    - **d. Save and reopen.** Save with `reactionTime` 0.5 and `lineRest` ticked, close and reopen. Are both kept?
+    - Report the words for a–d, and the counts for b and c. Linux closes none of these (rule 3). *Owner:*
 
 ## G — Object interchange
 
