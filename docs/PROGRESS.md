@@ -5,6 +5,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — B, a softer stop profile: the contract and its measured options (D663)
+
+- **Owner:** "อนุญาตให้ดาวน์โหลด PDF ได้", then "เขียนสัญญา B จากแหล่งที่อ่านแล้ว".
+- **Sources read** ([stop-profile-sources](evidence/stop-profile-sources.md)):
+  - Kesting & Treiber (2008): IDM's equations and its braking strategy;
+  - Zhou et al. (2025), restating Treiber & Kesting: braking eases to zero at rest.
+  - Akçelik & Biggs (1987) and Deligianni (2017) are still unread.
+- **Contract** ([STOP_PROFILE](reference/STOP_PROFILE.md)): IDM-shaped line laws, bounded by today's so the stop
+  still ends exactly at the target.
+  - B2–B4 remove the onset step (four-leg step jerk: prototype 296 → 23–25, W74 625 → 175–389, W99 266 → 56–154).
+  - The prototype's delay rises by 9–12 s, which is not traced.
+  - No option removes the last step to rest.
+  - SUMO 1.18 measured: Krauss is today's profile; IDM rests 0.11 m short.
+  - **Recommendation:** B3 (T = 0, no new value) after a trace of the delay. The owner chooses (§6).
+- **Verified (Linux only):** no engine change; `multra-cli 42` byte-identical after the patch's revert;
+  `check-docs` passes.
+
 ## 2026-11-25 — Prototype queues rest behind a standing car: P17 (D662)
 
 - **Owner:** "ทำ P17 ต่อเลย". Package #150 (`a5abe16`, D652–D661) was queued with owner item F10.
@@ -185,34 +202,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - `check` passes.
 - **Package #149** (`f5653f8`): for the owner's [F9](plans/OWNER_SITTING_WINDOWS.md) (lineRest, queues at the
   line, a W99 queue), with F7 and F8.
-
-## 2026-11-24 — A front at the line has not passed it; BA27/BA231 and the SUMO look re-run (D653)
-
-- **Owner:** "ทำต่อไป ตามแนะนำ" (re-run the sweeps under D652, then the SUMO comparison).
-- **Found:**
-  - With D652, the sweeps' available cycles fell (prototype 1,316 → 998).
-  - The discharge, stop-line and priority-line observers counted a front exactly at a line as passed. So a
-    queue head resting there under LINE_STOP was counted as crossing during red and dropped from its cycle.
-  - D652's "startup lost time +1.6 to +2.0 s, toward HCM" was this artefact. It is withdrawn in RECORD,
-    LINE_STOP §8 and the evidence.
-- **Fix:** `pastLine` (`src/eval/line_passage.hpp`) is used by all three observers:
-  - a front at a line has not passed it;
-  - a line at a route's start is passed on insertion;
-  - an arrival is past every line.
-- **Rows:** BA246–BA248 (`linepassage`), all three failing under the old rule. PL1–PL9's independent counter
-  takes the same rule.
-- **Re-measured:**
-  - [W99](evidence/w99-discharge.md#after-d652-and-d653) and [W74](evidence/w74-discharge.md#after-d652-and-d653-2026-11-24)
-    sweeps.
-  - With the switch on, the prototype's and W99's headway are flat across dt. W99 no longer falls.
-  - Startup lost time is −0.6 s (prototype) and −1.7 s (W74), lower than with the switch off.
-  - [Four-leg and M2.6](evidence/line-stop-options.md#after-d653): clamps and delay are unchanged to the digit.
-- **SUMO:** the [M0 scene under project rules](evidence/m0-plausibility.md#under-project-rules-d652-d653):
-  - no clamps, no red passes;
-  - start-up lost time 0.74 s, between SUMO Krauss 0.69 s and IDM 0.44 s;
-  - the amber rule without the line rule passed on red 6 times in 10 runs.
-- **Verified (Linux only):**
-  - `multra-cli 42` is byte-identical.
-  - The switch-off sweeps with the old rule reproduce D650's per-cycle CSVs byte for byte.
-  - Each sweep, run twice, gives identical output.
-  - `check` passes.

@@ -317,10 +317,14 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   prototype's delay is +28 s against the switch off (the two start rules add up). The archived M3.2.7c congested
   variant now runs with `lineRest` off; a headway-arm fixture under `lineRest` would be new work.
   **Next:**
-  - **B,** a softer, cited stop profile for lines and standing vehicles. Sources searched 2026-11-25
-    ([stop-profile-sources](evidence/stop-profile-sources.md)); the primary texts (Akçelik & Biggs 1987, IDM) are
-    not read yet, because the fetch tool cannot reach their hosts. The stop law's late constant 2 m/s² is
-    also the source of the extra hard braking of followers arriving behind it (PROTOTYPE_QUEUE §3).
+  - **B, a softer stop profile: the contract is written, and the owner chooses**
+    ([STOP_PROFILE](reference/STOP_PROFILE.md) §6, D663).
+    - The options are IDM's form with the type's a and b, bounded by today's law.
+    - The recommendation is B3 (no new value): the prototype's step jerk 296 → 25 and hard braking 1,027 → 410 on
+      the four-leg.
+    - Its cost is the prototype's delay +9.5 s (untraced) and W99's `weaving-lab` clamps 31 → 43.
+    - **Before code:** the trace of §5 (if the owner asks for it), then rows BA268–BA273.
+    - Akçelik & Biggs (1987) and Deligianni (2017) are still unread (owner's copy).
   - **A leader braking to a stop** is outside Q2.
   **Owner (Windows):** [F10](plans/OWNER_SITTING_WINDOWS.md) on package #151 (`699b109`, D652–D662): queues at
   rest for W99, with and without `reactionTime` 0.5 s; it re-checks F9 b and c. #150 (`a5abe16`) lacks P17.

@@ -131,3 +131,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D660](RECORD.md#d660) — Under a delay R7's crawl is creep-stop-creep (W74's own); R9 (laws undelayed, hold at `s0`, a start that fits the delay) rests delayed queues with W74 9–44 and W99 8–29 clamps per run; the owner chooses
 [D661](RECORD.md#d661) — REACTION_STOP R9 implemented: delayed vehicles under `lineRest` rest without clamps or red passes (W74 755 → 9, prototype red passes 128 → 0 per run); runs without a delay unchanged
 [D662](RECORD.md#d662) — PROTOTYPE_QUEUE P17 implemented: prototype queues rest behind a standing car (crawl 17 → 1.3 s, 0 clamps); three scene forcings settled, BA197's floor 350
+[D663](RECORD.md#d663) — B's contract: an IDM-shaped stop with the type's a and b, bounded by today's law; B3 (no new value) cuts the prototype's step jerk 296 → 25 at +9.5 s delay (untraced); the owner chooses

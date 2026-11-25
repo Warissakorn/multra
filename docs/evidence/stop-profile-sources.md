@@ -80,11 +80,18 @@ dt 0.01. A car from 15 m/s, 200 m behind a car at rest:
 - The models that remove the end jerk do so with an acceleration that is zero at both ends (Akçelik & Biggs's
   polynomial) or that falls smoothly to zero near the target (IDM).
 
-## Next
+## SUMO 1.18, measured (2026-11-25)
 
-- **Read:** IDM's equations and its braking principle (Kesting & Treiber 2008; Zhou et al. 2025). These are enough to
-  contract an IDM-shaped stop with the type's `comfortableDeceleration` as b.
+One car (sigma 0, accel 1.4, decel 2, tau 1.2, dt 0.1) toward a `<stop>`:
+- **Krauss** brakes from 55 m at a constant −2 m/s², and rests exactly at the stop with a step from −2 to 0. This is
+  MULTRA's law today.
+- **IDM** eases from about 290 m out and peaks at about −1.9 m/s² about 9 m out. It **rests 0.11 m short**, with 3 s
+  below 1 m/s.
+
+A model is not field data. The full figures are in [stop-profile-options](stop-profile-options.md).
+
+## Used by
+
+[STOP_PROFILE](../reference/STOP_PROFILE.md) (D663) contracts an IDM-shaped stop from the two texts read.
 - **Still unread:** Akçelik & Biggs (1987), and Deligianni et al. (2017), whose field profile (hard first, then
   smoother) differs from IDM's (gradual, then easing). Either needs the owner's copy or a reachable host.
-- SUMO 1.18 is installed here, so its stop at a red line can be measured directly as a comparison. A model is not
-  field data, though.
