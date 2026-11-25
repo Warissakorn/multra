@@ -1,0 +1,101 @@
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index 53ba169..1e1d91f 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -322,11 +322,17 @@ SimState stepSimulation(SimState&& state, double dt) {
+         // LINE_STOP §2 (D652): with lineRest a holding line is not a leader. The model follows vehicles (perceived
+         // ones under M3.5); the nearest holding line has its own law, which ends at the line. A dead end is
+         // not one: its approach is the lane change's (LINE_STOP §6), so it stays a leader as before.
+-        const double line = std::min({headLine, giveWayLine, gateLine});
++        // LINE_STOP §9 (D655): a standing vehicle ahead is stopped behind by the same law, at its rear less the
++        // standstill gap; the model follows moving vehicles only.
++        const double standing = behaviour.lineRest && vehicleLeader && vehicleLeader->speed == 0
++            ? std::max(0.0, vehicleLeader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
++        const double line = std::min({headLine, giveWayLine, gateLine, standing});
+         const bool lineStop = behaviour.lineRest && std::isfinite(line);
+         auto modelLeader = leader;
+-        if (lineStop && leader && line <= leader->gap + 1e-9)
++        if (lineStop && leader && line <= leader->gap + 1e-9) {
+             modelLeader = perceivesAhead(sight) ? (perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader)) : vehicleLeader;
++            if (std::isfinite(standing) && modelLeader && modelLeader->speed == 0) modelLeader.reset();
++        }
+         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, modelLeader);
+         if (behaviour.lineRest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt);
+         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
+@@ -354,6 +360,14 @@ SimState stepSimulation(SimState&& state, double dt) {
+         // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
+         if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]
+             following.acceleration = inattentiveAcceleration(vehicle, following.acceleration, type);
++        // LINE_STOP §9 (D655): behind a moving leader, never more than lets this vehicle stop, at its maximum,
++        // short of where the leader would stand braking at that maximum from now (SUMO's safe speed, as a bound);
++        // after the reaction delay and inattention, as the hard cap is.
++        if (behaviour.lineRest && vehicleLeader && vehicleLeader->speed > 0) {
++            const double stops = vehicleLeader->gap + vehicleLeader->speed * vehicleLeader->speed / (2 * type.maxDeceleration);
++            const double a = lineStopAcceleration(vehicle.speed, std::max(0.0, stops - standstillGap(behaviour)), type.maxDeceleration, type.maxDeceleration, dt);
++            if (a < following.acceleration) { following.acceleration = a; following.mode = FollowingMode::braking; }
++        }
+         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
+         double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
+         double braking = type.comfortableDeceleration;
+diff --git a/tests/line_stop_tests.cpp b/tests/line_stop_tests.cpp
+index f91f15c..7012e72 100644
+--- a/tests/line_stop_tests.cpp
++++ b/tests/line_stop_tests.cpp
+@@ -5,6 +5,7 @@
+ #include "../src/project/document.hpp"
+ #include "../src/project/json.hpp"
+ #include <fstream>
++#include <map>
+ 
+ using namespace multra;
+ // LINE_STOP (D651, D652): rows BA239–BA245. With clampRules.lineRest a line is not a leader; the
+@@ -192,3 +193,49 @@ TEST(linestop, ba245_on_by_default_and_round_trips_at_schema_87) { // BA245
+     d.definition->clampRules = {};
+     CHECK(documentJson(d) == owned);
+ }
++
++// LINE_STOP §9 (D655): rows BA252–BA253. Under lineRest a standing vehicle ahead is stopped behind by the same law
++// as a line, at its rear less the standstill gap; the model follows moving vehicles only.
++namespace {
++struct Queue { double crawl{}; int clamps{}; std::vector<double> rests; bool still{}; };
++// Four cars from 40, 25, 10 and 0 m at 10 m/s toward the red line at 100 m, for 900 ticks: the longest time any
++// follower spends at 0.01–1 m/s, the clamps, and each follower's room behind the car ahead at the end.
++Queue queue(Model m, bool lineRest) {
++    auto s = redRoad(m, lineRest); s.duration = 900;
++    auto state = placed(s, {test::vehicle(1, 40, 10), test::vehicle(2, 25, 10), test::vehicle(3, 10, 10), test::vehicle(4, 0, 10)});
++    const double length = s.vehicleTypes.front().length, s0 = standstillGap(s.behaviours.front());
++    std::map<std::uint64_t, double> crawl;
++    Queue q;
++    for (int t = 0; t < 900; ++t) {
++        state = stepSimulation(std::move(state));
++        for (std::uint64_t id = 1; id <= 4; ++id) {
++            q.clamps += clamped(state, id);
++            const auto& v = find(state, id);
++            if (t > 100 && v.speed > 0.01 && v.speed < 1) crawl[id] += s.timeStep;
++        }
++    }
++    for (const auto& [id, c] : crawl) if (id > 1) q.crawl = std::max(q.crawl, c);
++    q.still = true;
++    for (std::uint64_t id = 2; id <= 4; ++id) {
++        q.rests.push_back(find(state, id - 1).distance - length - s0 - find(state, id).distance);
++        q.still = q.still && find(state, id).speed == 0;
++    }
++    return q;
++}
++}
++TEST(linestop, ba252_a_queue_behind_a_standing_car_comes_to_rest_without_a_crawl) { // BA252
++    const auto off = queue(Model::prototype, false);
++    CHECK(off.crawl > 10); CHECK(!off.still); // forcing: the prototype's following law only approaches rest
++    for (const auto m : kModels) {
++        const auto q = queue(m, true);
++        CHECK(q.still); CHECK(q.clamps == 0); CHECK(q.crawl <= 1.0);
++        for (const double r : q.rests) { CHECK(r >= -1e-9); CHECK(r <= 1e-6); }
++    }
++}
++TEST(linestop, ba253_a_moving_leader_is_followed_by_the_model_as_before) { // BA253
++    // No line and a leader at 8 m/s: on and off give the same ticks (the law reads standing vehicles only).
++    auto on = redRoad(Model::prototype, true), off = redRoad(Model::prototype, false);
++    on.signalHeads.clear(); off.signalHeads.clear();
++    auto a = placed(on, {test::vehicle(1, 30, 12), test::vehicle(2, 60, 8)}), b = placed(off, {test::vehicle(1, 30, 12), test::vehicle(2, 60, 8)});
++    for (int t = 0; t < 60; ++t) { a = stepSimulation(std::move(a)); b = stepSimulation(std::move(b)); CHECK(find(a, 1) == find(b, 1)); } // both still on the 150 m road
++}

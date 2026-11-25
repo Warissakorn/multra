@@ -178,3 +178,38 @@ cycle.
   - **Unchanged:** the engine, clamps, delay, the rest at the line and the crawls.
   - **D652's choice stands** on those.
 - **M0:** `multra-cli 42` is byte-identical.
+
+## 9. The owner's look on Windows, and a queue behind a standing car (open)
+
+**The owner, 2026-11-25, on package #149 (F9):** "ติ๊ก lineRest และรถคันหน้าจอดตรงเส้นแต่การหยุดไม่สมจริง; รถที่ต่อท้าย
+ไม่จอดนิ่ง เหมือนกับว่าเกิดการคืบไม่มีที่สิ้นสุด; การหยุดที่เส้น กับการหยุดต่อท้ายคันหน้าควรเหมือนกันหรือไม่".
+
+**Measured on Linux** (four-leg, seed 42, `lineRest` on):
+- **The first car** brakes at a constant −2.0 m/s² from about 6.5 m/s and ends with a jump to 0. That is the law's
+  constant comfortable braking (§2, as SUMO's `stopSpeed`).
+- **The followers** spend 40–60 s (prototype) or 25–30 s (W74) at 0.01–1 m/s behind a standing car and never
+  reach 0. W99 spends about 3 s (D654).
+- **The crawl predates D652.** With the switch off every car crawls, the first one included (40–74 s).
+- **The prototype's following law only approaches rest.**
+
+**The owner's choice** (2026-11-25): A, then B.
+- **A.** One stop law for lines and standing vehicles: the target is the rear less the standstill gap, for every
+  model under `lineRest`, and M0 is untouched.
+- **B.** A softer stop profile, from a cited source.
+
+**A first attempt, not committed** ([patch](../evidence/line-stop-queue-attempt.patch)):
+- **What it did.** Behind a standing vehicle, the model was replaced by the law, and a SUMO-style safe-speed
+  bound was added behind moving leaders.
+- **What worked.** BA252 (a queue of four comes to rest without a crawl, every model) passed.
+- **What broke.** Nine groups failed, the lab circuit reaching 611 clamps, for two reasons:
+  - **The switch on `speed == 0`.** A follower flips between the law (leader at 0) and the model (leader at
+    10⁻⁴ m/s). The prototype's model then brakes at up to −8 m/s² near a nearly stopped car, so the follower
+    alternates −8 and +2.5 each tick.
+  - **Inching.** A car resting at its target inches forward by sub-millimetre rooms, tick on, tick off, so a
+    queue never quite settles.
+
+**A needs its contract measured first**, as D651 did:
+- the leader's state as a continuous input (no `speed == 0` switch);
+- a start rule for a car at rest at its target;
+- the safe-speed bound's place after the reaction delay;
+- then rows and the sweeps.

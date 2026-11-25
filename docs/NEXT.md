@@ -299,6 +299,12 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   - **The M6 U record and sweep (D543, D546)** run with the switch off; re-measure them under D652/D653 if M6
     work resumes.
   - **A cited W99 preset** only if one exists (D178).
+  **The owner's F9 (2026-11-25):** the first car stops at the line but unrealistically (constant −2 m/s², then
+  a jump to 0); followers crawl without end (prototype 40–60 s, W74 25–30 s, predating D652). The owner chose
+  **A then B**: one stop law for lines and standing vehicles, then a softer, cited stop profile. A first attempt
+  of A failed nine groups and was not committed ([LINE_STOP §9](reference/LINE_STOP.md#9-the-owners-look-on-windows-and-a-queue-behind-a-standing-car-open),
+  [patch](evidence/line-stop-queue-attempt.patch)). **Next:** A's contract and measured options first (D651's
+  pattern), then code.
   **Owner (Windows), package #149 (`f5653f8`, D652–D654):**
   - [F9](plans/OWNER_SITTING_WINDOWS.md): the `lineRest` checkbox, queues at the line, a W99 queue, and the save
     and reopen.

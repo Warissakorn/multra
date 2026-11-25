@@ -100,7 +100,14 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
         before D654 and about 40 after (Linux, seeds 42–51). Note the number shown.
     - **d. Save and reopen.** Untick `lineRest`, save, close, reopen. Is it still unticked? Then tick it, save
       and reopen: is it ticked?
-    - Report the words for a–d. *Owner:*
+    - Report the words for a–d. *Owner, 2026-11-25, on #149:* "ติ๊ก lineRest และรถคันหน้าจอดตรงเส้นแต่การหยุด
+      ไม่สมจริง; รถที่ต่อท้าย ไม่จอดนิ่ง เหมือนกับว่าเกิดการคืบไม่มีที่สิ้นสุด; การหยุดที่เส้น กับการหยุดต่อท้ายคันหน้า
+      ควรเหมือนกันหรือไม่".
+      - **a:** the checkbox is shown, ticked, and fits at Thai 100 % (screenshot).
+      - **b:** the first car stops at the line, but the stop looks unrealistic, and the followers crawl without
+        end (confirmed on Linux).
+      - **c and d:** not reported.
+      - Open: [LINE_STOP §9](../reference/LINE_STOP.md#9-the-owners-look-on-windows-and-a-queue-behind-a-standing-car-open).
 
 ## G — Object interchange
 
