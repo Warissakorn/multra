@@ -305,11 +305,15 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   of A failed nine groups and was not committed ([LINE_STOP §9](reference/LINE_STOP.md#9-the-owners-look-on-windows-and-a-queue-behind-a-standing-car-open),
   [patch](evidence/line-stop-queue-attempt.patch)). **A is done for W74 and W99** ([LINE_QUEUE](reference/LINE_QUEUE.md), D655 contract, D656 Q2): queues come to rest
   without a crawl, and W99's clamps are 8 per run on BA231.
-  **The prototype's crawl is contracted** ([PROTOTYPE_QUEUE](reference/PROTOTYPE_QUEUE.md), D657): its law closes as
-  `k²/t` and never rests, and the line's law alone clamps on the restart from an exact rest at `s0`.
-  **Owner's choice open:** P17 (the stop law plus a start rule at the desired gap for `speedThreshold`; the only
-  option clean at dt 0.1–0.5; costs 13–22× jerk ticks, T-junction delay +0.45 s, headway +0.2 s at dt 0.5) or P0.
-  **Before P17's code:** trace the jerk, as D656 traced its hard braking; rows BA257–BA261.
+  **The prototype's crawl** ([PROTOTYPE_QUEUE](reference/PROTOTYPE_QUEUE.md), D657–D658): the owner chose P17.
+  The attempt was not committed: `lab` d217 clamps with `reactionTime` 0.5 s, three scene forcings were lost, and
+  BA197 served 4 % fewer ([patch](evidence/prototype-queue-attempt.patch)). D657's "P17" figures were P17L's
+  (corrected).
+  **The reaction delay is a gap reaching D656:** W74 clamps 755 per run on the four-leg at `reactionTime` 0.5 s
+  with `lineRest` on, against 23 off. **Owner's choice open** (§6):
+  1. contract the reaction delay for every model first (recommended);
+  2. P17 scoped to behaviours without a reaction delay;
+  3. P0 for the prototype.
   **Next:**
   - **B,** a softer, cited stop profile for lines and standing vehicles. The stop law's late constant 2 m/s² is
     also the source of the extra hard braking of followers arriving behind it (PROTOTYPE_QUEUE §3).

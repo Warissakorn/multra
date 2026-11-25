@@ -5,6 +5,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — P17 attempted, not committed; the reaction delay is a gap (D658)
+
+- **Owner:** "P17".
+- **Correction:** D657's "P17" was measured with P6's late law (the probe's branch ran for `ZZ_P ≥ 6`). It is now
+  P17L, and P7, P14, P16 and P18 are relabelled the same way.
+  - P17 as written: crawl 1.3 s at the median, clamps ≤ 0.8 per run at dt 0.1–0.5, jerk 8–13×, and moving hard
+    braking 2.1–2.5×.
+- **Jerk traced:** it is the stop law's bang-bang profile behind a car at rest, not the hand-back. That is B.
+- **Attempt** ([patch](evidence/prototype-queue-attempt.patch)):
+  - Rows BA257–BA260 passed, and each of four mutations failed one. `multra-cli 42` was byte-identical.
+  - **The full `check` failed five groups:**
+    - `lab` d217 clamps with `reactionTime` 0.5 s;
+    - three scene forcings were lost to the law itself;
+    - BA197 served 372 → 357, from the start rule.
+  - Reverted.
+- **Found:** the reaction delay reaches D656 too. On the four-leg at `reactionTime` 0.5 s, W74 clamps 755 per run
+  with `lineRest` on, against 23 off. No shipped project sets it.
+- **Contract** [PROTOTYPE_QUEUE §6](reference/PROTOTYPE_QUEUE.md): choices for the owner. The recommendation is to
+  contract the reaction delay for every model first.
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-25 — The prototype's crawl: the contract and its measured options (D657)
 
 - **Owner:** "เรื่องการคืบของ prototype (เขียนสัญญาก่อน)".
@@ -194,16 +215,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   standing cars clamped every tick, because §4's creep asks +cc7 at a gap 10⁻⁹–10⁻⁷ m above cc0 that D105's `g ≤ cc0`
   misses. Recorded, not fixed; no engine change; nothing bounded or calibrated.
 - **Verified (Linux only, Release `perf` tree, GCC 13.3):** the sweeps above; `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.
-
-## 2026-11-24 — CC1 curve slice 3: the dialog (D648)
-
-- **Owner:** "ทำ CC1 เซสชันถัดไปเลย"; the plan approved.
-- **Dialog:** a *CC1* choice (*Fixed* / *Distribution (per driver)*, en and th); switching to W99 starts in
-  Distribution with an empty table and `cc1` greyed; a curved behaviour opens with its points, a fixed one in
-  Fixed. The table (`cc1` s, share %) has Add/Remove as the desired-speed table. Confirm names an empty table, a
-  non-number cell or the validator's point and selects its row; Fixed is unchanged. D646's decline is gone.
-- **Rows:** `behaviour-library-ui` checks the default, the refusals ("cc1Curve", "cc1Curve[1].share"), a saved
-  three-point curve at schema 86, Distribution → Fixed, a fixed behaviour opening in Fixed and the Thai item.
-  Mutations bite: Fixed as the default, the curve not saved, the decline restored.
-- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 374/374; the build without the PCH
-  compiles every unit. F8 lists the owner's Windows look.

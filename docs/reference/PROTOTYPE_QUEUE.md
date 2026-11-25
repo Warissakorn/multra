@@ -54,24 +54,30 @@ which bare M0 does not carry, and `multra-cli 42` must stay byte-identical.
 | R5 | P1 plus D258's floor behind a slower vehicle | 0.1 clamps, but thousands of hard brakes on the lane and weaving labs |
 | P2 | P1 plus a start rule at the first tick's speed `a·dt` | Clean at dt 0.1. At dt 0.5, headway 2.115 → 2.832 s and delay +11 s |
 | P6 | P2, with the law only for the model's final phase | 0 clamps; more severe braking (66 ticks below −6 m/s² vs 13) |
-| P7 | P1 plus a bound on the first tick's speed | 5 / 21 clamps; the crawl partly returns |
-| P14 | P1, with a cap hit behind a slower leader finished as braking | 216 clamps |
-| P16 | P1 plus a start rule at the leader's speed | Delay doubles (47.5 → 97.9 s) |
-| **P17** | §2 | Clean at dt 0.1, 0.25 and 0.5 |
-| P18 | P17 plus P7's bound | As P17, with higher delay at dt 0.5 |
+| P7L | P6's late law plus a bound on the first tick's speed | 5 / 21 clamps; the crawl partly returns |
+| P14L | P6's late law, with a cap hit behind a slower leader finished as braking | 216 clamps |
+| P16L | P6's late law plus a start rule at the leader's speed | Delay doubles (47.5 → 97.9 s) |
+| P17L | P6's late law plus §2's start rule | Clean at dt 0.1, 0.25 and 0.5 |
+| P18L | P17L plus P7L's bound | As P17L, with higher delay at dt 0.5 |
+| **P17** | §2 (measured in D658) | Clean at dt 0.1, 0.25 and 0.5 |
+
+**Corrected in D658.** D657's table named the late-law variants P7, P14, P16, P17 and P18 (the probe's P6 branch ran
+for all of them), and its "P17 against P0" figures were P17L's. The figures below are P17's as §2 writes it
+([evidence](../evidence/prototype-queue-options.md#correction-d658)).
 
 **P17 against P0:**
-- **Crawl:** four-leg median / p90 17.0 / 53.0 → 4.7 / 6.0 s, and vehicles crawling ≥ 10 s 56 % → 0.8 %. M2.6 is
-  11.3 / 50.2 → 4.6 / 6.3 s.
-- **Clamps:** 0.0 → 0.0 (four-leg), 0.3 → 0.2 (M2.6), and 0–0.5 per run on every project and timestep.
-- **Delay:** four-leg +0.19 s, M2.6 +0.41 s, the T-junction +0.45 s (5.94 → 6.39), the priority lab +0.14 s, and the
+- **Crawl:** four-leg median / p90 17.0 / 53.0 → 1.3 / 1.4 s, and vehicles crawling ≥ 10 s 56 % → 0.3 %. M2.6 is
+  11.3 / 50.2 → 1.3 / 1.6 s.
+- **Clamps:** 0.0 → 0.0 (four-leg), 0.3 → 0.3 (M2.6), and at most 0.8 per run on every project and timestep.
+- **Delay:** four-leg +0.21 s, M2.6 +0.47 s, the T-junction +0.44 s (5.94 → 6.38), the priority lab +0.11 s, and the
   weaving lab −0.45 s.
 - **Headway:** within 0.06 s at dt 0.1. At dt 0.5, +0.19 s (four-leg) and +0.21 s (M2.6).
 - **Costs:**
-  - jerk ticks 23 → 516 per run on the four-leg, 144 → 1,951 on M2.6;
-  - moving hard braking +33 % (four-leg) and +29 % (M2.6). These are followers arriving behind a leader that the
-    stop law brakes at a constant 2 m/s², a later stop than the prototype's law makes. That is LINE_STOP's
-    profile, so it is B's question.
+  - jerk ticks 23 → 296 per run on the four-leg, 144 → 1,170 on M2.6. They are the stop law's bang-bang profile
+    (accelerate to the comfortable-braking curve, then brake on it), not the hand-back (§6);
+  - moving hard braking 417 → 1,027 per run on the four-leg, 1,841 → 3,814 on M2.6, mostly −3 to −4 m/s². Below
+    −6 m/s² it is 13 → 20 on the four-leg. These are followers arriving behind a leader that the stop law brakes at
+    a constant 2 m/s², later than the prototype's law. That is LINE_STOP's profile, so it is B's question.
 
 ## 4. The session's recommendation
 
@@ -79,8 +85,8 @@ which bare M0 does not carry, and `multra-cli 42` must stay byte-identical.
 realism.**
 - P17 is the only option measured that removes the crawl with no clamps at every timestep, and it adds no value.
 - **Against it:**
-  - The jerk ticks rise 13–22×. They are not traced yet. Before code, trace them, as D656 traced its hard braking.
-    If they are the hand-back from the law to the model, rows must bound them.
+  - The jerk ticks rise 8–13× (D657 said 13–22×, from P17L's figures). D658 traced them to the stop law's profile,
+    not the hand-back (§6).
   - `speedThreshold` gains a second meaning. Today it is the closing speed that starts the approaching mode. Under
     P17 it is also the speed whose gap a vehicle at rest waits for. Its value 0.2 m/s is the behaviour file's and
     is uncited, like every prototype value.
@@ -97,8 +103,43 @@ realism.**
 | BA258 | At rest behind a leader that moves off | No acceleration while the gap is below `s0 + k·√speedThreshold`; it accelerates the tick the gap reaches it |
 | BA259 | The four-leg at dt 0.1, 0.25 and 0.5 | No clamp in the queue scene; headway within the measured band |
 | BA260 | Scope: a prototype without `amberDeceleration`, W74 and W99 | Ticks unchanged; `multra-cli 42` byte-identical |
-| BA261 | The jerk trace's finding | Bounded as the trace finds |
+| BA261 | The jerk trace's finding | Not needed: the trace found the stop law's profile, not the hand-back (§6) |
 
-## 6. The owner's choice
+In D658's attempt BA259 ran the queue scene at dt 0.25 and 0.5, with a crawl bound of 2 s at dt 0.5 (the law's
+last braking ticks below 1 m/s alone count 2 s there). BA260 also asserted that M0's law starts before the gap.
 
-Open. Options: **P17** (the session's recommendation if the prototype is to rest), **P0** (leave it), or another.
+## 6. The owner's choice and the first attempt (D658, open)
+
+The owner chose **P17** on 2026-11-25 ("P17"). That choice was made on D657's figures, which were P17L's (§3).
+
+- **The jerk trace (§4).** The trace is the stop law's profile behind a car at exactly 0 m/s:
+  - free acceleration followed by the law's braking (1,485 of 2,965 ticks);
+  - the model's approach followed by the law's acceleration (1,320).
+
+  It is not the hand-back, so BA261 is not needed. The profile is B's question.
+- **The attempt** ([patch](../evidence/prototype-queue-attempt.patch), not committed).
+  - The engine: `queueStop` became `lineRest`, and the start rule came after rule 3's hold.
+  - Rows BA257–BA260 were written, and BA241's prototype row amended. Each of four mutations failed a row.
+  - `multra-cli 42` was byte-identical.
+- **The full `check` failed five groups** ([evidence](../evidence/prototype-queue-options.md#p17-as-written-and-the-attempt-d658)):
+  - **`lab` d217: 4 clamps on the circuit with `reactionTime` 0.5 s.** Behind a car that has just stopped, the
+    law's decision is acted on 0.5 s late, and the stop at exactly `s0` leaves no margin for it.
+  - **Three forcings lost:**
+    - `tjunction_signal`'s congested-major headway ticks (91 → 0);
+    - BA248's follow-up (1 → 0);
+    - BA107's 0.2 s slowed-lane effect on one seed.
+
+    The law alone (P1) already moves each of them.
+  - **`weavinglab` BA197:** served 372 → 357, from the start rule.
+- **The reaction delay is a gap in both contracts, and it reaches D656.** With every behaviour's `reactionTime`
+  at 0.5 s on the four-leg, W74 clamps 755 per run with `lineRest` on, against 23 with it off. No shipped project
+  sets `reactionTime`.
+- **Choices before a second attempt:**
+  1. **The reaction delay first, for every model** (recommended). A contract amendment on how the stop law behind
+     a vehicle at rest meets a reaction delay, measured for W74, W99 and the prototype. It may fix D656's 755 clamps
+     too. Options to measure include:
+     - a vehicle with a reaction delay keeps its model behind a standing car;
+     - the law reads the standing leader without the delay.
+  2. **P17 without reaction delays.** Scope P17 to behaviours without `reactionTime`, amend the three forcings'
+     scenes, and accept BA197's 4 % fewer served vehicles.
+  3. **Leave the prototype (P0)** and do 1 for W74 and W99 only.

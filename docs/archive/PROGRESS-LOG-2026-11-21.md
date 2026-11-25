@@ -434,3 +434,16 @@ Whole entries moved from the live PROGRESS log.
   ignoring the share, the refusal kept ([evidence](../evidence/w99-cc1-draw.md)).
 - **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 374/374; the build without the PCH
   compiles every unit; `multra-cli 42` summary and events byte-identical.
+
+## 2026-11-24 — CC1 curve slice 3: the dialog (D648)
+
+- **Owner:** "ทำ CC1 เซสชันถัดไปเลย"; the plan approved.
+- **Dialog:** a *CC1* choice (*Fixed* / *Distribution (per driver)*, en and th); switching to W99 starts in
+  Distribution with an empty table and `cc1` greyed; a curved behaviour opens with its points, a fixed one in
+  Fixed. The table (`cc1` s, share %) has Add/Remove as the desired-speed table. Confirm names an empty table, a
+  non-number cell or the validator's point and selects its row; Fixed is unchanged. D646's decline is gone.
+- **Rows:** `behaviour-library-ui` checks the default, the refusals ("cc1Curve", "cc1Curve[1].share"), a saved
+  three-point curve at schema 86, Distribution → Fixed, a fixed behaviour opening in Fixed and the Thai item.
+  Mutations bite: Fixed as the default, the curve not saved, the decline restored.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 374/374; the build without the PCH
+  compiles every unit. F8 lists the owner's Windows look.
