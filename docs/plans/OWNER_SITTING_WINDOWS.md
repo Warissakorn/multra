@@ -7,7 +7,7 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 and never reused; an item that took in an older one says so.
 
 **Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
-I.5 → F7 → F8 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
+I.5 → F7 → F8 → F9 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
 2026-11-22: P51 and P52 (words in PROGRESS; their findings D620).
 
@@ -73,7 +73,34 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
     the row selected? Change 90 to 100, Confirm, reopen: are the points kept? Switch to *Fixed*, enter cc1,
     Confirm: is the curve gone? In Thai and English at 100/150 %: do the table, its headers and the Add /
     Remove buttons fit without clipping? Package: run #147 of *Package binaries* (`c193433`, D648–D650),
-    artifact `multra-windows-x64` (expires 2026-12-08). *Owner:*
+    artifact `multra-windows-x64` (expires 2026-12-08), or the newer run #149 (`f5653f8`, which also carries
+    F7's fix and F9). *Owner:*
+
+9. **Stopping at the line and W99 queues** (listed 2026-11-25; D652–D654;
+    [LINE_STOP](../reference/LINE_STOP.md) §7, [W99](../reference/W99.md) §4).
+    - **Package:** run #149 of *Package binaries* (`f5653f8`), artifact `multra-windows-x64`
+      (expires about 2026-12-09).
+    - **a. The checkbox.**
+      - Open `four-leg-signalised`, then *ตั้งค่าการจำลอง / Run settings*. In Thai and English at 100/150 %:
+        is there a sixth checkbox `lineRest`, ticked, below `standingStopFloor`, without clipping?
+      - Untick it and Confirm, then Undo once. Is it ticked again, with the other run settings as before (one
+        Undo step)?
+    - **b. Queues at the line.**
+      - With `lineRest` ticked, run the four-leg and pause during a red. Does the first car of each queue stand
+        with its front at the stop line? Is there no slow crawl toward the line in the last metres?
+      - Untick it and run again. The first car now stands about 2 m short: that is the old behaviour, for
+        comparison.
+    - **c. A W99 queue.**
+      - In *Driving behaviours*, add a W99 behaviour with the record's fixture values. These are not a preset:
+        cc0 1.5, cc1 *Fixed* 1.3, cc2 4, cc3 −12, cc4 −0.25, cc5 0.35, cc6 6, cc7 0.25, cc8 2, cc9 1.5.
+      - Give the car type that behaviour, then run (`lineRest` ticked) and pause during a red.
+      - Does each queued car stand still, about 1.5 m behind the car ahead? Does the first car stand at the
+        line?
+      - At the end, the Results strip's safety-stop count (*การหยุดป้องกัน*) for W99 was about 340 per run
+        before D654 and about 40 after (Linux, seeds 42–51). Note the number shown.
+    - **d. Save and reopen.** Untick `lineRest`, save, close, reopen. Is it still unticked? Then tick it, save
+      and reopen: is it ticked?
+    - Report the words for a–d. *Owner:*
 
 ## G — Object interchange
 
