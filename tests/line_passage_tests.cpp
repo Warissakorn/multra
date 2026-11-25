@@ -54,9 +54,10 @@ TEST(linepassage, ba248_priority_lines_time_the_leader_when_it_leaves_the_line) 
     s.vehicleTypes = source.vehicleTypes; s.behaviours = source.behaviours;
     s.behaviours.front().amberDeceleration = 3;
     s.conflictZones = {{"zone", {{"east"}, 98, 102}, {{"north"}, 98, 102}, 90, 3, 10, ZoneControl::yield}};
-    // Three major cars at 6 m/s hold the minor leader at the give-way line.
+    // Four major cars at 6 m/s hold the minor leader at the give-way line long enough for its follower to stand
+    // queued behind it before it leaves (D662: under PROTOTYPE_QUEUE the follower stops late, at the line's law).
     auto state = test::withVehicles(s, {{1, "minorRoute", 40, 10}, {2, "minorRoute", 25, 10},
-        {3, "majorRoute", 50, 6}, {4, "majorRoute", 35, 6}, {5, "majorRoute", 20, 6}});
+        {3, "majorRoute", 50, 6}, {4, "majorRoute", 35, 6}, {5, "majorRoute", 20, 6}, {6, "majorRoute", 5, 6}});
     EvaluationSpec spec; spec.queue = {5 / 3.6, 10 / 3.6, 20}; spec.end = 120;
     PriorityLineAccumulator lines(spec);
     lines.observe(state);

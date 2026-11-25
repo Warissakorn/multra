@@ -128,6 +128,6 @@ The owner chose **Q2** on 2026-11-25 ("เลือก Q2 ตามแนะน�
     - the prototype in scope;
     - the rule off.
 - **Left:**
-  - the prototype's crawl (§4), now its own contract: [PROTOTYPE_QUEUE](PROTOTYPE_QUEUE.md) (D657);
+  - the prototype's crawl (§4), now its own contract: [PROTOTYPE_QUEUE](PROTOTYPE_QUEUE.md) (D657), implemented as P17 (D662);
   - a leader braking to a stop (W74 can still meet the cap in dense scenes);
   - B, the stop's profile.

@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — Prototype queues rest behind a standing car: P17 (D662)
+
+- **Owner:** "ทำ P17 ต่อเลย". Package #150 (`a5abe16`, D652–D661) was queued with owner item F10.
+- **Engine** ([PROTOTYPE_QUEUE §7](reference/PROTOTYPE_QUEUE.md)): under `lineRest` the queue law covers the
+  prototype. A prototype at rest starts once its gap admits `speedThreshold`.
+  - On D661 the attempt's `lab` d217 clamps are gone.
+  - Without a delay: four-leg crawl 17.0 → 1.3 s, 0 clamps, jerk 23 → 296, hard braking 417 → 1,027.
+  - With R9 at 0.5 s: 0.5 / 3.1 clamps per run, against 12.1 / 51.2 with the switch off.
+  - At 1 s: delay +28 s.
+- **Forcings settled** (each still asserts its purpose):
+  - the archived M3.2.7c congested variant runs with `lineRest` off;
+  - BA248 gains a fourth major car;
+  - BA107 averages seeds 42–46.
+
+  BA197's served floor is 350 (357, from the start rule).
+- **Rows** BA257–BA260, and BA241 amended. Each of four mutations fails a row.
+- **Verified (Linux only):** `check` passes, `ctest` 376/376; `multra-cli 42` byte-identical.
+
 ## 2026-11-25 — Delayed vehicles rest at lines and in queues: R9 implemented (D661)
 
 - **Owner:** asked whether creep, stop and creep again is how people drive (no cited source either way; Vissim
@@ -198,26 +216,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - The switch-off sweeps with the old rule reproduce D650's per-cycle CSVs byte for byte.
   - Each sweep, run twice, gives identical output.
   - `check` passes.
-
-## 2026-11-24 — Stopping at the line: L3F implemented (D652)
-
-- **Owner:** "เลือก L3F ทำเลย".
-- **Engine:**
-  - `src/core/line_stop.*`: with `DriverBehaviour::lineRest` (the switch, and `amberDeceleration` or the w74/w99
-    model), the model follows vehicles and the nearest holding line has its own law (comfortable braking to the
-    line), plus D258's floor for W74/W99.
-  - At the line: `stopAtLine`, or rest, in place of a clamp.
-  - Dead ends stay leaders. As lines they cut the weaving lab's served count from 389 to 341.
-- **File and editor:** `clampRules.lineRest` (absent on, false at schema 87), refused below 87; Run settings'
-  sixth checkbox.
-- **Rows:** BA239–BA245 (`linestop`) and the checkbox in `signal_ui_tests`. Older-mechanics rows run with the
-  switch off:
-  - `stopfloor` and `mergeclamps`;
-  - the W74/W99 composition rows and the M6 U fixture;
-  - red running's output row BA145. Its runs were cars creeping at the line when red began.
-
-  Diverge A68 and visibility VS5 move to the new behaviour.
-- **Measured** ([evidence](evidence/line-stop-options.md#after-d652)): the T-junction and the priority lab equal
-  D651's L3F byte for byte; on the four-leg the prototype's startup lost time is +1.98 s (was −0.11) with 0
-  clamps. (That startup figure is withdrawn: a measurement artefact, D653.)
-- **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (375/375); the build without the PCH compiles 692 units, 0 failed. Package #147 (`c193433`) recorded for F7/F8.

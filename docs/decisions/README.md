@@ -130,3 +130,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D659](RECORD.md#d659) — The stop laws under a reaction delay: contract and options R0–R7; today W74 clamps 755–3,277 per run and the prototype passes reds; R7 (the line law undelayed, the model behind standing cars) recommended; the owner chooses
 [D660](RECORD.md#d660) — Under a delay R7's crawl is creep-stop-creep (W74's own); R9 (laws undelayed, hold at `s0`, a start that fits the delay) rests delayed queues with W74 9–44 and W99 8–29 clamps per run; the owner chooses
 [D661](RECORD.md#d661) — REACTION_STOP R9 implemented: delayed vehicles under `lineRest` rest without clamps or red passes (W74 755 → 9, prototype red passes 128 → 0 per run); runs without a delay unchanged
+[D662](RECORD.md#d662) — PROTOTYPE_QUEUE P17 implemented: prototype queues rest behind a standing car (crawl 17 → 1.3 s, 0 clamps); three scene forcings settled, BA197's floor 350

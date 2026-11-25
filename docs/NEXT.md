@@ -312,15 +312,17 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   **The reaction delay is done** ([REACTION_STOP](reference/REACTION_STOP.md), D659–D661, the owner's R9). Under
   `lineRest`, delayed vehicles rest without clamps or red passes: at 0.5 s W74 clamps 9 / 44 per run (four-leg /
   M2.6), against 755 / 3,277 before. Runs without a delay are unchanged.
-  **Next for the prototype:** P17 for undelayed prototypes ([PROTOTYPE_QUEUE §6](reference/PROTOTYPE_QUEUE.md)). Its
-  attempt's `lab` d217 clamps were under a delay, now R9's scope. Its three lost scene forcings and BA197's 4 % are
-  still to settle, so re-run the attempt patch on D661 first.
+  **Prototype queues rest** ([PROTOTYPE_QUEUE §7](reference/PROTOTYPE_QUEUE.md), D662): P17 on D661. Without a
+  delay, crawl 17 → 1.3 s, 0 clamps; jerk and hard braking up, which are B's profile. At `reactionTime` 1 s the
+  prototype's delay is +28 s against the switch off (the two start rules add up). The archived M3.2.7c congested
+  variant now runs with `lineRest` off; a headway-arm fixture under `lineRest` would be new work.
   **Next:**
   - **B,** a softer, cited stop profile for lines and standing vehicles. The stop law's late constant 2 m/s² is
     also the source of the extra hard braking of followers arriving behind it (PROTOTYPE_QUEUE §3).
   - **A leader braking to a stop** is outside Q2.
   **Owner (Windows):** [F10](plans/OWNER_SITTING_WINDOWS.md) on package #150 (`a5abe16`, D652–D661): queues at
-  rest for W99, with and without `reactionTime` 0.5 s; it re-checks F9 b and c.
+  rest for W99, with and without `reactionTime` 0.5 s; it re-checks F9 b and c. #150 predates D662, so the
+  prototype's followers still crawl there; the next package carries P17.
   **Owner (Windows), package #149 (`f5653f8`, D652–D654):**
   - [F9](plans/OWNER_SITTING_WINDOWS.md): the `lineRest` checkbox, queues at the line, a W99 queue, and the save
     and reopen.

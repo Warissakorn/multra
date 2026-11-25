@@ -239,14 +239,18 @@ TEST(speedarea, ba107_the_object_round_trips_at_schema_39_and_each_fault_is_name
     const auto slow = compileDocument(d, data), base = compileDocument(plain, data);
     CHECK(slow.scenario.reducedSpeedAreas.size() == 1); // one lane, one section
     CHECK(slow.scenario.reducedSpeedAreas[0].deceleration == 1.5);
-    const auto a = runSeed(slow.scenario, evaluationSpec(d, slow, data), 42).report;
-    const auto b = runSeed(base.scenario, evaluationSpec(plain, base, data), 42).report;
     const auto mean = [](const MovementReport& r) {
         double total = 0, n = 0;
         for (const auto& m : r.movements) if (m.meanTravelTime) { total += *m.meanTravelTime * static_cast<double>(m.vehicles); n += static_cast<double>(m.vehicles); }
         return total / n;
     };
-    CHECK(mean(a) > mean(b));
+    // D662: over seeds 42-46. The effect on one seed (0.2 s at seed 42) is within the noise a change in queueing moves.
+    double slower = 0, plainMean = 0;
+    for (std::uint32_t seed = 42; seed <= 46; ++seed) {
+        slower += mean(runSeed(slow.scenario, evaluationSpec(d, slow, data), seed).report);
+        plainMean += mean(runSeed(base.scenario, evaluationSpec(plain, base, data), seed).report);
+    }
+    CHECK(slower > plainMean);
 }
 TEST(speedarea, ba108_commands_follow_the_link_and_its_lanes) { // BA108
     History h; h.reset(fourLeg());

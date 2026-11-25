@@ -146,3 +146,35 @@ The owner chose **P17** on 2026-11-25 ("P17"). That choice was made on D657's fi
 
 **The owner chose 1** ("ตามแนะนำ"): [REACTION_STOP](REACTION_STOP.md) (D659) contracts the reaction delay for every
 model. P17 waits for its choice.
+
+## 7. The implementation (D662)
+
+The owner asked for P17 to go on after D661 ("ทำ P17 ต่อเลย").
+
+- **Engine** (`src/core/simulation.cpp`), as the D658 attempt:
+  - `queueStop` is `lineRest` for every model;
+  - the start rule (§2 rule 2) follows LINE_QUEUE's hold.
+
+  On D661, the attempt's `lab` d217 clamps are gone: they were under a reaction delay, which is R9's scope.
+- **Against the measurement.** Runs without a delay reproduce P17 to the digit. W74, W99 and `multra-cli 42` are
+  unchanged.
+  - With a delay, P17 and R9 together clamp below the switch off: 0.5 / 3.1 per run at 0.5 s (four-leg / M2.6),
+    against 12.1 / 51.2.
+  - At 1 s the prototype's delay is +28 s against the switch off, because the two start rules add up
+    ([evidence](../evidence/prototype-queue-options.md#after-d662-p17-committed-on-d661)).
+- **Rows.** BA257–BA260 in `linestop`, with BA241's prototype row amended, as the attempt (§6). Each of four
+  mutations fails a row.
+- **The three lost forcings, settled:**
+  - **`tjunction_signal`, the congested-major forcing.** The variant's head and phases are pinned by the archived
+    M3.2.7c evidence, which was measured before `lineRest` existed. Under P17 its queue rests 6 m per car and ends
+    about 2 m short of the crossing entry. The row now runs the archived variant with `lineRest` off. Under
+    `lineRest` this variant no longer exercises the headway arm.
+  - **BA248.** Under P17 the minor follower brakes late. It stood queued at 9.00 s, after the leader left at
+    8.20 s, so no follow-up existed. A fourth major car now holds the leader longer. The row passes with and
+    without P17.
+  - **BA107.** The slowed lane's effect is 0.2 s on one seed. The row now compares the mean over seeds 42–46 (+0.14 s
+    with P17, +0.14 s without).
+- **BA197:** served 372 → 357, from the start rule. Its floor is revised to 350, with the reason in the row. Its
+  clamps stay 0.
+- **Left:** B, the stop's profile, which is also the source of P17's hard braking and jerk (§3).
+

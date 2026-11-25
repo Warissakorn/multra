@@ -231,3 +231,20 @@ A temporary switch separated the causes:
   with `lineRest` on by default, is.
 
 The attempt was not committed. `multra-cli 42` is byte-identical after the revert.
+
+## After D662 (P17 committed, on D661)
+
+The committed code, with the same probe, reproduces the P17 rows above to the digit for runs without a reaction
+delay. W74 and W99 are unchanged.
+
+**With a reaction delay, P17 and R9 together** (the prototype, clamps / crawl median (s) / delay (s) per run):
+
+| Case | `lineRest` off | R9 alone (D661) | P17 + R9 |
+|---|---|---|---|
+| Four-leg, 0.5 s | 12.1 / 18.0 / 48.07 | 14.6 / 11.5 / 49.07 | 0.5 / 1.2 / 49.78 |
+| M2.6, 0.5 s | 51.2 / 17.6 / 47.34 | 48.9 / 8.8 / 47.17 | 3.1 / 1.2 / 47.53 |
+| Four-leg, 1 s | 277.1 / 2.7 / 48.40 | 232.9 / 1.5 / 60.21 | 18.1 / 1.1 / 76.77 |
+
+At 1 s the two start rules add up. The prototype waits for its `speedThreshold` gap and for the gap a 1 s start
+needs, so headway is 2.955 s against 2.375 with the switch off, and delay is +28 s.
+

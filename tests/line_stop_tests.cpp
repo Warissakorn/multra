@@ -82,16 +82,18 @@ TEST(linestop, ba240_no_crawl_before_the_line) { // BA240
 }
 
 TEST(linestop, ba241_a_nearer_vehicle_leader_is_followed_as_today) { // BA241
-    // A car standing with its front at the red line (100): the follower's leader is that car, nearer than the
-    // line, and the follower's ticks are the switch-off ticks. (The standing car's own published mode differs:
-    // off, the line is its leader; on, the line law holds it.)
+    // A car standing with its front at the red line (100): the follower's leader is that car, nearer than the line.
+    // D658 (PROTOTYPE_QUEUE §2) amends the row: the follower no longer keeps the switch-off ticks, since behind a car
+    // at rest the line's law stops it; it rests at the car's rear less the standstill distance, not at the line.
     const std::vector<test::Placement> queue{test::vehicle(1, 40, 10), test::vehicle(2, 100, 0)};
     auto off = placed(redRoad(Model::prototype, false), queue), on = placed(redRoad(Model::prototype, true), queue);
-    for (int t = 0; t < 100; ++t) {
+    const double target = 100 - on.scenario->vehicleTypes.front().length - on.scenario->behaviours.front().standstillDistance;
+    for (int t = 0; t < 600; ++t) {
         off = stepSimulation(std::move(off)); on = stepSimulation(std::move(on));
-        const auto& a = find(off, 1); const auto& b = find(on, 1);
-        CHECK(a == b);
+        CHECK(!clamped(on, 1)); CHECK(find(on, 1).distance <= target + 1e-9);
     }
+    CHECK(find(on, 1).speed == 0); test::near(find(on, 1).distance, target, 1e-6);
+    CHECK(target - find(off, 1).distance > 0.1); // forcing: with the switch off the law is still short of it
     // The law alone does not bind 60 m from the line at 10 m/s.
     CHECK(lineStopAcceleration(10, 60, 2, 8, 0.1) > 0);
 }
@@ -202,18 +204,19 @@ namespace {
 struct Queue { double crawl{}; int clamps{}; std::vector<double> rests; bool still{}; };
 // Four cars from 40, 25, 10 and 0 m at 6 m/s (about 2 s apart) toward the red line at 100 m, 900 ticks: the longest time a follower
 // spends at 0.01–1 m/s after the first 10 s, the clamps, and each follower's room behind the car ahead at the end.
-Queue queue(Model m, bool lineRest) {
-    auto s = redRoad(m, lineRest); s.duration = 900;
+Queue queue(Model m, bool lineRest, double dt = 0.1, bool amber = true) {
+    auto s = redRoad(m, lineRest); s.duration = 90; s.timeStep = dt;
+    if (!amber) s.behaviours.front().amberDeceleration.reset(); // the frozen M0 law
     auto state = placed(s, {test::vehicle(1, 40, 6), test::vehicle(2, 25, 6), test::vehicle(3, 10, 6), test::vehicle(4, 0, 6)});
     const double length = s.vehicleTypes.front().length, s0 = standstillGap(s.behaviours.front());
     std::map<std::uint64_t, double> crawl;
     Queue q;
-    for (int t = 0; t < 900; ++t) {
+    while (state.tick < totalTicks(s)) {
         state = stepSimulation(std::move(state));
         for (std::uint64_t id = 1; id <= 4; ++id) {
             q.clamps += clamped(state, id);
             const auto& v = find(state, id);
-            if (t > 100 && v.speed > 0.01 && v.speed < 1) crawl[id] += s.timeStep;
+            if (state.time > 10 + 1e-9 && v.speed > 0.01 && v.speed < 1) crawl[id] += dt;
         }
     }
     for (const auto& [id, c] : crawl) if (id > 1) q.crawl = std::max(q.crawl, c);
@@ -258,12 +261,59 @@ TEST(linestop, ba254_at_its_target_a_vehicle_waits_until_the_leader_moves) { // 
     }
     CHECK(leaderMoved); CHECK(waitedAfter >= 0); // and moves once the leader has
 }
-TEST(linestop, ba255_the_prototype_keeps_its_law_behind_a_standing_car) { // BA255, LINE_QUEUE §4's scope
-    // With amberDeceleration the prototype stops at the line (D652) but follows its own law behind a car: it still
-    // only approaches rest, as with the switch off (LINE_QUEUE §1, its own question).
-    const auto on = queue(Model::prototype, true), off = queue(Model::prototype, false);
-    CHECK(on.crawl > 10); CHECK(!on.still);
+// PROTOTYPE_QUEUE §5 (D658): rows BA257–BA260, the owner's P17. BA255 (the prototype kept its law) is superseded by BA257.
+TEST(linestop, ba257_a_prototype_queue_behind_a_standing_car_comes_to_rest) { // BA257
+    const auto off = queue(Model::prototype, false); // forcing: the law only approaches rest (PROTOTYPE_QUEUE §1)
     CHECK(off.crawl > 10); CHECK(!off.still);
+    const auto q = queue(Model::prototype, true);
+    CHECK(q.still); CHECK(q.clamps == 0); CHECK(q.crawl <= 1.0);
+    for (const double r : q.rests) { CHECK(r >= -1e-9); CHECK(r <= 1e-6); }
+}
+namespace {
+struct Start { int heldWhileLeaderMoved{}, movedBeforeGap{}, startedAt{-1}, clamps{}, lateStart{}; };
+// A prototype car at rest at its target behind one at rest at a red line (100) that turns green at 30 s.
+Start startFromRest(double dt, bool amber) {
+    auto s = redRoad(Model::prototype, true); s.timeStep = dt;
+    if (!amber) s.behaviours.front().amberDeceleration.reset();
+    s.signalPrograms = {{"p", 0, {{30, SignalColor::red}, {570, SignalColor::green}}}};
+    const auto& b = s.behaviours.front();
+    const double length = s.vehicleTypes.front().length;
+    auto state = placed(s, {test::vehicle(2, 100, 0), test::vehicle(1, 100 - length - b.standstillDistance, 0)});
+    const double start = find(state, 1).distance, wanted = desiredGap(b, find(state, 1).driverFactor, b.speedThreshold);
+    CHECK(wanted > b.standstillDistance + 1); // forcing: the rule's gap is metres beyond the target
+    Start r;
+    while (state.tick < totalTicks(s) && r.startedAt < 0) {
+        const double gap = find(state, 2).distance - length - find(state, 1).distance;
+        const bool leaderMoving = find(state, 2).speed > 0;
+        state = stepSimulation(std::move(state)); r.clamps += clamped(state, 1);
+        const bool moved = find(state, 1).distance > start;
+        if (gap < wanted) { r.movedBeforeGap += moved; r.heldWhileLeaderMoved += leaderMoving && !moved; if (moved) r.startedAt = int(state.tick); }
+        else { r.lateStart += !moved; r.startedAt = int(state.tick); } // it starts on the first tick its gap admits speedThreshold
+    }
+    return r;
+}
+}
+TEST(linestop, ba258_from_rest_the_prototype_waits_for_the_gap_at_speed_threshold) { // BA258
+    for (const double dt : {0.1, 0.5}) {
+        const auto r = startFromRest(dt, true);
+        CHECK(r.movedBeforeGap == 0); CHECK(r.lateStart == 0); CHECK(r.clamps == 0);
+        CHECK(r.heldWhileLeaderMoved > 1); CHECK(r.startedAt > 0);
+    }
+}
+TEST(linestop, ba259_the_prototype_queue_rests_at_every_timestep) { // BA259
+    // At dt 0.5 the law's last braking ticks below 1 m/s alone count 2 s, so the crawl bound is 2 s here.
+    for (const double dt : {0.25, 0.5}) {
+        const auto q = queue(Model::prototype, true, dt);
+        CHECK(q.still); CHECK(q.clamps == 0); CHECK(q.crawl <= 2.0);
+        for (const double r : q.rests) { CHECK(r >= -1e-9); CHECK(r <= 1e-6); }
+    }
+}
+TEST(linestop, ba260_m0s_law_keeps_its_ticks) { // BA260, PROTOTYPE_QUEUE §2 rule 3
+    // Without amberDeceleration the prototype is M0's law, which lineRest does not reach: on and off give equal ticks.
+    const auto on = queue(Model::prototype, true, 0.1, false), off = queue(Model::prototype, false, 0.1, false);
+    CHECK(on.crawl == off.crawl); CHECK(on.rests == off.rests); CHECK(!on.still);
+    // and from rest M0's law starts before its gap admits speedThreshold: the start rule does not reach it
+    CHECK(startFromRest(0.1, false).movedBeforeGap == 1);
 }
 
 // REACTION_STOP §6 (D661): rows BA262–BA267, the owner's R9. A vehicle with a reaction delay under lineRest: the stop

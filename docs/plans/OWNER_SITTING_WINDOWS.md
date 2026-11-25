@@ -115,7 +115,8 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
     - **Package:** run #150 of *Package binaries* (`a5abe16`, D652–D661), artifact `multra-windows-x64`.
     - **Not changed yet,** so not a finding:
       - the stop itself is still constant braking at 2 m/s², then rest (B is open);
-      - the prototype's followers behind a standing car still crawl (PROTOTYPE_QUEUE, P17 not done).
+      - the prototype's followers behind a standing car still crawl in #150. P17 came after it (D662), so the next
+        package carries it.
     - **a. The prototype at the line.** Open `four-leg-signalised` with `lineRest` ticked (*ตั้งค่าการจำลอง / Run
       settings*), run, and pause during a red. Does the first car of each queue still stand with its front at the
       stop line?
