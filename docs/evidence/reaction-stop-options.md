@@ -126,3 +126,24 @@ option on the four-leg.
 - **The prototype at 1 s** clamps 311 per run under R6/R7, against 277 with the switch off and 137 under R0. R0's
   figure is lower only because the prototype passes reds instead.
 - **Runs without `reactionTime`** are unchanged by every option. No shipped project sets it.
+
+## What the crawl under R7 is (the owner's question, 2026-11-25)
+
+The owner asked whether the crawl that R7 brings back is a car inching after its leader because of the reaction
+time. A temporary print (same patch) recorded every tick at 0.01–1 m/s with an acceleration of at most 0.5 m/s².
+That leaves out ordinary starts from rest. The ticks are split by the vehicle leader's speed. W74 fixture,
+four-leg, seeds 42–51, vehicle-seconds per run:
+
+| Case | Leader below 1 m/s | Leader at rest | Leader ≥ 1 m/s | No leader | Total |
+|---|---|---|---|---|---|
+| R7, `reactionTime` 0.5 s | 19,981 (75 %) | 4,882 (18 %) | 1,762 | 26 | 26,651 |
+| `lineRest` off, 0.5 s | 24,345 (74 %) | 5,478 (17 %) | 2,224 | 683 | 32,729 |
+| `lineRest` off, no delay | 20,485 (75 %) | 4,427 (16 %) | 1,677 | 652 | 27,241 |
+| Today (D656), no delay | 159 (8 %) | 403 (21 %) | 1,358 | 23 | 1,943 |
+
+- **Three quarters is a car following a leader that is itself creeping below 1 m/s.** The queue inches up as a
+  chain. Its head is a car creeping toward a car at rest (the 16–18 %), at about 0.17 m/s with 2.4–3.0 m left
+  beyond `s0`. That is W74's own approach in its ABX band (W74 §7).
+- **The reaction time is not its cause.** Without a delay and with the switch off, the crawl is the same
+  (27,241 against 26,651 vehicle-seconds). R7 only hands a delayed vehicle back to that model behind a standing car,
+  so D656's fix does not reach it.
