@@ -94,8 +94,40 @@ still left to its car-following model.
 | BA253 | A moving leader | Ticks equal with the rule off (the law reads standing vehicles only) |
 | BA254 | A vehicle at rest at its target behind a standing vehicle | Does not move for 600 ticks; moves the tick after the leader does |
 | BA255 | The prototype, with and without `amberDeceleration` | Unchanged ticks (scope) |
-| BA256 | The four-leg and M2.6, W74 | Hard-braking ticks bounded as the trace finds; clamps not above Q0 |
+| BA256 | The four-leg and M2.6, W74 | Hard-braking ticks bounded as the trace finds; clamps not above Q0 (became a measurement, §6) |
 
-## 6. The owner's choice
+## 6. The owner's choice and the implementation (D656)
 
-Open.
+The owner chose **Q2** on 2026-11-25 ("เลือก Q2 ตามแนะนำ ทำเลย").
+
+- **The trace first (§4).** M2.6's extra W74 "hard-braking" ticks were vehicles **at rest** publishing W74's −8 m/s²
+  request. It moves nothing.
+  - Counting only ticks where the vehicle moved faster than 0.1 m/s the tick before, Q2 brakes hard *less* than
+    Q0 on M2.6: the W74 fixture 801 → 728 per run, the SUMO preset 746 → 592.
+  - On the four-leg: the fixture 269 → 220, the SUMO preset 155 → 187.
+  - BA256 is therefore this measurement, not a row.
+- **Engine** (`src/core/simulation.cpp`, `stepSimulation`).
+  - `queueStop` is `lineRest` and (`w74` or `w99`).
+  - A vehicle leader at exactly 0 m/s adds its rear less `standstillGap` to the nearest line.
+  - The model then sees no leader. Rule 3's hold comes after the reaction delay, as the hard cap does.
+- **Against the measurement.** On six projects, all four behaviours and seeds 42–51, the code reproduces Q2 to the
+  digit: crawl, clamps, delay, headway and startup lost time.
+  - Prototype rows are unchanged.
+  - `multra-cli 42` is byte-identical.
+- **BA231/BA27 sweeps** ([W99](../evidence/w99-discharge.md#after-d656), [W74](../evidence/w74-discharge.md#after-d656)):
+  - W99 clamps 42 / 25 / 32 → 8.0 / 8.2 / 8.0 per run, and available headways 1,342 → 1,416 at dt 0.1. Headway is
+    unchanged.
+  - W74 headway 3.229 → 3.256 s at dt 0.1.
+- **Rows.** BA252–BA255 in `tests/line_stop_tests.cpp` (`linestop`).
+  - BA252's scene is spaced about 2 s apart. At 15 m spacing a W74 follower clamps once behind a leader still
+    *braking* to its stop. Moving leaders are outside Q2 (§3), and such a leader is followed by the model as before.
+  - BA241's W99 row is amended: behind a car at rest the law governs, not D258's floor.
+  - Each of these mutations fails a row:
+    - the model still following the standing car;
+    - no hold;
+    - the prototype in scope;
+    - the rule off.
+- **Left:**
+  - the prototype's crawl (§4);
+  - a leader braking to a stop (W74 can still meet the cap in dense scenes);
+  - B, the stop's profile.

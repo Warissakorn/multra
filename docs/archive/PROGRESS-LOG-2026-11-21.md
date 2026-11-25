@@ -2,6 +2,24 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-24 — CC1 curve slice 1: codec and schema 86 (D646)
+
+- **Owner:** "ทำ CC1 เซสชันแรกเลย"; the plan approved.
+- **Codec:** `W99Parameters::cc1Curve` (`W99Cc1Point{value, share}`); a w99 behaviour holds `cc1` or `cc1Curve`,
+  never both or neither (`INVALID_BEHAVIOUR_PARAMETER` at `.cc1`); each point must be an object of exactly two
+  numbers; the curve is written in `cc1`'s place. Schema 86 (`kLatestSchema` 85 → 86) only when an owned w99
+  behaviour has a curve; below it `EDIT_UNSUPPORTED_FIELD`; fixed files stay at 85. The composed schema's W99 row
+  pairs `cc1`/`cc1Curve` with D566's `unless`, and `w99Cc1Point` is closed. `w99ParameterIssues` checks the
+  points (two or more, values ≥ 0 increasing, shares in [0, 1] not falling, 0 and 1 at the ends).
+- **Interim guards:** `validateScenario` refuses any curved behaviour (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN` at
+  `.cc1Curve`), one `runDiagnostics` row; the behaviour dialog declines to open one (en, th).
+- **Rows:** `tests/w99_cc1_codec_tests.cpp` (group `w99cc1codec`, BA233, 5 tests); labelled schema cases (curve only,
+  both, a point's extra key, missing share, text value; the curve on other models); `behaviour-library-ui` checks
+  the decline.
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 373/373, `schema-labels` 144,220
+  labels and 0 disagreements; the build without the PCH compiles every unit; `multra-cli 42` byte-identical.
+  Mutations bite: the "both" refusal, the schema floor, the decline, the Run refusal.
+
 ## 2026-11-24 — F7 on Windows; the W99 dialog names an out-of-range key first (D643)
 
 - **Owner (F7, package #145, verbatim in [OWNER_SITTING_WINDOWS](../plans/OWNER_SITTING_WINDOWS.md)):** empty fields,

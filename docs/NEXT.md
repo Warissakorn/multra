@@ -303,11 +303,13 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   a jump to 0); followers crawl without end (prototype 40–60 s, W74 25–30 s, predating D652). The owner chose
   **A then B**: one stop law for lines and standing vehicles, then a softer, cited stop profile. A first attempt
   of A failed nine groups and was not committed ([LINE_STOP §9](reference/LINE_STOP.md#9-the-owners-look-on-windows-and-a-queue-behind-a-standing-car-open),
-  [patch](evidence/line-stop-queue-attempt.patch)). **A's contract is written:** [LINE_QUEUE](reference/LINE_QUEUE.md)
-  (D655).
-  - Q2 is recommended for W74 and W99: the crawl goes, W99's clamps fall 80–99 % and delay is lower.
-  - The prototype keeps its law; its crawl is its own question.
-  - **The owner chooses.** Then, before code, trace M2.6's W74 hard braking under Q2. B follows.
+  [patch](evidence/line-stop-queue-attempt.patch)). **A is done for W74 and W99** ([LINE_QUEUE](reference/LINE_QUEUE.md), D655 contract, D656 Q2): queues come to rest
+  without a crawl, and W99's clamps are 8 per run on BA231.
+  **Next:**
+  - **The prototype's crawl** (its own contract: leave it, or an approach law that ends at rest).
+  - **B,** a softer, cited stop profile for lines and standing vehicles.
+  - **A leader braking to a stop** is outside Q2.
+  **Owner (Windows):** F9 b and c again on a package with D656 (queues behind a standing car for W74/W99).
   **Owner (Windows), package #149 (`f5653f8`, D652–D654):**
   - [F9](plans/OWNER_SITTING_WINDOWS.md): the `lineRest` checkbox, queues at the line, a W99 queue, and the save
     and reopen.

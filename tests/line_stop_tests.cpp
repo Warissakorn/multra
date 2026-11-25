@@ -106,7 +106,9 @@ TEST(linestop, ba241_w99_brakes_with_d258s_floor_behind_a_standing_vehicle) { //
         return find(next, 1).acceleration;
     };
     CHECK(tick(false) > -1 + 1e-6);
-    test::near(tick(true), -1, 1e-9);
+    // D655 (LINE_QUEUE §2) supersedes the floor here: behind a vehicle at rest W99 follows LINE_STOP's law to its rear
+    // less CC0, so with 2 m left at 2 m/s it does not brake yet (the comfortable stop needs 1 m). BA252 checks the rest.
+    CHECK(tick(true) > 0);
 }
 
 TEST(linestop, ba242_a_hold_inside_the_stopping_distance_is_capped_and_counted) { // BA242
@@ -191,4 +193,74 @@ TEST(linestop, ba245_on_by_default_and_round_trips_at_schema_87) { // BA245
     CHECK(parseDocument(explicitOn).definition->clampRules.lineRest);
     d.definition->clampRules = {};
     CHECK(documentJson(d) == owned);
+}
+
+// LINE_QUEUE §5 (D655): rows BA252–BA255. Under lineRest a W74 or W99 vehicle behind a vehicle at rest is stopped by
+// LINE_STOP's law at its rear less the standstill gap; the model follows moving vehicles only; at its target it waits.
+namespace {
+struct Queue { double crawl{}; int clamps{}; std::vector<double> rests; bool still{}; };
+// Four cars from 40, 25, 10 and 0 m at 6 m/s (about 2 s apart) toward the red line at 100 m, 900 ticks: the longest time a follower
+// spends at 0.01–1 m/s after the first 10 s, the clamps, and each follower's room behind the car ahead at the end.
+Queue queue(Model m, bool lineRest) {
+    auto s = redRoad(m, lineRest); s.duration = 900;
+    auto state = placed(s, {test::vehicle(1, 40, 6), test::vehicle(2, 25, 6), test::vehicle(3, 10, 6), test::vehicle(4, 0, 6)});
+    const double length = s.vehicleTypes.front().length, s0 = standstillGap(s.behaviours.front());
+    std::map<std::uint64_t, double> crawl;
+    Queue q;
+    for (int t = 0; t < 900; ++t) {
+        state = stepSimulation(std::move(state));
+        for (std::uint64_t id = 1; id <= 4; ++id) {
+            q.clamps += clamped(state, id);
+            const auto& v = find(state, id);
+            if (t > 100 && v.speed > 0.01 && v.speed < 1) crawl[id] += s.timeStep;
+        }
+    }
+    for (const auto& [id, c] : crawl) if (id > 1) q.crawl = std::max(q.crawl, c);
+    q.still = true;
+    for (std::uint64_t id = 2; id <= 4; ++id) {
+        q.rests.push_back(find(state, id - 1).distance - length - s0 - find(state, id).distance);
+        q.still = q.still && find(state, id).speed == 0;
+    }
+    return q;
+}
+}
+TEST(linestop, ba252_a_w74_or_w99_queue_behind_a_standing_car_comes_to_rest) { // BA252
+    const auto off = queue(Model::w74, false); // forcing: W74 rests short in its ABX band without the rule
+    CHECK(*std::max_element(off.rests.begin(), off.rests.end()) > 0.5);
+    for (const auto m : {Model::w74, Model::w99}) {
+        const auto q = queue(m, true);
+        CHECK(q.still); CHECK(q.clamps == 0); CHECK(q.crawl <= 1.0);
+        for (const double r : q.rests) { CHECK(r >= -1e-9); CHECK(r <= 1e-6); }
+    }
+}
+TEST(linestop, ba253_a_moving_leader_is_followed_by_the_model) { // BA253
+    // No line, a W99 leader at 8 m/s: the rule reads vehicles at rest only, so on and off give the same ticks.
+    auto on = redRoad(Model::w99, true), off = redRoad(Model::w99, false);
+    on.signalHeads.clear(); off.signalHeads.clear();
+    auto a = placed(on, {test::vehicle(1, 30, 12), test::vehicle(2, 60, 8)}), b = placed(off, {test::vehicle(1, 30, 12), test::vehicle(2, 60, 8)});
+    for (int t = 0; t < 60; ++t) { a = stepSimulation(std::move(a)); b = stepSimulation(std::move(b)); CHECK(find(a, 1) == find(b, 1)); } // both on the road
+}
+TEST(linestop, ba254_at_its_target_a_vehicle_waits_until_the_leader_moves) { // BA254
+    // A W74 car at rest 10⁻⁷ m past its target behind a W74 car at rest at a red line (100) that turns green at 30 s.
+    auto s = redRoad(Model::w74, true);
+    s.signalPrograms = {{"p", 0, {{30, SignalColor::red}, {570, SignalColor::green}}}};
+    const double length = s.vehicleTypes.front().length, s0 = standstillGap(s.behaviours.front());
+    auto state = placed(s, {test::vehicle(2, 100, 0), test::vehicle(1, 100 - length - s0 - 1e-7, 0)});
+    const double start = find(state, 1).distance;
+    bool leaderMoved = false; int waitedAfter = -1;
+    for (int t = 0; t < 600 && waitedAfter < 0; ++t) {
+        const bool before = leaderMoved;
+        state = stepSimulation(std::move(state)); CHECK(!clamped(state, 1));
+        leaderMoved = leaderMoved || find(state, 2).distance > 100;
+        if (!before) CHECK(find(state, 1).distance == start); // it waits while the leader stands (forcing: 10⁻⁷ m of room)
+        else if (find(state, 1).distance > start) waitedAfter = t;
+    }
+    CHECK(leaderMoved); CHECK(waitedAfter >= 0); // and moves once the leader has
+}
+TEST(linestop, ba255_the_prototype_keeps_its_law_behind_a_standing_car) { // BA255, LINE_QUEUE §4's scope
+    // With amberDeceleration the prototype stops at the line (D652) but follows its own law behind a car: it still
+    // only approaches rest, as with the switch off (LINE_QUEUE §1, its own question).
+    const auto on = queue(Model::prototype, true), off = queue(Model::prototype, false);
+    CHECK(on.crawl > 10); CHECK(!on.still);
+    CHECK(off.crawl > 10); CHECK(!off.still);
 }

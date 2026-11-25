@@ -208,7 +208,7 @@ cycle.
   - **Inching.** A car resting at its target inches forward by sub-millimetre rooms, tick on, tick off, so a
     queue never quite settles.
 
-**Written as [LINE_QUEUE](LINE_QUEUE.md) (D655).** A needed its contract measured first, as D651 did:
+**Written as [LINE_QUEUE](LINE_QUEUE.md) (D655); Q2 implemented for W74 and W99 (D656).** A needed its contract measured first, as D651 did:
 - the leader's state as a continuous input (no `speed == 0` switch);
 - a start rule for a car at rest at its target;
 - the safe-speed bound's place after the reaction delay;

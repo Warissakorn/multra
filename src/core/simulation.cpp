@@ -322,11 +322,18 @@ SimState stepSimulation(SimState&& state, double dt) {
         // LINE_STOP §2 (D652): with lineRest a holding line is not a leader. The model follows vehicles (perceived
         // ones under M3.5); the nearest holding line has its own law, which ends at the line. A dead end is
         // not one: its approach is the lane change's (LINE_STOP §6), so it stays a leader as before.
-        const double line = std::min({headLine, giveWayLine, gateLine});
+        // LINE_QUEUE §2 (D655): for W74 and W99, a vehicle at rest ahead is stopped behind by the same law, at its
+        // rear less the standstill gap; the model follows moving vehicles only.
+        const bool queueStop = behaviour.lineRest && (behaviour.w74 || behaviour.w99);
+        const double standing = queueStop && vehicleLeader && vehicleLeader->speed == 0
+            ? std::max(0.0, vehicleLeader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
+        const double line = std::min({headLine, giveWayLine, gateLine, standing});
         const bool lineStop = behaviour.lineRest && std::isfinite(line);
         auto modelLeader = leader;
-        if (lineStop && leader && line <= leader->gap + 1e-9)
+        if (lineStop && leader && line <= leader->gap + 1e-9) {
             modelLeader = perceivesAhead(sight) ? (perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader)) : vehicleLeader;
+            if (std::isfinite(standing) && modelLeader && modelLeader->speed == 0) modelLeader.reset();
+        }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, modelLeader);
         if (behaviour.lineRest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt);
         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
@@ -354,6 +361,10 @@ SimState stepSimulation(SimState&& state, double dt) {
         // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
         if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]
             following.acceleration = inattentiveAcceleration(vehicle, following.acceleration, type);
+        // LINE_QUEUE §2 rule 3 (D655): at rest at its target behind a vehicle at rest, it waits; an exact stop's
+        // residue would otherwise inch it forward tick on, tick off.
+        if (queueStop && vehicle.speed == 0 && vehicleLeader && vehicleLeader->speed == 0 &&
+            vehicleLeader->gap - standstillGap(behaviour) <= 1e-6) following.acceleration = std::min(0.0, following.acceleration);
         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
         double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
         double braking = type.comfortableDeceleration;

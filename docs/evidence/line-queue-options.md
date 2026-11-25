@@ -100,3 +100,22 @@ Crawl is the median / p90 per vehicle in seconds, then vehicles with 10 s or mor
 - **Q3 and Q5 are worse everywhere:** a 0.1 m/s threshold creates the switch it was meant to smooth.
 - **Bare M0** is untouched by construction, since every branch requires `lineRest`. `multra-cli 42` is
   byte-identical after the revert.
+
+## After D656
+
+The owner chose Q2 (LINE_QUEUE §6). The committed code, run with the same probe, reproduces Q2's crawl, clamps,
+delay, headway and startup lost time for every project and behaviour above. The prototype keeps Q0's values.
+
+**The hard-braking trace.** The probe now splits ticks below −3 m/s² by the vehicle's speed the tick before:
+
+| Project | Model | Moving, Q0 → Q2 (per run) | At rest (published only), Q0 → Q2 |
+|---|---|---|---|
+| Four-leg | W74 fixture | 269 → 220 | 216 → 196 |
+| Four-leg | W74 SUMO preset | 155 → 187 | 354 → 311 |
+| M2.6 | W74 fixture | 801 → 728 | 1,585 → 11,607 |
+| M2.6 | W74 SUMO preset | 746 → 592 | 2,159 → 41,333 |
+| M2.6 | W99 | 851 → 646 | 2 → 2 |
+
+- **The rise is in vehicles at rest.** W74's model at rest, at its exact target behind a leader that has just
+  moved, publishes its emergency −8 m/s² request. The engine moves nothing on it.
+- **Moving vehicles brake hard less often**, except the SUMO preset on the four-leg (+32 per run).

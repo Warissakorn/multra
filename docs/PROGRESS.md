@@ -5,6 +5,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — W74 and W99 queues come to rest behind a standing car (D656)
+
+- **Owner:** "เลือก Q2 ตามแนะนำ ทำเลย".
+- **Trace first:** M2.6's extra W74 "hard braking" under Q2 was vehicles at rest publishing W74's −8 m/s²
+  request. Moving vehicles brake hard less often (801 → 728, 746 → 592 per run).
+- **Engine** ([LINE_QUEUE §6](reference/LINE_QUEUE.md)): under `lineRest`, a W74 or W99 vehicle behind a vehicle
+  at exactly 0 m/s stops with LINE_STOP's law at its rear less the standstill gap. The model sees no leader, and
+  at its target the vehicle waits until the leader moves. The prototype is unchanged, and so is M0.
+- **Rows:**
+  - BA252–BA255 in `linestop`: a queue at rest without a crawl; a moving leader unchanged; the hold; the
+    prototype's scope.
+  - BA241's W99 row amended.
+  - Four mutations each fail a row.
+- **Measured:**
+  - The code reproduces D655's Q2 on six projects to the digit.
+  - [BA231](evidence/w99-discharge.md#after-d656): W99 clamps 42 → 8 per run at dt 0.1, headway unchanged.
+  - [BA27](evidence/w74-discharge.md#after-d656): W74 headway 3.229 → 3.256 s.
+- **Verified (Linux only):**
+  - `multra-cli 42` is byte-identical, and so are the prototype sweep rows.
+  - Each sweep, run twice, gives identical output.
+  - `check` passes.
+
 ## 2026-11-25 — Queues behind a standing car: the contract and its measured options (D655)
 
 - **Owner:** F9 on package #149: followers crawl without end. They asked whether a stop at a line and behind a
@@ -180,21 +202,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   ignoring the share, the refusal kept ([evidence](evidence/w99-cc1-draw.md)).
 - **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 374/374; the build without the PCH
   compiles every unit; `multra-cli 42` summary and events byte-identical.
-
-## 2026-11-24 — CC1 curve slice 1: codec and schema 86 (D646)
-
-- **Owner:** "ทำ CC1 เซสชันแรกเลย"; the plan approved.
-- **Codec:** `W99Parameters::cc1Curve` (`W99Cc1Point{value, share}`); a w99 behaviour holds `cc1` or `cc1Curve`,
-  never both or neither (`INVALID_BEHAVIOUR_PARAMETER` at `.cc1`); each point must be an object of exactly two
-  numbers; the curve is written in `cc1`'s place. Schema 86 (`kLatestSchema` 85 → 86) only when an owned w99
-  behaviour has a curve; below it `EDIT_UNSUPPORTED_FIELD`; fixed files stay at 85. The composed schema's W99 row
-  pairs `cc1`/`cc1Curve` with D566's `unless`, and `w99Cc1Point` is closed. `w99ParameterIssues` checks the
-  points (two or more, values ≥ 0 increasing, shares in [0, 1] not falling, 0 and 1 at the ends).
-- **Interim guards:** `validateScenario` refuses any curved behaviour (`UNSUPPORTED_BEHAVIOUR_MODEL_RUN` at
-  `.cc1Curve`), one `runDiagnostics` row; the behaviour dialog declines to open one (en, th).
-- **Rows:** `tests/w99_cc1_codec_tests.cpp` (group `w99cc1codec`, BA233, 5 tests); labelled schema cases (curve only,
-  both, a point's extra key, missing share, text value; the curve on other models); `behaviour-library-ui` checks
-  the decline.
-- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 373/373, `schema-labels` 144,220
-  labels and 0 disagreements; the build without the PCH compiles every unit; `multra-cli 42` byte-identical.
-  Mutations bite: the "both" refusal, the schema floor, the decline, the Run refusal.

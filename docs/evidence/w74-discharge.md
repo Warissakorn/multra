@@ -134,3 +134,24 @@ The same tool, re-run on today's project:
     time at green (D369).
 
 Nothing here bounds or calibrates anything; the unvalidated marker stays.
+
+## After D656
+
+D656 (LINE_QUEUE Q2): under `lineRest`, a W74 vehicle behind a vehicle at rest stops with LINE_STOP's law at
+its rear less the standstill gap. The same sweep is re-run. Runs:
+[`w74-discharge-runs-d656.csv`](w74-discharge-runs-d656.csv).
+
+| Model | dt (s) | Available headways / cycles | Mean headway mean / median / SD (s) | Startup lost time mean (s) | Clamps per run, mean (min–max) |
+|---|---|---|---|---|---|
+| w74 | 0.1 | 1,698 / 4,920 | 3.256 / 3.267 / 0.103 | −1.768 | 9.80 (4–18) |
+| w74 | 0.25 | 1,713 / 4,920 | 3.315 / 3.333 / 0.110 | −1.782 | 12.28 (5–19) |
+| w74 | 0.5 | 1,678 / 4,920 | 3.387 / 3.333 / 0.145 | −1.792 | 13.93 (6–19) |
+
+- **Paired dt differences:** +0.059 / +0.131 s, 40/40 seeds positive.
+- **Against D653:**
+  - Headway is 0.03–0.06 s slower.
+  - Startup lost time is about −1.77 s at every dt (D653: −1.70 to −1.58).
+  - Clamps are 9.4 / 10.5 / 15.1 → 9.8 / 12.3 / 13.9.
+- **Repeatability.** Two runs give byte-identical CSVs. SHA-256:
+  `3e8db3e34ab237322dc69425716bc2607b01a5047dfa2393b46529c1d2744ec8`.
+- **The prototype arm** is unchanged.

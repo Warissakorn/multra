@@ -254,3 +254,21 @@ The same sweep, inputs and build flags are re-run at that commit. Runs:
   - **The gap is not covered.** Capping behind a moving leader needs that leader's braking, which `Leader`
     does not carry. It is left open, not guessed.
 - Nothing is bounded or calibrated, and the unvalidated marker stays.
+
+## After D656
+
+D656 (LINE_QUEUE Q2): under `lineRest`, a W99 vehicle behind a vehicle at rest stops with LINE_STOP's law at
+its rear less the standstill gap. The same sweep is re-run. Runs:
+[`w99-discharge-runs-d656.csv`](w99-discharge-runs-d656.csv).
+
+| Model | dt (s) | Mean headway mean / median / SD (s) | Startup lost time mean (s) | Clamps per run, mean (min–max) | D654's clamps |
+|---|---|---|---|---|---|
+| w99 | 0.1 | 2.003 / 2.000 / 0.050 | −0.651 | 7.97 (1–14) | 41.83 |
+| w99 | 0.25 | 1.976 / 2.000 / 0.060 | −0.448 | 8.18 (1–15) | 25.23 |
+| w99 | 0.5 | 2.016 / 2.000 / 0.052 | −0.522 | 8.00 (2–19) | 31.57 |
+
+- **Available headways** rise from 1,342 to 1,416 at dt 0.1: queued W99 cars now stand at rest at CC0.
+- **Paired dt differences** are as D653's: −0.026 and +0.014 s.
+- **Repeatability.** Two runs give byte-identical CSVs. SHA-256:
+  `1ab4a0536c19d7bb2f32f56a5629528242227510345a137268fe2bd80a99e017`.
+- **The prototype arm** is unchanged.
