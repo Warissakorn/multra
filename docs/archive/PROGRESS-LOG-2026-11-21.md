@@ -460,3 +460,17 @@ Whole entries moved from the live PROGRESS log.
   standing cars clamped every tick, because §4's creep asks +cc7 at a gap 10⁻⁹–10⁻⁷ m above cc0 that D105's `g ≤ cc0`
   misses. Recorded, not fixed; no engine change; nothing bounded or calibrated.
 - **Verified (Linux only, Release `perf` tree, GCC 13.3):** the sweeps above; `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.
+
+## 2026-11-24 — W99's standstill creep waits until it fits (D650)
+
+- **Owner:** reviewed creep in SUMO, Vissim and W74, then stopping at lines; "เริ่มเลย" to the creep's hold.
+- **Rule (W99 §4):** a stopped driver is held while `g − CC0 ≤ CC7 · dt²`, the most one creep can move (a tick of
+  +CC7, then too-close braking). `w99Acceleration` and `follow` take the run's `timeStep`, read by W99 only;
+  `deadEndGoverns` passes it on. Every caller is updated.
+- **Rows:** BA238 in `w99` (held at `CC0 + CC7·dt²` exactly, +CC7 just above; D649's 10⁻⁹ m residue held; moving
+  unaffected by dt) and `w99run` (a queued car at rest is never clamped in 600 ticks; from 3 m back it closes to
+  within `CC7·dt²` of CC0). Mutations bite: D649's `g ≤ CC0` and half the bound.
+- **Re-run** ([evidence](../evidence/w99-discharge.md#after-d650)): W99 clamps 7,870 / 3,056 / 1,512 → 331 / 324 / 330
+  per run, each a car's one arrival (the soft closing approach, NEXT's line contract). Headway unchanged.
+- **Verified (Linux only):** `multra-cli 42` summary and events byte-identical; the W74 sweep byte-identical;
+  `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.

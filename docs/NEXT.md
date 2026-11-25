@@ -311,9 +311,10 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   (corrected).
   **The reaction delay** ([REACTION_STOP](reference/REACTION_STOP.md), D659; the owner chose to contract it first).
   At `reactionTime` 0.5 s, W74 clamps 755 / 3,277 per run (four-leg / M2.6; 23 / 91 with `lineRest` off), and the
-  prototype passes reds 128–453 times per run. **Owner's choice open:** R7 (recommended: the line law undelayed, the
-  model behind standing cars; 0 red passes, W74 5–48 clamps; delayed vehicles crawl behind standing cars) or R6.
-  Rows BA262–BA266. After it, P17 for undelayed prototypes (its three scene forcings and BA197 to settle). W99 under
+  prototype passes reds 128–453 times per run. **Owner's choice open:** R9 (recommended, D660: the laws undelayed, a
+  hold at `s0`, a start that fits the delay; delayed queues rest; W74 9–44 and W99 8–29 clamps per run, below the
+  switch off) or R7 (fewest W74 clamps, but creep-stop-creep).
+  Rows BA262–BA267. After it, P17 for undelayed prototypes (its three scene forcings and BA197 to settle). W99 under
   a delay is its own question.
   **Next:**
   - **B,** a softer, cited stop profile for lines and standing vehicles. The stop law's late constant 2 m/s² is

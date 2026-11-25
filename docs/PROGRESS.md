@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — A delayed vehicle rests: R9 measured (D660)
+
+- **Owner:** asked whether R7's crawl is creep-then-stop or endless, then "หากฎให้รถที่มี delay หยุดนิ่งได้ก่อน".
+- **Answer** ([evidence](evidence/reaction-stop-options.md)): it is creep, stop, creep again (median 6 stops per
+  vehicle), W74's own, and the same with no delay and the switch off.
+- **Traced:** R6's clamps were a residue at rest at `s0` behind a leader creeping by micrometres, and at 1 s a start
+  from rest carried on by the delay.
+- **R9** (REACTION_STOP §6): the laws reapplied after the delay, a hold within 10⁻⁶ m of `s0`, and a start from rest
+  only when the gap fits `a·τ²/2 + (a·τ)²/(2·maxDeceleration)`. No value is added.
+  - At 0.5 s: W74 9 / 44 clamps per run (off 23 / 91), and W99 8 / 29 (off 555 / 2,410).
+  - Queues rest (median 1 stop per vehicle), with 0 red passes.
+  - Costs: the SUMO preset at about the switch off, jerk above R7's, and the prototype's delay +12 s at 1 s.
+  - **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-25 — The stop laws under a reaction delay: contract and options (D659)
 
 - **Owner:** "ตามแนะนำ": contract the reaction delay for every model first (PROTOTYPE_QUEUE §6).
@@ -206,17 +221,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   M0 keeps its bytes (an unscoped rule moves bare M0, 1 → 5 clamps); rows BA239–BA245; W99's arrival clamps left to
   a W99 §4 slice. **The owner chooses.**
 - **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
-
-## 2026-11-24 — W99's standstill creep waits until it fits (D650)
-
-- **Owner:** reviewed creep in SUMO, Vissim and W74, then stopping at lines; "เริ่มเลย" to the creep's hold.
-- **Rule (W99 §4):** a stopped driver is held while `g − CC0 ≤ CC7 · dt²`, the most one creep can move (a tick of
-  +CC7, then too-close braking). `w99Acceleration` and `follow` take the run's `timeStep`, read by W99 only;
-  `deadEndGoverns` passes it on. Every caller is updated.
-- **Rows:** BA238 in `w99` (held at `CC0 + CC7·dt²` exactly, +CC7 just above; D649's 10⁻⁹ m residue held; moving
-  unaffected by dt) and `w99run` (a queued car at rest is never clamped in 600 ticks; from 3 m back it closes to
-  within `CC7·dt²` of CC0). Mutations bite: D649's `g ≤ CC0` and half the bound.
-- **Re-run** ([evidence](evidence/w99-discharge.md#after-d650)): W99 clamps 7,870 / 3,056 / 1,512 → 331 / 324 / 330
-  per run, each a car's one arrival (the soft closing approach, NEXT's line contract). Headway unchanged.
-- **Verified (Linux only):** `multra-cli 42` summary and events byte-identical; the W74 sweep byte-identical;
-  `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.

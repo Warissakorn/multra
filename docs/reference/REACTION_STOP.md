@@ -101,7 +101,52 @@ For a vehicle whose behaviour has a reaction delay (`reactionTicks > 0`), under 
 | BA265 | No reaction delay, every model | Ticks unchanged; `multra-cli 42` byte-identical |
 | BA266 | The four-leg and M2.6 at 0.5 s, W74 and the prototype | Clamps and red passes as measured (a measurement, not a row, if the scene cost is high) |
 
-## 6. The owner's choice
+## 6. The owner's question, and R9 (D660)
 
-Open. Options: **R7** (the session's recommendation), R6 (no crawl, more clamps behind leaders edging off), or
-another.
+The owner asked whether R7's crawl is a car inching after its leader because of the reaction time, and whether it
+stops. They then asked for a rule that lets a delayed vehicle rest before choosing
+([evidence](../evidence/reaction-stop-options.md#r8-and-r9-resting-a-delayed-vehicle-without-the-clamps-d660)).
+- **The crawl under R7 is W74's own:** creep, stop, creep again.
+  - Three quarters of it follows a leader also creeping below 1 m/s, and the head of each chain creeps toward a car
+    at rest.
+  - The amount is the same with no delay and the switch off.
+  - A vehicle stops a median of 6 times (p90 22), against 4 under D656.
+- **R6's clamps were mostly a residue at rest.** The follower was exactly at `s0` while its leader crept by
+  micrometres. At 1 s, the rest of them is a start from rest that the delay carries on into a leader stopping again.
+
+**R9, the rule now proposed** (in place of §2's R7). For a vehicle with a reaction delay under `lineRest`:
+1. **The line law and the queue law are not delayed.** As R6: `applyLineStop` is reapplied after the delay, toward
+   the nearest holding line or a vehicle at rest less the standstill gap. The lower acceleration wins.
+2. **A hold at the target.** At rest within 10⁻⁶ m of the standstill gap behind any vehicle, the applied acceleration
+   is at most 0. This is D105 with D596's tolerance, the delayed counterpart of LINE_QUEUE's rule 3.
+3. **A start the delay commits to must fit.** A decision to start from rest with `a > 0` is stored as 0 while the gap
+   beyond the standstill gap is below `a·τ²/2 + (a·τ)²/(2·maxDeceleration)`, the distance needed to stop again at the
+   type's maximum after holding the start for the delay τ.
+4. **Without a reaction delay nothing changes.** No value is added.
+
+**R9 against the switch off** (`reactionTime` 0.5 s, clamps per run; the switch off in brackets):
+
+| Model | Four-leg | M2.6 | Four-leg, 1 s |
+|---|---|---|---|
+| W74 fixture | 9 (23) | 44 (91) | 82 (301) |
+| W74 SUMO preset | 39 (32) | 72 (68) | — |
+| W99 | 8 (555) | 29 (2,410) | 32 (894) |
+| Prototype | 15 (12) | 49 (51) | 233 (277) |
+
+- **Delayed queues rest.** The crawl median is 2–3 s. A W74 or W99 vehicle stops a median of once (p90 at most 5),
+  and almost no slow episode is left.
+- **0 passes on red.**
+- **Costs:**
+  - the SUMO preset at or slightly above the switch off;
+  - more jerk ticks than R7 (W74 four-leg 1,130 against 378);
+  - at 1 s the prototype's delay is +12 s and its headway +0.26 s against the switch off, from the start rule.
+- **Rows** (if R9): BA262–BA266 as §5. BA264 changes to "a delayed W74 car behind a standing car rests within 10⁻⁶
+  m of `s0` and does not start until its gap fits rule 3". BA267 covers the start rule: held while the gap is short
+  of the formula, and started on the first tick it fits.
+
+**The session's recommendation is now R9:** it answers the crawl and clamps less than the switch off for every
+model except the SUMO preset. R7 remains the choice with the fewest W74 clamps, but with the crawl.
+
+## 7. The owner's choice
+
+Open. Options: **R9** (recommended), R7 (fewest W74 clamps, with the crawl), or another.

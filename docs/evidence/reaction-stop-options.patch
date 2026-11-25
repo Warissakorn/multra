@@ -1,5 +1,5 @@
 diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
-index d2cc2cf..7d0bd14 100644
+index d2cc2cf..f3739a6 100644
 --- a/src/core/simulation.cpp
 +++ b/src/core/simulation.cpp
 @@ -2,6 +2,8 @@
@@ -44,11 +44,22 @@ index d2cc2cf..7d0bd14 100644
          if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
              standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
          anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
-@@ -357,6 +363,11 @@ SimState stepSimulation(SimState&& state, double dt) {
+@@ -352,11 +358,22 @@ SimState stepSimulation(SimState&& state, double dt) {
+         if (std::isfinite(deadEnd) && leader->gap < deadEnd) // D456: the dead end behind a nearer leader
+             if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
+         if (const auto delay = reactionTicks(sight, dt)) {
++            if (zzR == 9 && vehicle.speed == 0 && vehicleLeader && following.acceleration > 0) { // ZZ R9: a start the delay commits to must fit
++                const double tau = double(delay) * dt, a = following.acceleration;
++                if (vehicleLeader->gap - standstillGap(behaviour) < a * tau * tau / 2 + (a * tau) * (a * tau) / (2 * type.maxDeceleration)) following.acceleration = 0;
++            }
+             decisions.push_back({v, delay, following});
+             auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;
              if (yields && (!current || courtesy[v].gap < current->gap))
                  current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
              following = delayedAction(vehicle, delay, following, type, behaviour, current);
-+            if ((zzR == 6 || zzR == 7) && rest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt); // ZZ R6: law and floor not delayed
++            if ((zzR == 8 || zzR == 9) && vehicle.speed == 0 && vehicleLeader && vehicleLeader->gap - standstillGap(behaviour) <= 1e-6)
++                following.acceleration = std::min(0.0, following.acceleration); // ZZ R8: D105 with D596's tolerance
++            if ((zzR == 6 || zzR == 7 || zzR == 8 || zzR == 9) && rest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt); // ZZ R6: law and floor not delayed
 +            if ((zzR == 3 || zzR == 5) && lineStop) { // ZZ R3: the law is not delayed
 +                const double a = lineStopAcceleration(vehicle.speed, line, type.comfortableDeceleration, type.maxDeceleration, dt);
 +                if (a < following.acceleration) { following.acceleration = a; following.mode = FollowingMode::braking; }
@@ -56,12 +67,12 @@ index d2cc2cf..7d0bd14 100644
          }
          // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
          if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]
-@@ -395,7 +406,8 @@ SimState stepSimulation(SimState&& state, double dt) {
+@@ -395,7 +412,8 @@ SimState stepSimulation(SimState&& state, double dt) {
                  // speed a later tick would read as still moving (and as unable to stop).
                  if (zoneLine == allowedDistance && stop.distance >= allowedDistance - 1e-9) stop = {0, allowedDistance};
                  move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
 -            } else { move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
-+            } else { if (std::getenv("ZZ_TRACE")) std::fprintf(stderr, "ZZC v %.3f a %.3f lv %.3f lg %.3f head %.3f gw %.3f stand %.3f allowed %.3f\n", vehicle.speed, following.acceleration, vehicleLeader ? vehicleLeader->speed : -1.0, vehicleLeader ? vehicleLeader->gap : -1.0, headLine, giveWayLine, standing, allowedDistance);
++            } else { if (std::getenv("ZZ_TRACE")) std::fprintf(stderr, "ZZC id %llu t %.1f v %.3f a %.3f lv %.3f la %.3f lg %.3f stand %.3f allowed %.4f hist %s\n", (unsigned long long)vehicle.id, time, vehicle.speed, following.acceleration, vehicleLeader ? vehicleLeader->speed : -1.0, vehicleLeader ? vehicleLeader->acceleration : -9.0, vehicleLeader ? vehicleLeader->gap : -1.0, standing, allowedDistance, [&]{ std::string h; for (const auto& r : vehicle.reactionHistory) h += std::to_string(r.acceleration).substr(0,5) + ","; return h; }().c_str());
 +                move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
          }
      }

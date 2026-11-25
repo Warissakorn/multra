@@ -147,3 +147,79 @@ four-leg, seeds 42–51, vehicle-seconds per run:
 - **The reaction time is not its cause.** Without a delay and with the switch off, the crawl is the same
   (27,241 against 26,651 vehicle-seconds). R7 only hands a delayed vehicle back to that model behind a standing car,
   so D656's fix does not reach it.
+
+## Creep then stop, or creep without end (the owner's question, 2026-11-25)
+
+The probe was extended with slow episodes: consecutive ticks at 0–1 m/s, closed when the vehicle reaches 0 m/s (at
+rest) or 1 m/s (moving on). It also counts stops per vehicle (ticks where its speed falls to exactly 0). W74
+fixture, four-leg, seeds 42–51, totals over the ten runs:
+
+| Case | Episodes ≥ 2 s ending at rest (≥ 10 s) | Ending moving on (≥ 10 s) | Stops per vehicle, median / p90 |
+|---|---|---|---|
+| R7, 0.5 s | 22,646 (6,163) | 8,222 (2,952) | 6 / 22 |
+| `lineRest` off, 0.5 s | 29,411 (6,235) | 9,054 (3,333) | 11 / 55 |
+| `lineRest` off, no delay | 10,920 (3,813) | 5,750 (3,568) | 12 / 197 |
+| Today (D656), no delay | 2 (2) | 4,635 (2) | 4 / 29 |
+
+**It is creep, stop, creep again.** About three quarters of the long slow episodes end at rest. A vehicle stops a
+median of 6 times under R7, against 4 under D656 without a delay, where almost no long slow episode remains.
+
+## R8 and R9: resting a delayed vehicle without the clamps (D660)
+
+**R6's clamps traced** (`ZZ_TRACE` with the FIFO's contents, W74, four-leg, 0.5 s):
+- 132 of its 148 clamps per run are a follower **at rest exactly at `s0`**: gap 2.000 m, allowed 0.0000 m.
+- Its leader creeps at micrometres per second, so it is not standing, and the FIFO hands the follower a tiny
+  positive acceleration.
+- D105's no-start rule (`gap ≤ standstillGap`) misses by about 10⁻⁹ m. It is the residue LINE_QUEUE's rule 3 holds
+  behind a standing car.
+
+**At 1 s the rest is the start.**
+- A delayed vehicle at rest decides to start behind a leader edging off. Its FIFO then plays up to 1 s of
+  +2.5 m/s² while the leader stops again.
+- Of R8's 343 clamps per run, 180 are at rest and 78 below 1 m/s, behind a leader below 0.5 m/s.
+
+| Option | For a delayed vehicle |
+|---|---|
+| R8 | R6, plus a hold after the delay: at rest within 10⁻⁶ m of the standstill gap behind any vehicle, no acceleration (D105 with D596's tolerance) |
+| **R9** | R8, plus a start rule before the delay: a decision to start from rest (a > 0) is held at 0 while the gap beyond the standstill gap is below `a·τ²/2 + (a·τ)²/(2·maxDeceleration)`, the distance a start held for the delay τ needs to stop again at the maximum |
+
+Neither adds a value. τ is the behaviour's quantised `reactionTime` (`d·dt`), and the deceleration is the type's.
+
+Clamps / crawl median (s) / moving hard braking / delay (s), per run:
+
+| Case | Option | Prototype | W74 fixture | W74 SUMO | W99 |
+|---|---|---|---|---|---|
+| Four-leg, 0.5 s | off | 12.1 / 18.0 / 2,994 / 48.07 | 23.1 / 35.7 / 716 / 114.29 | 31.6 / 50.4 / 675 / 143.22 | 554.7 / 2.1 / 1,398 / 52.36 |
+| | R7 | 12.8 / 11.6 / 2,857 / 49.07 | 5.3 / 30.2 / 369 / 112.86 | 7.9 / 37.3 / 509 / 141.20 | 324.5 / 2.4 / 878 / 52.24 |
+| | R8 | 12.8 / 11.6 / 2,857 / 49.07 | 17.8 / 2.7 / 455 / 111.51 | 47.5 / 3.4 / 453 / 135.73 | 75.7 / 1.8 / 1,578 / 52.13 |
+| | **R9** | 14.6 / 11.5 / 2,913 / 49.07 | 8.8 / 2.7 / 419 / 111.09 | 39.3 / 3.2 / 418 / 135.71 | 8.3 / 1.8 / 1,527 / 52.02 |
+| M2.6, 0.5 s | off | 51.2 / 17.6 / 12,600 / 47.34 | 91.3 / 60.1 / 2,170 / 172.67 | 67.8 / 71.5 / 1,525 / 207.58 | 2,410.1 / 2.2 / 6,219 / 50.52 |
+| | R7 | 46.7 / 8.7 / 11,692 / 47.00 | 33.1 / 42.2 / 1,225 / 163.85 | 47.6 / 59.3 / 955 / 200.73 | 1,416.9 / 2.4 / 4,276 / 50.25 |
+| | R8 | 46.7 / 8.7 / 11,692 / 47.00 | 94.8 / 3.2 / 1,411 / 147.81 | 112.4 / 3.6 / 1,228 / 163.24 | 366.5 / 1.8 / 6,801 / 50.19 |
+| | **R9** | 48.9 / 8.8 / 11,824 / 47.17 | 44.2 / 3.1 / 1,154 / 141.49 | 72.0 / 3.2 / 950 / 155.55 | 28.5 / 1.8 / 6,703 / 50.11 |
+| Four-leg, 1 s | off | 277.1 / 2.7 / 9,623 / 48.40 | 301.3 / 25.2 / 1,957 / 134.06 | — | 894.5 / 2.2 / 6,666 / 66.37 |
+| | R7 | 311.2 / 2.4 / 8,619 / 55.03 | 34.6 / 28.0 / 1,218 / 138.55 | — | 655.4 / 2.7 / 6,409 / 65.98 |
+| | R8 | 310.7 / 2.4 / 8,622 / 55.03 | 343.3 / 2.4 / 1,943 / 120.48 | — | 140.3 / 1.8 / 6,236 / 65.94 |
+| | **R9** | 232.9 / 1.5 / 8,982 / 60.21 | 81.8 / 2.4 / 1,832 / 120.81 | — | 31.6 / 1.9 / 6,026 / 65.90 |
+
+**R9's queue rests** (episodes as above, totals over ten runs):
+
+| Case | Episodes ≥ 2 s ending at rest | Ending moving on | Stops per vehicle, median / p90 |
+|---|---|---|---|
+| W74, 0.5 s | 6 | 2,228 | 1 / 4 |
+| W74, 1 s | 6 | 431 | 1 / 5 |
+| W99, 0.5 s | 1 | 9 | 1 / 1 |
+
+The prototype passes red 0 times per run under R9 (four-leg at 0.5 s and 1 s, M2.6 at 0.5 s).
+
+**Reading.**
+- **R9 rests delayed vehicles without the crawl.**
+  - W74 clamps 9 / 44 per run (four-leg / M2.6), below the switch off's 23 / 91, and 82 at 1 s against 301.
+  - W99 clamps 8 / 29 against 555 / 2,410. The start rule removes most of W99's own clamps under a delay.
+- **R9's costs:**
+  - The W74 SUMO preset clamps slightly above the switch off on the four-leg (39 against 32), with 72 against 68 on
+    M2.6.
+  - Jerk ticks are higher than R7's (W74, four-leg: 1,130 against 378).
+  - At 1 s the prototype's delay is 60.2 s against 48.4 with the switch off, and its headway 2.632 against 2.375 s.
+    The start rule holds it until the gap fits a 1 s start.
+- **R7 stays lowest for W74's clamps** (5 / 33), at the cost of the crawl the owner asked about.
