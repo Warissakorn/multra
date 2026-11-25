@@ -112,11 +112,12 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
 10. **Queues at rest, with and without a reaction time** (listed 2026-11-25; D655–D661;
     [LINE_QUEUE](../reference/LINE_QUEUE.md) §6, [REACTION_STOP](../reference/REACTION_STOP.md) §7). It re-checks F9 b
     and c after the owner's F9 findings.
-    - **Package:** run #150 of *Package binaries* (`a5abe16`, D652–D661), artifact `multra-windows-x64`.
+    - **Package:** run #151 of *Package binaries* (`699b109`, D652–D662, with P17), artifact `multra-windows-x64`.
+      Run #150 (`a5abe16`, D652–D661) also passed, but without P17.
     - **Not changed yet,** so not a finding:
       - the stop itself is still constant braking at 2 m/s², then rest (B is open);
-      - the prototype's followers behind a standing car still crawl in #150. P17 came after it (D662), so the next
-        package carries it.
+      - on #150 only: the prototype's followers behind a standing car still crawl. On #151 (P17, D662) they should
+        rest behind the car ahead.
     - **a. The prototype at the line.** Open `four-leg-signalised` with `lineRest` ticked (*ตั้งค่าการจำลอง / Run
       settings*), run, and pause during a red. Does the first car of each queue still stand with its front at the
       stop line?
