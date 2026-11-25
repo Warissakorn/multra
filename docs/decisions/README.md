@@ -123,3 +123,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D652](RECORD.md#d652) — LINE_STOP L3F implemented: `clampRules.lineRest` (schema 87), every W74/W99 and amber prototype stops at the line; dead ends stay leaders; M0 bytes kept
 [D653](RECORD.md#d653) — A front exactly at a line has not passed it (`pastLine`, discharge/stop-line/priority-line observers); D652's startup-lost-time claim withdrawn as its artefact; BA27/BA231 and the M0 SUMO look re-run
 [D654](RECORD.md#d654) — W99 §4: behind a standing obstacle, no more than the exact stop at CC0 (the line law); BA231's W99 clamps 345 → 42 per run, headway unchanged
+[D655](RECORD.md#d655) — Stopping behind a standing vehicle: contract and measured options (Q0–Q5); Q2 recommended for W74/W99, the prototype's crawl its own question; the owner chooses

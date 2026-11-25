@@ -5,6 +5,25 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — Queues behind a standing car: the contract and its measured options (D655)
+
+- **Owner:** F9 on package #149: followers crawl without end. They asked whether a stop at a line and behind a
+  car should be alike, chose A then B, then "เริ่มเขียนสัญญา A เลย".
+- **Measured** ([evidence](evidence/line-queue-options.md); a temporary [patch](evidence/line-queue-options.patch),
+  reverted). Six projects × four behaviours × options Q0–Q5, seeds 42–51:
+  - **Today:** median crawl is 17 s (prototype) and 30–36 s (W74).
+  - **Q2, for W74 and W99** (the line's stop law behind a vehicle at rest, plus a hold at the target):
+    - median crawl about 3 s;
+    - W99 clamps −80 to −99 % (the weaving lab 2,987 → 31 per run);
+    - lower delay;
+    - costs: more jerk ticks, and on M2.6 more W74 hard-braking ticks, not yet traced.
+  - **The prototype has no clean option.** Q2 clamps 303–1,100 per run, and D546's lever still 49–208.
+- **Contract** [LINE_QUEUE](reference/LINE_QUEUE.md):
+  - Q2 recommended for W74 and W99; the prototype keeps today's law, and its crawl becomes its own question.
+  - Rows BA252–BA256.
+  - **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-24 — W99 stops at CC0 behind a standing car (D654)
 
 - **Owner:** "ทำขั้นต่อไป" (NEXT's W99 §4 slice), plan approved.
@@ -179,22 +198,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 373/373, `schema-labels` 144,220
   labels and 0 disagreements; the build without the PCH compiles every unit; `multra-cli 42` byte-identical.
   Mutations bite: the "both" refusal, the schema floor, the decline, the Run refusal.
-
-## 2026-11-24 — F7 on Windows; the W99 dialog names an out-of-range key first (D643)
-
-- **Owner (F7, package #145, verbatim in [OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md)):** empty fields,
-  help, the empty-key refusal and the fit pass in Thai and English at 100/150 %; with `cc0 = 0`, Confirm showed no
-  range message and moved to the next field.
-- **Cause:** the dialog read keys until the first empty one and ran the range check only when all were filled, so
-  a value just typed was never reported while a later key was empty (W74 had the same order). The range message
-  also said "w74".
-- **Fix (D643):** `readKeys` reads every key (empty ones as NaN), runs the model's own check once, and names and
-  focuses the first key in order that is empty or out of range; the message is model-neutral (en, th) and ends
-  with the key. `behaviour-library-ui` checks `cc0 = 0` with later keys empty (error "· cc0", focus on cc0), then
-  the next empty key; it fails on the old order.
-- **Verified (Linux only):** `check` passes (372/372); the build without the PCH compiles every unit. A new
-  package for the owner's recheck.
-- **Owner, same day:** asked how other programs treat heavy vehicles' acceleration; after the comparison (Vissim's
-  per-type curves, SUMO's per-type `accel`, Aimsun's per-type maxima), "ตกลง" to not halving: D644, W99 §1.
-- **Owner, same day:** "CC1 ทำให้เลือกได้ดีหรือไม่ โดยให้ค่าเริ่มต้น เป็นการสุ่ม", then "ok แบบกราฟสะสม เริ่มสัญญาเลย":
-  W99 §5a contracts CC1 as a per-driver cumulative curve (D645, rows BA233–BA237); nothing implemented.

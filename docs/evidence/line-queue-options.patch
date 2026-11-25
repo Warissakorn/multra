@@ -1,0 +1,51 @@
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index 53ba169..7fde3db 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -2,6 +2,7 @@
+ #include "diffusion.hpp"
+ #include "yield_time.hpp"
+ #include "simulation.hpp"
++#include <cstdlib>
+ #include "conflicts.hpp"
+ #include "detail.hpp"
+ #include "following.hpp"
+@@ -322,11 +323,17 @@ SimState stepSimulation(SimState&& state, double dt) {
+         // LINE_STOP §2 (D652): with lineRest a holding line is not a leader. The model follows vehicles (perceived
+         // ones under M3.5); the nearest holding line has its own law, which ends at the line. A dead end is
+         // not one: its approach is the lane change's (LINE_STOP §6), so it stays a leader as before.
+-        const double line = std::min({headLine, giveWayLine, gateLine});
++        static const int zzQ = std::getenv("ZZ_Q") ? std::atoi(std::getenv("ZZ_Q")) : 0; // ZZ temporary: LINE_QUEUE options
++        const bool zzReplace = behaviour.lineRest && vehicleLeader && (((zzQ == 1 || zzQ == 2) && vehicleLeader->speed == 0) ||
++            (zzQ == 4 && (behaviour.w74 || behaviour.w99) && vehicleLeader->speed == 0) || (zzQ == 5 && vehicleLeader->speed < 0.1));
++        const double standing = zzReplace ? std::max(0.0, vehicleLeader->gap - standstillGap(behaviour) + (zzQ == 5 ? vehicleLeader->speed * vehicleLeader->speed / (2 * type.comfortableDeceleration) : 0.0)) : std::numeric_limits<double>::infinity();
++        const double line = std::min({headLine, giveWayLine, gateLine, standing});
+         const bool lineStop = behaviour.lineRest && std::isfinite(line);
+         auto modelLeader = leader;
+-        if (lineStop && leader && line <= leader->gap + 1e-9)
++        if (lineStop && leader && line <= leader->gap + 1e-9) {
+             modelLeader = perceivesAhead(sight) ? (perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader)) : vehicleLeader;
++            if (zzReplace && modelLeader && modelLeader->speed < (zzQ == 5 ? 0.1 : 1e-300)) modelLeader.reset();
++        }
+         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, modelLeader);
+         if (behaviour.lineRest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt);
+         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
+@@ -354,6 +361,18 @@ SimState stepSimulation(SimState&& state, double dt) {
+         // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
+         if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]
+             following.acceleration = inattentiveAcceleration(vehicle, following.acceleration, type);
++        if (zzQ == 1 && behaviour.lineRest && vehicleLeader && vehicleLeader->speed > 0) { // ZZ Q1: safe-speed bound
++            const double stops = vehicleLeader->gap + vehicleLeader->speed * vehicleLeader->speed / (2 * type.maxDeceleration);
++            const double a = lineStopAcceleration(vehicle.speed, std::max(0.0, stops - standstillGap(behaviour)), type.maxDeceleration, type.maxDeceleration, dt);
++            if (a < following.acceleration) { following.acceleration = a; following.mode = FollowingMode::braking; }
++        }
++        if (zzQ == 3 && behaviour.lineRest && vehicleLeader && vehicleLeader->speed < 0.1 && vehicle.speed > 0 && vehicle.speed < 0.1) { // ZZ Q3: finish
++            const double room = vehicleLeader->gap - standstillGap(behaviour) + vehicleLeader->speed * vehicleLeader->speed / (2 * type.comfortableDeceleration);
++            following.acceleration = lineStopAcceleration(vehicle.speed, std::max(0.0, room), type.comfortableDeceleration, type.maxDeceleration, dt);
++            following.mode = FollowingMode::braking;
++        }
++        if (zzQ >= 2 && behaviour.lineRest && vehicle.speed == 0 && vehicleLeader && vehicleLeader->speed == 0 &&
++            vehicleLeader->gap - standstillGap(behaviour) <= 1e-6) following.acceleration = std::min(0.0, following.acceleration); // ZZ residue hold
+         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
+         double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
+         double braking = type.comfortableDeceleration;

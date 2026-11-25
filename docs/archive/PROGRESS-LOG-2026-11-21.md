@@ -2,6 +2,25 @@
 
 Whole entries moved from the live PROGRESS log.
 
+## 2026-11-24 — F7 on Windows; the W99 dialog names an out-of-range key first (D643)
+
+- **Owner (F7, package #145, verbatim in [OWNER_SITTING_WINDOWS](../plans/OWNER_SITTING_WINDOWS.md)):** empty fields,
+  help, the empty-key refusal and the fit pass in Thai and English at 100/150 %; with `cc0 = 0`, Confirm showed no
+  range message and moved to the next field.
+- **Cause:** the dialog read keys until the first empty one and ran the range check only when all were filled, so
+  a value just typed was never reported while a later key was empty (W74 had the same order). The range message
+  also said "w74".
+- **Fix (D643):** `readKeys` reads every key (empty ones as NaN), runs the model's own check once, and names and
+  focuses the first key in order that is empty or out of range; the message is model-neutral (en, th) and ends
+  with the key. `behaviour-library-ui` checks `cc0 = 0` with later keys empty (error "· cc0", focus on cc0), then
+  the next empty key; it fails on the old order.
+- **Verified (Linux only):** `check` passes (372/372); the build without the PCH compiles every unit. A new
+  package for the owner's recheck.
+- **Owner, same day:** asked how other programs treat heavy vehicles' acceleration; after the comparison (Vissim's
+  per-type curves, SUMO's per-type `accel`, Aimsun's per-type maxima), "ตกลง" to not halving: D644, W99 §1.
+- **Owner, same day:** "CC1 ทำให้เลือกได้ดีหรือไม่ โดยให้ค่าเริ่มต้น เป็นการสุ่ม", then "ok แบบกราฟสะสม เริ่มสัญญาเลย":
+  W99 §5a contracts CC1 as a per-driver cumulative curve (D645, rows BA233–BA237); nothing implemented.
+
 ## 2026-11-24 — W99 slice 5: composition, the Run refusal lifted (D642)
 
 - **Owner:** "ทำต่อ" after the trait slice; the plan approved.
