@@ -125,3 +125,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D654](RECORD.md#d654) — W99 §4: behind a standing obstacle, no more than the exact stop at CC0 (the line law); BA231's W99 clamps 345 → 42 per run, headway unchanged
 [D655](RECORD.md#d655) — Stopping behind a standing vehicle: contract and measured options (Q0–Q5); Q2 recommended for W74/W99, the prototype's crawl its own question; the owner chooses
 [D656](RECORD.md#d656) — LINE_QUEUE Q2 implemented: W74/W99 behind a vehicle at rest stop by the line's law at the rear less the standstill gap, then wait; prototype and M0 unchanged
+[D657](RECORD.md#d657) — The prototype's crawl: contract and measured options (P0–P18); P17, the stop law plus a start rule at `speedThreshold`, the only one clean at every dt; the owner chooses

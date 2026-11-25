@@ -418,3 +418,19 @@ Whole entries moved from the live PROGRESS log.
   mouth, M3.2.12 stop lines and tool) was added to M3.2.13 as item 4 rather than read into A2. Still open on their own
   gates: M3.2.10, M3.2.13, M3.2.8a.1, M3.4, M6; the not-yet-validated marker stays.
 - Docs only; `multra-check-docs` passes.
+
+## 2026-11-24 — CC1 curve slice 2: draw, rule and composition (D647)
+
+- **Owner:** "ทำ CC1 เซสชันถัดไปเลย"; the plan approved.
+- **Draw:** `w99Cc1Share = u(16)` per driver at generation when a w99 behaviour has a curve
+  (`ScenarioIndex::w99Cc1Curve`, `PendingVehicle::w99Cc1Share`); a checkpoint key only when present.
+- **Rule:** SPEED_DISTRIBUTION §3's inverse is now `cumulativeInverse`, shared by `speedAt` (unchanged to the bit)
+  and `w99Cc1At`.
+- **Composition:** `w99DriverParameters` gives `follow`, `desiredGap` and `stopLineReach` the driver's CC1;
+  the four `stopLineReach` callers pass the vehicle's share; retune compares curve presence. D646's Run refusal
+  is removed; the dialog's decline stays until BA237.
+- **Rows:** `tests/w99_cc1_run_tests.cpp` (group `w99cc1run`, BA234–BA236, 6 tests); `w99cc1codec`'s refusal case
+  now runs a curved behaviour. Mutations bite: index 15, the share always drawn, CC1 not replaced, `desiredGap`
+  ignoring the share, the refusal kept ([evidence](../evidence/w99-cc1-draw.md)).
+- **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 374/374; the build without the PCH
+  compiles every unit; `multra-cli 42` summary and events byte-identical.
