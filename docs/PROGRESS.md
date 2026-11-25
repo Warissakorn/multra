@@ -34,6 +34,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - `multra-cli 42` is byte-identical, and so are the prototype and W74 sweeps.
   - Each sweep, run twice, gives identical output.
   - `check` passes.
+- **Package #149** (`f5653f8`): for the owner's [F9](plans/OWNER_SITTING_WINDOWS.md) (lineRest, queues at the
+  line, a W99 queue), with F7 and F8.
 
 ## 2026-11-24 — A front at the line has not passed it; BA27/BA231 and the SUMO look re-run (D653)
 

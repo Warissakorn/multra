@@ -65,7 +65,7 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
     check on the next package:** `cc0 = 0`, Confirm: the error ends "· cc0" and the cursor stays in cc0. Package for
     the recheck: run #146 of *Package binaries* (`cc57f2d`, D643; W99 also runs, D642), artifact
     `multra-windows-x64` (expires 2026-12-08), or the newer run #147 (`c193433`, also carrying F8 and D650),
-    artifact `multra-windows-x64` (expires 2026-12-08).
+    artifact `multra-windows-x64` (expires 2026-12-08), or #149 (`f5653f8`, also F9).
 
 8. **CC1 as a distribution in the W99 dialog** (listed 2026-11-24, D648, W99 §5a). Edit a behaviour, choose
     *W99*: is *CC1* set to *Distribution (per driver)* with an empty table and the `cc1` field greyed? Fill

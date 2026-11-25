@@ -61,7 +61,7 @@ key only for a study with a flared approach and a cited default.
 
 The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,
 E35, E36, B45 (words in PROGRESS). **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md); A2 passed 2026-11-21, D612):
-E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, G1, H1, C12. Thirty-one
+E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, F7, F8, F9, G1, H1, C12. Thirty-one
 older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
 A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
 
@@ -299,9 +299,11 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   - **The M6 U record and sweep (D543, D546)** run with the switch off; re-measure them under D652/D653 if M6
     work resumes.
   - **A cited W99 preset** only if one exists (D178).
-  - **Owner (Windows):** the lineRest checkbox and the four-leg queues at the line, on the next package.
-  **Owner (Windows):** [F8](plans/OWNER_SITTING_WINDOWS.md), the CC1 table; [F7](plans/OWNER_SITTING_WINDOWS.md)'s
-  out-of-range recheck (D643), on package #147.
+  **Owner (Windows), package #149 (`f5653f8`, D652–D654):**
+  - [F9](plans/OWNER_SITTING_WINDOWS.md): the `lineRest` checkbox, queues at the line, a W99 queue, and the save
+    and reopen.
+  - [F8](plans/OWNER_SITTING_WINDOWS.md): the CC1 table.
+  - [F7](plans/OWNER_SITTING_WINDOWS.md): the out-of-range recheck (D643).
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.
