@@ -474,3 +474,18 @@ Whole entries moved from the live PROGRESS log.
   per run, each a car's one arrival (the soft closing approach, NEXT's line contract). Headway unchanged.
 - **Verified (Linux only):** `multra-cli 42` summary and events byte-identical; the W74 sweep byte-identical;
   `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.
+
+## 2026-11-24 — Stopping at the line: the contract and its measured options (D651)
+
+- **Owner:** reviewed line stops, M0 and other programs, then: "ถ้าต้องการให้โปรแกรมสมจริง มีประสิทธิภาพที่สุด"; "ทำตามแผนเขียนสัญญา".
+- **Measured** ([evidence](../evidence/line-stop-options.md); a temporary [patch](../evidence/line-stop-options.patch), reverted):
+  - five projects × prototype, W74 fixture, W74 SUMO preset, W99 × L0 / L1 / L1F / L3 / L3F, seeds 42–51;
+  - L3 rests every model at every line type (0 m), cuts crawls from 10–14 s to about 0.5 s and moves startup lost
+    time to +1.4 to +2.1 s (withdrawn by D653: a measurement artefact), at +1.1 % instructions;
+  - L1 leaves W74 1 m short and clamps 225 per run on M2.6;
+  - a first run counted rounding residues at the line as clamps, so the finish (D596's, GIVE_WAY_STOP §2) is part
+    of every option.
+- **Contract** [LINE_STOP](../reference/LINE_STOP.md): L3F recommended as `clampRules.lineRest`, scoped like D257 so
+  M0 keeps its bytes (an unscoped rule moves bare M0, 1 → 5 clamps); rows BA239–BA245; W99's arrival clamps left to
+  a W99 §4 slice. **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.

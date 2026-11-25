@@ -23,4 +23,17 @@ void applyLineStop(FollowingResult& following, double speed, double line, const 
     following.acceleration = std::min(following.acceleration,
         std::max(-type.maxDeceleration, -(speed * speed) / (2 * std::max(0.01, stopAt))));
 }
+void holdDelayedStart(FollowingResult& decided, double speed, const std::optional<Leader>& vehicleLeader, double tau,
+                      const VehicleType& type, const DriverBehaviour& behaviour) {
+    if (speed != 0 || !vehicleLeader || decided.acceleration <= 0) return;
+    const double a = decided.acceleration, reach = a * tau;
+    if (vehicleLeader->gap - standstillGap(behaviour) < a * tau * tau / 2 + reach * reach / (2 * type.maxDeceleration))
+        decided.acceleration = 0;
+}
+void applyDelayedLineStop(FollowingResult& applied, double speed, double line, const std::optional<Leader>& vehicleLeader,
+                          const VehicleType& type, const DriverBehaviour& behaviour, double dt) {
+    if (speed == 0 && vehicleLeader && vehicleLeader->gap - standstillGap(behaviour) <= 1e-6)
+        applied.acceleration = std::min(0.0, applied.acceleration);
+    applyLineStop(applied, speed, line, vehicleLeader, type, behaviour, dt);
+}
 }

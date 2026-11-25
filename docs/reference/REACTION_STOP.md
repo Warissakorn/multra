@@ -147,6 +147,39 @@ stops. They then asked for a rule that lets a delayed vehicle rest before choosi
 **The session's recommendation is now R9:** it answers the crawl and clamps less than the switch off for every
 model except the SUMO preset. R7 remains the choice with the fewest W74 clamps, but with the crawl.
 
-## 7. The owner's choice
+## 7. The owner's choice and the implementation (D661)
 
-Open. Options: **R9** (recommended), R7 (fewest W74 clamps, with the crawl), or another.
+The owner chose **R9** on 2026-11-25 ("เลือก R9 ทำเลย").
+
+- **Engine** (`src/core/line_stop.cpp`, called from `stepSimulation`'s reaction-delay block). For a behaviour with
+  `lineRest` and a delay `d > 0`:
+  - `holdDelayedStart` runs before the decision enters the FIFO (rule 3, with τ = `d·dt`);
+  - `applyDelayedLineStop` runs after `delayedAction`: the hold at the standstill gap (rule 2), then `applyLineStop`
+    on the current state toward `line`, the nearest holding line or a vehicle at rest less the standstill gap
+    (rule 1).
+- **Against the measurement.** The committed code reproduces R9's rows of the evidence to the digit (four-leg and
+  M2.6 at 0.5 s, the four-leg at 1 s, four behaviours). Runs without a delay keep D656's figures, and
+  `multra-cli 42` is byte-identical.
+- **Rows** (`tests/line_stop_tests.cpp`, `linestop`). Each scene first asserts its forcing: some tick applies well
+  below the decision the FIFO handed over.
+
+  | Row | Case |
+  |---|---|
+  | BA262 | A delayed prototype car at 14 m/s toward a red line rests exactly at it, with no clamp |
+  | BA263 | A delayed W74 and W99 queue of four rests without a clamp. Each follower is at or within the start rule's room of its standstill gap: a delayed stop can end a few centimetres short, and a start that short does not fit the delay |
+  | BA264 | At rest at its standstill gap behind a leader edging by 10 μm/s, a delayed W74 car neither moves nor clamps; the hold itself at 5·10⁻⁷ and 2·10⁻⁶ m |
+  | BA265 | `reactionTime` 0 gives the ticks of an unset one, for every model |
+  | BA266 | The measurement above (not a row) |
+  | BA267 | The start rule at the threshold. In a run, a delayed prototype 0.1 m beyond its standstill gap waits until its gap fits its start, and starts sooner with the switch off |
+
+  Each of these mutations fails a row:
+  - no start rule;
+  - the laws left delayed;
+  - no hold;
+  - no reapply;
+  - the start rule without `lineRest`;
+  - the start rule without its braking term.
+- **Left:**
+  - PROTOTYPE_QUEUE's P17 for undelayed prototypes, with its three scene forcings and BA197;
+  - B, the softer profile;
+  - the SUMO preset's clamps under a delay, at about the switch off's.

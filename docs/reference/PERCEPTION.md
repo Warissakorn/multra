@@ -122,6 +122,9 @@ d = floor(τ / dt + 0.5)          (ticks; d = 0 means today)
   stopped vehicle within its standstill gap gets no positive acceleration), `integrate`, the
   desired-speed cap, the hard cap with counted clamps, Stop rest and phase-2 resolution. The cap
   always reads the **current** physical leader, so the delay can never cause overlap.
+- **Under `lineRest` (REACTION_STOP, D661)** the stop laws are not delayed. A start from rest is stored only when the
+  gap fits holding it for the delay. After the delay, a vehicle at rest within 10⁻⁶ m of its standstill gap gets no
+  acceleration, and LINE_STOP's `applyLineStop` is applied again on the current state.
 - The stored mode and W74 state are those of the applied entry, written at publish only. The W74
   sign hysteresis therefore follows what the driver did, not what it decided last.
 - **Insertion:** a new vehicle's FIFO is filled with `{0, free, no state}`. It enters at rest

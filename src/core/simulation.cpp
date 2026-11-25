@@ -352,11 +352,14 @@ SimState stepSimulation(SimState&& state, double dt) {
         if (std::isfinite(deadEnd) && leader->gap < deadEnd) // D456: the dead end behind a nearer leader
             if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
         if (const auto delay = reactionTicks(sight, dt)) {
+            // REACTION_STOP §6 (D661): under lineRest a start must fit the delay, and the stop laws are not delayed.
+            if (behaviour.lineRest) holdDelayedStart(following, vehicle.speed, vehicleLeader, static_cast<double>(delay) * dt, type, behaviour);
             decisions.push_back({v, delay, following});
             auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;
             if (yields && (!current || courtesy[v].gap < current->gap))
                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
             following = delayedAction(vehicle, delay, following, type, behaviour, current);
+            if (behaviour.lineRest) applyDelayedLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt);
         }
         // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
         if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]

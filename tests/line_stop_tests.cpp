@@ -1,5 +1,6 @@
 #include "test.hpp"
 #include "../src/core/line_stop.hpp"
+#include "../src/core/perception.hpp"
 #include "../src/core/w74.hpp"
 #include "../src/core/w99.hpp"
 #include "../src/project/document.hpp"
@@ -263,4 +264,127 @@ TEST(linestop, ba255_the_prototype_keeps_its_law_behind_a_standing_car) { // BA2
     const auto on = queue(Model::prototype, true), off = queue(Model::prototype, false);
     CHECK(on.crawl > 10); CHECK(!on.still);
     CHECK(off.crawl > 10); CHECK(!off.still);
+}
+
+// REACTION_STOP §6 (D661): rows BA262–BA267, the owner's R9. A vehicle with a reaction delay under lineRest: the stop
+// laws are reapplied after the delay, it holds at the standstill gap, and a start from rest must fit the delay.
+// Each scene's forcing: some tick's applied acceleration lies well below the decision the FIFO handed over.
+namespace {
+constexpr double kReaction = 0.5; // the measured case (REACTION_STOP §1)
+struct Delayed { int clamps{}, lawBound{}; double rest{}; bool still{}; std::vector<double> rests; };
+// Runs `state` for `ticks`, counting clamps of `ids` and ticks where vehicle `watched` applied less than the
+// decision it stored `d` ticks earlier (the stop law binding after the delay).
+Delayed runDelayed(SimState state, int ticks, const std::vector<std::uint64_t>& ids, std::uint64_t watched) {
+    const auto d = reactionTicks(state.scenario->behaviours.front().perception, state.scenario->timeStep);
+    std::vector<double> stored; Delayed r;
+    for (int t = 0; t < ticks; ++t) {
+        state = stepSimulation(std::move(state));
+        for (const auto id : ids) r.clamps += clamped(state, id);
+        const auto& v = find(state, watched);
+        if (stored.size() >= d && v.speed > 0.5 && v.acceleration < stored[stored.size() - d] - 0.5) ++r.lawBound;
+        stored.push_back(v.reactionHistory.back().acceleration);
+    }
+    const auto& s = *state.scenario;
+    const double length = s.vehicleTypes.front().length, s0 = standstillGap(s.behaviours.front());
+    r.still = true;
+    for (std::size_t i = 1; i < ids.size(); ++i) {
+        r.rests.push_back(find(state, ids[i - 1]).distance - length - s0 - find(state, ids[i]).distance);
+        r.still = r.still && find(state, ids[i]).speed == 0;
+    }
+    r.rest = 100 - find(state, ids.front()).distance; r.still = r.still && find(state, ids.front()).speed == 0;
+    return r;
+}
+Scenario delayedRoad(Model m) {
+    auto s = redRoad(m, true); s.duration = 90;
+    s.behaviours.front().perception.reactionTime = kReaction;
+    return s;
+}
+}
+TEST(linestop, ba262_a_delayed_prototype_stops_at_a_red_line) { // BA262
+    // A prototype car from 40 m at 14 m/s toward the red line at 100 m: its stale decisions would reach the line
+    // too fast to stop (M4.2 would then let it pass on red).
+    const auto r = runDelayed(placed(delayedRoad(Model::prototype), {test::vehicle(1, 40, 14)}), 900, {1}, 1);
+    CHECK(r.lawBound > 0); // forcing
+    CHECK(r.clamps == 0); CHECK(r.still); CHECK(r.rest >= -1e-9); CHECK(r.rest <= 1e-6);
+}
+TEST(linestop, ba263_a_delayed_w74_or_w99_queue_rests_without_a_clamp) { // BA263
+    for (const auto m : {Model::w74, Model::w99}) {
+        const auto r = runDelayed(placed(delayedRoad(m), {test::vehicle(1, 40, 6), test::vehicle(2, 25, 6),
+            test::vehicle(3, 10, 6), test::vehicle(4, 0, 6)}), 900, {1, 2, 3, 4}, 4);
+        CHECK(r.lawBound > 0); // forcing: the queue law binds the last follower after the delay
+        CHECK(r.clamps == 0); CHECK(r.still);
+        // At rest, at most the room a start held for the delay needs (rule 3 holds a shorter close-up).
+        const auto& type = test::straight().vehicleTypes.front(); const double a = type.maxAcceleration;
+        const double room = a * kReaction * kReaction / 2 + (a * kReaction) * (a * kReaction) / (2 * type.maxDeceleration);
+        for (const double x : r.rests) { CHECK(x >= -1e-9); CHECK(x < room); }
+    }
+}
+TEST(linestop, ba264_at_its_standstill_gap_a_delayed_car_holds_behind_a_creeping_leader) { // BA264
+    // A W74 car at rest exactly at its standstill gap behind a car edging toward the red line at 10 μm/s: the leader
+    // is not standing (LINE_QUEUE's hold does not apply), and the follower must neither move nor clamp.
+    auto s = delayedRoad(Model::w74);
+    const double length = s.vehicleTypes.front().length, s0 = standstillGap(s.behaviours.front());
+    auto state = placed(s, {test::vehicle(2, 100 - 1e-6, 1e-5), test::vehicle(1, 100 - 1e-6 - length - s0, 0)});
+    CHECK(find(state, 2).speed > 0); // forcing
+    const double start = find(state, 1).distance;
+    for (int t = 0; t < 100; ++t) {
+        state = stepSimulation(std::move(state));
+        CHECK(!clamped(state, 1)); CHECK(find(state, 1).distance == start);
+    }
+    // The hold itself: at rest within 1e-6 m of the standstill gap behind a moving vehicle, no acceleration; beyond it,
+    // the applied action passes.
+    const auto& type = s.vehicleTypes.front(); const auto& b = s.behaviours.front();
+    for (const double room : {5e-7, 2e-6}) {
+        FollowingResult applied{0.5, FollowingMode::free, {}};
+        applyDelayedLineStop(applied, 0, std::numeric_limits<double>::infinity(), Leader{s0 + room, 1e-5}, type, b, s.timeStep);
+        CHECK(applied.acceleration == (room < 1e-6 ? 0 : 0.5));
+    }
+}
+TEST(linestop, ba265_without_a_delay_the_rules_do_not_reach) { // BA265
+    // reactionTime 0 quantises to no delay: a queue's ticks equal those of an unset reactionTime, for every model.
+    for (const auto m : kModels) {
+        auto zero = redRoad(m, true); zero.behaviours.front().perception.reactionTime = 0;
+        const std::vector<test::Placement> cars{test::vehicle(1, 40, 6), test::vehicle(2, 25, 6), test::vehicle(3, 10, 6)};
+        auto a = placed(zero, cars), b = placed(redRoad(m, true), cars);
+        for (int t = 0; t < 600; ++t) {
+            a = stepSimulation(std::move(a)); b = stepSimulation(std::move(b));
+            for (std::uint64_t id = 1; id <= 3; ++id) CHECK(find(a, id) == find(b, id));
+        }
+    }
+}
+TEST(linestop, ba267_a_start_from_rest_must_fit_the_delay) { // BA267
+    auto type = test::straight().vehicleTypes.front(); const auto b = behaviourOf(Model::w74, test::straight().behaviours.front());
+    const double tau = 0.5, a = 2, need = a * tau * tau / 2 + (a * tau) * (a * tau) / (2 * type.maxDeceleration);
+    for (const double room : {need - 1e-6, need + 1e-6}) {
+        FollowingResult decided{a, FollowingMode::free, {}};
+        holdDelayedStart(decided, 0, Leader{standstillGap(b) + room, 0.5}, tau, type, b);
+        CHECK(decided.acceleration == (room < need ? 0 : a));
+    }
+    // In a run: a delayed prototype car at rest 0.1 m beyond its standstill gap behind a car leaving at 5 m/s (the
+    // prototype starts as soon as its gap exceeds the standstill distance; W74 waits in its own band). Under lineRest
+    // it waits until the gap fits its start; with the switch off the rule does not reach, and it starts sooner.
+    std::map<bool, int> first;
+    for (const bool lineRest : {true, false}) {
+        auto s = delayedRoad(Model::prototype); s.clampRules.lineRest = lineRest; s.signalHeads.clear();
+        const double length = s.vehicleTypes.front().length, s0 = standstillGap(s.behaviours.front());
+        auto state = placed(s, {test::vehicle(2, 60, 5), test::vehicle(1, 60 - length - s0 - 0.1, 0)});
+        const double start = find(state, 1).distance, tauRun = reactionTicks(s.behaviours.front().perception, s.timeStep) * s.timeStep;
+        const auto& vt = s.vehicleTypes.front();
+        int firstMove = -1; double gapAtStart = 0, decidedAtStart = 0;
+        for (int t = 0; t < 100 && firstMove < 0; ++t) {
+            const double gap = find(state, 2).distance - length - find(state, 1).distance;
+            state = stepSimulation(std::move(state)); CHECK(!clamped(state, 1));
+            if (find(state, 1).distance > start) { firstMove = t; gapAtStart = gap - s0; decidedAtStart = find(state, 1).acceleration; }
+        }
+        CHECK(firstMove >= 0);
+        if (lineRest) {
+            CHECK(firstMove > 0); // forcing: 0.1 m does not fit a 0.5 s start
+            const double need = decidedAtStart * tauRun * tauRun / 2 + (decidedAtStart * tauRun) * (decidedAtStart * tauRun) / (2 * vt.maxDeceleration);
+            CHECK(gapAtStart >= need - 1e-9);
+        }
+        first[lineRest] = firstMove;
+    }
+    CHECK(first[false] < first[true]); // with the switch off the rule does not hold it
+    FollowingResult moving{a, FollowingMode::free, {}}; // only a start from rest is held
+    holdDelayedStart(moving, 0.1, Leader{standstillGap(b), 0.5}, tau, type, b); CHECK(moving.acceleration == a);
 }

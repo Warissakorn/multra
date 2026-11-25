@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — Delayed vehicles rest at lines and in queues: R9 implemented (D661)
+
+- **Owner:** asked whether creep, stop and creep again is how people drive (no cited source either way; Vissim
+  and SUMO rest a queue at its standstill distance), then "เลือก R9 ทำเลย".
+- **Engine** ([REACTION_STOP §7](reference/REACTION_STOP.md)): for a behaviour with `lineRest` and a reaction delay,
+  `holdDelayedStart` runs before the FIFO and `applyDelayedLineStop` after it, in `src/core/line_stop.cpp`.
+- **Against the measurement:** R9 reproduced to the digit.
+  - At 0.5 s, W74 clamps 9 / 44 per run (four-leg / M2.6), against 755 / 3,277 before.
+  - W99 clamps 8 / 29, against 391 / 1,506.
+  - The prototype passes red 0 times, against 128–453.
+  - Runs without a delay are unchanged.
+- **Rows** BA262–BA265 and BA267 (`linestop`). Each of six mutations fails a row. BA263 found that a delayed stop can
+  end a few centimetres short, and then holds there, since that short a start does not fit the delay.
+- **Verified (Linux only):** `check` passes, `ctest` 376/376; `multra-cli 42` byte-identical.
+
 ## 2026-11-25 — A delayed vehicle rests: R9 measured (D660)
 
 - **Owner:** asked whether R7's crawl is creep-then-stop or endless, then "หากฎให้รถที่มี delay หยุดนิ่งได้ก่อน".
@@ -206,18 +221,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   D651's L3F byte for byte; on the four-leg the prototype's startup lost time is +1.98 s (was −0.11) with 0
   clamps. (That startup figure is withdrawn: a measurement artefact, D653.)
 - **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (375/375); the build without the PCH compiles 692 units, 0 failed. Package #147 (`c193433`) recorded for F7/F8.
-
-## 2026-11-24 — Stopping at the line: the contract and its measured options (D651)
-
-- **Owner:** reviewed line stops, M0 and other programs, then: "ถ้าต้องการให้โปรแกรมสมจริง มีประสิทธิภาพที่สุด"; "ทำตามแผนเขียนสัญญา".
-- **Measured** ([evidence](evidence/line-stop-options.md); a temporary [patch](evidence/line-stop-options.patch), reverted):
-  - five projects × prototype, W74 fixture, W74 SUMO preset, W99 × L0 / L1 / L1F / L3 / L3F, seeds 42–51;
-  - L3 rests every model at every line type (0 m), cuts crawls from 10–14 s to about 0.5 s and moves startup lost
-    time to +1.4 to +2.1 s (withdrawn by D653: a measurement artefact), at +1.1 % instructions;
-  - L1 leaves W74 1 m short and clamps 225 per run on M2.6;
-  - a first run counted rounding residues at the line as clamps, so the finish (D596's, GIVE_WAY_STOP §2) is part
-    of every option.
-- **Contract** [LINE_STOP](reference/LINE_STOP.md): L3F recommended as `clampRules.lineRest`, scoped like D257 so
-  M0 keeps its bytes (an unscoped rule moves bare M0, 1 → 5 clamps); rows BA239–BA245; W99's arrival clamps left to
-  a W99 §4 slice. **The owner chooses.**
-- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
