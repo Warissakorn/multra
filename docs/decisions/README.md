@@ -132,3 +132,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D661](RECORD.md#d661) — REACTION_STOP R9 implemented: delayed vehicles under `lineRest` rest without clamps or red passes (W74 755 → 9, prototype red passes 128 → 0 per run); runs without a delay unchanged
 [D662](RECORD.md#d662) — PROTOTYPE_QUEUE P17 implemented: prototype queues rest behind a standing car (crawl 17 → 1.3 s, 0 clamps); three scene forcings settled, BA197's floor 350
 [D663](RECORD.md#d663) — B's contract: an IDM-shaped stop with the type's a and b, bounded by today's law; B3 (no new value) cuts the prototype's step jerk 296 → 25 at +9.5 s delay (untraced); the owner chooses
+[D664](RECORD.md#d664) — B3's +9.5 s delay is all the approach to standing cars; toward lines only it costs nothing but gains little; recommendation B3P (lines, prototype only); the owner chooses again

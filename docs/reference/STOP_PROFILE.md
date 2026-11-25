@@ -166,3 +166,31 @@ becomes:
 - **Calibration of a or b** from Kesting & Treiber's Table 1 (D544).
 - **R9's start rule's step** under a reaction delay.
 - **W99's weaving clamps** under every option (W99 §6's question).
+
+## 9. The trace (D664)
+
+The owner took the recommendation on 2026-11-25 ("ตามแนะนำ"): B3, after §5's trace
+([evidence](../evidence/stop-profile-options.md#the-trace-of-the-prototypes-delay-d664)).
+
+- **All of the prototype's added delay is the approach to a vehicle at rest.** Toward lines only (B3L) its delay is
+  unchanged (four-leg 47.74 → 47.76 s; M2.6 45.35 → 45.38 s).
+- **So is most of B3's gain.** On the four-leg, B3 cuts step jerk 296 → 25 and hard braking 1,027 → 410. B3L cuts
+  step jerk 296 → 299, which is no change, and hard braking 1,027 → 903. A prototype stops behind a car far more often
+  than at a line.
+- **W74 and W99 gain nothing from B3L.** Their jerk > 10 m/s³ rises by up to 56 %, probably through D258's floor.
+
+§5's rule ("if it is the second, B3 is re-measured toward lines only") was followed, and the result changes the
+trade-off. No code is written, and the owner chooses again:
+
+| Choice | What it gives (four-leg, prototype) | Cost |
+|---|---|---|
+| **B3P: B3L for the prototype only** (recommended) | The head car's stop at a line softens (hard braking −12 %); the same delay, clamps and stops | Small aggregate gain. W74 and W99 unchanged by construction, so the owner's F9 look on a W74 or W99 project sees no change |
+| B3 everywhere (§4) | Step jerk −92 %, hard braking −60 %, 30 % fewer stops | Delay +9.5 s (+20 %), not traced as real or not |
+| B3 toward vehicles at rest for the prototype, lines B3L | As B3 for the prototype | The same delay |
+| None | — | F9's constant 2 m/s² stays |
+
+**The session's recommendation is B3P.** It is the one choice with no measured cost, and it answers F9's head car for
+the prototype. The approach to a standing queue (B3's delay) is a question of anticipation: whether drivers slow
+early for a queue that will move off. No source read measures it, so it stays out until one does.
+
+Rows for B3P are §7's BA268–BA273 for the prototype at lines. BA269, toward a car at rest, asserts today's law.

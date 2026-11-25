@@ -176,3 +176,56 @@ option, because R9's start rule and reapplied law still switch in one tick.
 6. **No option removes the last step to rest.** An exact stop at the line in finite time ends at a non-zero
    deceleration. A deceleration that falls to 0 at rest needs a profile shape: Akçelik & Biggs's (unread) or a new
    one, which would need a citation (D178).
+
+## The trace of the prototype's delay (D664)
+
+The owner took the recommendation ("ตามแนะนำ"): B3 after the trace of STOP_PROFILE §5.
+- **Method.** The patch gained `ZZ_SCOPE`:
+  - 1: B3 toward holding lines only, and today's law toward a vehicle at rest (**B3L**);
+  - 2: B3 toward vehicles at rest only.
+
+  The target is a vehicle at rest when `standing` is the nearest of the targets. The probe also counts **stops**:
+  ticks on which a vehicle reaches 0 m/s from moving, per run.
+- **The split** (prototype, per run):
+
+  | Case | Delay (s) | Stops | Hard braking | Step jerk |
+  |---|---|---|---|---|
+  | Four-leg, B0 | 47.74 | 416 | 1,027 | 296 |
+  | B3 toward lines only (B3L) | 47.76 | 416 | 903 | 299 |
+  | B3 toward vehicles at rest only | 57.36 | 291 | 518 | 24 |
+  | B3 | 57.23 | 289 | 410 | 25 |
+  | M2.6, B0 | 45.35 | 1,575 | 3,814 | 1,170 |
+  | B3L | 45.38 | 1,571 | 3,360 | 1,166 |
+  | B3 toward vehicles at rest only | 54.93 | 1,085 | 2,081 | 183 |
+  | B3 | 54.91 | 1,087 | 1,727 | 168 |
+
+- **All of the added delay is the approach to a vehicle at rest.** Under B3, a car approaching a standing queue slows
+  from far off. It stops 30 % less often (416 → 289) but loses 9.5 s. The stop count suggests the queue often moves
+  off before the car arrives; that is not traced per vehicle.
+  - It is not traced whether that is realistic anticipation or over-caution. No source read measures it.
+- **Most of B3's gain is also there.** Toward lines only, step jerk does not fall (296 → 299). Hard braking falls by
+  12 %. On the four-leg a prototype stops at a line far less often than behind a car.
+
+### B3L, every project (per run)
+
+Clamps / hard braking / step jerk / jerk > 10 m/s³ / delay (s), against B0:
+
+| Project, model | B0 | B3L |
+|---|---|---|
+| Four-leg, prototype | 0.0 / 1,027 / 296 / 1,589 / 47.74 | 0.0 / 903 / 299 / 1,497 / 47.76 |
+| Four-leg, W74 fixture | 9.2 / 220 / 625 / 11,788 / 95.15 | 9.5 / 214 / 617 / 13,312 / 95.28 |
+| Four-leg, W74 SUMO | 2.3 / 187 / 686 / 10,113 / 111.29 | 2.6 / 185 / 664 / 11,100 / 111.36 |
+| Four-leg, W99 | 7.9 / 148 / 266 / 3,935 / 50.57 | 8.8 / 145 / 257 / 6,145 / 50.57 |
+| M2.6, prototype | 0.3 / 3,814 / 1,170 / 6,622 / 45.35 | 0.2 / 3,360 / 1,166 / 6,360 / 45.38 |
+| M2.6, W99 | 32.9 / 646 / 1,102 / 15,234 / 47.84 | 32.8 / 621 / 1,055 / 23,699 / 47.76 |
+| `t-junction-priority`, prototype | 0.0 / 118 / 50 / 376 / 6.38 | 0.0 / 108 / 48 / 375 / 6.43 |
+| `weaving-lab`, W99 | 30.7 / 1,282 / 1,452 / 14,327 / 18.68 | as B0 |
+
+- **The prototype gains a little and loses nothing:** hard braking −12 % (four-leg) and −12 % (M2.6), and the same
+  delay, clamps and stops. This also holds at dt 0.05 and 0.2, and with `reactionTime` 0.5 s.
+- **W74 and W99 gain nothing, and their jerk > 10 m/s³ rises** (W99 four-leg +56 %, M2.6 +56 %).
+  - The likely cause, not traced: their D258 floor `−v²/(2·gap)` applies whenever their acceleration is negative.
+    B3L's gentle onset makes it negative from far off, so the floor would step in at once at the kinematic
+    deceleration.
+- **W74 on M2.6** swings again (trips 1,724 → 1,621), as under every option (oversaturated).
+- `lane-change-lab` and `weaving-lab` are unchanged under B3L. No holding line binds there.

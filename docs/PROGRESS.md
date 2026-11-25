@@ -5,6 +5,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — B3's delay traced: all of it is the approach to standing cars (D664)
+
+- **Owner:** "ตามแนะนำ" (B3, after STOP_PROFILE §5's trace).
+- **Trace** ([evidence](evidence/stop-profile-options.md#the-trace-of-the-prototypes-delay-d664)): B3 toward lines only
+  keeps the prototype's delay (four-leg 47.74 → 47.76 s), so all of the +9.5 s is the approach to a vehicle at rest.
+  - Most of B3's gain is there too: toward lines only, step jerk 296 → 299 and hard braking 1,027 → 903.
+  - W74 and W99 gain nothing toward lines only. Their jerk > 10 m/s³ rises by up to 56 %.
+- **No code.** The trade-off changed, so the owner chooses again (STOP_PROFILE §9). The recommendation is B3P,
+  B3 toward lines for the prototype only.
+- **Verified (Linux only):** `multra-cli 42` byte-identical after the patch's revert; `check-docs` passes.
+
 ## 2026-11-25 — B, a softer stop profile: the contract and its measured options (D663)
 
 - **Owner:** "อนุญาตให้ดาวน์โหลด PDF ได้", then "เขียนสัญญา B จากแหล่งที่อ่านแล้ว".
@@ -170,35 +181,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Rows BA252–BA256.
   - **The owner chooses.**
 - **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
-
-## 2026-11-24 — W99 stops at CC0 behind a standing car (D654)
-
-- **Owner:** "ทำขั้นต่อไป" (NEXT's W99 §4 slice), plan approved.
-- **Probe (seed 42, four-leg):** the clamps were arrivals behind standing cars, at 0.03–0.14 m/s with millimetres
-  left:
-  - *closing* aims 0.1 m past CC0;
-  - *following* creeps at +CC7;
-  - D652's floor skipped them.
-- **Rule (W99 §4):**
-  - Behind a standing obstacle, a moving driver asks no more than the exact stop at CC0 at the type's
-    comfortable deceleration (`lineStopAcceleration`).
-  - The exact `−v²/(2·room)` applies when the stop falls inside the tick.
-  - It aims 1 nm short of CC0 against rounding.
-  - It is not gated by `lineRest`.
-- **Rows:**
-  - BA249 in `w99run`: 33 arrivals over dt × room × speed, no clamp, rest within `CC7·dt²` of CC0.
-  - BA250 and BA251 in `w99`: not binding far away or behind a moving leader; hand-checked numbers.
-  - BA238's dt row now uses a moving leader.
-  - Five mutations each fail a row.
-- **Measured** ([evidence](evidence/w99-discharge.md#after-d654)):
-  - BA231's W99 clamps: 345 / 222 / 145 → 42 / 25 / 32 per run.
-  - Four-leg 337.5 → 39.2, M2.6 1,258.9 → 150.2.
-  - Headway is unchanged.
-  - About 22 of the 48 left at seed 42 are behind leaders still moving when they stop. The leader's braking is
-    unknown, so this stays open.
-- **Verified (Linux only):**
-  - `multra-cli 42` is byte-identical, and so are the prototype and W74 sweeps.
-  - Each sweep, run twice, gives identical output.
-  - `check` passes.
-- **Package #149** (`f5653f8`): for the owner's [F9](plans/OWNER_SITTING_WINDOWS.md) (lineRest, queues at the
-  line, a W99 queue), with F7 and F8.
