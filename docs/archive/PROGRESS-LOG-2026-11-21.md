@@ -447,3 +447,16 @@ Whole entries moved from the live PROGRESS log.
   Mutations bite: Fixed as the default, the curve not saved, the decline restored.
 - **Verified (Linux only, desktop preset, GCC 13.3):** `check` passes, `ctest` 374/374; the build without the PCH
   compiles every unit. F8 lists the owner's Windows look.
+
+## 2026-11-24 — W99 BA231: queue-discharge timestep record (D649)
+
+- **Owner:** "ทำต่อ"; the plan approved (NEXT's BA231).
+- **Tool:** BA27's sweep loop moved to `tools/discharge_sweep.hpp`; `multra-w99-discharge-sweep` runs prototype and
+  `w99` (`W99_ORIGINAL`, fixed cc1, fixture values) on the four-leg project at dt 0.1/0.25/0.5, seeds 42–81. The W74
+  sweep's per-cycle CSV is byte-identical before and after the move; the W99 sweep repeats byte for byte and its
+  prototype arm equals `multra-cli --discharge` in all 123 cycles of seed 42.
+- **Result** ([evidence](../evidence/w99-discharge.md)): W99 headway 1.959 / 1.942 / 1.901 s, falling with dt (every seed
+  at 0.5), where the prototype's rises (2.052 → 2.127 s). W99 clamps 7,870 / 3,056 / 1,512 per run: almost all are
+  standing cars clamped every tick, because §4's creep asks +cc7 at a gap 10⁻⁹–10⁻⁷ m above cc0 that D105's `g ≤ cc0`
+  misses. Recorded, not fixed; no engine change; nothing bounded or calibrated.
+- **Verified (Linux only, Release `perf` tree, GCC 13.3):** the sweeps above; `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.

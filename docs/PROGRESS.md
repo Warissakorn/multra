@@ -5,6 +5,24 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — The stop laws under a reaction delay: contract and options (D659)
+
+- **Owner:** "ตามแนะนำ": contract the reaction delay for every model first (PROTOTYPE_QUEUE §6).
+- **Found** ([evidence](evidence/reaction-stop-options.md); a temporary [patch](evidence/reaction-stop-options.patch),
+  reverted). The line and queue laws are delayed with the decision. At `reactionTime` 0.5 s:
+  - **W74 clamps** 755 / 3,277 per run (four-leg / M2.6), against 23 / 91 with `lineRest` off, mostly behind a
+    vehicle at rest;
+  - **the prototype passes red lines** 128–453 times per run through M4.2's `committed` rule, not counted as red
+    running, and its delay falls by a third;
+  - **W99 clamps** under a delay with or without the line rules.
+- **Options R0–R7.** R7 is recommended: for a delayed vehicle, the line law is applied again after the delay, and
+  behind a standing car its model follows, delayed.
+  - 0 red passes;
+  - W74 5–8 / 33–48 clamps per run, below the switch off;
+  - the cost is the crawl again for delayed vehicles behind standing cars.
+- **Contract** [REACTION_STOP](reference/REACTION_STOP.md): rows BA262–BA266. **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-25 — P17 attempted, not committed; the reaction delay is a gap (D658)
 
 - **Owner:** "P17".
@@ -202,16 +220,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   per run, each a car's one arrival (the soft closing approach, NEXT's line contract). Headway unchanged.
 - **Verified (Linux only):** `multra-cli 42` summary and events byte-identical; the W74 sweep byte-identical;
   `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.
-
-## 2026-11-24 — W99 BA231: queue-discharge timestep record (D649)
-
-- **Owner:** "ทำต่อ"; the plan approved (NEXT's BA231).
-- **Tool:** BA27's sweep loop moved to `tools/discharge_sweep.hpp`; `multra-w99-discharge-sweep` runs prototype and
-  `w99` (`W99_ORIGINAL`, fixed cc1, fixture values) on the four-leg project at dt 0.1/0.25/0.5, seeds 42–81. The W74
-  sweep's per-cycle CSV is byte-identical before and after the move; the W99 sweep repeats byte for byte and its
-  prototype arm equals `multra-cli --discharge` in all 123 cycles of seed 42.
-- **Result** ([evidence](evidence/w99-discharge.md)): W99 headway 1.959 / 1.942 / 1.901 s, falling with dt (every seed
-  at 0.5), where the prototype's rises (2.052 → 2.127 s). W99 clamps 7,870 / 3,056 / 1,512 per run: almost all are
-  standing cars clamped every tick, because §4's creep asks +cc7 at a gap 10⁻⁹–10⁻⁷ m above cc0 that D105's `g ≤ cc0`
-  misses. Recorded, not fixed; no engine change; nothing bounded or calibrated.
-- **Verified (Linux only, Release `perf` tree, GCC 13.3):** the sweeps above; `check` passes (374/374); the build without the PCH compiles 691 units, 0 failed.

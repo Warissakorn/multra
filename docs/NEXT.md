@@ -309,11 +309,12 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   The attempt was not committed: `lab` d217 clamps with `reactionTime` 0.5 s, three scene forcings were lost, and
   BA197 served 4 % fewer ([patch](evidence/prototype-queue-attempt.patch)). D657's "P17" figures were P17L's
   (corrected).
-  **The reaction delay is a gap reaching D656:** W74 clamps 755 per run on the four-leg at `reactionTime` 0.5 s
-  with `lineRest` on, against 23 off. **Owner's choice open** (§6):
-  1. contract the reaction delay for every model first (recommended);
-  2. P17 scoped to behaviours without a reaction delay;
-  3. P0 for the prototype.
+  **The reaction delay** ([REACTION_STOP](reference/REACTION_STOP.md), D659; the owner chose to contract it first).
+  At `reactionTime` 0.5 s, W74 clamps 755 / 3,277 per run (four-leg / M2.6; 23 / 91 with `lineRest` off), and the
+  prototype passes reds 128–453 times per run. **Owner's choice open:** R7 (recommended: the line law undelayed, the
+  model behind standing cars; 0 red passes, W74 5–48 clamps; delayed vehicles crawl behind standing cars) or R6.
+  Rows BA262–BA266. After it, P17 for undelayed prototypes (its three scene forcings and BA197 to settle). W99 under
+  a delay is its own question.
   **Next:**
   - **B,** a softer, cited stop profile for lines and standing vehicles. The stop law's late constant 2 m/s² is
     also the source of the extra hard braking of followers arriving behind it (PROTOTYPE_QUEUE §3).

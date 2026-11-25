@@ -127,3 +127,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D656](RECORD.md#d656) — LINE_QUEUE Q2 implemented: W74/W99 behind a vehicle at rest stop by the line's law at the rear less the standstill gap, then wait; prototype and M0 unchanged
 [D657](RECORD.md#d657) — The prototype's crawl: contract and measured options (P0–P18); P17, the stop law plus a start rule at `speedThreshold`, the only one clean at every dt; the owner chooses
 [D658](RECORD.md#d658) — P17 chosen and attempted, not committed: D657's "P17" corrected (P17L); jerk is the stop law's profile; the reaction delay is a gap reaching D656 (W74 755 clamps per run at `reactionTime` 0.5 s)
+[D659](RECORD.md#d659) — The stop laws under a reaction delay: contract and options R0–R7; today W74 clamps 755–3,277 per run and the prototype passes reds; R7 (the line law undelayed, the model behind standing cars) recommended; the owner chooses

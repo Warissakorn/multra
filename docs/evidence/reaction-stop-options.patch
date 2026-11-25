@@ -1,0 +1,68 @@
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index d2cc2cf..7d0bd14 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -2,6 +2,8 @@
+ #include "diffusion.hpp"
+ #include "yield_time.hpp"
+ #include "simulation.hpp"
++#include <cstdio>
++#include <cstdlib>
+ #include "conflicts.hpp"
+ #include "detail.hpp"
+ #include "following.hpp"
+@@ -238,6 +240,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+             // as at a priority rule) goes on amber or red; equality and a standing vehicle stop.
+             if (behaviour.amberDeceleration) {
+                 const double toLine = std::max(0.0, gap);
++                if (std::getenv("ZZ_RED") && colour == SignalColor::red && committed(vehicle.speed, toLine, type) && toLine > 0 && toLine < vehicle.speed * dt) std::fprintf(stderr, "ZZRED v %.3f gap %.3f\n", vehicle.speed, toLine);
+                 if (committed(vehicle.speed, toLine, type) ||
+                     (colour == SignalColor::amber && vehicle.speed * vehicle.speed > 2 * *behaviour.amberDeceleration * toLine)) continue;
+             }
+@@ -324,18 +327,21 @@ SimState stepSimulation(SimState&& state, double dt) {
+         // not one: its approach is the lane change's (LINE_STOP §6), so it stays a leader as before.
+         // LINE_QUEUE §2 (D655): for W74 and W99, a vehicle at rest ahead is stopped behind by the same law, at its
+         // rear less the standstill gap; the model follows moving vehicles only.
+-        const bool queueStop = behaviour.lineRest && (behaviour.w74 || behaviour.w99);
++        static const int zzR = std::getenv("ZZ_R") ? std::atoi(std::getenv("ZZ_R")) : 0; // ZZ temporary: REACTION options
++        const std::size_t zzDelay = reactionTicks(sight, dt);
++        const bool rest = behaviour.lineRest && !(zzR == 2 && zzDelay);
++        const bool queueStop = rest && (behaviour.w74 || behaviour.w99) && !((zzR == 1 || zzR == 5 || zzR == 7) && zzDelay);
+         const double standing = queueStop && vehicleLeader && vehicleLeader->speed == 0
+             ? std::max(0.0, vehicleLeader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
+         const double line = std::min({headLine, giveWayLine, gateLine, standing});
+-        const bool lineStop = behaviour.lineRest && std::isfinite(line);
++        const bool lineStop = rest && std::isfinite(line);
+         auto modelLeader = leader;
+         if (lineStop && leader && line <= leader->gap + 1e-9) {
+             modelLeader = perceivesAhead(sight) ? (perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader)) : vehicleLeader;
+             if (std::isfinite(standing) && modelLeader && modelLeader->speed == 0) modelLeader.reset();
+         }
+         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, modelLeader);
+-        if (behaviour.lineRest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt);
++        if (rest) applyLineStop(following, vehicle.speed, zzR == 4 && zzDelay ? std::max(0.0, line - vehicle.speed * double(zzDelay) * dt) : line, vehicleLeader, type, behaviour, dt);
+         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
+             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
+         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
+@@ -357,6 +363,11 @@ SimState stepSimulation(SimState&& state, double dt) {
+             if (yields && (!current || courtesy[v].gap < current->gap))
+                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
+             following = delayedAction(vehicle, delay, following, type, behaviour, current);
++            if ((zzR == 6 || zzR == 7) && rest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt); // ZZ R6: law and floor not delayed
++            if ((zzR == 3 || zzR == 5) && lineStop) { // ZZ R3: the law is not delayed
++                const double a = lineStopAcceleration(vehicle.speed, line, type.comfortableDeceleration, type.maxDeceleration, dt);
++                if (a < following.acceleration) { following.acceleration = a; following.mode = FollowingMode::braking; }
++            }
+         }
+         // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
+         if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]
+@@ -395,7 +406,8 @@ SimState stepSimulation(SimState&& state, double dt) {
+                 // speed a later tick would read as still moving (and as unable to stop).
+                 if (zoneLine == allowedDistance && stop.distance >= allowedDistance - 1e-9) stop = {0, allowedDistance};
+                 move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
+-            } else { move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
++            } else { if (std::getenv("ZZ_TRACE")) std::fprintf(stderr, "ZZC v %.3f a %.3f lv %.3f lg %.3f head %.3f gw %.3f stand %.3f allowed %.3f\n", vehicle.speed, following.acceleration, vehicleLeader ? vehicleLeader->speed : -1.0, vehicleLeader ? vehicleLeader->gap : -1.0, headLine, giveWayLine, standing, allowedDistance);
++                move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
+         }
+     }
+     // A Stop finishes the stop the model only approaches (M3.2.5): from below walking pace, so at

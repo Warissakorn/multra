@@ -143,3 +143,6 @@ The owner chose **P17** on 2026-11-25 ("P17"). That choice was made on D657's fi
   2. **P17 without reaction delays.** Scope P17 to behaviours without `reactionTime`, amend the three forcings'
      scenes, and accept BA197's 4 % fewer served vehicles.
   3. **Leave the prototype (P0)** and do 1 for W74 and W99 only.
+
+**The owner chose 1** ("ตามแนะนำ"): [REACTION_STOP](REACTION_STOP.md) (D659) contracts the reaction delay for every
+model. P17 waits for its choice.
