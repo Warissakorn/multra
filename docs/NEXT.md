@@ -317,12 +317,14 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   prototype's delay is +28 s against the switch off (the two start rules add up). The archived M3.2.7c congested
   variant now runs with `lineRest` off; a headway-arm fixture under `lineRest` would be new work.
   **Next:**
-  - **B, a softer stop profile: the owner chooses again** ([STOP_PROFILE §9](reference/STOP_PROFILE.md), D663–D664).
-    - The options are IDM's form with the type's a and b, bounded by today's law.
-    - The owner took B3 after the trace. The trace found that B3's +9.5 s delay is all the approach to standing cars.
-      Toward lines only (B3L), it costs nothing but gains little: hard braking −12 %, step jerk unchanged. W74's and
-      W99's jerk > 10 m/s³ rises by up to 56 %.
-    - **The recommendation is now B3P** (B3L for the prototype only). Then rows BA268–BA273 (§7, §9).
+  - **B is done for the prototype at lines** ([STOP_PROFILE §10](reference/STOP_PROFILE.md), D663–D665, the owner's B3P).
+    - The prototype eases into a line's stop (IDM, T = 0, the type's a and b): four-leg hard braking 1,027 → 903,
+      with the same delay and clamps.
+    - **Left:**
+      - the approach to a standing queue, where B3 cut step jerk 92 % at +9.5 s delay. Whether drivers slow early
+        for a queue that will move off needs a source;
+      - the last step to rest (Akçelik & Biggs 1987, Deligianni 2017, both unread);
+      - W74's and W99's profile, which D258's floor sets.
     - Akçelik & Biggs (1987) and Deligianni (2017) are still unread (owner's copy).
   - **A leader braking to a stop** is outside Q2.
   **Owner (Windows):** [F10](plans/OWNER_SITTING_WINDOWS.md) on package #151 (`699b109`, D652–D662): queues at

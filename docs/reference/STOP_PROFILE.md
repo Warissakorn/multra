@@ -194,3 +194,43 @@ the prototype. The approach to a standing queue (B3's delay) is a question of an
 early for a queue that will move off. No source read measures it, so it stays out until one does.
 
 Rows for B3P are §7's BA268–BA273 for the prototype at lines. BA269, toward a car at rest, asserts today's law.
+
+## 10. The owner's choice and the implementation (D665)
+
+The owner chose **B3P** on 2026-11-25 ("ตามแนะนำ").
+
+- **Engine** (`src/core/line_stop.cpp`, `idmLineAcceleration`). Under `lineRest`, for a behaviour that is neither W74
+  nor W99, toward a holding line, `applyLineStop`'s law becomes
+  `max(−maxDeceleration, min(today's law, max(a_IDM, −v²/(2·gap))))`. a_IDM uses T = 0, the type's acceleration at v
+  (D608) and its `comfortableDeceleration`, and the vehicle's desired speed.
+  - `LineTarget` tells the law whether its target is a vehicle at rest. The target is a vehicle when the standing
+    target is the nearest one. Toward a vehicle at rest, the law is today's.
+  - A desired speed of 0 keeps today's law.
+  - The delayed path (R9) passes the same target.
+- **Against the measurement.** The committed code reproduces B3L's prototype rows and B0's W99 rows to the digit
+  (four-leg, M2.6, `t-junction-priority`, `priority-rule-lab`). `multra-cli 42` is byte-identical.
+- **Rows** (`tests/stop_profile_tests.cpp`, `stopprofile`):
+
+  | Row | Case |
+  |---|---|
+  | BA268 | A prototype at its desired 15 m/s, 200 m from a red line: no tick changes by more than 1 m/s² before the last two, never harder than b; rests within 10⁻⁶ m of the line; no clamp. Forcing: today's law alone steps by more than 1 m/s² at its onset |
+  | BA269 | 120 m out at 15 m/s: toward a vehicle at rest the law is today's; toward a line it is IDM's lower value; a desired speed of 0 keeps today's |
+  | BA270 | 15 m/s, 5 m short: capped at `maxDeceleration` |
+  | BA271 | W74 and W99 keep today's law toward a line |
+  | BA272 | IDM is never harder than the exact stop `−v²/(2·gap)`, and equals the raw IDM term above it |
+
+  Each of these mutations fails a row:
+  - no IDM;
+  - IDM toward vehicles too;
+  - IDM for W74 and W99;
+  - no kinematic bound;
+  - no cap at the maximum.
+
+  §7's BA272 (the reaction delay) is BA262–BA263, which pass unchanged. §7's BA273 is the measurement above.
+- **BA259 amended.** In its queue at dt 0.5, the head car now eases into its stop at the line. The third car arrives
+  slower behind it and spends five ticks below 1 m/s (2.5 s, against at most 2 s before). The bound at dt 0.5 is 2.5 s,
+  and at dt 0.25 it is tightened to 1 s (measured 0.5 s). The queue still rests at its targets, without a clamp.
+- **Left:**
+  - the approach to a standing queue (B3's delay, a question of anticipation without a source);
+  - the last step to rest, until Akçelik & Biggs or Deligianni is read;
+  - W74's and W99's stop profile, which is set by D258's floor.

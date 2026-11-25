@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-25 — The prototype eases into its stop at a line: B3P (D665)
+
+- **Owner:** "ตามแนะนำ" (B3P).
+- **Engine** ([STOP_PROFILE §10](reference/STOP_PROFILE.md)): under `lineRest`, a prototype's law toward a holding line
+  is the lower of today's and IDM's (T = 0, the type's a and b), no harder than the exact stop. `LineTarget` tells
+  the law whether the target is a vehicle at rest; toward one, and for W74 and W99, nothing changes.
+- **Measured:** B3L's prototype rows to the digit. Four-leg hard braking 1,027 → 903, delay 47.74 → 47.76 s; M2.6
+  hard braking 3,814 → 3,360. W99's rows are B0's.
+- **Rows** BA268–BA272 (`stopprofile`, a new file). Each of five mutations fails a row.
+- **BA259 amended:** at dt 0.5 a third car behind the eased head car spends 2.5 s below 1 m/s (bound 2 → 2.5 s). At
+  dt 0.25 the bound is tightened to 1 s.
+- **Verified (Linux only):** `check` passes; `multra-cli 42` byte-identical.
+
 ## 2026-11-25 — B3's delay traced: all of it is the approach to standing cars (D664)
 
 - **Owner:** "ตามแนะนำ" (B3, after STOP_PROFILE §5's trace).
@@ -162,22 +175,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - `multra-cli 42` is byte-identical, and so are the prototype sweep rows.
   - Each sweep, run twice, gives identical output.
   - `check` passes.
-
-## 2026-11-25 — Queues behind a standing car: the contract and its measured options (D655)
-
-- **Owner:** F9 on package #149: followers crawl without end. They asked whether a stop at a line and behind a
-  car should be alike, chose A then B, then "เริ่มเขียนสัญญา A เลย".
-- **Measured** ([evidence](evidence/line-queue-options.md); a temporary [patch](evidence/line-queue-options.patch),
-  reverted). Six projects × four behaviours × options Q0–Q5, seeds 42–51:
-  - **Today:** median crawl is 17 s (prototype) and 30–36 s (W74).
-  - **Q2, for W74 and W99** (the line's stop law behind a vehicle at rest, plus a hold at the target):
-    - median crawl about 3 s;
-    - W99 clamps −80 to −99 % (the weaving lab 2,987 → 31 per run);
-    - lower delay;
-    - costs: more jerk ticks, and on M2.6 more W74 hard-braking ticks, not yet traced.
-  - **The prototype has no clean option.** Q2 clamps 303–1,100 per run, and D546's lever still 49–208.
-- **Contract** [LINE_QUEUE](reference/LINE_QUEUE.md):
-  - Q2 recommended for W74 and W99; the prototype keeps today's law, and its crawl becomes its own question.
-  - Rows BA252–BA256.
-  - **The owner chooses.**
-- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.

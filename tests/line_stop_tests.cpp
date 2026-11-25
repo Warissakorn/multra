@@ -301,10 +301,12 @@ TEST(linestop, ba258_from_rest_the_prototype_waits_for_the_gap_at_speed_threshol
     }
 }
 TEST(linestop, ba259_the_prototype_queue_rests_at_every_timestep) { // BA259
-    // At dt 0.5 the law's last braking ticks below 1 m/s alone count 2 s, so the crawl bound is 2 s here.
+    // At dt 0.5 the law's last braking ticks below 1 m/s alone count 2 s. Since D665 the head car eases into its stop
+    // at the line, so the third car arrives slower behind it and brakes at D583's floor for five ticks below 1 m/s
+    // (2.5 s); at dt 0.25 the crawl is 0.5 s. P17's crawl was 17 s.
     for (const double dt : {0.25, 0.5}) {
         const auto q = queue(Model::prototype, true, dt);
-        CHECK(q.still); CHECK(q.clamps == 0); CHECK(q.crawl <= 2.0);
+        CHECK(q.still); CHECK(q.clamps == 0); CHECK(q.crawl <= (dt == 0.5 ? 2.5 : 1.0));
         for (const double r : q.rests) { CHECK(r >= -1e-9); CHECK(r <= 1e-6); }
     }
 }
@@ -386,7 +388,7 @@ TEST(linestop, ba264_at_its_standstill_gap_a_delayed_car_holds_behind_a_creeping
     const auto& type = s.vehicleTypes.front(); const auto& b = s.behaviours.front();
     for (const double room : {5e-7, 2e-6}) {
         FollowingResult applied{0.5, FollowingMode::free, {}};
-        applyDelayedLineStop(applied, 0, std::numeric_limits<double>::infinity(), Leader{s0 + room, 1e-5}, type, b, s.timeStep);
+        applyDelayedLineStop(applied, 0, std::numeric_limits<double>::infinity(), Leader{s0 + room, 1e-5}, type, b, s.timeStep, LineTarget{true, 15});
         CHECK(applied.acceleration == (room < 1e-6 ? 0 : 0.5));
     }
 }

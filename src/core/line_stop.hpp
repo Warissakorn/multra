@@ -12,12 +12,19 @@ namespace multra {
 // braking at `comfortable` (SUMO's safe-stop speed, on the engine's ballistic tick), at least
 // -`maximum`.
 double lineStopAcceleration(double speed, double gap, double comfortable, double maximum, double dt);
+// STOP_PROFILE §9 (D664, B3P): IDM's acceleration (Kesting & Treiber 2008, Eq. 2-3) toward a target at rest `gap`
+// ahead, with s0 = 0 and T = 0, no harder than the exact stop -v²/(2·gap). `acceleration` is the type's at `speed`
+// (D608), `comfortable` its comfortableDeceleration. gap > 0, desiredSpeed > 0.
+double idmLineAcceleration(double speed, double gap, double desiredSpeed, double acceleration, double comfortable);
+// What the law aims at: a vehicle at rest (less its standstill gap) or a holding line, and the vehicle's desired speed.
+struct LineTarget { bool vehicle{}; double desiredSpeed{}; };
 // The lower of the model's result and the line law (mode braking when the law binds); `line` is
-// infinite when none holds. Then, for w74 and w99 while braking, D258's floor toward the line and a
+// infinite when none holds. For the prototype toward a holding line (not a vehicle), the law is the lower of itself
+// and idmLineAcceleration, at least -maxDeceleration (B3P). Then, for w74 and w99 while braking, D258's floor toward the line and a
 // standing vehicle leader (gap less the standstill gap): at most -v²/(2·gap), capped at the type's
 // maximum. Called for every vehicle whose behaviour has lineRest.
 void applyLineStop(FollowingResult& following, double speed, double line, const std::optional<Leader>& vehicleLeader,
-                   const VehicleType& type, const DriverBehaviour& behaviour, double dt);
+                   const VehicleType& type, const DriverBehaviour& behaviour, double dt, const LineTarget& target);
 // REACTION_STOP §6 (D661), for a vehicle whose behaviour has lineRest and a reaction delay `tau` (ticks · dt).
 // Before the delay: a decision to start from rest behind a vehicle is stored as 0 while the room beyond the
 // standstill gap is below a·tau²/2 + (a·tau)²/(2·maxDeceleration), what holding that start for the delay needs to
@@ -27,5 +34,5 @@ void holdDelayedStart(FollowingResult& decided, double speed, const std::optiona
 // After the delay: at rest within 1e-6 m of the standstill gap behind a vehicle, no acceleration (D105 with D596's
 // tolerance); then applyLineStop on the current state, so the stop laws themselves are not delayed.
 void applyDelayedLineStop(FollowingResult& applied, double speed, double line, const std::optional<Leader>& vehicleLeader,
-                          const VehicleType& type, const DriverBehaviour& behaviour, double dt);
+                          const VehicleType& type, const DriverBehaviour& behaviour, double dt, const LineTarget& target);
 }

@@ -2,6 +2,25 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — Queues behind a standing car: the contract and its measured options (D655)
+
+- **Owner:** F9 on package #149: followers crawl without end. They asked whether a stop at a line and behind a
+  car should be alike, chose A then B, then "เริ่มเขียนสัญญา A เลย".
+- **Measured** ([evidence](../evidence/line-queue-options.md); a temporary [patch](../evidence/line-queue-options.patch),
+  reverted). Six projects × four behaviours × options Q0–Q5, seeds 42–51:
+  - **Today:** median crawl is 17 s (prototype) and 30–36 s (W74).
+  - **Q2, for W74 and W99** (the line's stop law behind a vehicle at rest, plus a hold at the target):
+    - median crawl about 3 s;
+    - W99 clamps −80 to −99 % (the weaving lab 2,987 → 31 per run);
+    - lower delay;
+    - costs: more jerk ticks, and on M2.6 more W74 hard-braking ticks, not yet traced.
+  - **The prototype has no clean option.** Q2 clamps 303–1,100 per run, and D546's lever still 49–208.
+- **Contract** [LINE_QUEUE](../reference/LINE_QUEUE.md):
+  - Q2 recommended for W74 and W99; the prototype keeps today's law, and its crawl becomes its own question.
+  - Rows BA252–BA256.
+  - **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-24 — W99 stops at CC0 behind a standing car (D654)
 
 - **Owner:** "ทำขั้นต่อไป" (NEXT's W99 §4 slice), plan approved.
