@@ -189,6 +189,9 @@ trade-off. No code is written, and the owner chooses again:
 | B3 toward vehicles at rest for the prototype, lines B3L | As B3 for the prototype | The same delay |
 | None | — | F9's constant 2 m/s² stays |
 
+**The sources** for the approach to a standing queue were searched on 2026-11-26
+([queue-approach-sources](../evidence/queue-approach-sources.md)); none read settles it.
+
 **The session's recommendation is B3P.** It is the one choice with no measured cost, and it answers F9's head car for
 the prototype. The approach to a standing queue (B3's delay) is a question of anticipation: whether drivers slow
 early for a queue that will move off. No source read measures it, so it stays out until one does.
