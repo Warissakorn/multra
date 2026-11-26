@@ -329,14 +329,16 @@ SimState stepSimulation(SimState&& state, double dt) {
             ? std::max(0.0, vehicleLeader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
         const double line = std::min({headLine, giveWayLine, gateLine, standing});
         const bool lineStop = behaviour.lineRest && std::isfinite(line);
-        const LineTarget lineTarget{std::isfinite(standing) && standing <= std::min({headLine, giveWayLine, gateLine}), vehicle.desiredSpeed};
+        // LINE_SETBACK §2 (D670): the law aims lineSetback short of a signal head; caps, decisions and observers keep the line.
+        const double lawHead = setBackHead(headLine, behaviour), lawLine = std::min({lawHead, giveWayLine, gateLine, standing});
+        const LineTarget lineTarget{std::isfinite(standing) && standing <= std::min({lawHead, giveWayLine, gateLine}), vehicle.desiredSpeed};
         auto modelLeader = leader;
         if (lineStop && leader && line <= leader->gap + 1e-9) {
             modelLeader = perceivesAhead(sight) ? (perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader)) : vehicleLeader;
             if (std::isfinite(standing) && modelLeader && modelLeader->speed == 0) modelLeader.reset();
         }
         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, modelLeader);
-        if (behaviour.lineRest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt, lineTarget);
+        if (behaviour.lineRest) applyLineStop(following, vehicle.speed, lawLine, vehicleLeader, type, behaviour, dt, lineTarget);
         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
@@ -360,7 +362,7 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (yields && (!current || courtesy[v].gap < current->gap))
                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
             following = delayedAction(vehicle, delay, following, type, behaviour, current);
-            if (behaviour.lineRest) applyDelayedLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt, lineTarget);
+            if (behaviour.lineRest) applyDelayedLineStop(following, vehicle.speed, lawLine, vehicleLeader, type, behaviour, dt, lineTarget);
         }
         // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
         if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]

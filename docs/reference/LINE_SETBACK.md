@@ -67,3 +67,24 @@ The next schema step is read-compatible: an old file has no key, which means 0.
   - It is a defect of today's default, separate from this key. It is to be diagnosed on its own.
   - A set-back would hide it, not fix it.
 - A non-zero default needs a field source (D668).
+
+## 7. The owner's choice and the implementation (D670)
+
+The owner chose **H1 + C1** ("ตามแนะนำ").
+- **Engine.** A behaviour's `lineSetback` (m) moves the line law's target that far short of a signal head
+  (`setBackHead`, `src/core/line_stop.cpp`).
+  - Give-way, Stop, zone and gate lines are not set back.
+  - The tick cap, the line finish, the amber decision, red-running and the observers keep the real line.
+  - It acts only under `lineRest`.
+  - Absent or 0, nothing changes: M0 and every shipped project are byte-identical.
+- **File.** The key is optional, written only when present, and needs schema 88. Below 88 it is refused at its path
+  (`EDIT_UNSUPPORTED_FIELD`). Outside [0, 10] it is `INVALID_BEHAVIOUR_PARAMETER`.
+- **Dialog.** The *Driving behaviours* dialog has a `lineSetback` checkbox and field on its junction page, for
+  every model.
+- **Rows** BA273–BA277 (`linesetback`).
+- **The exact-line clamps** on `signalised-node-analysis` (§6) are not touched. Today's default is unchanged.
+  - **Diagnosis so far:** the clamped car goes straight on a 2.73 m connector. A turning car on a 22 m connector
+    passes its give-way line under `give-way/connector-44/to/connector-42` (gap 3 s, headway 7 m) and enters the
+    same lane 0 m ahead of it. The leader cap binds at 0. There are no conflict zones in this project.
+  - Why the rule lets the turner go, and how that ties to first cars resting exactly at a connector's start, is not
+    proven.

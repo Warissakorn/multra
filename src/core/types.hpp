@@ -62,6 +62,7 @@ struct DriverBehaviour {
     std::optional<double> diffusionTime; // s at a dead end, then the vehicle is removed (DIFFUSION, D613); absent: never
     std::optional<double> inattentionDuration, inattentionProbability; // START_UP §3 (D608): a pair; absent: always attentive
     std::optional<double> yieldTime, yieldTimeDeviation, yieldTimeMinimum, yieldTimeMaximum, impatience, timeToImpatience; // s (Aimsun), SUMO: YIELD_IMPATIENCE (D618)
+    std::optional<double> lineSetback; // m, LINE_SETBACK (D670): under lineRest, rest this far short of a signal head's line
     std::optional<W99Parameters> w99; // present iff the model is `w99` (W99.md §9, D639); Run refuses it until composition
     bool operator==(const DriverBehaviour&) const = default;
 };

@@ -222,7 +222,8 @@ const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B:
     {"diffusionTime",&B::diffusionTime,diffusionVersion,true},
     {"yieldTime",&B::yieldTime,yieldVersion,true},{"yieldTimeDeviation",&B::yieldTimeDeviation,yieldVersion,true},
     {"yieldTimeMinimum",&B::yieldTimeMinimum,yieldVersion,true},{"yieldTimeMaximum",&B::yieldTimeMaximum,yieldVersion,true},
-    {"impatience",&B::impatience,yieldVersion,true},{"timeToImpatience",&B::timeToImpatience,yieldVersion,true}}; // D618
+    {"impatience",&B::impatience,yieldVersion,true},{"timeToImpatience",&B::timeToImpatience,yieldVersion,true}, // D618
+    {"lineSetback",&B::lineSetback,lineSetbackVersion,true}}; // D670
 enum class Model { prototype, w74, w99 };
 std::vector<Field> behaviourRow(Model model) {
     // rejectFrom 1: refused at every version, on the rows of the models that do not own the key.

@@ -87,7 +87,8 @@ inline constexpr int modeChoiceVersion=70,modeNestVersion=71,logsumVersion=76,en
     yieldVersion=84, // D618 (YIELD_IMPATIENCE): gap reduction on a rule or marker, a behaviour's yield time and impatience
     w99ModelVersion=85, // D639 (W99 §9): an owned behaviour's model `w99` and its cc keys
     w99Cc1CurveVersion=86, // D646 (W99 §5a): a w99 behaviour's cc1Curve
-    lineRestVersion=87; // D652 (LINE_STOP §5): definition.clampRules.lineRest written as false
+    lineRestVersion=87, // D652 (LINE_STOP §5): definition.clampRules.lineRest written as false
+    lineSetbackVersion=88; // D670 (LINE_SETBACK §2): a behaviour's lineSetback
 // D636: the root procedures (D484) is refused below 73, even null; a procedure's feedback (D547) below 75,
 // checked after parsing (document.cpp).
 inline constexpr int procedureVersion=73,feedbackVersion=75;

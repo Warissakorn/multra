@@ -242,6 +242,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
              {"yieldTimeMinimum", &either.yieldTimeMinimum}, {"yieldTimeMaximum", &either.yieldTimeMaximum}, {"impatience", &either.impatience},
              {"timeToImpatience", &either.timeToImpatience}}) shared.push_back(optional(junctionPage, junctions, key, value));
     shared[shared.size() - 2].spin->setMinimum(-1); shared[shared.size() - 2].spin->setValue(either.impatience.value_or(0)); // SUMO's base may be negative
+    shared.push_back(optional(junctionPage, junctions, "lineSetback", &either.lineSetback)); // D670 (LINE_SETBACK)
     const auto keepShared = [&](DriverBehaviour& to) {
         for (const auto& o : shared) *o.value = o.on->isChecked() ? std::optional<double>(o.spin->value()) : std::nullopt;
         to.perception = either.perception; to.curveLateralAcceleration = either.curveLateralAcceleration;
@@ -254,6 +255,7 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
         to.diffusionTime = either.diffusionTime; // D613
         to.yieldTime = either.yieldTime; to.yieldTimeDeviation = either.yieldTimeDeviation; to.yieldTimeMinimum = either.yieldTimeMinimum; // D618
         to.yieldTimeMaximum = either.yieldTimeMaximum; to.impatience = either.impatience; to.timeToImpatience = either.timeToImpatience;
+        to.lineSetback = either.lineSetback; // D670
         to.inattentionDuration = either.inattentionDuration; to.inattentionProbability = either.inattentionProbability; // D608
         to.lateral = {};
         if (lateral->isChecked()) for (const auto& [key, spin] : lateralKeys) to.lateral.*key->member = spin->value();

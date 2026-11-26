@@ -65,7 +65,7 @@ The single live to-do, **open items only**: what shipped is in [PROGRESS](PROGRE
 
 The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,
 E35, E36, B45 (words in PROGRESS). **Answered 2026-11-26 on #152:** F7, F9, F10, F11, all passed. **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md); A2 passed 2026-11-21, D612):
-E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, F8, G1, H1, C12. Thirty-one
+E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, F8, F12, G1, H1, C12. Thirty-one
 older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
 A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
 
@@ -290,13 +290,16 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
     site would reopen them); the last step to rest (Akçelik & Biggs 1987, Deligianni 2017, both unread, owner's
     copy); W74's and W99's profile, which D258's floor sets. A headway-arm fixture under `lineRest` would be new
     work.
-  - **A set-back at holding lines (D668–D669):** [LINE_SETBACK](reference/LINE_SETBACK.md), contract and options
-    measured. The owner chooses H1/H2 (behaviour or project) and C1/C2 (signal heads or every line); the
-    recommendation is H1 + C1, default 0.
-  - **The exact-line defect (D669):** on `signalised-node-analysis`, a front resting exactly at a connector's start
-    clamps 4.7 per run (prototype, +7 s delay); gone at 0.01 m short. Diagnose on its own, before or apart from the key.
+  - **A set-back at signal heads is in (D670):** a behaviour's `lineSetback` ([LINE_SETBACK §7](reference/LINE_SETBACK.md),
+    schema 88, absent by default). No shipped project or preset carries it; a non-zero default needs a field
+    source (D668). **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on the next package.
+  - **The exact-line defect (D669, partly diagnosed in D670):** on `signalised-node-analysis` the prototype clamps 4.7
+    per run (+7 s delay), gone when first cars rest 0.01 m short. A turner passes its give-way line under
+    `give-way/connector-44/to/connector-42` and enters 0 m ahead of a straight car; why the rule lets it go is
+    open ([LINE_SETBACK §7](reference/LINE_SETBACK.md)). Next: trace that rule's major-side check with the
+    straight car's position.
   **Owner (Windows), 2026-11-26 on package #152:** F7, F9, F10 and F11 passed. Left: [F8](plans/OWNER_SITTING_WINDOWS.md),
-  the CC1 table, on the same package.
+  the CC1 table, on the same package; F12 (`lineSetback`) on the next package.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.

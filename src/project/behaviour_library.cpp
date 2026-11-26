@@ -303,6 +303,11 @@ bool ownsW99Cc1Curve(const ProjectDocument& d) { // W99 §5a (D646)
         std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.w99 && !b.w99->cc1Curve.empty(); });
 }
 void rejectW99Cc1CurveBefore86(const Json& j) { rejectBehaviourKey(j, "cc1Curve"); }
+bool ownsLineSetback(const ProjectDocument& d) { // LINE_SETBACK (D670)
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.lineSetback.has_value(); });
+}
+void rejectLineSetbackBefore88(const Json& j) { rejectBehaviourKey(j, "lineSetback"); }
 void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
     if (j.contains("behaviours")) {
         const auto& behaviours = list(j, "behaviours");

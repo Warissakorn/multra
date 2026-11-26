@@ -5,6 +5,22 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-26 — A set-back at signal heads: `lineSetback` (D670)
+
+- **Owner:** "ตามแนะนำ" (H1 + C1 of [LINE_SETBACK](reference/LINE_SETBACK.md)).
+- **Engine:** a behaviour's optional `lineSetback` (m, [0, 10]) moves the line law's target that far short of a signal
+  head under `lineRest` (`setBackHead`). Give-way, Stop, zone and gate lines, the cap, the amber decision and the
+  observers keep the real line.
+- **File:** schema 88 when an owned behaviour carries it; refused below; absent means 0. The *Driving behaviours*
+  dialog has the field on its junction page for every model.
+- **Rows** BA273–BA277 (`linesetback`, a new file). Two mutations each fail a row: no set-back (BA273), and a set-back
+  at give-way lines too (BA275).
+- **Not changed:** M0 and every shipped project (no file carries the key). The exact-line clamps on
+  `signalised-node-analysis` are partly diagnosed: a turner passes its give-way line and enters 0 m ahead of a
+  straight car. Why is still open.
+- **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (378 of 378).
+- **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on the next package.
+
 ## 2026-11-26 — A set-back at holding lines: sources and the contract (D668–D669)
 
 - **Owner:** "ให้การหยุดแบบ lineRest หยุดห่างจากเส้นหยุด ด้วยระยะที่เหมาะสม ดีหรือไม่", then "ตามแนะนำ" twice (sources, then
@@ -142,22 +158,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Queues rest (median 1 stop per vehicle), with 0 red passes.
   - Costs: the SUMO preset at about the switch off, jerk above R7's, and the prototype's delay +12 s at 1 s.
   - **The owner chooses.**
-- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
-
-## 2026-11-25 — The stop laws under a reaction delay: contract and options (D659)
-
-- **Owner:** "ตามแนะนำ": contract the reaction delay for every model first (PROTOTYPE_QUEUE §6).
-- **Found** ([evidence](evidence/reaction-stop-options.md); a temporary [patch](evidence/reaction-stop-options.patch),
-  reverted). The line and queue laws are delayed with the decision. At `reactionTime` 0.5 s:
-  - **W74 clamps** 755 / 3,277 per run (four-leg / M2.6), against 23 / 91 with `lineRest` off, mostly behind a
-    vehicle at rest;
-  - **the prototype passes red lines** 128–453 times per run through M4.2's `committed` rule, not counted as red
-    running, and its delay falls by a third;
-  - **W99 clamps** under a delay with or without the line rules.
-- **Options R0–R7.** R7 is recommended: for a delayed vehicle, the line law is applied again after the delay, and
-  behind a standing car its model follows, delayed.
-  - 0 red passes;
-  - W74 5–8 / 33–48 clamps per run, below the switch off;
-  - the cost is the crawl again for delayed vehicles behind standing cars.
-- **Contract** [REACTION_STOP](reference/REACTION_STOP.md): rows BA262–BA266. **The owner chooses.**
 - **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.

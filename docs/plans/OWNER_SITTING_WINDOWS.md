@@ -7,7 +7,7 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 and never reused; an item that took in an older one says so.
 
 **Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
-I.5 → F8 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
+I.5 → F8 → F12 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
 2026-11-22: P51 and P52 (words in PROGRESS; their findings D620). Answered 2026-11-26 on package #152: F7, F9, F10 and F11, all passed (words in
 PROGRESS).
@@ -60,6 +60,19 @@ PROGRESS).
     Confirm: is the curve gone? In Thai and English at 100/150 %: do the table, its headers and the Add /
     Remove buttons fit without clipping? Package: run #152 of *Package binaries* (`a18a229`, D643–D665; still building on 2026-11-26), artifact `multra-windows-x64`
     (#147 and #149 are superseded). *Owner:*
+
+12. **The `lineSetback` field and a set-back at a red** (listed 2026-11-26; D669–D670;
+    [LINE_SETBACK](../reference/LINE_SETBACK.md) §7).
+    - **Package:** the next *Package binaries* run from this branch, which carries D670 (not yet built).
+    - **a. The field.** Edit a behaviour in *Driving behaviours*, for the prototype, W74 and W99 in turn. On the
+      junction page, is there a `lineSetback` checkbox with a field, unticked? Does it fit without clipping in Thai
+      and English at 100/150 %?
+    - **b. At a red.** Open `four-leg-signalised` (`lineRest` ticked). Tick `lineSetback` on its behaviour, enter
+      1, Confirm and run. Pause during a red. Does the first car of each queue stand about 1 m short of its stop
+      line, and leave at green without a jump?
+    - **c. Save and reopen.** Save, close, reopen. Is `lineSetback` still 1? Untick it and save: does the file no
+      longer carry it?
+    - Report the words for a–c. Linux closes none of these (rule 3). *Owner:*
 
 ## G — Object interchange
 

@@ -19,6 +19,9 @@ void rejectW99Before85(const Json& document);
 // W99 §5a (D646): schema 86 exactly when an owned w99 behaviour carries cc1Curve; below it the key is refused.
 bool ownsW99Cc1Curve(const ProjectDocument&);
 void rejectW99Cc1CurveBefore86(const Json& document);
+// LINE_SETBACK (D670): schema 88 exactly when an owned behaviour carries lineSetback; below it the key is refused.
+bool ownsLineSetback(const ProjectDocument&);
+void rejectLineSetbackBefore88(const Json& document);
 // M4.2 (D147): schema 28 exactly when an owned behaviour carries `amberDeceleration`; a file below
 // 28 carrying the key in an owned behaviour is refused (EDIT_UNSUPPORTED_FIELD).
 bool ownsAmberBehaviour(const ProjectDocument&);

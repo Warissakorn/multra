@@ -2,6 +2,24 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — The stop laws under a reaction delay: contract and options (D659)
+
+- **Owner:** "ตามแนะนำ": contract the reaction delay for every model first (PROTOTYPE_QUEUE §6).
+- **Found** ([evidence](../evidence/reaction-stop-options.md); a temporary [patch](../evidence/reaction-stop-options.patch),
+  reverted). The line and queue laws are delayed with the decision. At `reactionTime` 0.5 s:
+  - **W74 clamps** 755 / 3,277 per run (four-leg / M2.6), against 23 / 91 with `lineRest` off, mostly behind a
+    vehicle at rest;
+  - **the prototype passes red lines** 128–453 times per run through M4.2's `committed` rule, not counted as red
+    running, and its delay falls by a third;
+  - **W99 clamps** under a delay with or without the line rules.
+- **Options R0–R7.** R7 is recommended: for a delayed vehicle, the line law is applied again after the delay, and
+  behind a standing car its model follows, delayed.
+  - 0 red passes;
+  - W74 5–8 / 33–48 clamps per run, below the switch off;
+  - the cost is the crawl again for delayed vehicles behind standing cars.
+- **Contract** [REACTION_STOP](../reference/REACTION_STOP.md): rows BA262–BA266. **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-25 — P17 attempted, not committed; the reaction delay is a gap (D658)
 
 - **Owner:** "P17".

@@ -2,6 +2,8 @@
 #include "following.hpp"
 #include "types.hpp"
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace multra {
 // LINE_STOP §2 (D652): a line (signal head, give-way or Stop line, zone line, dead end, lot gate) is
@@ -18,6 +20,11 @@ double lineStopAcceleration(double speed, double gap, double comfortable, double
 double idmLineAcceleration(double speed, double gap, double desiredSpeed, double acceleration, double comfortable);
 // What the law aims at: a vehicle at rest (less its standstill gap) or a holding line, and the vehicle's desired speed.
 struct LineTarget { bool vehicle{}; double desiredSpeed{}; };
+// LINE_SETBACK §2 (D670): where the line law aims at a signal head `head` metres ahead, `lineSetback` short of it
+// (floored at 0); infinite stays infinite. Other lines are not set back (C1).
+double setBackHead(double head, const DriverBehaviour& behaviour);
+// lineSetback finite and within 0-10 m (Vissim's range, D668), else INVALID_BEHAVIOUR_PARAMETER.
+std::vector<ValidationIssue> lineSetbackIssues(const DriverBehaviour& behaviour, const std::string& path);
 // The lower of the model's result and the line law (mode braking when the law binds); `line` is
 // infinite when none holds. For the prototype toward a holding line (not a vehicle), the law is the lower of itself
 // and idmLineAcceleration, at least -maxDeceleration (B3P). Then, for w74 and w99 while braking, D258's floor toward the line and a

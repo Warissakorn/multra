@@ -1,5 +1,6 @@
 #include "missed_exit.hpp"
 #include "diffusion.hpp"
+#include "line_stop.hpp"
 #include "yield_time.hpp"
 #include "text.hpp"
 #include "validate.hpp"
@@ -302,6 +303,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
             for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
             for (auto& issue : diffusionIssues(b, p)) issues.push_back(std::move(issue)); // D613
+            for (auto& issue : lineSetbackIssues(b, p)) issues.push_back(std::move(issue)); // D670
             for (auto& issue : yieldBehaviourIssues(b, p)) issues.push_back(std::move(issue)); // D618
             for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
@@ -323,6 +325,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
         for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
         for (auto& issue : diffusionIssues(b, p)) issues.push_back(std::move(issue)); // D613
+        for (auto& issue : lineSetbackIssues(b, p)) issues.push_back(std::move(issue)); // D670
         for (auto& issue : yieldBehaviourIssues(b, p)) issues.push_back(std::move(issue)); // D618
         for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
