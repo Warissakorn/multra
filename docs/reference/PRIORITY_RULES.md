@@ -27,6 +27,7 @@ off. Vissim models these with a *priority rule*: a stop line on the minor path a
   join anticipation (D255) read them.
   A major vehicle whose front is exactly at the marker segment's start (its body on the segment before)
   has not entered it (D673, as D653 for observers), unless the marker itself is at the start (PR17).
+  Looking upstream of the marker's segment is RULE_LOOKBACK's open contract (D674).
 - **Only merges use it.** The rules come from `resolveRightOfWay`'s automatic merge ranking
   (`derivedPriorityRules`); the file's `priorityRules` rows (`AuthoredPriorityRule`) only carry an
   area's `gapTime`/`headway` by `conflictAreaId` and compile to a conflict zone, not to a rule.
