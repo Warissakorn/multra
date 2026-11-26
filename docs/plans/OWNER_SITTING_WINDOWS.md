@@ -63,23 +63,20 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
     empty key and the fit passed. The out-of-range finding is fixed by D643 (the first key in order that is
     empty **or** out of range is named and focused; the message no longer says "w74"). **Open for that one
     check on the next package:** `cc0 = 0`, Confirm: the error ends "· cc0" and the cursor stays in cc0. Package for
-    the recheck: run #146 of *Package binaries* (`cc57f2d`, D643; W99 also runs, D642), artifact
-    `multra-windows-x64` (expires 2026-12-08), or the newer run #147 (`c193433`, also carrying F8 and D650),
-    artifact `multra-windows-x64` (expires 2026-12-08), or #149 (`f5653f8`, also F9).
+    the recheck: run #152 of *Package binaries* (`a18a229`, D643–D665; still building on 2026-11-26), artifact `multra-windows-x64`, which carries F7–F11 (earlier runs #146, #147 and #149 are superseded).
 
 8. **CC1 as a distribution in the W99 dialog** (listed 2026-11-24, D648, W99 §5a). Edit a behaviour, choose
     *W99*: is *CC1* set to *Distribution (per driver)* with an empty table and the `cc1` field greyed? Fill
     the other nine keys, add rows (0.6, 0) and (1.5, 90), Confirm: is the error "· cc1Curve[1].share" and
     the row selected? Change 90 to 100, Confirm, reopen: are the points kept? Switch to *Fixed*, enter cc1,
     Confirm: is the curve gone? In Thai and English at 100/150 %: do the table, its headers and the Add /
-    Remove buttons fit without clipping? Package: run #147 of *Package binaries* (`c193433`, D648–D650),
-    artifact `multra-windows-x64` (expires 2026-12-08), or the newer run #149 (`f5653f8`, which also carries
-    F7's fix and F9). *Owner:*
+    Remove buttons fit without clipping? Package: run #152 of *Package binaries* (`a18a229`, D643–D665; still building on 2026-11-26), artifact `multra-windows-x64`
+    (#147 and #149 are superseded). *Owner:*
 
 9. **Stopping at the line and W99 queues** (listed 2026-11-25; D652–D654;
     [LINE_STOP](../reference/LINE_STOP.md) §7, [W99](../reference/W99.md) §4).
-    - **Package:** run #149 of *Package binaries* (`f5653f8`), artifact `multra-windows-x64`
-      (expires about 2026-12-09).
+    - **Package:** run #152 of *Package binaries* (`a18a229`, D643–D665; still building on 2026-11-26), artifact `multra-windows-x64`. a and b were answered on #149 (below); on #152 only d is left, and c is
+      checked within F10 b.
     - **a. The checkbox.**
       - Open `four-leg-signalised`, then *ตั้งค่าการจำลอง / Run settings*. In Thai and English at 100/150 %:
         is there a sixth checkbox `lineRest`, ticked, below `standingStopFloor`, without clipping?
@@ -112,12 +109,9 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
 10. **Queues at rest, with and without a reaction time** (listed 2026-11-25; D655–D661;
     [LINE_QUEUE](../reference/LINE_QUEUE.md) §6, [REACTION_STOP](../reference/REACTION_STOP.md) §7). It re-checks F9 b
     and c after the owner's F9 findings.
-    - **Package:** run #151 of *Package binaries* (`699b109`, D652–D662, with P17), artifact `multra-windows-x64`.
-      Run #150 (`a5abe16`, D652–D661) also passed, but without P17.
-    - **Not changed yet,** so not a finding:
-      - the stop itself is still constant braking at 2 m/s², then rest (B is open);
-      - on #150 only: the prototype's followers behind a standing car still crawl. On #151 (P17, D662) they should
-        rest behind the car ahead.
+    - **Package:** run #152 of *Package binaries* (`a18a229`, D643–D665; still building on 2026-11-26), artifact `multra-windows-x64` (#150 and #151 are superseded).
+    - **Not changed,** so not a finding: W74's and W99's stop is still constant braking at 2 m/s², then rest
+      (D667). The prototype's first car now eases into its stop at a line (F11).
     - **a. The prototype at the line.** Open `four-leg-signalised` with `lineRest` ticked (*ตั้งค่าการจำลอง / Run
       settings*), run, and pause during a red. Does the first car of each queue still stand with its front at the
       stop line?
@@ -139,12 +133,11 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
         so a much larger number is expected here.
     - **d. Save and reopen.** Save with `reactionTime` 0.5 and `lineRest` ticked, close and reopen. Are both kept?
     - Report the words for a–d, and the counts for b and c. Linux closes none of these (rule 3). *Owner:*
-    - The newer run #152 (`a18a229`) also carries all of F10.
 
 11. **The prototype eases into its stop at a red line** (listed 2026-11-26; D663–D665;
     [STOP_PROFILE](../reference/STOP_PROFILE.md) §10). It answers F9 b's "the stop looks unrealistic" for the first
     car, for the prototype only.
-    - **Package:** run #152 of *Package binaries* (`a18a229`, D652–D665), artifact `multra-windows-x64`.
+    - **Package:** run #152 of *Package binaries* (`a18a229`, D643–D665; still building on 2026-11-26), artifact `multra-windows-x64`.
     - **What changed, and what did not:**
       - Changed: a prototype car approaching a red line, with no stopped car between it and the line. It used to
         hold its speed until about 60 m before the line, then brake at a constant 2 m/s². Now it starts easing off

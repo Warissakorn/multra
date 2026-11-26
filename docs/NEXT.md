@@ -290,8 +290,8 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
     site would reopen them); the last step to rest (Akçelik & Biggs 1987, Deligianni 2017, both unread, owner's
     copy); W74's and W99's profile, which D258's floor sets. A headway-arm fixture under `lineRest` would be new
     work.
-  **Owner (Windows):** F7–F11 in the [Windows sheet](plans/OWNER_SITTING_WINDOWS.md), in its order line; each item
-  names its package (#152, `a18a229`, D652–D665, is the newest).
+  **Owner (Windows):** F7–F11 in the [Windows sheet](plans/OWNER_SITTING_WINDOWS.md), in its order line,
+  all on package #152 (`a18a229`, D643–D665; still building on 2026-11-26).
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.
