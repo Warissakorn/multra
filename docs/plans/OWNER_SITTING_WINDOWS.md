@@ -58,12 +58,12 @@ PROGRESS).
     the other nine keys, add rows (0.6, 0) and (1.5, 90), Confirm: is the error "· cc1Curve[1].share" and
     the row selected? Change 90 to 100, Confirm, reopen: are the points kept? Switch to *Fixed*, enter cc1,
     Confirm: is the curve gone? In Thai and English at 100/150 %: do the table, its headers and the Add /
-    Remove buttons fit without clipping? Package: run #152 of *Package binaries* (`a18a229`, D643–D665; still building on 2026-11-26), artifact `multra-windows-x64`
+    Remove buttons fit without clipping? Package: run #153 of *Package binaries* (`ae07ab7`, succeeded 2026-11-26), or #152 (`a18a229`), artifact `multra-windows-x64`
     (#147 and #149 are superseded). *Owner:*
 
 12. **The `lineSetback` field and a set-back at a red** (listed 2026-11-26; D669–D670;
     [LINE_SETBACK](../reference/LINE_SETBACK.md) §7).
-    - **Package:** run #153 of *Package binaries* (`ae07ab7`, D670–D671; building on 2026-11-26), artifact
+    - **Package:** run #153 of *Package binaries* (`ae07ab7`, D670–D671; succeeded 2026-11-26), artifact
       `multra-windows-x64`. It also carries F8.
     - **a. The field.** Edit a behaviour in *Driving behaviours*, for the prototype, W74 and W99 in turn. On the
       junction page, is there a `lineSetback` checkbox with a field, unticked? Does it fit without clipping in Thai
