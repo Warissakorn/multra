@@ -213,3 +213,14 @@ cycle.
 - a start rule for a car at rest at its target;
 - the safe-speed bound's place after the reaction delay;
 - then rows and the sweeps.
+
+## 10. A set-back at holding lines (D668, sources only)
+
+The owner asked whether `lineRest` should stop a suitable distance short of the line. The sources are in
+[line-setback-sources](../evidence/line-setback-sources.md):
+- Vissim stops 0.5 m before a signal head by default;
+- SUMO's `jmStoplineGap` is 1 m;
+- neither cites field data.
+
+An NGSIM look on an unverified stop-bar stand-in puts first cars about 1 m short. The recommendation is §3's L2 as a
+key with default 0, so no result changes. Nothing is implemented.

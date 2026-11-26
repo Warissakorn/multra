@@ -14,7 +14,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - **F11:** "ผ่านทั้งหมด" (the prototype's first car eases into its stop at a red line).
 - **Left in F:** F8, the CC1 table, on the same package. Removed from the
   [Windows sheet](plans/OWNER_SITTING_WINDOWS.md); its order line is now `… I.5 → F8 → G1 …`.
-- **Also asked:** whether `lineRest` should stop a set distance short of the line (answered in chat; nothing changed).
+- **Also asked:** whether `lineRest` should stop a set distance short of the line. Sources first ("ตามแนะนำ", D668,
+  [evidence](evidence/line-setback-sources.md)): Vissim 0.5 m, SUMO `jmStoplineGap` 1 m, both program defaults
+  without a field source. On NGSIM, using an unverified stop-bar stand-in, first cars rest a median 0.96 m short.
+  Recommendation: a key with default 0. No code.
 - **Docs** cut NEXT to open items (27,890 → 24,163 characters; history in
   [archive/NEXT-state-2026-11-26](archive/NEXT-state-2026-11-26.md)).
 

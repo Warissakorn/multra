@@ -136,3 +136,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D665](RECORD.md#d665) — STOP_PROFILE B3P implemented: the prototype eases into its stop at a holding line (IDM, T = 0, the type's a and b); standing cars, W74 and W99 unchanged
 [D666](RECORD.md#d666) — NGSIM Lankershim: drivers start slowing for a car at rest at a median 1.4–1.9 m/s² of required deceleration, nearer today's law (2.0) than B3 (0.8); recommendation: keep today's law toward queues
 [D667](RECORD.md#d667) — B closed: today's law stays toward vehicles at rest; the staged approach, higher final braking and last step to rest are known deviations
+[D668](RECORD.md#d668) — a set-back at holding lines: Vissim 0.5 m and SUMO 1 m are program defaults without a field source; NGSIM shows about 1 m on an unverified stop bar; recommendation: a key with default 0
