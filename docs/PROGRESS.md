@@ -5,6 +5,27 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-26 — `lineRest` always on, `lineSetback` 1 m by default (D677)
+
+- **Owner:** asked whether to remove `lineRest` and `lineSetback`. The session recommended removing only the switch,
+  because off brings back the standing gap and the 10–14 s crawl (LINE_STOP §1). Then: "ตามแนะนำ
+  ไฟล์ที่บันทึกโดยปิด lineRest เปิดได้โดยไม่สนค่านั้น พร้อมแจ้งเตือน ตั้งค่าเริ่มต้น lineSetback ไว้อย่างเหมาะสม".
+- **Done** ([LINE_SETBACK §9](reference/LINE_SETBACK.md), [LINE_STOP §11](reference/LINE_STOP.md)):
+  - Run settings has no `lineRest` box.
+  - A file's `clampRules.lineRest` is checked and ignored, never written. A file saved with it off opens with
+    `EDIT_LINE_REST_IGNORED` in the message line (Thai and English).
+  - `ClampRules::lineRest` stays engine-only, for rows and the M6 U record.
+- **Default:** an absent `lineSetback` is 1 m (`kDefaultLineSetback`):
+  - the source is SUMO's `jmStoplineGap` at signal stop lines, and the NGSIM look's median is 0.96 m;
+  - at 1 m, the measured options show no red pass and delay within 0.4 %, except W74 on M2.6 (+4–6 %);
+  - the dialog shows 1 with a note when unticked;
+  - an explicit 0 rests at the line.
+- **Rows:**
+  - BA245, BA273 and BA274 amended;
+  - rows that pin the at-the-line law (BA239, BA247, BA262, BA268 and the rest of `linestop`) set `lineSetback` 0;
+  - `signal-ui` checks the missing box, the warning and that Save drops the value.
+- **Verified (Linux only):** `check` passes, `ctest` 378/378; `multra-cli 42` byte-identical before and after. The owner's look is F12 e on the next package (rule 3).
+
 ## 2026-11-26 — The owner's F8 and F12 findings: cell editors, unused tables, kept values (D676)
 
 - **Owner, on package #153** (`ae07ab7`), with two pictures of the CC1 table:
@@ -159,21 +180,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - **Recommendation:** B3 (T = 0, no new value) after a trace of the delay. The owner chooses (§6).
 - **Verified (Linux only):** no engine change; `multra-cli 42` byte-identical after the patch's revert;
   `check-docs` passes.
-
-## 2026-11-25 — Prototype queues rest behind a standing car: P17 (D662)
-
-- **Owner:** "ทำ P17 ต่อเลย". Package #150 (`a5abe16`, D652–D661) was queued with owner item F10.
-- **Engine** ([PROTOTYPE_QUEUE §7](reference/PROTOTYPE_QUEUE.md)): under `lineRest` the queue law covers the
-  prototype. A prototype at rest starts once its gap admits `speedThreshold`.
-  - On D661 the attempt's `lab` d217 clamps are gone.
-  - Without a delay: four-leg crawl 17.0 → 1.3 s, 0 clamps, jerk 23 → 296, hard braking 417 → 1,027.
-  - With R9 at 0.5 s: 0.5 / 3.1 clamps per run, against 12.1 / 51.2 with the switch off.
-  - At 1 s: delay +28 s.
-- **Forcings settled** (each still asserts its purpose):
-  - the archived M3.2.7c congested variant runs with `lineRest` off;
-  - BA248 gains a fourth major car;
-  - BA107 averages seeds 42–46.
-
-  BA197's served floor is 350 (357, from the start rule).
-- **Rows** BA257–BA260, and BA241 amended. Each of four mutations fails a row.
-- **Verified (Linux only):** `check` passes, `ctest` 376/376; `multra-cli 42` byte-identical.

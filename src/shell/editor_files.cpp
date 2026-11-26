@@ -35,11 +35,13 @@ void EditorWindow::newFile() {
     file_.clear();canvas_->select("");refresh();canvas_->fitNetwork();
 }
 void EditorWindow::openFile(const QString& file) {
-    auto document=readEditorDocument(file); // Decode and validate before touching the live document.
+    bool lineRestIgnored=false;
+    auto document=readEditorDocument(file,&lineRestIgnored); // Decode and validate before touching the live document.
     clearRecovery(); clearRun(); macro_->discard(); meso_->discard(); history_.reset(std::move(document));
     conflicts_->invalidate();
     crossSections_->invalidate();streetSegments_->invalidate();nodes_->invalidate();
     file_=file;loadSideFiles();error_->clear();canvas_->select("");refresh();canvas_->fitNetwork(); // S5.5a: its side files
+    if(lineRestIgnored)error_->setText(text("EDIT_LINE_REST_IGNORED")); // D677: the file's lineRest off is not used
 }
 void EditorWindow::openFileOrReport(const QString& file) {
     try { openFile(file); rememberRecentFile(file); } catch (const std::exception& e) { showError(e); }

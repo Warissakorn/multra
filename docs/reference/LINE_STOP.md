@@ -226,3 +226,20 @@ An NGSIM look on an unverified stop-bar stand-in puts first cars about 1 m short
 key with default 0, so no result changes. Nothing is implemented.
 
 The contract and its measured options are [LINE_SETBACK](LINE_SETBACK.md) (D669).
+
+## 11. `lineRest` always on (D677)
+
+The owner chose to remove the switch ([LINE_SETBACK §9](LINE_SETBACK.md)).
+- **The file.** `clampRules.lineRest` is never written. A schema 87 or 88 file carrying `false` still opens:
+  - the value is checked as a boolean and then ignored;
+  - the editor's message line says the file was saved with `lineRest` off and that it is not used
+    (`EDIT_LINE_REST_IGNORED`);
+  - Save drops it.
+
+  A file older than 87 carrying the key is still refused (§7).
+- **Run settings** has five clamp-rule boxes.
+- **The engine.** `ClampRules::lineRest` stays as an engine-only switch:
+  - test rows use it to pin the law against the pre-D652 behaviour;
+  - the M6 U record (D543) needs the earlier law;
+  - no file or dialog reaches it.
+- **Scope is unchanged (§7):** every W74 and W99 behaviour, and a prototype with `amberDeceleration`.

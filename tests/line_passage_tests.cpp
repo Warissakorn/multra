@@ -13,7 +13,7 @@ namespace {
 // 100 m that turns green at 30 s, and car 1 from 40 m at 10 m/s.
 Scenario redThenGreen() {
     auto s = test::straight(); s.inputs.clear(); s.duration = 60;
-    s.behaviours.front().amberDeceleration = 3;
+    s.behaviours.front().amberDeceleration = 3; s.behaviours.front().lineSetback = 0.0; // at the line, not D677's 1 m
     s.signalPrograms = {{"p", 0, {{30, SignalColor::red}, {30, SignalColor::green}}}};
     s.signalHeads = {{"h", "road", 100, "p"}};
     return s;

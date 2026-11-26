@@ -85,6 +85,11 @@ PROGRESS).
     - **d. Recheck on run #154** (`6a92909`, D676): tick `lineSetback`, enter 1, Confirm, run; untick, Confirm, run;
       reopen and tick again. Is it 1? Try one more field, e.g. a vehicle type's PCU or a speed area's deceleration.
       *Owner:*
+    - **e. One setting, 1 m by default** (D677, LINE_SETBACK §9; on the package after #154, named in NEXT). *Run
+      settings* has five clamp-rule boxes, no `lineRest`. In the line-stop lab, with `lineSetback` unticked (the field
+      shows 1 and a note names the default), does the first car stand about 1 m short at a red? Tick it and enter 0:
+      does it stand at the line? If you kept the F9 file saved with `lineRest` unticked, open it: does the message line
+      say it is ignored, and does Save drop it? *Owner:*
 
 ## G — Object interchange
 

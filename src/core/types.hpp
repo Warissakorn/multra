@@ -62,7 +62,7 @@ struct DriverBehaviour {
     std::optional<double> diffusionTime; // s at a dead end, then the vehicle is removed (DIFFUSION, D613); absent: never
     std::optional<double> inattentionDuration, inattentionProbability; // START_UP §3 (D608): a pair; absent: always attentive
     std::optional<double> yieldTime, yieldTimeDeviation, yieldTimeMinimum, yieldTimeMaximum, impatience, timeToImpatience; // s (Aimsun), SUMO: YIELD_IMPATIENCE (D618)
-    std::optional<double> lineSetback; // m, LINE_SETBACK (D670): under lineRest, rest this far short of a signal head's line
+    std::optional<double> lineSetback; // m, LINE_SETBACK (D670): under lineRest, rest this far short of a signal head's line; absent: 1 m (D677)
     std::optional<W99Parameters> w99; // present iff the model is `w99` (W99.md §9, D639); Run refuses it until composition
     bool operator==(const DriverBehaviour&) const = default;
 };
@@ -215,7 +215,7 @@ struct SegmentBehaviour {
     bool operator==(const SegmentBehaviour&) const = default;
 };
 // MERGE_CLAMPS §2-§3 (D250/D251): three project switches that relieve a cap on a tick that would clamp.
-struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}, joinAnticipation{false}, standingStopFloor{true}, lineRest{true}; bool operator==(const ClampRules&) const = default; }; // joinAnticipation: JOIN_ANTICIPATION §5 (D254), off by default; standingStopFloor: LINE_APPROACH §7 (D257)
+struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}, joinAnticipation{false}, standingStopFloor{true}, lineRest{true}; bool operator==(const ClampRules&) const = default; }; // lineRest: engine only since D677, never read from or written to a file // joinAnticipation: JOIN_ANTICIPATION §5 (D254), off by default; standingStopFloor: LINE_APPROACH §7 (D257)
 struct ScenarioDefinition {
     double duration{}, timeStep{};
     std::vector<Route> routes;

@@ -12,7 +12,7 @@ namespace {
 Scenario redRoad() {
     auto s = test::straight(); s.inputs.clear(); s.duration = 600;
     s.segments = {{"road", 300, {}}};
-    s.behaviours.front().amberDeceleration = 3;
+    s.behaviours.front().amberDeceleration = 3; s.behaviours.front().lineSetback = 0.0; // at the line, not D677's 1 m
     for (auto& t : s.vehicleTypes) t.behaviourId = s.behaviours.front().id;
     s.signalPrograms = {{"p", 0, {{600, SignalColor::red}}}};
     s.signalHeads = {{"h", "road", 250, "p"}};

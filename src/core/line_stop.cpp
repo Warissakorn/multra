@@ -46,7 +46,7 @@ void applyDelayedLineStop(FollowingResult& applied, double speed, double line, c
     applyLineStop(applied, speed, line, vehicleLeader, type, behaviour, dt, target);
 }
 double setBackHead(double head, const DriverBehaviour& behaviour) {
-    return std::isfinite(head) && behaviour.lineSetback ? std::max(0.0, head - *behaviour.lineSetback) : head;
+    return std::isfinite(head) ? std::max(0.0, head - behaviour.lineSetback.value_or(kDefaultLineSetback)) : head;
 }
 std::vector<ValidationIssue> lineSetbackIssues(const DriverBehaviour& b, const std::string& path) {
     if (b.lineSetback && !(std::isfinite(*b.lineSetback) && *b.lineSetback >= 0 && *b.lineSetback <= 10))

@@ -104,3 +104,32 @@ import, so the profiles ship as a project.
 - **Builder:** `tools/line_stop_lab_network.hpp` → `multra-line-stop-lab-fixture data <file>`. The `linesetback`
   group checks that the committed file is its output.
 
+
+## 9. One setting, and a 1 m default (D677)
+
+The owner saw W99 resting about 1.4 m short with `lineRest` off (its CC0), as with `lineRest` and 1 m, and asked
+whether the two settings duplicate each other, then whether to remove them. The session's answer: off is the old
+standing gap, which is also the queue gap, applies at every line, and crawls 10–14 s for the prototype and W74
+(LINE_STOP §1). The owner chose "ตามแนะนำ" with two additions: open a file saved with `lineRest` off, ignore it and say
+so, and give `lineSetback` a suitable default.
+
+- **`lineRest` is always on** (LINE_STOP §11). Run settings has no `lineRest` box.
+- **`lineSetback` absent means 1 m** (`kDefaultLineSetback`, `src/core/line_stop.hpp`):
+  - the source is SUMO's `jmStoplineGap` default at signal stop lines (D668);
+  - the NGSIM look agrees (first cars a median 0.96 m short, §1);
+  - Vissim's 0.5 m is the other program default, and it is not field data either.
+- **Behaviour:**
+  - A present value is used as written, 0 included. The writer writes any present value, so an explicit 0 survives
+    Save.
+  - Ticking the box in the dialog sets a value. Unticked shows 1 and says it is the default.
+  - No schema step: the key and its range are unchanged; what an absent key means is an engine change, like any
+    other.
+- **Measured at 1 m** ([options](../evidence/line-setback-options.md), §3):
+  - no red passes;
+  - delay within 0.4 %, except W74 on M2.6 (+4–6 %);
+  - startup lost time about +0.2 s;
+  - clamps change by under 2 per run.
+- **Unchanged:**
+  - a prototype without `amberDeceleration` has no line law, so M0 and `multra-cli 42` keep their bytes;
+  - give-way, Stop, zone and gate lines rest at the line (C1).
+- Nothing is validated (rule 4).

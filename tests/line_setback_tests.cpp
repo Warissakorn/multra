@@ -13,7 +13,7 @@
 
 using namespace multra;
 // LINE_SETBACK (D669, D670): rows BA273–BA277. Under lineRest a behaviour's lineSetback moves the line law's target that
-// far short of a signal head; the cap, the amber decision and every other line keep the real line. Absent, nothing changes.
+// far short of a signal head; the cap, the amber decision and every other line keep the real line. Absent is 1 m (D677).
 namespace {
 enum class Model { prototype, w74, w99 };
 constexpr Model kModels[] = {Model::prototype, Model::w74, Model::w99};
@@ -69,8 +69,9 @@ Rest restAt(Model m, std::optional<double> setback) {
 
 TEST(linesetback, ba273_a_car_rests_its_setback_short_of_a_red_head) { // BA273
     for (const auto m : kModels) {
-        const auto atLine = restAt(m, std::nullopt);
-        CHECK(atLine.shortOf >= -1e-9); CHECK(atLine.shortOf <= 1e-6); // forcing: without the key, at the line
+        const auto atLine = restAt(m, 0.0);
+        CHECK(atLine.shortOf >= -1e-9); CHECK(atLine.shortOf <= 1e-6); // forcing: an explicit 0 rests at the line
+        CHECK(std::abs(restAt(m, std::nullopt).shortOf - kDefaultLineSetback) <= 0.01); // D677: absent is 1 m
         for (const double s : {0.5, 1.0, 2.0}) {
             const auto r = restAt(m, s);
             CHECK(std::abs(r.shortOf - s) <= 0.01);
@@ -80,10 +81,11 @@ TEST(linesetback, ba273_a_car_rests_its_setback_short_of_a_red_head) { // BA273
     }
 }
 
-TEST(linesetback, ba274_absent_or_zero_changes_nothing) { // BA274
+TEST(linesetback, ba274_absent_is_the_one_metre_default) { // BA274, amended by D677 (LINE_SETBACK §9)
+    CHECK(kDefaultLineSetback == 1.0);
     for (const auto m : kModels) {
         auto a = placed(road(m, std::nullopt), {test::vehicle(1, 50, 15), test::vehicle(2, 20, 15)});
-        auto b = placed(road(m, 0.0), {test::vehicle(1, 50, 15), test::vehicle(2, 20, 15)});
+        auto b = placed(road(m, 1.0), {test::vehicle(1, 50, 15), test::vehicle(2, 20, 15)});
         while (a.tick < totalTicks(*a.scenario)) {
             a = stepSimulation(std::move(a)); b = stepSimulation(std::move(b));
             CHECK(a.vehicles == b.vehicles); CHECK(a.events == b.events);

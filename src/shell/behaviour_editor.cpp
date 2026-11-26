@@ -3,6 +3,7 @@
 #include "dialog_fit.hpp"
 #include "field_memory.hpp"
 #include "../core/lateral.hpp"
+#include "../core/line_stop.hpp"
 #include "../core/perception.hpp"
 #include "../core/w74.hpp"
 #include "../core/w99.hpp"
@@ -244,6 +245,8 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
              {"timeToImpatience", &either.timeToImpatience}}) shared.push_back(optional(junctionPage, junctions, key, value));
     shared[shared.size() - 2].spin->setMinimum(-1); shared[shared.size() - 2].spin->setValue(either.impatience.value_or(0)); // SUMO's base may be negative
     shared.push_back(optional(junctionPage, junctions, "lineSetback", &either.lineSetback)); // D670 (LINE_SETBACK)
+    if (!either.lineSetback) shared.back().spin->setValue(kDefaultLineSetback); // D677: unticked is the default, shown
+    note(junctionPage, junctions, text("editorBehaviourLineSetbackDefault"), "editorBehaviourLineSetbackDefault");
     { // F12 (owner, 2026-11-26): an unticked key keeps its last number for this session (field_memory.hpp)
         const auto scope = "behaviour/" + q(b.id) + "/";
         for (const auto* list : {&optionals, &shared}) for (const auto& o : *list) rememberField(o.on, o.spin, scope + o.on->text());

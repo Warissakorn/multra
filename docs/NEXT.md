@@ -66,8 +66,8 @@ The single live to-do, **open items only**: what shipped is in [PROGRESS](PROGRE
 The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,
 E35, E36, B45 (words in PROGRESS). **Answered 2026-11-26 on #152:** F7, F9, F10, F11, all passed. **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md); A2 passed 2026-11-21, D612):
 E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, F8, F12, G1, H1, C12. **F8 and F12 answered on #153
-(2026-11-26):** four findings, three fixed in the shell (D676) and one answered; both wait for a recheck on the next
-package. Thirty-one
+(2026-11-26):** four findings, three fixed in the shell (D676) and one answered. Then `lineRest` became always on, and
+`lineSetback` 1 m by default (D677). F8 and F12 (with d and e) wait for a recheck on the package carrying D677. Thirty-one
 older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
 A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
 

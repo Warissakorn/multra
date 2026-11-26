@@ -6,7 +6,8 @@
 #include <stdexcept>
 namespace multra {
 struct RecoveryError : std::runtime_error {using std::runtime_error::runtime_error;};
-ProjectDocument readEditorDocument(const QString&);
+// `lineRestIgnored`, when given, is set when the file was saved with lineRest off, which opening ignores (D677).
+ProjectDocument readEditorDocument(const QString&, bool* lineRestIgnored = nullptr);
 inline constexpr std::size_t kEditorDocumentByteLimit=48*1024*1024;
 std::string editorDocumentBytes(const Json&); // exact bounded Save representation, also used by J7 snapshots
 struct EditorDocumentSnapshot {std::string bytes;bool saved{};};

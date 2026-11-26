@@ -1,3 +1,4 @@
+#include "../src/project/clamp_rules.hpp"
 #include "test.hpp"
 #include "../src/core/line_stop.hpp"
 #include "../src/core/perception.hpp"
@@ -34,6 +35,7 @@ Scenario redRoad(Model m, bool lineRest) {
     s.signalPrograms = {{"p", 0, {{600, SignalColor::red}}}};
     s.signalHeads = {{"h", "road", 100, "p"}};
     s.clampRules.lineRest = lineRest;
+    s.behaviours.front().lineSetback = 0.0; // these rows pin the law at the line; the 1 m default is BA273/BA274 (D677)
     return s;
 }
 SimState placed(const Scenario& s, const std::vector<test::Placement>& list) {
@@ -179,23 +181,22 @@ bool refused(const Json& doc, const std::string& code, const std::string& path) 
     return false;
 }
 }
-TEST(linestop, ba245_on_by_default_and_round_trips_at_schema_87) { // BA245
+TEST(linestop, ba245_always_on_a_file_false_is_ignored_and_never_written) { // BA245, amended by D677 (LINE_STOP §11)
     CHECK(ClampRules{}.lineRest);
     auto d = fourLeg();
     const auto owned = documentJson(d);
-    d.definition->clampRules.lineRest = false;
-    const auto j = documentJson(d);
-    CHECK(j["schemaVersion"] == 87);
-    CHECK(j["definition"]["clampRules"] == Json{{"lineRest", false}});
-    CHECK(parseDocument(Json::parse(j.dump())) == d);
+    d.definition->clampRules.lineRest = false; // the engine-only switch: never written
+    CHECK(documentJson(d) == owned);
+    auto j = owned; j["schemaVersion"] = 87; j["definition"]["clampRules"] = Json{{"lineRest", false}};
+    CHECK(fileTurnsLineRestOff(j));
+    CHECK(parseDocument(j).definition->clampRules == ClampRules{});
+    CHECK(!fileTurnsLineRestOff(owned));
     auto older = j; older["schemaVersion"] = 86;
     CHECK(refused(older, "EDIT_UNSUPPORTED_FIELD", "definition.clampRules.lineRest"));
     auto notBool = j; notBool["definition"]["clampRules"]["lineRest"] = 1;
     CHECK(refused(notBool, "INVALID_CLAMP_RULE", "definition.clampRules.lineRest"));
     auto explicitOn = j; explicitOn["definition"]["clampRules"]["lineRest"] = true;
-    CHECK(parseDocument(explicitOn).definition->clampRules.lineRest);
-    d.definition->clampRules = {};
-    CHECK(documentJson(d) == owned);
+    CHECK(!fileTurnsLineRestOff(explicitOn) && parseDocument(explicitOn).definition->clampRules.lineRest);
 }
 
 // LINE_QUEUE §5 (D655): rows BA252–BA255. Under lineRest a W74 or W99 vehicle behind a vehicle at rest is stopped by

@@ -2,6 +2,24 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — Prototype queues rest behind a standing car: P17 (D662)
+
+- **Owner:** "ทำ P17 ต่อเลย". Package #150 (`a5abe16`, D652–D661) was queued with owner item F10.
+- **Engine** ([PROTOTYPE_QUEUE §7](../reference/PROTOTYPE_QUEUE.md)): under `lineRest` the queue law covers the
+  prototype. A prototype at rest starts once its gap admits `speedThreshold`.
+  - On D661 the attempt's `lab` d217 clamps are gone.
+  - Without a delay: four-leg crawl 17.0 → 1.3 s, 0 clamps, jerk 23 → 296, hard braking 417 → 1,027.
+  - With R9 at 0.5 s: 0.5 / 3.1 clamps per run, against 12.1 / 51.2 with the switch off.
+  - At 1 s: delay +28 s.
+- **Forcings settled** (each still asserts its purpose):
+  - the archived M3.2.7c congested variant runs with `lineRest` off;
+  - BA248 gains a fourth major car;
+  - BA107 averages seeds 42–46.
+
+  BA197's served floor is 350 (357, from the start rule).
+- **Rows** BA257–BA260, and BA241 amended. Each of four mutations fails a row.
+- **Verified (Linux only):** `check` passes, `ctest` 376/376; `multra-cli 42` byte-identical.
+
 ## 2026-11-25 — Delayed vehicles rest at lines and in queues: R9 implemented (D661)
 
 - **Owner:** asked whether creep, stop and creep again is how people drive (no cited source either way; Vissim

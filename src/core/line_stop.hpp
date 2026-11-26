@@ -20,8 +20,11 @@ double lineStopAcceleration(double speed, double gap, double comfortable, double
 double idmLineAcceleration(double speed, double gap, double desiredSpeed, double acceleration, double comfortable);
 // What the law aims at: a vehicle at rest (less its standstill gap) or a holding line, and the vehicle's desired speed.
 struct LineTarget { bool vehicle{}; double desiredSpeed{}; };
-// LINE_SETBACK §2 (D670): where the line law aims at a signal head `head` metres ahead, `lineSetback` short of it
-// (floored at 0); infinite stays infinite. Other lines are not set back (C1).
+// LINE_SETBACK §9 (D677): the set-back of a behaviour without `lineSetback`. SUMO's `jmStoplineGap` default at
+// signal stop lines (D668), which the NGSIM look matches (first cars a median 0.96 m short, LINE_SETBACK §1).
+inline constexpr double kDefaultLineSetback = 1.0; // m
+// LINE_SETBACK §2 (D670): where the line law aims at a signal head `head` metres ahead, `lineSetback` (else
+// kDefaultLineSetback) short of it, floored at 0; infinite stays infinite. Other lines are not set back (C1).
 double setBackHead(double head, const DriverBehaviour& behaviour);
 // lineSetback finite and within 0-10 m (Vissim's range, D668), else INVALID_BEHAVIOUR_PARAMETER.
 std::vector<ValidationIssue> lineSetbackIssues(const DriverBehaviour& behaviour, const std::string& path);
