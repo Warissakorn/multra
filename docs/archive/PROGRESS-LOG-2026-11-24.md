@@ -2,6 +2,21 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — Delayed vehicles rest at lines and in queues: R9 implemented (D661)
+
+- **Owner:** asked whether creep, stop and creep again is how people drive (no cited source either way; Vissim
+  and SUMO rest a queue at its standstill distance), then "เลือก R9 ทำเลย".
+- **Engine** ([REACTION_STOP §7](../reference/REACTION_STOP.md)): for a behaviour with `lineRest` and a reaction delay,
+  `holdDelayedStart` runs before the FIFO and `applyDelayedLineStop` after it, in `src/core/line_stop.cpp`.
+- **Against the measurement:** R9 reproduced to the digit.
+  - At 0.5 s, W74 clamps 9 / 44 per run (four-leg / M2.6), against 755 / 3,277 before.
+  - W99 clamps 8 / 29, against 391 / 1,506.
+  - The prototype passes red 0 times, against 128–453.
+  - Runs without a delay are unchanged.
+- **Rows** BA262–BA265 and BA267 (`linestop`). Each of six mutations fails a row. BA263 found that a delayed stop can
+  end a few centimetres short, and then holds there, since that short a start does not fit the delay.
+- **Verified (Linux only):** `check` passes, `ctest` 376/376; `multra-cli 42` byte-identical.
+
 ## 2026-11-25 — A delayed vehicle rests: R9 measured (D660)
 
 - **Owner:** asked whether R7's crawl is creep-then-stop or endless, then "หากฎให้รถที่มี delay หยุดนิ่งได้ก่อน".

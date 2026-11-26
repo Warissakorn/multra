@@ -134,7 +134,11 @@ std::optional<OdMatrix> editOdMatrix(QWidget* parent, const OdMatrix& matrix, co
 std::optional<std::optional<ParkingLot>> editParkingLot(QWidget* parent, const std::optional<ParkingLot>& current,
                                                         const std::string& zoneId,
                                                         const std::vector<Choice>& compositions, const DialogText& text) {
-    const ParkingLot base = current.value_or(ParkingLot{"", zoneId, 1, 0, "", 0, {{10, 0}, {60, 1}}});
+    // F12 (owner, 2026-11-26): a lot unticked away is kept for the session, and ticking the zone's box
+    // again brings it back as it was, not the starting values. Never written to the file.
+    static std::map<std::string, ParkingLot> unticked;
+    const auto kept = unticked.find(zoneId);
+    const ParkingLot base = current ? *current : kept != unticked.end() ? kept->second : ParkingLot{"", zoneId, 1, 0, "", 0, {{10, 0}, {60, 1}}};
     QDialog dialog(parent); dialog.setObjectName("editorLotDialog"); dialog.setWindowTitle(text("editorEditLot"));
     auto* layout = new QVBoxLayout(&dialog);
     auto* enabled = new QCheckBox(text("editorLotEnabled"), &dialog); enabled->setObjectName("editorLotEnabled");
@@ -173,7 +177,7 @@ std::optional<std::optional<ParkingLot>> editParkingLot(QWidget* parent, const s
     QObject::connect(enabled, &QCheckBox::toggled, body, &QWidget::setEnabled);
     std::optional<std::optional<ParkingLot>> result;
     QObject::connect(buttons(dialog, layout, text), &QDialogButtonBox::accepted, &dialog, [&] {
-        if (!enabled->isChecked()) { result = std::optional<ParkingLot>{}; dialog.accept(); return; }
+        if (!enabled->isChecked()) { if (current) unticked[zoneId] = *current; result = std::optional<ParkingLot>{}; dialog.accept(); return; }
         ParkingLot lot = base;
         lot.capacity = static_cast<std::uint32_t>(capacity->value());
         lot.initialOccupancy = static_cast<std::uint32_t>(initial->value());

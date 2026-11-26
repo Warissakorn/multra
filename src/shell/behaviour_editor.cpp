@@ -1,6 +1,7 @@
 #include "editor_interaction.hpp"
 #include "behaviour_editor.hpp"
 #include "dialog_fit.hpp"
+#include "field_memory.hpp"
 #include "../core/lateral.hpp"
 #include "../core/perception.hpp"
 #include "../core/w74.hpp"
@@ -37,7 +38,7 @@ QLabel* note(QWidget* parent, QFormLayout* form, const QString& value, const cha
     auto* label = new ReflowLabel(value, parent); label->setObjectName(object); label->setWordWrap(true); form->addRow(label); return label;
 }
 // A file value, written as the file would hold it: no thousands separator, '.' decimal.
-QString figure(double value) { return QString::number(value, 'g', 17); }
+QString figure(double value) { return QString::number(value, 'g', QLocale::FloatingPointShortest); } // shortest that reads back exactly: 0.35, not 0.34999999999999998
 struct Optional { std::optional<double>* value; QCheckBox* on; QDoubleSpinBox* spin; };
 Optional optional(QWidget* page, QFormLayout* form, const char* key, std::optional<double>* value) {
     auto* on = new QCheckBox(key, page); on->setObjectName(QString(key) + "Set"); on->setChecked(value->has_value());
@@ -243,6 +244,14 @@ bool editBehaviour(QWidget* parent, DriverBehaviour& b, std::string& name, const
              {"timeToImpatience", &either.timeToImpatience}}) shared.push_back(optional(junctionPage, junctions, key, value));
     shared[shared.size() - 2].spin->setMinimum(-1); shared[shared.size() - 2].spin->setValue(either.impatience.value_or(0)); // SUMO's base may be negative
     shared.push_back(optional(junctionPage, junctions, "lineSetback", &either.lineSetback)); // D670 (LINE_SETBACK)
+    { // F12 (owner, 2026-11-26): an unticked key keeps its last number for this session (field_memory.hpp)
+        const auto scope = "behaviour/" + q(b.id) + "/";
+        for (const auto* list : {&optionals, &shared}) for (const auto& o : *list) rememberField(o.on, o.spin, scope + o.on->text());
+        for (const auto& o : {otherCooperative, otherAmber}) rememberField(o.on, o.spin, scope + o.on->text());
+        for (const auto& [key, spin] : lateralKeys) rememberField(lateral, spin, scope + key->name);
+        // CC1: the Fixed value and the Distribution curve, each kept while the other is in use.
+        rememberField(b.w99 && !curved, cc1Edit, scope + "cc1"); rememberTable(curved, cc1Curve, scope + "cc1Curve");
+    }
     const auto keepShared = [&](DriverBehaviour& to) {
         for (const auto& o : shared) *o.value = o.on->isChecked() ? std::optional<double>(o.spin->value()) : std::nullopt;
         to.perception = either.perception; to.curveLateralAcceleration = either.curveLateralAcceleration;

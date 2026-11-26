@@ -58,8 +58,12 @@ PROGRESS).
     the other nine keys, add rows (0.6, 0) and (1.5, 90), Confirm: is the error "· cc1Curve[1].share" and
     the row selected? Change 90 to 100, Confirm, reopen: are the points kept? Switch to *Fixed*, enter cc1,
     Confirm: is the curve gone? In Thai and English at 100/150 %: do the table, its headers and the Add /
-    Remove buttons fit without clipping? Package: run #153 of *Package binaries* (`ae07ab7`, succeeded 2026-11-26), or #152 (`a18a229`), artifact `multra-windows-x64`
-    (#147 and #149 are superseded). *Owner:*
+    Remove buttons fit without clipping? *Owner, on #153 (2026-11-26):* the table should look unused under
+    *Fixed*; a double-clicked cell's editor is not on its cell, check other tables. Both fixed (D676).
+    - **Recheck on the next package** (D676): under *Fixed*, is the curve table grey, headers included? Double-click a
+      cell here, in *Study periods* and in a vehicle type's speed curve: does the editor sit exactly on the cell? Switch
+      to *Fixed*, Confirm, reopen and choose *Distribution*: are your points back? (Kept until the program closes.)
+      *Owner:*
 
 12. **The `lineSetback` field and a set-back at a red** (listed 2026-11-26; D669–D670;
     [LINE_SETBACK](../reference/LINE_SETBACK.md) §7).
@@ -75,7 +79,12 @@ PROGRESS).
       look again.
     - **c. Save and reopen.** Save, close, reopen. Is `lineSetback` still 1? Untick it and save: does the file no
       longer carry it?
-    - Report the words for a–c. Linux closes none of these (rule 3). *Owner:*
+    - Report the words for a–c. Linux closes none of these (rule 3). *Owner, on #153 (2026-11-26):* with `lineSetback`
+      unticked and ticked again, the 1 was gone; keep it, and check every field. Fixed for every such field (D676). Also
+      asked whether `lineRest` and `lineSetback` duplicate W99's own stop short of the line (answered in PROGRESS).
+    - **d. Recheck on the next package** (D676): tick `lineSetback`, enter 1, Confirm, run; untick, Confirm, run;
+      reopen and tick again. Is it 1? Try one more field, e.g. a vehicle type's PCU or a speed area's deceleration.
+      *Owner:*
 
 ## G — Object interchange
 

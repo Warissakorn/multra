@@ -271,7 +271,7 @@ void ConflictsPanel::edit(const std::string& id) {
     form->addRow("gapTime", gap);
     form->addRow("headway", headway);
     form->addRow("visibility", visibility);
-    const auto reduction = gapReductionFields(&dialog, form, rule != row.priorityRules.end() ? rule->gapReduction : std::nullopt, text("editorGapReduction"), ""); // D618
+    const auto reduction = gapReductionFields(&dialog, form, rule != row.priorityRules.end() ? rule->gapReduction : std::nullopt, text("editorGapReduction"), "", "conflict/" + QString::fromStdString(id) + "/"); // D618
     // What a driver does at the line where the area gives way (M3.2.5b). The mode belongs to the
     // line, so it also applies to the other areas behind that line. Nothing to set while no side
     // gives way.

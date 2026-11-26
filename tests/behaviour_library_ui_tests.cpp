@@ -377,6 +377,11 @@ int main(int argc, char** argv) {
                         require(item<QComboBox>(e, "editorBehaviourCc1Mode")->currentIndex() == 1, "curve not shown as Distribution");
                         auto* t = item<QTableWidget>(e, "editorBehaviourCc1Curve");
                         require(t->rowCount() == 2 && t->item(1, 0)->text() == "1.5" && t->item(1, 1)->text() == "100", "curve rows not shown");
+                        // F8 (owner, 2026-11-26): a cell's editor covers its cell exactly, not 4 px right and taller.
+                        t->setCurrentCell(0, 0); t->editItem(t->item(0, 0)); QApplication::processEvents();
+                        auto* cellEditor = t->viewport()->findChild<QLineEdit*>(); require(cellEditor, "No cell editor");
+                        require(cellEditor->geometry() == t->visualItemRect(t->item(0, 0)), "Cell editor not on its cell");
+                        t->setCurrentCell(1, 1); QApplication::processEvents();
                         rows(e, {}); confirm(e); require(e.isVisible(), "empty curve accepted");
                         require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc1Curve"), "empty curve not named");
                         rows(e, {{"0.6", "0"}, {"1.5", "90"}}); confirm(e); require(e.isVisible(), "curve not ending at 100 % accepted");
@@ -394,6 +399,36 @@ int main(int argc, char** argv) {
                     });
                 });
                 require(behaviour("w99-curve").w99->cc1 == 0.9 && behaviour("w99-curve").w99->cc1Curve.empty(), "Fixed not saved");
+                // F12 (owner, 2026-11-26): the curve set aside by Fixed comes back in Distribution, this session.
+                library([](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [](QDialog& e) {
+                        auto* t = item<QTableWidget>(e, "editorBehaviourCc1Curve");
+                        require(!t->isEnabled() && t->rowCount() == 3 && t->item(2, 1)->text() == "100", "Curve not kept beside Fixed");
+                        item<QComboBox>(e, "editorBehaviourCc1Mode")->setCurrentIndex(1); require(t->isEnabled(), "Curve not in use in Distribution");
+                        e.reject();
+                    });
+                });
+                // F12: an unticked key keeps its number; ticking it again brings the number back.
+                const auto setback = [&](bool on, double value) {
+                    library([&](QDialog& d) {
+                        modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [&](QDialog& e) {
+                            auto* box = item<QCheckBox>(e, "lineSetbackSet"); auto* spin = item<QDoubleSpinBox>(e, "lineSetback");
+                            if (!on) require(box->isChecked() == false || spin->value() == value, "Ticked value not shown");
+                            box->setChecked(on); if (on && value > 0) spin->setValue(value);
+                            confirm(e);
+                        });
+                    });
+                };
+                setback(true, 1); require(behaviour("w99-curve").lineSetback == 1.0, "lineSetback not set");
+                setback(false, 1); require(!behaviour("w99-curve").lineSetback, "Unticked lineSetback written");
+                library([](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [](QDialog& e) {
+                        require(!item<QCheckBox>(e, "lineSetbackSet")->isChecked() && item<QDoubleSpinBox>(e, "lineSetback")->value() == 1,
+                                "Unticked lineSetback lost its number");
+                        item<QCheckBox>(e, "lineSetbackSet")->setChecked(true); confirm(e);
+                    });
+                });
+                require(behaviour("w99-curve").lineSetback == 1.0, "Ticking again did not bring 1 back");
                 library([](QDialog& d) { // a fixed w99 behaviour opens in Fixed
                     modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
                         require(item<QComboBox>(e, "editorBehaviourCc1Mode")->currentIndex() == 0, "fixed cc1 not shown as Fixed");

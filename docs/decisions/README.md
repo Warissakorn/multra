@@ -144,3 +144,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D673](RECORD.md#d673) — E1 fixed: a front exactly at the conflict segment's start has not entered it for a priority rule; node-analysis clamps 4.7 → 0 (prototype); row PR17
 [D674](RECORD.md#d674) — RULE_LOOKBACK contract: a rule looking upstream stopping at red (G1R) changes only M2.6, slightly; past red (G1) worsens node analysis; recommendation G1R after callgrind
 [D675](RECORD.md#d675) — G1R built and measured (+3.3 % / +1.8 % instructions) for a small M2.6 gain; kept out, the rule's scan range is a known limit
+[D676](RECORD.md#d676) — F8/F12 findings: cell editors on their cell, unused tables muted, unticked values kept for the session (never written)

@@ -5,6 +5,28 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-26 — The owner's F8 and F12 findings: cell editors, unused tables, kept values (D676)
+
+- **Owner, on package #153** (`ae07ab7`), with two pictures of the CC1 table:
+  - "เมื่อสร้างตารางใน Distribution และเพื่อมาใช้ Fixed ควรแสดงตารางด้วยสีที่จางลงเพื่อให้ผู้ใช้มองเห็นว่าตารางไม่ถูกใช้"
+  - "การดับเบิลคลิก เพื่อเติมตัวเลขช่องที่ขึ้นมาให้แก้ไขตัวเลขไม่ตรงกับช่องตารางเดิม ตรวจสอบตารางอื่นๆในโปรแกรม ที่มีข้อผิดพลาดแบบเดียวกัน"
+  - "พฤติกรรมเดิมของ W99 ในการไม่ติ้ก lineRest และ lineSetBack รถก็จอดห้างจากเส้นอยู่แล้ว … การตั้ง 2 ค่าที่จะทำให้การตั้งค่าซ้ำซ้อนหรือไม่"
+  - "เมื่อติ้ก lineSetBack และตั้งค่า เป็น 1 … เอาติ้กออก … กลับมาจะติ้กใหม่พบว่าค่า 1 ที่ตั้งไว้ หายไป โปรแกรมควรคงค่านี้ไว้ … ตรวจสอบช่องอื่นๆทั้งหมดในโปรแกรมด้วย"
+- **Fixed in the shell** (D676; no engine or file change):
+  - Reproduced offscreen: the editor of a 99×23 cell was 91×24 at (4, 2). Every table without a delegate of its own
+    now places it on the whole cell, so the fix reaches every table at once.
+  - A disabled table is muted (grey cells and headers, no current-cell frame).
+  - Seventeen places hid a value behind a tick box or a choice and dropped it on Confirm. Each now keeps it for the
+    session and brings it back when ticked again. It is never written to the file.
+  - The W99 fields show 0.35, not 0.34999999999999998.
+- **Answered, no change:** with `lineRest` off, each model rests at its own standstill gap short of the line. For W99
+  that is CC0, measured at a median of 1.40 m (LINE_STOP §1), which is why it looks like `lineRest` plus 1 m. The two
+  are not the same: the off-mode gap is also the gap between queued cars, it applies at every kind of line, and
+  for the prototype and W74 it comes with a 10–14 s crawl. `lineSetback` acts only under `lineRest`.
+- **Rows** in `behaviour-library-ui`: the editor is on its cell; the CC1 curve is kept beside *Fixed*;
+  `lineSetback` 1 survives untick and re-tick.
+- **Verified (Linux only):** `check` passes, `ctest` 378/378; F8 and F12 stay open for a recheck on the next package (rule 3).
+
 ## 2026-11-26 — The node-analysis clamps: diagnosed, E1 fixed, E2 measured and kept out (D672–D675)
 
 - **Owner:** "ไล่หาสาเหตุ clamp บน signalised-node-analysis ต่อ".
@@ -154,19 +176,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
   BA197's served floor is 350 (357, from the start rule).
 - **Rows** BA257–BA260, and BA241 amended. Each of four mutations fails a row.
-- **Verified (Linux only):** `check` passes, `ctest` 376/376; `multra-cli 42` byte-identical.
-
-## 2026-11-25 — Delayed vehicles rest at lines and in queues: R9 implemented (D661)
-
-- **Owner:** asked whether creep, stop and creep again is how people drive (no cited source either way; Vissim
-  and SUMO rest a queue at its standstill distance), then "เลือก R9 ทำเลย".
-- **Engine** ([REACTION_STOP §7](reference/REACTION_STOP.md)): for a behaviour with `lineRest` and a reaction delay,
-  `holdDelayedStart` runs before the FIFO and `applyDelayedLineStop` after it, in `src/core/line_stop.cpp`.
-- **Against the measurement:** R9 reproduced to the digit.
-  - At 0.5 s, W74 clamps 9 / 44 per run (four-leg / M2.6), against 755 / 3,277 before.
-  - W99 clamps 8 / 29, against 391 / 1,506.
-  - The prototype passes red 0 times, against 128–453.
-  - Runs without a delay are unchanged.
-- **Rows** BA262–BA265 and BA267 (`linestop`). Each of six mutations fails a row. BA263 found that a delayed stop can
-  end a few centimetres short, and then holds there, since that short a start does not fit the delay.
 - **Verified (Linux only):** `check` passes, `ctest` 376/376; `multra-cli 42` byte-identical.

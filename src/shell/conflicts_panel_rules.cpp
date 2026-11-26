@@ -122,7 +122,7 @@ void ConflictsPanel::editRule(const std::string& id) {
         form->addRow("headway", row.headway);
         form->addRow("maxSpeed", row.speed);
         form->addRow(text("editorPriorityMarkerClasses"), row.classes);
-        row.reduction = gapReductionFields(&dialog, form, m.gapReduction, text("editorGapReduction"), suffix); // D618
+        row.reduction = gapReductionFields(&dialog, form, m.gapReduction, text("editorGapReduction"), suffix, "rule/" + QString::fromStdString(id) + "/" + suffix + "/"); // D618
         rows.push_back(row);
     }
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
