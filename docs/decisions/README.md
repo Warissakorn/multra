@@ -139,3 +139,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D668](RECORD.md#d668) — a set-back at holding lines: Vissim 0.5 m and SUMO 1 m are program defaults without a field source; NGSIM shows about 1 m on an unverified stop bar; recommendation: a key with default 0
 [D669](RECORD.md#d669) — LINE_SETBACK contract: the line law aims at line − s, default 0; at signals s 0.5–1 m costs little, at give-way lines 2–22 % of delay; recommendation H1 + C1; an exact-line defect found on the node-analysis project
 [D670](RECORD.md#d670) — LINE_SETBACK H1 + C1 implemented: a behaviour's `lineSetback` (schema 88) at signal heads only, default absent; rows BA273–BA277
+[D671](RECORD.md#d671) — the line-stop lab: a shipped four-leg with W74 and W99 test behaviours for the owner's checks, no keys typed

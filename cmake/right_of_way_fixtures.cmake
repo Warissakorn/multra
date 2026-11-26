@@ -11,3 +11,7 @@ target_precompile_headers(multra-priority-rule-fixture REUSE_FROM multra-four-le
 add_executable(multra-yield-impatience-fixture tools/yield_impatience_fixture.cpp)
 target_link_libraries(multra-yield-impatience-fixture PRIVATE multra_commands multra_options)
 target_precompile_headers(multra-yield-impatience-fixture REUSE_FROM multra-four-leg-fixture)
+# Regenerates the line-stop lab (D671) from tools/line_stop_lab_network.hpp.
+add_executable(multra-line-stop-lab-fixture tools/line_stop_lab_fixture.cpp)
+target_link_libraries(multra-line-stop-lab-fixture PRIVATE multra_commands multra_options)
+target_precompile_headers(multra-line-stop-lab-fixture REUSE_FROM multra-four-leg-fixture)

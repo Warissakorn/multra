@@ -88,3 +88,19 @@ The owner chose **H1 + C1** ("ตามแนะนำ").
     same lane 0 m ahead of it. The leader cap binds at 0. There are no conflict zones in this project.
   - Why the rule lets the turner go, and how that ties to first cars resting exactly at a connector's start, is not
     proven.
+
+## 8. A lab for the owner's checks (D671)
+
+The owner asked for W74 and W99 test profiles so that no model key is typed by hand. The program has no behaviour
+import, so the profiles ship as a project.
+- **`data/projects/line-stop-lab.traffic.json`** (*File → Open example*, "Line-stop lab") is the four-leg with its
+  catalogs owned and three more behaviours:
+  - `w74-lab`: BA27's W74 fixture;
+  - `w74-sumo`: the SUMO-defaults preset;
+  - `w99-lab`: BA231's W99 fixture.
+- Every vehicle type starts on `w99-lab`. Switching a type to another behaviour in the behaviour library is one
+  choice, with nothing typed.
+- These are test values, not presets for studies, and nothing is validated (rule 4, D178).
+- **Builder:** `tools/line_stop_lab_network.hpp` → `multra-line-stop-lab-fixture data <file>`. The `linesetback`
+  group checks that the committed file is its output.
+

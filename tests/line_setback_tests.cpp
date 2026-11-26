@@ -7,7 +7,9 @@
 #include "../src/project/latest_schema.hpp"
 #include "../src/commands/catalog_commands.hpp"
 #include "../src/project/demand_catalog.hpp"
+#include "../tools/line_stop_lab_network.hpp"
 #include <fstream>
+#include <sstream>
 
 using namespace multra;
 // LINE_SETBACK (D669, D670): rows BA273–BA277. Under lineRest a behaviour's lineSetback moves the line law's target that
@@ -165,4 +167,17 @@ TEST(linesetback, ba277_round_trips_at_schema_88_and_is_refused_out_of_range) { 
     }
     d.definition->behaviours.front().lineSetback.reset();
     CHECK(documentJson(d) == plain);
+}
+
+// LINE_SETBACK §8 (D671): the line-stop lab (data/projects/line-stop-lab.traffic.json, the owner's checks) is its
+// builder's output, carries the three test behaviours with every type on w99-lab, and runs one seed without a red pass.
+TEST(linesetback, lab_committed_file_is_the_builder_output) {
+    std::ifstream f(test::root() / "data/projects/line-stop-lab.traffic.json");
+    std::stringstream text; text << f.rdbuf();
+    const auto lab = fixture::lineStopLab(test::root() / "data");
+    CHECK(text.str() == documentJson(lab).dump(2) + "\n");
+    for (const char* id : {"w74-lab", "w74-sumo", "w99-lab"})
+        CHECK(std::any_of(lab.definition->behaviours.begin(), lab.definition->behaviours.end(), [&](const auto& b) { return b.id == id; }));
+    CHECK(std::all_of(lab.definition->vehicleTypes.begin(), lab.definition->vehicleTypes.end(), [](const auto& t) { return t.behaviourId == "w99-lab"; }));
+    CHECK(lab.definition->clampRules.lineRest);
 }

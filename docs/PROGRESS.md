@@ -5,7 +5,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-26 — A set-back at signal heads: `lineSetback` (D670)
+## 2026-11-26 — A set-back at signal heads: `lineSetback`, and a lab for the checks (D670–D671)
 
 - **Owner:** "ตามแนะนำ" (H1 + C1 of [LINE_SETBACK](reference/LINE_SETBACK.md)).
 - **Engine:** a behaviour's optional `lineSetback` (m, [0, 10]) moves the line law's target that far short of a signal
@@ -19,7 +19,10 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   `signalised-node-analysis` are partly diagnosed: a turner passes its give-way line and enters 0 m ahead of a
   straight car. Why is still open.
 - **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (378 of 378).
-- **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on the next package.
+- **The line-stop lab** (D671, the owner's request for W74 and W99 test profiles): `data/projects/line-stop-lab.traffic.json`
+  on the examples menu. It is the four-leg with `w74-lab`, `w74-sumo` and `w99-lab` ready, and every type on `w99-lab`.
+  Built by `tools/line_stop_lab_network.hpp`.
+- **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on the next package, in the lab.
 
 ## 2026-11-26 — A set-back at holding lines: sources and the contract (D668–D669)
 

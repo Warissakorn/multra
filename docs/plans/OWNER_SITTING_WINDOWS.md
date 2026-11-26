@@ -63,13 +63,15 @@ PROGRESS).
 
 12. **The `lineSetback` field and a set-back at a red** (listed 2026-11-26; D669–D670;
     [LINE_SETBACK](../reference/LINE_SETBACK.md) §7).
-    - **Package:** the next *Package binaries* run from this branch, which carries D670 (not yet built).
+    - **Package:** the next *Package binaries* run from this branch, which carries D670 and D671.
     - **a. The field.** Edit a behaviour in *Driving behaviours*, for the prototype, W74 and W99 in turn. On the
       junction page, is there a `lineSetback` checkbox with a field, unticked? Does it fit without clipping in Thai
       and English at 100/150 %?
-    - **b. At a red.** Open `four-leg-signalised` (`lineRest` ticked). Tick `lineSetback` on its behaviour, enter
-      1, Confirm and run. Pause during a red. Does the first car of each queue stand about 1 m short of its stop
-      line, and leave at green without a jump?
+    - **b. At a red.** Open *File → Open example → Line-stop lab* (D671): every vehicle type is on `w99-lab`, with
+      the W74 behaviours `w74-lab` and `w74-sumo` ready, so no key is typed. Edit `w99-lab`, tick `lineSetback`,
+      enter 1, Confirm and run. Pause during a red. Does the first car of each queue stand about 1 m short of its stop
+      line, and leave at green without a jump? Optionally switch the types to `w74-lab` in the behaviour library and
+      look again.
     - **c. Save and reopen.** Save, close, reopen. Is `lineSetback` still 1? Untick it and save: does the file no
       longer carry it?
     - Report the words for a–c. Linux closes none of these (rule 3). *Owner:*
