@@ -64,8 +64,8 @@ The single live to-do, **open items only**: what shipped is in [PROGRESS](PROGRE
 ## Owner checks on Windows — triaged, one sitting (D602, 2026-11-20)
 
 The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,
-E35, E36, B45 (words in PROGRESS). **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md); A2 passed 2026-11-21, D612):
-E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, F7, F8, F9, F10, F11, G1, H1, C12. Thirty-one
+E35, E36, B45 (words in PROGRESS). **Answered 2026-11-26 on #152:** F7, F9, F10, F11, all passed. **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md); A2 passed 2026-11-21, D612):
+E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, F8, G1, H1, C12. Thirty-one
 older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
 A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
 
@@ -290,8 +290,8 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
     site would reopen them); the last step to rest (Akçelik & Biggs 1987, Deligianni 2017, both unread, owner's
     copy); W74's and W99's profile, which D258's floor sets. A headway-arm fixture under `lineRest` would be new
     work.
-  **Owner (Windows):** F7–F11 in the [Windows sheet](plans/OWNER_SITTING_WINDOWS.md), in its order line,
-  all on package #152 (`a18a229`, D643–D665; still building on 2026-11-26).
+  **Owner (Windows), 2026-11-26 on package #152:** F7, F9, F10 and F11 passed. Left: [F8](plans/OWNER_SITTING_WINDOWS.md),
+  the CC1 table, on the same package.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane
   lab's seed-74 clamp (D252) is outside that range. Source clearance (D108) remains;
   `joinAnticipation` ships off (D255); D95 stays off.

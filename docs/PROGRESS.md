@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-26 — The owner's Windows checks F7, F9, F10 and F11 pass on package #152
+
+- **Owner, on package #152** (`a18a229`, D643–D665):
+  - **F7:** "ข้อความ error ลงท้ายด้วย "· cc0" และเคอร์เซอร์ยังอยู่ที่ช่อง cc0" (D643's fix holds).
+  - **F9:** "ผ่าน".
+  - **F10:** "ผ่านทั้งหมด" (W99 queues at rest, with and without `reactionTime` 0.5 s).
+  - **F11:** "ผ่านทั้งหมด" (the prototype's first car eases into its stop at a red line).
+- **Left in F:** F8, the CC1 table, on the same package. Removed from the
+  [Windows sheet](plans/OWNER_SITTING_WINDOWS.md); its order line is now `… I.5 → F8 → G1 …`.
+- **Also asked:** whether `lineRest` should stop a set distance short of the line (answered in chat; nothing changed).
+- **Docs** cut NEXT to open items (27,890 → 24,163 characters; history in
+  [archive/NEXT-state-2026-11-26](archive/NEXT-state-2026-11-26.md)).
+
 ## 2026-11-26 — The approach to a car at rest, measured on NGSIM Lankershim (D666)
 
 - **Owner:** "ทำเรื่องการชะลอเข้าหาแถวรถต่อ หาแหล่งอ้างอิงก่อน", then "ตามแนะนำ" (measure).
@@ -148,25 +161,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   with `lineRest` on, against 23 off. No shipped project sets it.
 - **Contract** [PROTOTYPE_QUEUE §6](reference/PROTOTYPE_QUEUE.md): choices for the owner. The recommendation is to
   contract the reaction delay for every model first.
-- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
-
-## 2026-11-25 — The prototype's crawl: the contract and its measured options (D657)
-
-- **Owner:** "เรื่องการคืบของ prototype (เขียนสัญญาก่อน)".
-- **Cause found:**
-  - The prototype's desired gap `s0 + k·√v` closes as `k²/t`, so it never rests.
-  - LINE_QUEUE's law alone clamps, because every clamp is a restart from an exact rest at `s0` (√v's slope is
-    unbounded at 0).
-- **Measured** ([evidence](evidence/prototype-queue-options.md); a temporary [patch](evidence/prototype-queue-options.patch),
-  reverted). Six projects, options P0–P18, seeds 42–51, and dt 0.25 / 0.5 on the four-leg and M2.6:
-  - **P17** (the stop law behind a car at rest, plus a start rule at the desired gap for `speedThreshold`) is the
-    only option clean at every dt. Crawl medians are 2.5–4.7 s against 11–26 s, with 0–0.5 clamps per run.
-  - Its costs are 13–22× the jerk ticks, hard braking +29–33 %, T-junction delay +0.45 s, headway +0.2 s at dt 0.5,
-    and a second meaning for `speedThreshold`.
-  - The start rule at `a·dt` (P2) is clean at dt 0.1 only: at dt 0.5, headway is +0.7 s and delay +11 s.
-- **Contract** [PROTOTYPE_QUEUE](reference/PROTOTYPE_QUEUE.md):
-  - P17 if the prototype's queues are to rest, else P0, with W74/W99 recommended for realism;
-  - trace the jerk before code;
-  - rows BA257–BA261.
-  - **The owner chooses.**
 - **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.

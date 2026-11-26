@@ -2,6 +2,27 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — The prototype's crawl: the contract and its measured options (D657)
+
+- **Owner:** "เรื่องการคืบของ prototype (เขียนสัญญาก่อน)".
+- **Cause found:**
+  - The prototype's desired gap `s0 + k·√v` closes as `k²/t`, so it never rests.
+  - LINE_QUEUE's law alone clamps, because every clamp is a restart from an exact rest at `s0` (√v's slope is
+    unbounded at 0).
+- **Measured** ([evidence](../evidence/prototype-queue-options.md); a temporary [patch](../evidence/prototype-queue-options.patch),
+  reverted). Six projects, options P0–P18, seeds 42–51, and dt 0.25 / 0.5 on the four-leg and M2.6:
+  - **P17** (the stop law behind a car at rest, plus a start rule at the desired gap for `speedThreshold`) is the
+    only option clean at every dt. Crawl medians are 2.5–4.7 s against 11–26 s, with 0–0.5 clamps per run.
+  - Its costs are 13–22× the jerk ticks, hard braking +29–33 %, T-junction delay +0.45 s, headway +0.2 s at dt 0.5,
+    and a second meaning for `speedThreshold`.
+  - The start rule at `a·dt` (P2) is clean at dt 0.1 only: at dt 0.5, headway is +0.7 s and delay +11 s.
+- **Contract** [PROTOTYPE_QUEUE](../reference/PROTOTYPE_QUEUE.md):
+  - P17 if the prototype's queues are to rest, else P0, with W74/W99 recommended for realism;
+  - trace the jerk before code;
+  - rows BA257–BA261.
+  - **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-25 — W74 and W99 queues come to rest behind a standing car (D656)
 
 - **Owner:** "เลือก Q2 ตามแนะนำ ทำเลย".
