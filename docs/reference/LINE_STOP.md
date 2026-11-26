@@ -224,3 +224,5 @@ The owner asked whether `lineRest` should stop a suitable distance short of the 
 
 An NGSIM look on an unverified stop-bar stand-in puts first cars about 1 m short. The recommendation is §3's L2 as a
 key with default 0, so no result changes. Nothing is implemented.
+
+The contract and its measured options are [LINE_SETBACK](LINE_SETBACK.md) (D669).

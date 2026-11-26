@@ -1,0 +1,40 @@
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index 305bfb4..eeef4a5 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -1,3 +1,4 @@
++#include <cstdlib>
+ #include "missed_exit.hpp"
+ #include "diffusion.hpp"
+ #include "yield_time.hpp"
+@@ -329,14 +330,19 @@ SimState stepSimulation(SimState&& state, double dt) {
+             ? std::max(0.0, vehicleLeader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
+         const double line = std::min({headLine, giveWayLine, gateLine, standing});
+         const bool lineStop = behaviour.lineRest && std::isfinite(line);
+-        const LineTarget lineTarget{std::isfinite(standing) && standing <= std::min({headLine, giveWayLine, gateLine}), vehicle.desiredSpeed};
++        static const double zzSb = std::getenv("ZZ_SB") ? std::atof(std::getenv("ZZ_SB")) : 0; // ZZ temporary: set-back
++        static const int zzSc = std::getenv("ZZ_SC") ? std::atoi(std::getenv("ZZ_SC")) : 0;     // 0 every line, 1 signal heads only
++        const auto back = [&](double g, bool inScope) { return std::isfinite(g) && inScope ? std::max(0.0, g - zzSb) : g; };
++        const double lawHead = back(headLine, true), lawGive = back(giveWayLine, zzSc == 0), lawGate = back(gateLine, zzSc == 0);
++        const double lawLine = std::min({lawHead, lawGive, lawGate, standing});
++        const LineTarget lineTarget{std::isfinite(standing) && standing <= std::min({lawHead, lawGive, lawGate}), vehicle.desiredSpeed};
+         auto modelLeader = leader;
+         if (lineStop && leader && line <= leader->gap + 1e-9) {
+             modelLeader = perceivesAhead(sight) ? (perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader)) : vehicleLeader;
+             if (std::isfinite(standing) && modelLeader && modelLeader->speed == 0) modelLeader.reset();
+         }
+         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, modelLeader);
+-        if (behaviour.lineRest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt, lineTarget);
++        if (behaviour.lineRest) applyLineStop(following, vehicle.speed, lawLine, vehicleLeader, type, behaviour, dt, lineTarget);
+         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
+             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
+         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
+@@ -360,7 +366,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+             if (yields && (!current || courtesy[v].gap < current->gap))
+                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
+             following = delayedAction(vehicle, delay, following, type, behaviour, current);
+-            if (behaviour.lineRest) applyDelayedLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt, lineTarget);
++            if (behaviour.lineRest) applyDelayedLineStop(following, vehicle.speed, lawLine, vehicleLeader, type, behaviour, dt, lineTarget);
+         }
+         // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
+         if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]

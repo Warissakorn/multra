@@ -290,8 +290,11 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
     site would reopen them); the last step to rest (Akçelik & Biggs 1987, Deligianni 2017, both unread, owner's
     copy); W74's and W99's profile, which D258's floor sets. A headway-arm fixture under `lineRest` would be new
     work.
-  - **A set-back at holding lines (D668):** [sources](evidence/line-setback-sources.md) read; the owner chooses
-    whether to write the contract for a key with default 0 (LINE_STOP L2), where it lives and which lines it covers.
+  - **A set-back at holding lines (D668–D669):** [LINE_SETBACK](reference/LINE_SETBACK.md), contract and options
+    measured. The owner chooses H1/H2 (behaviour or project) and C1/C2 (signal heads or every line); the
+    recommendation is H1 + C1, default 0.
+  - **The exact-line defect (D669):** on `signalised-node-analysis`, a front resting exactly at a connector's start
+    clamps 4.7 per run (prototype, +7 s delay); gone at 0.01 m short. Diagnose on its own, before or apart from the key.
   **Owner (Windows), 2026-11-26 on package #152:** F7, F9, F10 and F11 passed. Left: [F8](plans/OWNER_SITTING_WINDOWS.md),
   the CC1 table, on the same package.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane

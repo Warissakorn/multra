@@ -5,6 +5,23 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-26 — A set-back at holding lines: sources and the contract (D668–D669)
+
+- **Owner:** "ให้การหยุดแบบ lineRest หยุดห่างจากเส้นหยุด ด้วยระยะที่เหมาะสม ดีหรือไม่", then "ตามแนะนำ" twice (sources, then
+  a contract for a key with default 0).
+- **Sources** ([evidence](evidence/line-setback-sources.md), D668): Vissim 0.5 m before signal heads, SUMO
+  `jmStoplineGap` 1 m (0 at minor lines). Both are program defaults without a field source. NGSIM, on an unverified
+  stop-bar stand-in, gives a median of 0.96 m.
+- **Contract** ([LINE_SETBACK](reference/LINE_SETBACK.md), D669), measured with a reverted
+  [patch](evidence/line-setback-options.patch):
+  - at signal heads, 0.5–1 m passes no red and changes delay by under 0.4 % (W74 on M2.6 +4–6 %);
+  - startup lost time rises about 0.1 s per 0.5 m;
+  - at give-way lines it costs 2–22 % of delay.
+  - Recommendation: a behaviour key at signal heads only, default 0.
+- **Found:** on `signalised-node-analysis`, a front resting exactly at a connector's start clamps 4.7 per run
+  (prototype, +7 s delay). It is gone at 0.01 m short; a separate defect, not yet diagnosed.
+- **Verified (Linux only):** `multra-cli 42` byte-identical with the patch and after the revert; `check-docs` passes.
+
 ## 2026-11-26 — The owner's Windows checks F7, F9, F10 and F11 pass on package #152
 
 - **Owner, on package #152** (`a18a229`, D643–D665):
@@ -143,25 +160,4 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - W74 5–8 / 33–48 clamps per run, below the switch off;
   - the cost is the crawl again for delayed vehicles behind standing cars.
 - **Contract** [REACTION_STOP](reference/REACTION_STOP.md): rows BA262–BA266. **The owner chooses.**
-- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
-
-## 2026-11-25 — P17 attempted, not committed; the reaction delay is a gap (D658)
-
-- **Owner:** "P17".
-- **Correction:** D657's "P17" was measured with P6's late law (the probe's branch ran for `ZZ_P ≥ 6`). It is now
-  P17L, and P7, P14, P16 and P18 are relabelled the same way.
-  - P17 as written: crawl 1.3 s at the median, clamps ≤ 0.8 per run at dt 0.1–0.5, jerk 8–13×, and moving hard
-    braking 2.1–2.5×.
-- **Jerk traced:** it is the stop law's bang-bang profile behind a car at rest, not the hand-back. That is B.
-- **Attempt** ([patch](evidence/prototype-queue-attempt.patch)):
-  - Rows BA257–BA260 passed, and each of four mutations failed one. `multra-cli 42` was byte-identical.
-  - **The full `check` failed five groups:**
-    - `lab` d217 clamps with `reactionTime` 0.5 s;
-    - three scene forcings were lost to the law itself;
-    - BA197 served 372 → 357, from the start rule.
-  - Reverted.
-- **Found:** the reaction delay reaches D656 too. On the four-leg at `reactionTime` 0.5 s, W74 clamps 755 per run
-  with `lineRest` on, against 23 off. No shipped project sets it.
-- **Contract** [PROTOTYPE_QUEUE §6](reference/PROTOTYPE_QUEUE.md): choices for the owner. The recommendation is to
-  contract the reaction delay for every model first.
 - **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.

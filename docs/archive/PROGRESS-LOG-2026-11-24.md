@@ -2,6 +2,27 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — P17 attempted, not committed; the reaction delay is a gap (D658)
+
+- **Owner:** "P17".
+- **Correction:** D657's "P17" was measured with P6's late law (the probe's branch ran for `ZZ_P ≥ 6`). It is now
+  P17L, and P7, P14, P16 and P18 are relabelled the same way.
+  - P17 as written: crawl 1.3 s at the median, clamps ≤ 0.8 per run at dt 0.1–0.5, jerk 8–13×, and moving hard
+    braking 2.1–2.5×.
+- **Jerk traced:** it is the stop law's bang-bang profile behind a car at rest, not the hand-back. That is B.
+- **Attempt** ([patch](../evidence/prototype-queue-attempt.patch)):
+  - Rows BA257–BA260 passed, and each of four mutations failed one. `multra-cli 42` was byte-identical.
+  - **The full `check` failed five groups:**
+    - `lab` d217 clamps with `reactionTime` 0.5 s;
+    - three scene forcings were lost to the law itself;
+    - BA197 served 372 → 357, from the start rule.
+  - Reverted.
+- **Found:** the reaction delay reaches D656 too. On the four-leg at `reactionTime` 0.5 s, W74 clamps 755 per run
+  with `lineRest` on, against 23 off. No shipped project sets it.
+- **Contract** [PROTOTYPE_QUEUE §6](../reference/PROTOTYPE_QUEUE.md): choices for the owner. The recommendation is to
+  contract the reaction delay for every model first.
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-25 — The prototype's crawl: the contract and its measured options (D657)
 
 - **Owner:** "เรื่องการคืบของ prototype (เขียนสัญญาก่อน)".
