@@ -53,3 +53,9 @@ The rule's scan skips a span whose front is at most 1e-9 m into the conflict seg
   waiting-acceptance lab and the line-stop lab.
 - `multra-cli 42` is byte-identical after the revert.
 - E2 is not measured. Changing it alters what every derived merge rule sees, so it needs a contract first.
+
+## E1 fixed (D673)
+
+The owner chose E1's fix ("ทำ E1 เลย"). It is in `simulation.cpp` as measured above, plus a guard: a marker at the segment's
+start still counts a front there. Row PR17. E2 is open.
+

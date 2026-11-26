@@ -5,7 +5,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-26 — The node-analysis clamps diagnosed (D672)
+## 2026-11-26 — The node-analysis clamps diagnosed and E1 fixed (D672–D673)
 
 - **Owner:** "ไล่หาสาเหตุ clamp บน signalised-node-analysis ต่อ".
 - **Traced** ([evidence](evidence/exact-line-rule.md)), seed 42:
@@ -15,8 +15,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
     a rule that scans only its conflict segment (E2), and that car is clamped behind it.
 - **E1's fix, measured with a reverted [patch](evidence/exact-line-rule-options.patch):** node analysis clamps
   4.7 → 0 (prototype), 19.0 → 15.7 (W74), 18.6 → 12.1 (W99). Every other shipped project is identical.
-- **No code.** The owner chooses E1's fix, and whether E2 (PRIORITY_RULES §1's scan range) gets a contract.
-- **Verified (Linux only):** `multra-cli 42` byte-identical after the revert; `check-docs` passes.
+- **E1 fixed (D673, "ทำ E1 เลย"):** in `simulation.cpp` as measured, plus a guard for a marker at the segment's start. Row
+  PR17; both mutations fail it (no fix, and no guard). E2 (PRIORITY_RULES §1's scan range) is open.
+- **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (378 of 378).
 
 ## 2026-11-26 — A set-back at signal heads: `lineSetback`, and a lab for the checks (D670–D671)
 

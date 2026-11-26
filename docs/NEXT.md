@@ -294,10 +294,10 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
     schema 88, absent by default). No shipped project or preset carries it; a non-zero default needs a field
     source (D668). **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on package #153 (`ae07ab7`), in the line-stop lab (D671),
     which ships W74 and W99 test behaviours so nothing is typed.
-  - **The exact-line defect, diagnosed (D672, [evidence](evidence/exact-line-rule.md)):** E1, a front exactly at a
-    connector's start is read as on it by a merge rule, which then holds turners for a whole red; E2, a rule sees only
-    its conflict segment, so on a 2.73 m connector the next straight car is invisible. E1's fix is measured (only
-    node analysis changes: prototype clamps 4.7 → 0). **The owner chooses** E1's fix, and whether E2 gets a contract.
+  - **The exact-line defect (D672–D673):** E1 is fixed (D673, row PR17): a front exactly at a conflict segment's start
+    has not entered it for a priority rule, so node analysis clamps 4.7 → 0 (prototype). **Open:** E2, a rule sees
+    only its conflict segment, so on a short connector an approaching major car is invisible
+    ([evidence](evidence/exact-line-rule.md)). A contract only if the owner asks.
   **Owner (Windows), 2026-11-26 on package #152:** F7, F9, F10 and F11 passed. Left: [F8](plans/OWNER_SITTING_WINDOWS.md),
   the CC1 table, on the same package; F12 (`lineSetback`) on the next package.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane

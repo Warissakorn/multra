@@ -289,6 +289,9 @@ SimState stepSimulation(SimState&& state, double dt) {
             for (auto i = giveWay ? buckets.start[conflict + 1] : buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
                 const auto& span = spans[buckets.items[i]];
                 if (span.vehicleId == vehicle.id) continue;
+                // D673 (D672 E1, as D653 for observers): a front exactly at the conflict segment's start has not
+                // entered it, unless the marker itself stands there.
+                if (span.front <= 1e-9 && rule.conflictPosition > 1e-9) continue;
                 if (blocks) { // D606: only the marker's classes block; vehicles are in id order
                     const auto at = std::lower_bound(vehicles.begin(), vehicles.end(), span.vehicleId, [](const auto& x, std::uint64_t id) { return x.id < id; });
                     if (at == vehicles.end() || at->id != span.vehicleId || !(*blocks)[refs[static_cast<std::size_t>(at - vehicles.begin())].type]) continue;

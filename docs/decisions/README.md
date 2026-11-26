@@ -141,3 +141,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D670](RECORD.md#d670) — LINE_SETBACK H1 + C1 implemented: a behaviour's `lineSetback` (schema 88) at signal heads only, default absent; rows BA273–BA277
 [D671](RECORD.md#d671) — the line-stop lab: a shipped four-leg with W74 and W99 test behaviours for the owner's checks, no keys typed
 [D672](RECORD.md#d672) — node-analysis exact-line clamps diagnosed: a front exactly at a connector's start falsely holds a merge rule (E1), and a rule sees only its conflict segment (E2); E1's fix measured
+[D673](RECORD.md#d673) — E1 fixed: a front exactly at the conflict segment's start has not entered it for a priority rule; node-analysis clamps 4.7 → 0 (prototype); row PR17
