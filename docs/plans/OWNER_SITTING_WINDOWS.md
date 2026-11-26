@@ -60,7 +60,7 @@ PROGRESS).
     Confirm: is the curve gone? In Thai and English at 100/150 %: do the table, its headers and the Add /
     Remove buttons fit without clipping? *Owner, on #153 (2026-11-26):* the table should look unused under
     *Fixed*; a double-clicked cell's editor is not on its cell, check other tables. Both fixed (D676).
-    - **Recheck on run [#154](https://github.com/Warissakorn/multra/actions/runs/45800006045)** (`6a92909`, D676; artifact `multra-windows-x64`): under *Fixed*, is the curve table grey, headers included? Double-click a
+    - **Recheck on run [#155](https://github.com/Warissakorn/multra/actions/runs/45808562900)** (`fca6669`, D676–D677; artifact `multra-windows-x64`; #154 is superseded): under *Fixed*, is the curve table grey, headers included? Double-click a
       cell here, in *Study periods* and in a vehicle type's speed curve: does the editor sit exactly on the cell? Switch
       to *Fixed*, Confirm, reopen and choose *Distribution*: are your points back? (Kept until the program closes.)
       *Owner:*
@@ -82,10 +82,10 @@ PROGRESS).
     - Report the words for a–c. Linux closes none of these (rule 3). *Owner, on #153 (2026-11-26):* with `lineSetback`
       unticked and ticked again, the 1 was gone; keep it, and check every field. Fixed for every such field (D676). Also
       asked whether `lineRest` and `lineSetback` duplicate W99's own stop short of the line (answered in PROGRESS).
-    - **d. Recheck on run #154** (`6a92909`, D676): tick `lineSetback`, enter 1, Confirm, run; untick, Confirm, run;
+    - **d. Recheck on run #155** (`fca6669`, D676): tick `lineSetback`, enter 1, Confirm, run; untick, Confirm, run;
       reopen and tick again. Is it 1? Try one more field, e.g. a vehicle type's PCU or a speed area's deceleration.
       *Owner:*
-    - **e. One setting, 1 m by default** (D677, LINE_SETBACK §9; on the package after #154, named in NEXT). *Run
+    - **e. One setting, 1 m by default** (D677, LINE_SETBACK §9; run #155). *Run
       settings* has five clamp-rule boxes, no `lineRest`. In the line-stop lab, with `lineSetback` unticked (the field
       shows 1 and a note names the default), does the first car stand about 1 m short at a red? Tick it and enter 0:
       does it stand at the line? If you kept the F9 file saved with `lineRest` unticked, open it: does the message line
