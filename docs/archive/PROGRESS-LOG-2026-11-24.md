@@ -2,6 +2,28 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — W74 and W99 queues come to rest behind a standing car (D656)
+
+- **Owner:** "เลือก Q2 ตามแนะนำ ทำเลย".
+- **Trace first:** M2.6's extra W74 "hard braking" under Q2 was vehicles at rest publishing W74's −8 m/s²
+  request. Moving vehicles brake hard less often (801 → 728, 746 → 592 per run).
+- **Engine** ([LINE_QUEUE §6](../reference/LINE_QUEUE.md)): under `lineRest`, a W74 or W99 vehicle behind a vehicle
+  at exactly 0 m/s stops with LINE_STOP's law at its rear less the standstill gap. The model sees no leader, and
+  at its target the vehicle waits until the leader moves. The prototype is unchanged, and so is M0.
+- **Rows:**
+  - BA252–BA255 in `linestop`: a queue at rest without a crawl; a moving leader unchanged; the hold; the
+    prototype's scope.
+  - BA241's W99 row amended.
+  - Four mutations each fail a row.
+- **Measured:**
+  - The code reproduces D655's Q2 on six projects to the digit.
+  - [BA231](../evidence/w99-discharge.md#after-d656): W99 clamps 42 → 8 per run at dt 0.1, headway unchanged.
+  - [BA27](../evidence/w74-discharge.md#after-d656): W74 headway 3.229 → 3.256 s.
+- **Verified (Linux only):**
+  - `multra-cli 42` is byte-identical, and so are the prototype sweep rows.
+  - Each sweep, run twice, gives identical output.
+  - `check` passes.
+
 ## 2026-11-25 — Queues behind a standing car: the contract and its measured options (D655)
 
 - **Owner:** F9 on package #149: followers crawl without end. They asked whether a stop at a line and behind a

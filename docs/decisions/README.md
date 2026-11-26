@@ -134,3 +134,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D663](RECORD.md#d663) — B's contract: an IDM-shaped stop with the type's a and b, bounded by today's law; B3 (no new value) cuts the prototype's step jerk 296 → 25 at +9.5 s delay (untraced); the owner chooses
 [D664](RECORD.md#d664) — B3's +9.5 s delay is all the approach to standing cars; toward lines only it costs nothing but gains little; recommendation B3P (lines, prototype only); the owner chooses again
 [D665](RECORD.md#d665) — STOP_PROFILE B3P implemented: the prototype eases into its stop at a holding line (IDM, T = 0, the type's a and b); standing cars, W74 and W99 unchanged
+[D666](RECORD.md#d666) — NGSIM Lankershim: drivers start slowing for a car at rest at a median 1.4–1.9 m/s² of required deceleration, nearer today's law (2.0) than B3 (0.8); recommendation: keep today's law toward queues

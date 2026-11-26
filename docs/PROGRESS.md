@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-26 — The approach to a car at rest, measured on NGSIM Lankershim (D666)
+
+- **Owner:** "ทำเรื่องการชะลอเข้าหาแถวรถต่อ หาแหล่งอ้างอิงก่อน", then "ตามแนะนำ" (measure).
+- **Sources** ([queue-approach-sources](evidence/queue-approach-sources.md)): CAMP's last-second braking (DOT HS 809 574),
+  Rittger's simulator, and Treiber et al. None measures the onset toward a standing queue.
+- **Measured** ([evidence](evidence/queue-approach-ngsim.md)): NGSIM Lankershim, 1.6 million rows. Required deceleration at
+  onset:
+  - the first episode toward a car at rest has a median of 1.42 m/s²;
+  - the last braking phase has a median of 1.88;
+  - toward a line it is 2.07.
+
+  Today's law starts at 2.0 and B3 at about 0.77, which is earlier than 84 % of the first onsets.
+- **No code.** The recommendation is to keep today's law toward vehicles at rest; the owner chooses (STOP_PROFILE §11).
+- **Verified (Linux only):** `check-docs` passes. The scripts are committed beside the evidence; the data is not.
+
 ## 2026-11-25 — The prototype eases into its stop at a line: B3P (D665)
 
 - **Owner:** "ตามแนะนำ" (B3P).
@@ -154,25 +169,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - rows BA257–BA261.
   - **The owner chooses.**
 - **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
-
-## 2026-11-25 — W74 and W99 queues come to rest behind a standing car (D656)
-
-- **Owner:** "เลือก Q2 ตามแนะนำ ทำเลย".
-- **Trace first:** M2.6's extra W74 "hard braking" under Q2 was vehicles at rest publishing W74's −8 m/s²
-  request. Moving vehicles brake hard less often (801 → 728, 746 → 592 per run).
-- **Engine** ([LINE_QUEUE §6](reference/LINE_QUEUE.md)): under `lineRest`, a W74 or W99 vehicle behind a vehicle
-  at exactly 0 m/s stops with LINE_STOP's law at its rear less the standstill gap. The model sees no leader, and
-  at its target the vehicle waits until the leader moves. The prototype is unchanged, and so is M0.
-- **Rows:**
-  - BA252–BA255 in `linestop`: a queue at rest without a crawl; a moving leader unchanged; the hold; the
-    prototype's scope.
-  - BA241's W99 row amended.
-  - Four mutations each fail a row.
-- **Measured:**
-  - The code reproduces D655's Q2 on six projects to the digit.
-  - [BA231](evidence/w99-discharge.md#after-d656): W99 clamps 42 → 8 per run at dt 0.1, headway unchanged.
-  - [BA27](evidence/w74-discharge.md#after-d656): W74 headway 3.229 → 3.256 s.
-- **Verified (Linux only):**
-  - `multra-cli 42` is byte-identical, and so are the prototype sweep rows.
-  - Each sweep, run twice, gives identical output.
-  - `check` passes.

@@ -321,10 +321,9 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
     - The prototype eases into a line's stop (IDM, T = 0, the type's a and b): four-leg hard braking 1,027 → 903,
       with the same delay and clamps.
     - **Left:**
-      - the approach to a standing queue, where B3 cut step jerk 92 % at +9.5 s delay. **Sources searched 2026-11-26**
-        ([queue-approach-sources](evidence/queue-approach-sources.md)). None read measures the onset toward a standing
-        queue. CAMP's latest "normal" onset toward a parked target is at 1.7–2.5 m/s² required deceleration, and Rittger's
-        simulator puts the onset at a red at about 1 m/s². Next would be a measurement on NGSIM or inD queues;
+      - the approach to a standing queue: **measured on NGSIM Lankershim** ([STOP_PROFILE §11](reference/STOP_PROFILE.md),
+        D666). Drivers start at a median 1.4 (first episode) to 1.9 m/s² (last phase) of required deceleration,
+        nearer today's law (2.0) than B3 (0.8). The recommendation is to keep today's law toward vehicles at rest;
         the owner chooses;
       - the last step to rest (Akçelik & Biggs 1987, Deligianni 2017, both unread);
       - W74's and W99's profile, which D258's floor sets.

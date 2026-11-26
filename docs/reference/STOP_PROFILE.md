@@ -237,3 +237,31 @@ The owner chose **B3P** on 2026-11-25 ("ตามแนะนำ").
   - the approach to a standing queue (B3's delay, a question of anticipation without a source);
   - the last step to rest, until Akçelik & Biggs or Deligianni is read;
   - W74's and W99's stop profile, which is set by D258's floor.
+
+## 11. The approach to a vehicle at rest, measured (D666)
+
+The owner asked for sources, then chose to measure ("ตามแนะนำ").
+- **Sources:** [queue-approach-sources](../evidence/queue-approach-sources.md). None read measures the onset toward a
+  standing queue.
+- **Measurement:** NGSIM Lankershim ([evidence](../evidence/queue-approach-ngsim.md)), 1.6 million rows, cars, mid-block.
+  The measure is the required deceleration `v²/(2·d)` at braking onset, where d is the distance to where the car
+  actually stopped.
+
+| | Median req at onset (m/s²) | Share of drivers starting at least this late |
+|---|---|---|
+| First deceleration episode toward a car at rest (354 approaches) | 1.42 (IQR 1.00–1.93) | — |
+| Last braking phase, leader at rest (195) | 1.88 (1.79–2.05 across onset thresholds, 1.45–2.56 across smoothing) | — |
+| Last braking phase, toward a line (100) | 2.07 | — |
+| Today's law (B0; B3P toward vehicles) | 2.0, by construction | 22 % (first episode), 43 % (last phase) |
+| B3 at the desired speed | about 0.77 | 84 % (first episode) |
+
+- **The field lies between the two laws, and nearer today's.** B3's early onset, the source of its +9.5 s, is earlier
+  than 84 % of the first onsets measured.
+- Approaches are often staged (a gentle first episode, a pause, then the final braking). The final braking peaks at a
+  median of 3.2–3.7 m/s², an upper reading because of NGSIM's noise, against MULTRA's b = 2.
+- Approaches to a line and to a queue look alike (medians 2.07 and 1.88).
+- A law whose onset sits at the measured median would need a value fitted to one arterial: calibration (D544).
+
+**The session's recommendation: keep today's law toward vehicles at rest (B3P as committed).** B3 toward queues is
+not supported by the measurement. The staged approach and the higher final braking stay as known deviations, recorded
+here, with no change to the engine. The owner chooses.
