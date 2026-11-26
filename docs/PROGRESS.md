@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-26 — The node-analysis clamps diagnosed (D672)
+
+- **Owner:** "ไล่หาสาเหตุ clamp บน signalised-node-analysis ต่อ".
+- **Traced** ([evidence](evidence/exact-line-rule.md)), seed 42:
+  - A straight car resting at its red with its front exactly at a 2.73 m connector's start is read as on it by the
+    merge rule `give-way/connector-44/to/connector-42`, so it holds the turner for the whole red (E1).
+  - At green the turner is released while the next straight car, 1.35 s out on the link upstream, is invisible to
+    a rule that scans only its conflict segment (E2), and that car is clamped behind it.
+- **E1's fix, measured with a reverted [patch](evidence/exact-line-rule-options.patch):** node analysis clamps
+  4.7 → 0 (prototype), 19.0 → 15.7 (W74), 18.6 → 12.1 (W99). Every other shipped project is identical.
+- **No code.** The owner chooses E1's fix, and whether E2 (PRIORITY_RULES §1's scan range) gets a contract.
+- **Verified (Linux only):** `multra-cli 42` byte-identical after the revert; `check-docs` passes.
+
 ## 2026-11-26 — A set-back at signal heads: `lineSetback`, and a lab for the checks (D670–D671)
 
 - **Owner:** "ตามแนะนำ" (H1 + C1 of [LINE_SETBACK](reference/LINE_SETBACK.md)).
@@ -147,18 +160,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **Rows** BA262–BA265 and BA267 (`linestop`). Each of six mutations fails a row. BA263 found that a delayed stop can
   end a few centimetres short, and then holds there, since that short a start does not fit the delay.
 - **Verified (Linux only):** `check` passes, `ctest` 376/376; `multra-cli 42` byte-identical.
-
-## 2026-11-25 — A delayed vehicle rests: R9 measured (D660)
-
-- **Owner:** asked whether R7's crawl is creep-then-stop or endless, then "หากฎให้รถที่มี delay หยุดนิ่งได้ก่อน".
-- **Answer** ([evidence](evidence/reaction-stop-options.md)): it is creep, stop, creep again (median 6 stops per
-  vehicle), W74's own, and the same with no delay and the switch off.
-- **Traced:** R6's clamps were a residue at rest at `s0` behind a leader creeping by micrometres, and at 1 s a start
-  from rest carried on by the delay.
-- **R9** (REACTION_STOP §6): the laws reapplied after the delay, a hold within 10⁻⁶ m of `s0`, and a start from rest
-  only when the gap fits `a·τ²/2 + (a·τ)²/(2·maxDeceleration)`. No value is added.
-  - At 0.5 s: W74 9 / 44 clamps per run (off 23 / 91), and W99 8 / 29 (off 555 / 2,410).
-  - Queues rest (median 1 stop per vehicle), with 0 red passes.
-  - Costs: the SUMO preset at about the switch off, jerk above R7's, and the prototype's delay +12 s at 1 s.
-  - **The owner chooses.**
-- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.

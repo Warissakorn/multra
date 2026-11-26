@@ -2,6 +2,21 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — A delayed vehicle rests: R9 measured (D660)
+
+- **Owner:** asked whether R7's crawl is creep-then-stop or endless, then "หากฎให้รถที่มี delay หยุดนิ่งได้ก่อน".
+- **Answer** ([evidence](../evidence/reaction-stop-options.md)): it is creep, stop, creep again (median 6 stops per
+  vehicle), W74's own, and the same with no delay and the switch off.
+- **Traced:** R6's clamps were a residue at rest at `s0` behind a leader creeping by micrometres, and at 1 s a start
+  from rest carried on by the delay.
+- **R9** (REACTION_STOP §6): the laws reapplied after the delay, a hold within 10⁻⁶ m of `s0`, and a start from rest
+  only when the gap fits `a·τ²/2 + (a·τ)²/(2·maxDeceleration)`. No value is added.
+  - At 0.5 s: W74 9 / 44 clamps per run (off 23 / 91), and W99 8 / 29 (off 555 / 2,410).
+  - Queues rest (median 1 stop per vehicle), with 0 red passes.
+  - Costs: the SUMO preset at about the switch off, jerk above R7's, and the prototype's delay +12 s at 1 s.
+  - **The owner chooses.**
+- **Verified:** `multra-cli 42` byte-identical after the revert; `check` passes; docs only committed.
+
 ## 2026-11-25 — The stop laws under a reaction delay: contract and options (D659)
 
 - **Owner:** "ตามแนะนำ": contract the reaction delay for every model first (PROTOTYPE_QUEUE §6).
