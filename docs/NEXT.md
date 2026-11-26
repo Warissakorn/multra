@@ -31,17 +31,19 @@ previous full list is [archived](archive/NEXT-state-2026-10-23.md).
   carries a 300 s cool-down (schema 27): a test that needs the bare drawing clears it with
   `changeEvaluationPeriod(d, 0, std::nullopt, 0)`.
 
-## Parallel sessions of 2026-11-23 — merged
+## Left from closed work (D602–D635)
 
-Briefs: [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md). All four merged (A D626–D627, B D630, C D634, D no ID).
-**Left:** the owner's look at the Thai Results strip at 1024 on Windows (C). The bucket rebuild after each
-source insertion is done (D635, benchmark −0.81 %).
-
-## M3.2 — closed by the owner (D625)
-
-Closed 2026-11-23. Still open on their own gates: [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) M3.2.10 and M3.2.13
-(now with item 4, M3.2.4e/M3.2.12 on Windows), M3.2.8a.1, M3.4, M6. Branching stays read-only (D624); a visibility
-key only for a study with a flared approach and a cited default.
+- **M3.2, closed by the owner (D625, 2026-11-23).** Still open on their own gates:
+  [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) M3.2.10 and M3.2.13 (now with item 4, M3.2.4e/M3.2.12 on
+  Windows), M3.2.8a.1, M3.4, M6. Branching stays read-only (D624); a visibility key only for a study with a flared
+  approach and a cited default.
+- **Parallel sessions of 2026-11-23** ([PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md)): all four merged (A
+  D626–D627, B D630, C D634, D no ID). C's owner look is under *Tables like Excel* below.
+- **Priority rules like Vissim** ([PRIORITY_RULES](reference/PRIORITY_RULES.md), D604–D617; item 51 passed): a
+  class picker in place of typed class ids if the owner asks.
+- **G7 waiting acceptance** ([YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md), D618–D620; item 52 passed). The
+  other realism gaps ([evidence](evidence/realism-gaps-vissim-sumo-aimsun.md)): G8 needs nothing; G4, G5, G6 are
+  named in ROADMAP M3.4; G9 is M3.3.3b.
 
 ## Counted study Ratchadaphisek × Lat Phrao (D575–D578) — a failing case; wait for B50
 
@@ -68,17 +70,6 @@ A session prepares the build and records the owner's words; Linux tests close no
 **Owner findings of 2026-11-20, decided the same day:** A2's lines outside the tool → D603 (controlled
 lines hidden outside the right-of-way tools); E35's block selection → D605 (one outline per selected
 block). Both are Linux-verified; the owner's look comes with A2 attempt 2 and at the next table use.
-
-## Priority rules like Vissim (D604, D606, D614–D617) — done; the owner's look passed
-
-[PRIORITY_RULES](reference/PRIORITY_RULES.md): all slices done, item 51 passed 2026-11-22 ("51 ok"). **Left:** a class
-picker in place of typed class ids if the owner asks.
-
-## G7 waiting acceptance (D618, D619) — done; item 52 passed (2026-11-22)
-
-[YIELD_IMPATIENCE](reference/YIELD_IMPATIENCE.md); its display findings are D620. **The other realism gaps**
-([evidence](evidence/realism-gaps-vissim-sumo-aimsun.md)): G8 needs nothing (matches all three programs); G4, G5,
-G6 are named in ROADMAP M3.4; G9 is M3.3.3b.
 
 ## Review of 2026-11-10 — queued proposals (D493)
 

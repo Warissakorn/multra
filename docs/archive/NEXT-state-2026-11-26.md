@@ -66,3 +66,29 @@ current; NEXT keeps each section's open lines. Links are rewritten for this fold
     and reopen.
   - [F8](../plans/OWNER_SITTING_WINDOWS.md): the CC1 table.
   - [F7](../plans/OWNER_SITTING_WINDOWS.md): the out-of-range recheck (D643).
+
+## Closed sections (2026-11-22 to 2026-11-23), merged into one "Left from closed work" section
+
+## Parallel sessions of 2026-11-23 — merged
+
+Briefs: [PARALLEL_SESSIONS](../plans/PARALLEL_SESSIONS.md). All four merged (A D626–D627, B D630, C D634, D no ID).
+**Left:** the owner's look at the Thai Results strip at 1024 on Windows (C). The bucket rebuild after each
+source insertion is done (D635, benchmark −0.81 %).
+
+## M3.2 — closed by the owner (D625)
+
+Closed 2026-11-23. Still open on their own gates: [OWNER_LOOKS_CARVED](../plans/OWNER_LOOKS_CARVED.md) M3.2.10 and M3.2.13
+(now with item 4, M3.2.4e/M3.2.12 on Windows), M3.2.8a.1, M3.4, M6. Branching stays read-only (D624); a visibility
+key only for a study with a flared approach and a cited default.
+
+## Priority rules like Vissim (D604, D606, D614–D617) — done; the owner's look passed
+
+[PRIORITY_RULES](../reference/PRIORITY_RULES.md): all slices done, item 51 passed 2026-11-22 ("51 ok"). **Left:** a class
+picker in place of typed class ids if the owner asks.
+
+## G7 waiting acceptance (D618, D619) — done; item 52 passed (2026-11-22)
+
+[YIELD_IMPATIENCE](../reference/YIELD_IMPATIENCE.md); its display findings are D620. **The other realism gaps**
+([evidence](../evidence/realism-gaps-vissim-sumo-aimsun.md)): G8 needs nothing (matches all three programs); G4, G5,
+G6 are named in ROADMAP M3.4; G9 is M3.3.3b.
+
