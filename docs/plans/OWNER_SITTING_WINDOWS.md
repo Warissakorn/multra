@@ -63,7 +63,8 @@ PROGRESS).
 
 12. **The `lineSetback` field and a set-back at a red** (listed 2026-11-26; D669–D670;
     [LINE_SETBACK](../reference/LINE_SETBACK.md) §7).
-    - **Package:** the next *Package binaries* run from this branch, which carries D670 and D671.
+    - **Package:** run #153 of *Package binaries* (`ae07ab7`, D670–D671; building on 2026-11-26), artifact
+      `multra-windows-x64`. It also carries F8.
     - **a. The field.** Edit a behaviour in *Driving behaviours*, for the prototype, W74 and W99 in turn. On the
       junction page, is there a `lineSetback` checkbox with a field, unticked? Does it fit without clipping in Thai
       and English at 100/150 %?

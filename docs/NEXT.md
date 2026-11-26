@@ -292,7 +292,7 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
     work.
   - **A set-back at signal heads is in (D670):** a behaviour's `lineSetback` ([LINE_SETBACK §7](reference/LINE_SETBACK.md),
     schema 88, absent by default). No shipped project or preset carries it; a non-zero default needs a field
-    source (D668). **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on the next package, in the line-stop lab (D671),
+    source (D668). **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on package #153 (`ae07ab7`), in the line-stop lab (D671),
     which ships W74 and W99 test behaviours so nothing is typed.
   - **The exact-line defect (D669, partly diagnosed in D670):** on `signalised-node-analysis` the prototype clamps 4.7
     per run (+7 s delay), gone when first cars rest 0.01 m short. A turner passes its give-way line under
