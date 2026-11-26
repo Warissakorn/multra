@@ -61,7 +61,7 @@ key only for a study with a flared approach and a cited default.
 
 The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,
 E35, E36, B45 (words in PROGRESS). **Left, in order** ([OWNER_SITTING_WINDOWS](plans/OWNER_SITTING_WINDOWS.md); A2 passed 2026-11-21, D612):
-E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, F7, F8, F9, F10, G1, H1, C12. Thirty-one
+E32, B46 + item 42, B48, item 50, C16, C17/C18, I.5, F7, F8, F9, F10, F11, G1, H1, C12. Thirty-one
 older looks are carved out to [OWNER_LOOKS_CARVED](plans/OWNER_LOOKS_CARVED.md) (open, closing nothing).
 A session prepares the build and records the owner's words; Linux tests close none of them (rule 3).
 
@@ -327,6 +327,8 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
       - W74's and W99's profile, which D258's floor sets.
     - Akçelik & Biggs (1987) and Deligianni (2017) are still unread (owner's copy).
   - **A leader braking to a stop** is outside Q2.
+  **Owner (Windows):** [F11](plans/OWNER_SITTING_WINDOWS.md) on package #152 (`a18a229`, D652–D665): the
+  prototype's first car eases into its stop at a red line. #152 also carries F10.
   **Owner (Windows):** [F10](plans/OWNER_SITTING_WINDOWS.md) on package #151 (`699b109`, D652–D662): queues at
   rest for W99, with and without `reactionTime` 0.5 s; it re-checks F9 b and c. #150 (`a5abe16`) lacks P17.
   **Owner (Windows), package #149 (`f5653f8`, D652–D654):**

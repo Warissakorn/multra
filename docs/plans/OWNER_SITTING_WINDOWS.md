@@ -7,7 +7,7 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 and never reused; an item that took in an older one says so.
 
 **Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
-I.5 → F7 → F8 → F9 → F10 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
+I.5 → F7 → F8 → F9 → F10 → F11 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
 2026-11-22: P51 and P52 (words in PROGRESS; their findings D620).
 
@@ -139,6 +139,31 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
         so a much larger number is expected here.
     - **d. Save and reopen.** Save with `reactionTime` 0.5 and `lineRest` ticked, close and reopen. Are both kept?
     - Report the words for a–d, and the counts for b and c. Linux closes none of these (rule 3). *Owner:*
+    - The newer run #152 (`a18a229`) also carries all of F10.
+
+11. **The prototype eases into its stop at a red line** (listed 2026-11-26; D663–D665;
+    [STOP_PROFILE](../reference/STOP_PROFILE.md) §10). It answers F9 b's "the stop looks unrealistic" for the first
+    car, for the prototype only.
+    - **Package:** run #152 of *Package binaries* (`a18a229`, D652–D665), artifact `multra-windows-x64`.
+    - **What changed, and what did not:**
+      - Changed: a prototype car approaching a red line, with no stopped car between it and the line. It used to
+        hold its speed until about 60 m before the line, then brake at a constant 2 m/s². Now it starts easing off
+        much earlier (from about 140 m at 15 m/s), brakes harder gradually, and still stops with its front exactly
+        at the line.
+      - Not changed, so not a finding:
+        - a car stopping behind a stopped car (as on #151);
+        - W74 and W99 behaviours;
+        - the very last moment, a small jump from slow braking to rest.
+    - **a. The first car at a red.** Open `four-leg-signalised` (prototype behaviour, `lineRest` ticked in
+      *ตั้งค่าการจำลอง / Run settings*). Run at a slow playback speed. Watch a car that reaches a red with no queue
+      in front of it.
+      - Does it slow down gradually from well before the line, instead of keeping its speed and then braking late?
+      - Does it stop with its front at the stop line, without crawling the last metres?
+    - **b. Compare** (optional). If package #151 is still on the machine, run the same project there and watch the
+      same kind of car. Does the stop on #152 look more natural?
+    - **c. Followers.** Watch the cars that stop behind that first car. Do they still come to rest behind it,
+      without creeping, as on #151?
+    - Report the words for a–c. Linux closes none of these (rule 3). *Owner:*
 
 ## G — Object interchange
 

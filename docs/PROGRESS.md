@@ -17,6 +17,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **BA259 amended:** at dt 0.5 a third car behind the eased head car spends 2.5 s below 1 m/s (bound 2 → 2.5 s). At
   dt 0.25 the bound is tightened to 1 s.
 - **Verified (Linux only):** `check` passes; `multra-cli 42` byte-identical.
+- **Package #152** (`a18a229`) for the owner's [F11](plans/OWNER_SITTING_WINDOWS.md) (and F10).
 
 ## 2026-11-25 — B3's delay traced: all of it is the approach to standing cars (D664)
 
