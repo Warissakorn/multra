@@ -317,14 +317,14 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
   prototype's delay is +28 s against the switch off (the two start rules add up). The archived M3.2.7c congested
   variant now runs with `lineRest` off; a headway-arm fixture under `lineRest` would be new work.
   **Next:**
-  - **B is done for the prototype at lines** ([STOP_PROFILE §10](reference/STOP_PROFILE.md), D663–D665, the owner's B3P).
+  - **B is closed** ([STOP_PROFILE §10–§11](reference/STOP_PROFILE.md), D663–D667). The owner's B3P stands, and
+    today's law stays toward vehicles at rest (D667).
     - The prototype eases into a line's stop (IDM, T = 0, the type's a and b): four-leg hard braking 1,027 → 903,
       with the same delay and clamps.
     - **Left:**
-      - the approach to a standing queue: **measured on NGSIM Lankershim** ([STOP_PROFILE §11](reference/STOP_PROFILE.md),
-        D666). Drivers start at a median 1.4 (first episode) to 1.9 m/s² (last phase) of required deceleration,
-        nearer today's law (2.0) than B3 (0.8). The recommendation is to keep today's law toward vehicles at rest;
-        the owner chooses;
+      - the approach to a standing queue: measured on NGSIM Lankershim (D666). The median onset is 1.4–1.9 m/s² of
+        required deceleration, nearer today's law (2.0) than B3 (0.8). The owner kept today's law (D667). The staged
+        approach and the higher final braking are known deviations; a second site would reopen them;
       - the last step to rest (Akçelik & Biggs 1987, Deligianni 2017, both unread);
       - W74's and W99's profile, which D258's floor sets.
     - Akçelik & Biggs (1987) and Deligianni (2017) are still unread (owner's copy).

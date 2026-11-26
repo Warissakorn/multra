@@ -265,3 +265,11 @@ The owner asked for sources, then chose to measure ("ตามแนะนำ").
 **The session's recommendation: keep today's law toward vehicles at rest (B3P as committed).** B3 toward queues is
 not supported by the measurement. The staged approach and the higher final braking stay as known deviations, recorded
 here, with no change to the engine. The owner chooses.
+
+**The owner's choice (D667, 2026-11-26, "ตามแนะนำ"):** today's law stays toward vehicles at rest. B3P, as committed,
+is B's final state. These are known deviations, recorded and not modelled:
+- the staged approach (a gentle first episode, then the final braking);
+- the final braking's higher peak;
+- the last step to rest (§8).
+
+They are reopened only with a second site's measurement or an unread source (Akçelik & Biggs; Deligianni).

@@ -17,7 +17,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - toward a line it is 2.07.
 
   Today's law starts at 2.0 and B3 at about 0.77, which is earlier than 84 % of the first onsets.
-- **No code.** The recommendation is to keep today's law toward vehicles at rest; the owner chooses (STOP_PROFILE §11).
+- **No code.** The owner kept today's law toward vehicles at rest ("ตามแนะนำ", D667). B is closed with B3P. The staged
+  approach, the higher final braking and the last step to rest are known deviations.
 - **Verified (Linux only):** `check-docs` passes. The scripts are committed beside the evidence; the data is not.
 
 ## 2026-11-25 — The prototype eases into its stop at a line: B3P (D665)
