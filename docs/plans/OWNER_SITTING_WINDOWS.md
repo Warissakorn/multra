@@ -60,7 +60,7 @@ PROGRESS).
     Confirm: is the curve gone? In Thai and English at 100/150 %: do the table, its headers and the Add /
     Remove buttons fit without clipping? *Owner, on #153 (2026-11-26):* the table should look unused under
     *Fixed*; a double-clicked cell's editor is not on its cell, check other tables. Both fixed (D676).
-    - **Recheck on the next package** (D676): under *Fixed*, is the curve table grey, headers included? Double-click a
+    - **Recheck on run [#154](https://github.com/Warissakorn/multra/actions/runs/45800006045)** (`6a92909`, D676; artifact `multra-windows-x64`): under *Fixed*, is the curve table grey, headers included? Double-click a
       cell here, in *Study periods* and in a vehicle type's speed curve: does the editor sit exactly on the cell? Switch
       to *Fixed*, Confirm, reopen and choose *Distribution*: are your points back? (Kept until the program closes.)
       *Owner:*
@@ -82,7 +82,7 @@ PROGRESS).
     - Report the words for a–c. Linux closes none of these (rule 3). *Owner, on #153 (2026-11-26):* with `lineSetback`
       unticked and ticked again, the 1 was gone; keep it, and check every field. Fixed for every such field (D676). Also
       asked whether `lineRest` and `lineSetback` duplicate W99's own stop short of the line (answered in PROGRESS).
-    - **d. Recheck on the next package** (D676): tick `lineSetback`, enter 1, Confirm, run; untick, Confirm, run;
+    - **d. Recheck on run #154** (`6a92909`, D676): tick `lineSetback`, enter 1, Confirm, run; untick, Confirm, run;
       reopen and tick again. Is it 1? Try one more field, e.g. a vehicle type's PCU or a speed area's deceleration.
       *Owner:*
 
