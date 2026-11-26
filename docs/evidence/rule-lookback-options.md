@@ -20,3 +20,9 @@ BA231 W99 fixture on every type.
 - **G1 on node analysis:** turners are held behind straight cars approaching or standing at their red, which cannot
   reach the point before the red ends.
 - **Cost:** wall times from six parallel runs varied by more than the differences, so none is reported.
+
+## G1R built: callgrind (D675)
+
+M2.6 4,353,654,959 → 4,497,851,028 Ir (+3.31 %); node analysis 2,774,360,638 → 2,824,386,143 Ir (+1.80 %). Release, one
+run, seed 42, `multra-cli --project`. The code is [rule-lookback-g1r.patch](rule-lookback-g1r.patch); details in RULE_LOOKBACK §7.
+

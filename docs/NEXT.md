@@ -295,9 +295,10 @@ Contracts: [SUBAREA_CONSISTENCY](reference/SUBAREA_CONSISTENCY.md), [MESO_ASSIGN
     source (D668). **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on package #153 (`ae07ab7`), in the line-stop lab (D671),
     which ships W74 and W99 test behaviours so nothing is typed.
   - **The exact-line defect (D672–D673):** E1 is fixed (D673, row PR17): a front exactly at a conflict segment's start
-    has not entered it for a priority rule, so node analysis clamps 4.7 → 0 (prototype). **E2's contract** is
-    [RULE_LOOKBACK](reference/RULE_LOOKBACK.md) (D674): G1R (look upstream, stop at a red head, as Vissim) changes
-    only M2.6, slightly; the owner chooses G1R or G0. The remaining W74/W99 clamps on node analysis are not E2's.
+    has not entered it for a priority rule, so node analysis clamps 4.7 → 0 (prototype). **E2:** G1R was built and
+    costs +3.3 % instructions on M2.6 for a small gain, so it is kept out as a known limit
+    ([RULE_LOOKBACK §7](reference/RULE_LOOKBACK.md), D675; the code is a patch). The remaining W74/W99 clamps on node
+    analysis are not E2's.
   **Owner (Windows), 2026-11-26 on package #152:** F7, F9, F10 and F11 passed. Left: [F8](plans/OWNER_SITTING_WINDOWS.md),
   the CC1 table, on the same package; F12 (`lineSetback`) on the next package.
 - **Clamps (2026-11-18, seeds 42–51, summary `safetyClamps`):** M2.6 1, M6-S1 1, lane lab 0; the lane

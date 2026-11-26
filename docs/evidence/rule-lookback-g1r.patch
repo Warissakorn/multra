@@ -1,0 +1,159 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2ba421e..003a5e3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -78,7 +78,7 @@ foreach(engine multra_macro multra_meso multra_analysis)
+     target_link_libraries(${engine} PRIVATE multra_options)
+ endforeach()
+ add_library(multra_core ${MULTRA_LIBRARY_TYPE}
+-    src/core/demand.cpp src/core/following.cpp src/core/line_stop.cpp src/core/routes.cpp src/core/speed_decision.cpp src/core/speed_area.cpp
++    src/core/demand.cpp src/core/following.cpp src/core/line_stop.cpp src/core/rule_lookback.cpp src/core/routes.cpp src/core/speed_decision.cpp src/core/speed_area.cpp
+     src/core/signals.cpp src/core/red_running.cpp src/core/start_up.cpp src/core/diffusion.cpp src/core/yield_time.cpp src/core/caps.cpp src/core/join_anticipation.cpp src/core/simulation.cpp src/core/insertion.cpp src/core/publish.cpp src/core/validate.cpp src/core/conflicts.cpp
+     src/core/lanes.cpp src/core/routing.cpp src/core/w74.cpp src/core/w99.cpp src/core/perception.cpp src/core/lateral.cpp src/core/lateral_motion.cpp src/core/lane_swap.cpp src/core/courtesy.cpp src/core/leaders.cpp src/core/speed_control.cpp src/core/parking.cpp src/core/retune.cpp src/core/missed_exit.cpp)
+ target_link_libraries(multra_core PRIVATE multra_options)
+diff --git a/src/core/routes.cpp b/src/core/routes.cpp
+index 885cb07..778db11 100644
+--- a/src/core/routes.cpp
++++ b/src/core/routes.cpp
+@@ -170,6 +170,12 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
+                 [&](const auto& item) { return item.segmentId == scenario.priorityRules[k].yieldSegmentId; });
+             if (part != parts.end()) index.routeRules[r].push_back({k, part->start});
+         }
++    // RULE_LOOKBACK §3 (D675): every route through each rule's conflict segment, with where it first reaches it.
++    index.majorRoutesOfRule.resize(scenario.priorityRules.size());
++    for (std::size_t k = 0; k < scenario.priorityRules.size(); ++k)
++        for (std::size_t r = 0; r < scenario.routes.size() && index.conflictSegmentOfRule[k] != SIZE_MAX; ++r)
++            for (const auto& part : index.parts[r])
++                if (part.segmentIndex == index.conflictSegmentOfRule[k]) { index.majorRoutesOfRule[k].push_back({r, part.start}); break; }
+     // Zone incidence (M3.2.3a/b): every route through either side, in route distances, so a
+     // major vehicle is seen on its whole approach and a chain is followed across section cuts.
+     index.routeZones.reserve(scenario.routes.size());
+diff --git a/src/core/rule_lookback.cpp b/src/core/rule_lookback.cpp
+new file mode 100644
+index 0000000..86f7d03
+--- /dev/null
++++ b/src/core/rule_lookback.cpp
+@@ -0,0 +1,56 @@
++#include "rule_lookback.hpp"
++#include <algorithm>
++
++namespace multra {
++namespace { bool scan(const Scenario&, const ScenarioIndex&, std::size_t, const std::vector<Vehicle>&, const std::vector<VehicleRefs>&,
++                     const RouteSlots&, const std::vector<SignalColor>&, std::size_t, const std::vector<bool>*, double); }
++void RouteSlots::build(const std::vector<VehicleRefs>& refs, std::size_t routes) {
++    start.assign(routes + 1, 0);
++    for (const auto& r : refs) ++start[r.route + 1];
++    for (std::size_t r = 0; r < routes; ++r) start[r + 1] += start[r];
++    items.resize(refs.size());
++    auto next = start;
++    for (std::size_t j = 0; j < refs.size(); ++j) items[next[refs[j].route]++] = j;
++}
++bool upstreamBlocks(const Scenario& scenario, const ScenarioIndex& index, std::size_t k, const std::vector<Vehicle>& vehicles,
++                    const std::vector<VehicleRefs>& refs, RouteSlots& slots, const std::vector<SignalColor>& headColors,
++                    std::size_t self, const std::vector<bool>* blocks, double needGap) {
++    const auto& rule = scenario.priorityRules[k];
++    if (index.majorRoutesOfRule[k].empty()) return false;
++    if (slots.start.empty()) { slots.build(refs, scenario.routes.size()); slots.ruleBlocks.assign(scenario.priorityRules.size(), -1); }
++    // Without a gap reduction the answer is the same for every minor vehicle this tick, unless the asker is itself on
++    // one of the rule's major routes (then it must not count itself).
++    const bool shared = !rule.gapReduction && std::none_of(index.majorRoutesOfRule[k].begin(), index.majorRoutesOfRule[k].end(),
++                                                           [&](const auto& m) { return m.first == refs[self].route; });
++    if (shared && slots.ruleBlocks[k] >= 0) return slots.ruleBlocks[k] == 1;
++    const bool result = scan(scenario, index, k, vehicles, refs, slots, headColors, self, blocks, needGap);
++    if (shared) slots.ruleBlocks[k] = result ? 1 : 0;
++    return result;
++}
++namespace {
++bool scan(const Scenario& scenario, const ScenarioIndex& index, std::size_t k, const std::vector<Vehicle>& vehicles,
++          const std::vector<VehicleRefs>& refs, const RouteSlots& slots, const std::vector<SignalColor>& headColors,
++          std::size_t self, const std::vector<bool>* blocks, double needGap) {
++    const auto& rule = scenario.priorityRules[k];
++    for (const auto& [route, start] : index.majorRoutesOfRule[k]) {
++        const double point = start + rule.conflictPosition;
++        for (auto i = slots.start[route]; i < slots.start[route + 1]; ++i) {
++            const auto j = slots.items[i];
++            const auto& major = vehicles[j];
++            if (j == self || major.distance > start + 1e-9) continue; // on the segment: the span scan's (D673)
++            const double reach = point - major.distance;
++            const bool near = reach <= rule.headway && (!rule.maxSpeed || major.speed <= *rule.maxSpeed);
++            if (!near && !(major.speed > 0 && reach / major.speed < needGap)) continue;
++            if (blocks && !(*blocks)[refs[j].type]) continue;
++            bool red = false; // RULE_LOOKBACK §3 rule 2: the look ends at a head that is not green
++            for (const auto& rh : index.routeHeads[route]) {
++                const double at = rh.partStart + scenario.signalHeads[rh.headIndex].position;
++                if (at >= major.distance - 1e-9 && at <= point && headColors[rh.headIndex] != SignalColor::green) { red = true; break; }
++            }
++            if (!red) return true;
++        }
++    }
++    return false;
++}
++}
++}
+diff --git a/src/core/rule_lookback.hpp b/src/core/rule_lookback.hpp
+new file mode 100644
+index 0000000..01ff44a
+--- /dev/null
++++ b/src/core/rule_lookback.hpp
+@@ -0,0 +1,21 @@
++#pragma once
++#include "types.hpp"
++#include <vector>
++
++namespace multra {
++// RULE_LOOKBACK §3 (D675, option G1R): a priority rule also sees major vehicles upstream of its conflict segment.
++// The snapshot's vehicle slots grouped by route, in vehicle order, as one flat array: route r's slots are
++// items[start[r]] .. items[start[r + 1]]. Built lazily, the first time a tick needs it.
++struct RouteSlots {
++    std::vector<std::size_t> start, items;
++    std::vector<signed char> ruleBlocks; // per rule this tick: -1 not yet known; only for a rule without a gap reduction
++    void build(const std::vector<VehicleRefs>& refs, std::size_t routes);
++};
++// Whether a major vehicle whose front is not yet on rule `k`'s conflict segment blocks: its route distance to the
++// marker is within the headway (with maxSpeed), or it reaches the marker sooner than `needGap` at its speed. A
++// vehicle with a signal head that is not green between its front and the marker is not tested (Vissim with
++// "Look beyond red signals" off). `self` is never tested; `blocks` is D606's type mask or null.
++bool upstreamBlocks(const Scenario& scenario, const ScenarioIndex& index, std::size_t k, const std::vector<Vehicle>& vehicles,
++                    const std::vector<VehicleRefs>& refs, RouteSlots& slots, const std::vector<SignalColor>& headColors,
++                    std::size_t self, const std::vector<bool>* blocks, double needGap);
++}
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index 466717e..7968f4f 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -6,6 +6,7 @@
+ #include "detail.hpp"
+ #include "following.hpp"
+ #include "line_stop.hpp"
++#include "rule_lookback.hpp"
+ #include "join_anticipation.hpp"
+ #include "lanes.hpp"
+ #include "lateral.hpp"
+@@ -202,6 +203,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+     std::vector<std::optional<VehicleLeader>> leaders(zones.empty() ? 0 : vehicles.size()); // phase 2 only
+     std::vector<char> gateHeld(next.lots.empty() ? 0 : vehicles.size()); // M8.4a: stopped at a lot's line
+     std::vector<RedRun> ran(carriesRedRunning(scenario) ? vehicles.size() : 0); std::vector<RedRelease> released; // B-9 (D238, D246): empty without the keys
++    RouteSlots byRoute; // D675: built on first use this tick
+     for (std::size_t v = 0; v < vehicles.size(); ++v) {
+         const auto& vehicle = vehicles[v];
+         const auto& type = scenario.vehicleTypes[refs[v].type];
+@@ -311,6 +313,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+                 else if (span.speed > 0 && reach / span.speed < needGap) giveWay = true;
+                 if (giveWay) break;
+             }
++            if (!giveWay && !goes) giveWay = upstreamBlocks(scenario, index, routeRule.ruleIndex, vehicles, refs, byRoute, headColors, v, blocks, needGap); // D675
+             if (!giveWay) continue;
+             holdCap = std::min(holdCap, std::max(0.0, gap)); giveWayLine = std::min(giveWayLine, std::max(0.0, gap));
+             if (!leader || gap < leader->gap) leader = Leader{gap, 0, 0};
+diff --git a/src/core/types.hpp b/src/core/types.hpp
+index a5b02a3..e5587d3 100644
+--- a/src/core/types.hpp
++++ b/src/core/types.hpp
+@@ -305,6 +305,7 @@ struct ScenarioIndex {
+     // search by id. SIZE_MAX when the rule names a segment that does not exist; validation
+     // rejects that scenario, but a hand-built index must not read out of bounds before it does.
+     std::vector<std::size_t> conflictSegmentOfRule;  // parallel to Scenario::priorityRules
++    std::vector<std::vector<std::pair<std::size_t, double>>> majorRoutesOfRule; // RULE_LOOKBACK (D675): (route, its conflict part's start)
+     // D606: per rule, which vehicle types wait at its line and which block at its marker, indexed
+     // by Scenario::vehicleTypes; an empty row is every type. Both empty without a filtered rule.
+     std::vector<std::vector<bool>> yieldTypesOfRule, blockTypesOfRule;

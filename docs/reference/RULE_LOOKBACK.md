@@ -69,3 +69,31 @@ G1 is not recommended: it holds turners behind major cars that are stopped at th
 | PR19 | The same car with a red head between it and the marker | Does not hold (G1R) |
 | PR20 | A standing major car upstream, beyond the headway | Does not hold |
 | PR21 | Every shipped project except M2.6 | Byte-identical events to G0 |
+
+## 7. G1R built and measured; kept out (D675)
+
+The owner chose the recommendation ("ตามแนะนำ"): G1R with an index, measured with callgrind first, and G0 if the cost
+is above the gain.
+- **Built** ([patch](../evidence/rule-lookback-g1r.patch), not committed to the engine): `src/core/rule_lookback.cpp`.
+  - Per rule, the index holds the routes through its conflict segment and where each reaches it.
+  - Per tick, the vehicles grouped by route are built lazily, as one flat array.
+  - A per-rule cache per tick holds the answer for rules without a gap reduction.
+  - The output is identical to the measuring patch's on both projects.
+- **Callgrind** (Release, GCC 13.3, one run, seed 42, `multra-cli --project`):
+
+  | Project | Today (Ir) | G1R (Ir) | Δ |
+  |---|---|---|---|
+  | M2.6 | 4,353,654,959 | 4,497,851,028 | +3.31 % |
+  | node analysis | 2,774,360,638 | 2,824,386,143 | +1.80 % |
+
+  - A first version that built per-route vectors each tick cost +10.1 % and +5.1 %.
+  - The cache did not lower the cost: each rule is asked by about one vehicle per tick.
+  - What remains is the scan itself (about 2 %) and the grouping (about 1 %).
+- **Against the gain** (§4: only M2.6 changes; prototype clamps 0.2 → 0, W74 29.5 → 28.5, W99 hard braking
+  646 → 603), the cost is above it.
+- **So G0 stays.** The blind spot is a **known limit**: a priority rule sees only major vehicles on its conflict
+  segment. On a short straight connector, an approaching major car is seen only once it is on it.
+- **To reopen:** a study whose short connectors release minor vehicles into approaching cars, or a cheaper index.
+  An example of a cheaper index is to scan only vehicles on the segment just before the conflict segment, which
+  needs its own measurement. The patch applies to `05a28fd`.
+

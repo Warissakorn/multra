@@ -5,7 +5,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-26 — The node-analysis clamps: diagnosed, E1 fixed, E2's contract (D672–D674)
+## 2026-11-26 — The node-analysis clamps: diagnosed, E1 fixed, E2 measured and kept out (D672–D675)
 
 - **Owner:** "ไล่หาสาเหตุ clamp บน signalised-node-analysis ต่อ".
 - **Traced** ([evidence](evidence/exact-line-rule.md)), seed 42:
@@ -23,7 +23,9 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - Measured with a reverted [patch](evidence/rule-lookback-options.patch): G1R (upstream, stopping at a red head)
     is identical to today except on M2.6 (prototype clamps 0.2 → 0, W99 hard braking 646 → 603); G1 (past red)
     worsens node analysis by 7.5–13.7 s of delay.
-  - Recommendation: G1R with an index and callgrind first. The owner chooses.
+  - Recommendation: G1R with an index and callgrind first. The owner chose it ("ตามแนะนำ").
+- **G1R built and kept out (D675):** callgrind +3.31 % instructions on M2.6 and +1.80 % on node analysis, against a gain
+  on M2.6 only. G0 stays as a known limit; the code is [a patch](evidence/rule-lookback-g1r.patch).
 - **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (378 of 378).
 
 ## 2026-11-26 — A set-back at signal heads: `lineSetback`, and a lab for the checks (D670–D671)

@@ -143,3 +143,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D672](RECORD.md#d672) — node-analysis exact-line clamps diagnosed: a front exactly at a connector's start falsely holds a merge rule (E1), and a rule sees only its conflict segment (E2); E1's fix measured
 [D673](RECORD.md#d673) — E1 fixed: a front exactly at the conflict segment's start has not entered it for a priority rule; node-analysis clamps 4.7 → 0 (prototype); row PR17
 [D674](RECORD.md#d674) — RULE_LOOKBACK contract: a rule looking upstream stopping at red (G1R) changes only M2.6, slightly; past red (G1) worsens node analysis; recommendation G1R after callgrind
+[D675](RECORD.md#d675) — G1R built and measured (+3.3 % / +1.8 % instructions) for a small M2.6 gain; kept out, the rule's scan range is a known limit
