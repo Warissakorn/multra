@@ -2,9 +2,11 @@
 
 The single live to-do, **open items only**: what shipped is in [PROGRESS](PROGRESS.md), the
 [archive](archive/README.md) and the [decision record](decisions/RECORD.md); gates are in
-[ROADMAP](ROADMAP.md); owner items only in [OWNER_SITTING](plans/OWNER_SITTING.md). Rewrite this file
-each session ([AGENTS](../AGENTS.md#session-end)); never append a finished slice here (D319). The
-previous full list is [archived](archive/NEXT-state-2026-10-23.md).
+[ROADMAP](ROADMAP.md); owner items only in [OWNER_SITTING](plans/OWNER_SITTING.md) and its
+[Windows sheet](plans/OWNER_SITTING_WINDOWS.md). Rewrite this file each session
+([AGENTS](../AGENTS.md#session-end)); never append a finished slice here (D319). Text cut from it is archived
+(newest: [2026-11-26](archive/NEXT-state-2026-11-26.md); the last whole copy:
+[2026-11-19](archive/NEXT-state-2026-11-19.md); all in the [archive index](archive/README.md)).
 
 ## Standing facts
 
