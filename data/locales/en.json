@@ -803,7 +803,7 @@
   "editorBehaviourTabPerception": "Perception and drivers",
   "editorBehaviourTabJunctions": "Junctions, signals and speed",
   "editorBehaviourPrototypeOnly": "Discretionary lane changes and kerb-lane bias are available for the Prototype model only.",
-  "editorBehaviourLineSetbackDefault": "Unticked: 1 m (SUMO's default at signal stop lines). Applies at signal heads only.",
+  "editorBehaviourLineSetbackDefault": "Unticked: 1 m is used (SUMO's default at signal stop lines); the number in the field is used only when ticked. Applies at signal heads only.",
   "editorBehaviourKeyMissing": "Enter a number for %1.",
   "editorBehaviourReplacement": "Replace references with",
   "editorBehaviourMembers": "Vehicle types",

@@ -66,6 +66,10 @@ The single live to-do, **open items only**: what shipped is in [PROGRESS](PROGRE
 - Work by [DEV_PIPELINE](plans/DEV_PIPELINE.md): sanitizer on the touched groups, one package per sitting, at most
   five owner items a round, one pull request per topic (PR #232 is open for this branch).
 - **Owner's choice:** [UI_GEOMETRY](reference/UI_GEOMETRY.md) U1, U2 or neither. Nothing is built yet.
+- **Left from the D679 review, minor:**
+  - a decision's kept position is overwritten when a shorter link clamps it (remember on `editingFinished` instead);
+  - Compare and recovery ignore a file's `lineRest` off without a warning;
+  - a combo cell editor may still be 1 px taller than its cell.
 
 ## Owner checks on Windows — triaged, one sitting (D602, 2026-11-20)
 

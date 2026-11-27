@@ -147,3 +147,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D676](RECORD.md#d676) — F8/F12 findings: cell editors on their cell, unused tables muted, unticked values kept for the session (never written)
 [D677](RECORD.md#d677) — `lineRest` always on (a file's off ignored with a warning); `lineSetback` absent is 1 m (SUMO's default)
 [D678](RECORD.md#d678) — development pipeline: CI on every session-branch push, sanitizer locally, one package per sitting, five owner items a round, one PR per topic; UI_GEOMETRY contract
+[D679](RECORD.md#d679) — review acted on: only `early (sanitizer)` on session-branch pushes; kept values cleared per project; `lineSetback` note clarified

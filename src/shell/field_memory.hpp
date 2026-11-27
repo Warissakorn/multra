@@ -3,6 +3,9 @@
 // again brings back the number the author had, not 0. The memory lasts for this run of the program
 // only and is never written to a file: an unticked key stays absent from the project (D178).
 #include <QString>
+#include <functional>
+#include <map>
+#include <string>
 class QAbstractSpinBox;
 class QCheckBox;
 class QLineEdit;
@@ -18,4 +21,15 @@ void rememberField(QCheckBox* on, QLineEdit* field, const QString& key);
 void rememberField(bool used, QLineEdit* field, const QString& key);
 void rememberTable(bool used, QTableWidget* table, const QString& key);
 void rememberTable(QCheckBox* on, QTableWidget* table, const QString& key);
+// Forgets every kept value. Called when another project opens or a new one starts, since ids repeat
+// between projects (a behaviour named the same in two files must not carry one's number into the other).
+void clearFieldMemory();
+void onClearFieldMemory(std::function<void()> clear);
+// A kept whole object (a parking lot, a lane table) by key, of one type; cleared with the rest.
+template <class T> std::map<std::string, T>& keptObjects() {
+    static std::map<std::string, T> kept;
+    static const bool registered = (onClearFieldMemory([] { kept.clear(); }), true);
+    (void)registered;
+    return kept;
+}
 }

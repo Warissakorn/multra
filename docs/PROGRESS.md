@@ -5,7 +5,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-27 — The development pipeline, CI on every push, and BA263's use-after-free (D678)
+## 2026-11-27 — The development pipeline, an early sanitizer, and BA263's use-after-free (D678–D679)
 
 - **CI:** PR #232's `linux (sanitizer)` job failed on `linestop`. ASan found BA263 (D661) holding a reference into a
   temporary scenario. The row now copies the vehicle type: under `build/sanitizer`, the failure reproduced before the
@@ -17,6 +17,13 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   - one package per sitting, at most five owner items a round, one pull request per topic.
 - **Contract only:** [UI_GEOMETRY](reference/UI_GEOMETRY.md), dialog geometry checked on Linux. Options U1–U3, with
   U1 then U2 recommended; the owner chooses.
+- **Review, then "ตามแนะนำ" (D679):**
+  - the push trigger ran every job twice and cancelled Windows runs, so only `early (sanitizer)` (`early.yml`) now
+    runs on push;
+  - kept unticked values could carry a number into another project with the same behaviour id. They are now cleared
+    on open, on new and on recovery. A row checks this, and it fails without the fix;
+  - the `lineSetback` note now says the field's number is used only when ticked.
+  - verified on Linux only: `check` passes, `ctest` 378/378.
 - **Also asked:** whether the repository is bloated. Answered in chat with measurements, no change: docs are
   16 MB of the 28 MB tracked, against 4.3 MB of source.
 

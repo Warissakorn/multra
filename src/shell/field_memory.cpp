@@ -7,9 +7,11 @@
 #include <QTableWidget>
 #include <QStringList>
 #include <QVariant>
+#include <vector>
 namespace multra {
 namespace {
 QHash<QString, QVariant>& memory() { static QHash<QString, QVariant> values; return values; }
+std::vector<std::function<void()>>& clears() { static std::vector<std::function<void()>> list; return list; }
 }
 void rememberField(QCheckBox* on, QAbstractSpinBox* field, const QString& key) {
     if (auto* spin = qobject_cast<QDoubleSpinBox*>(field)) {
@@ -55,4 +57,6 @@ void rememberTable(bool used, QTableWidget* table, const QString& key) {
     QObject::connect(table->model(), &QAbstractItemModel::rowsInserted, table, keep);
     QObject::connect(table->model(), &QAbstractItemModel::rowsRemoved, table, keep);
 }
+void onClearFieldMemory(std::function<void()> clear) { clears().push_back(std::move(clear)); }
+void clearFieldMemory() { memory().clear(); for (const auto& clear : clears()) clear(); }
 }

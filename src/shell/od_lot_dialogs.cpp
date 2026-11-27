@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "od_lot_dialogs.hpp"
 #include "editor_interaction.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -136,7 +137,7 @@ std::optional<std::optional<ParkingLot>> editParkingLot(QWidget* parent, const s
                                                         const std::vector<Choice>& compositions, const DialogText& text) {
     // F12 (owner, 2026-11-26): a lot unticked away is kept for the session, and ticking the zone's box
     // again brings it back as it was, not the starting values. Never written to the file.
-    static std::map<std::string, ParkingLot> unticked;
+    auto& unticked = keptObjects<ParkingLot>(); // cleared when another project opens (field_memory.hpp)
     const auto kept = unticked.find(zoneId);
     const ParkingLot base = current ? *current : kept != unticked.end() ? kept->second : ParkingLot{"", zoneId, 1, 0, "", 0, {{10, 0}, {60, 1}}};
     QDialog dialog(parent); dialog.setObjectName("editorLotDialog"); dialog.setWindowTitle(text("editorEditLot"));

@@ -429,6 +429,14 @@ int main(int argc, char** argv) {
                     });
                 });
                 require(behaviour("w99-curve").lineSetback == 1.0, "Ticking again did not bring 1 back");
+                // D678: another project open forgets the kept numbers (ids repeat between projects).
+                setback(true, 0.5); setback(false, 0.5); w.openFile(path);
+                library([](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [](QDialog& e) {
+                        require(item<QDoubleSpinBox>(e, "lineSetback")->value() == 1, "A kept number survived opening a project");
+                        e.reject();
+                    });
+                });
                 library([](QDialog& d) { // a fixed w99 behaviour opens in Fixed
                     modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
                         require(item<QComboBox>(e, "editorBehaviourCc1Mode")->currentIndex() == 0, "fixed cc1 not shown as Fixed");

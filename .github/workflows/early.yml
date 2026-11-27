@@ -1,0 +1,44 @@
+name: Early sanitizer
+# D678 (amended after review): every push to a session branch builds the sanitizer preset alone and
+# runs `check`, so a memory error shows before a pull request exists (BA263's use-after-free reached
+# CI only with PR #232). The full matrix stays on pull requests and main (native.yml); the job name
+# differs from native.yml's, so no check is shadowed. The steps mirror native.yml's linux job.
+on:
+  push:
+    branches: ['claude/**']
+concurrency:
+  group: early-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  early-sanitizer:
+    name: early (sanitizer)
+    runs-on: ubuntu-24.04
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_NOHASHDIR: 'true'
+      CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
+      CCACHE_MAXSIZE: 1500M
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install build dependencies
+        timeout-minutes: 15
+        run: |
+          printf '%s\n' http://mirrors.edge.kernel.org/ubuntu/ http://mirrors.mit.edu/ubuntu/ \
+            http://azure.archive.ubuntu.com/ubuntu/ http://archive.ubuntu.com/ubuntu/ | sudo tee /etc/apt/apt-mirrors.txt
+          for f in /etc/apt/sources.list.d/*.sources /etc/apt/sources.list; do
+            if [ -f "$f" ]; then sudo sed -i 's#http://security\.ubuntu\.com/ubuntu/\?#mirror+file:/etc/apt/apt-mirrors.txt#g' "$f"; fi
+          done
+          apt="sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=15"
+          $apt update
+          $apt install -y g++ cmake ninja-build nlohmann-json3-dev qt6-base-dev libproj-dev ccache lld python3-jsonschema
+      - uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-sanitizer-${{ github.sha }}
+          restore-keys: ccache-sanitizer-
+      - run: cmake --preset sanitizer -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DMULTRA_REQUIRE_SCHEMA_LABELS=ON
+      - run: cmake --build --preset sanitizer --parallel 4
+      - run: cmake --build build/sanitizer --target check

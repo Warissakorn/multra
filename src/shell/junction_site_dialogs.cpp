@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "junction_recipe_dialog.hpp"
 #include "dialog_fit.hpp"
 #include <QCheckBox>
@@ -17,7 +18,7 @@ namespace multra {
 std::optional<JunctionLeg> editJunctionLeg(QWidget* parent,JunctionLeg value,DrivingSide side,const CatalogText& text,const std::string& memoryKey) {
     // F12 (owner, 2026-11-26): lanes unticked away are kept for the session under the arm, and come
     // back when the override is ticked again. Never written to the file.
-    static std::map<std::string,std::vector<JunctionLane>> unticked;
+    auto& unticked=keptObjects<std::vector<JunctionLane>>(); // cleared when another project opens (field_memory.hpp)
     const auto kept=unticked.find(memoryKey);
     const auto shownLanes=value.lanes?*value.lanes:kept!=unticked.end()?kept->second:std::vector<JunctionLane>{};
     QDialog dialog(parent);dialog.setObjectName("editorJunctionLegDialog");dialog.setWindowTitle(text("editorJunctionLegValues"));

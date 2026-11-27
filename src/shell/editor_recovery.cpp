@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "editor_window.hpp"
 #include "conflicts_panel.hpp"
 #include "editor_automation_state.hpp"
@@ -92,7 +93,7 @@ void EditorWindow::recoverFile(const QString& file) {
     if(!lock->tryLock())throw RecoveryError("RECOVERY_BUSY");
     auto document=readEditorDocument(file);
     // Restored documents are untitled, so Save asks for a destination before replacing anything.
-    clearRecovery();clearRun();macro_->discard();meso_->discard();history_.reset(std::move(document));history_.markUnsaved();file_.clear();
+    clearRecovery();clearRun();macro_->discard();meso_->discard();history_.reset(std::move(document));history_.markUnsaved();file_.clear();clearFieldMemory(); // D678
     conflicts_->invalidate();
     recoverySession_->lock=std::move(lock);recoverySession_->file=file;recoverySession_->autosavedRevision.reset();startAutosave();
     canvas_->select("");refresh();canvas_->fitNetwork();error_->setText(text("editorRecovered"));

@@ -803,7 +803,7 @@
   "editorBehaviourTabPerception": "การรับรู้และผู้ขับ",
   "editorBehaviourTabJunctions": "ทางแยก สัญญาณไฟ และความเร็ว",
   "editorBehaviourPrototypeOnly": "การเปลี่ยนช่องจราจรตามความสมัครใจและการชิดช่องริมขอบทางใช้ได้เฉพาะแบบจำลอง Prototype",
-  "editorBehaviourLineSetbackDefault": "ไม่ติ๊ก: 1 m (ค่าเริ่มต้นของ SUMO ที่เส้นหยุดของสัญญาณไฟ) ใช้เฉพาะที่สัญญาณไฟ",
+  "editorBehaviourLineSetbackDefault": "ไม่ติ๊ก: ใช้ 1 m (ค่าเริ่มต้นของ SUMO ที่เส้นหยุดของสัญญาณไฟ) ตัวเลขในช่องใช้เมื่อติ๊กเท่านั้น ใช้เฉพาะที่สัญญาณไฟ",
   "editorBehaviourKeyMissing": "กรอกตัวเลขของ %1",
   "editorBehaviourReplacement": "แทนที่การอ้างอิงด้วย",
   "editorBehaviourMembers": "ประเภทรถ",
