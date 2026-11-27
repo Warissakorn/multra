@@ -5,6 +5,30 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-27 — Dialog geometry checked on Linux: UI_GEOMETRY U1 and U2, and a crash it found (D680–D681)
+
+- **Owner:** "UI_GEOMETRY U1, U2".
+- **U1:** four checks run in every `requireFitsScreen` call (22 places in 12 UI suites). A cell editor must cover
+  its cell, a widget must not be clipped by its parent, siblings must not overlap, and text must show whole.
+- **U2:** `ui-dialog-sweep` at 1×, 1.5× and 2× opens every editor action's dialog, then the Add/Edit dialogs inside
+  it. It runs in English and Thai, and each dialog is checked as opened and again with every box ticked.
+- **Forcing:**
+  - UG1–UG5 make each check fire on a dialog built to break it.
+  - Removing D676's delegate makes the sweep report the owner's F8 geometry exactly: editor at 4,2, 91×24, on a
+    99×23 cell.
+- **Measured:** 0 findings in 111 U1 checks and in 104 dialog views per scale. One false-positive kind was removed:
+  a label's mnemonic `&`.
+- **A crash found (D681):**
+  - In an active dialog, *Add lane* in the junction lane override recursed through the table focus rule until the
+    stack overflowed. The rule dates from 2026-11-02.
+  - The tests had clicked in an inactive window, which receives no focus events. U1's layout pass made the dialog
+    active, and `junction-recipe-ui` segfaulted.
+  - The rule now uses the cell widget's own cell and cannot re-enter itself.
+- **Also changed:** G1 runs only in the sweep, since opening an editor moves a table's current cell under a test
+  still driving the dialog.
+- **Not reached:** about 40 dialogs that need a selected object. That is the next extension, listed in NEXT.
+- **Verified (Linux only):** `check` passes, `ctest` 382/382.
+
 ## 2026-11-27 — The development pipeline, an early sanitizer, and BA263's use-after-free (D678–D679)
 
 - **CI:** PR #232's `linux (sanitizer)` job failed on `linestop`. ASan found BA263 (D661) holding a reference into a
@@ -171,17 +195,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **No code.** The owner kept today's law toward vehicles at rest ("ตามแนะนำ", D667). B is closed with B3P. The staged
   approach, the higher final braking and the last step to rest are known deviations.
 - **Verified (Linux only):** `check-docs` passes. The scripts are committed beside the evidence; the data is not.
-
-## 2026-11-25 — The prototype eases into its stop at a line: B3P (D665)
-
-- **Owner:** "ตามแนะนำ" (B3P).
-- **Engine** ([STOP_PROFILE §10](reference/STOP_PROFILE.md)): under `lineRest`, a prototype's law toward a holding line
-  is the lower of today's and IDM's (T = 0, the type's a and b), no harder than the exact stop. `LineTarget` tells
-  the law whether the target is a vehicle at rest; toward one, and for W74 and W99, nothing changes.
-- **Measured:** B3L's prototype rows to the digit. Four-leg hard braking 1,027 → 903, delay 47.74 → 47.76 s; M2.6
-  hard braking 3,814 → 3,360. W99's rows are B0's.
-- **Rows** BA268–BA272 (`stopprofile`, a new file). Each of five mutations fails a row.
-- **BA259 amended:** at dt 0.5 a third car behind the eased head car spends 2.5 s below 1 m/s (bound 2 → 2.5 s). At
-  dt 0.25 the bound is tightened to 1 s.
-- **Verified (Linux only):** `check` passes; `multra-cli 42` byte-identical.
-- **Package #152** (`a18a229`) for the owner's [F11](plans/OWNER_SITTING_WINDOWS.md) (and F10).

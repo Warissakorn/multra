@@ -2,6 +2,7 @@
 // A dialog with many rows keeps its buttons on screen (dialog_fit.hpp): it shrinks to a short
 // laptop screen, its Confirm button is outside the scrolling body, and it opened within its screen.
 // Screen-independent, so a large CI screen checks the same thing as a small one.
+#include "ui_geometry_support.hpp"
 #include <QAbstractScrollArea>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -20,4 +21,5 @@ inline void requireFitsScreen(QDialog& dialog) {
         if (qobject_cast<QAbstractScrollArea*>(up)) fail("Confirm scrolls with the body");
     if (dialog.screen() && dialog.height() > dialog.screen()->availableGeometry().height()) fail("opened taller than its screen");
     if (!dialog.rect().contains(QRect(ok->mapTo(&dialog, QPoint()), ok->size()))) fail("Confirm is outside the dialog");
+    uiGeometry::requireLaidOut(dialog); // UI_GEOMETRY U1 (D680)
 }

@@ -2,6 +2,20 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — The prototype eases into its stop at a line: B3P (D665)
+
+- **Owner:** "ตามแนะนำ" (B3P).
+- **Engine** ([STOP_PROFILE §10](../reference/STOP_PROFILE.md)): under `lineRest`, a prototype's law toward a holding line
+  is the lower of today's and IDM's (T = 0, the type's a and b), no harder than the exact stop. `LineTarget` tells
+  the law whether the target is a vehicle at rest; toward one, and for W74 and W99, nothing changes.
+- **Measured:** B3L's prototype rows to the digit. Four-leg hard braking 1,027 → 903, delay 47.74 → 47.76 s; M2.6
+  hard braking 3,814 → 3,360. W99's rows are B0's.
+- **Rows** BA268–BA272 (`stopprofile`, a new file). Each of five mutations fails a row.
+- **BA259 amended:** at dt 0.5 a third car behind the eased head car spends 2.5 s below 1 m/s (bound 2 → 2.5 s). At
+  dt 0.25 the bound is tightened to 1 s.
+- **Verified (Linux only):** `check` passes; `multra-cli 42` byte-identical.
+- **Package #152** (`a18a229`) for the owner's [F11](../plans/OWNER_SITTING_WINDOWS.md) (and F10).
+
 ## 2026-11-25 — B3's delay traced: all of it is the approach to standing cars (D664)
 
 - **Owner:** "ตามแนะนำ" (B3, after STOP_PROFILE §5's trace).

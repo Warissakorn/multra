@@ -148,3 +148,5 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D677](RECORD.md#d677) — `lineRest` always on (a file's off ignored with a warning); `lineSetback` absent is 1 m (SUMO's default)
 [D678](RECORD.md#d678) — development pipeline: CI on every session-branch push, sanitizer locally, one package per sitting, five owner items a round, one PR per topic; UI_GEOMETRY contract
 [D679](RECORD.md#d679) — review acted on: only `early (sanitizer)` on session-branch pushes; kept values cleared per project; `lineSetback` note clarified
+[D680](RECORD.md#d680) — UI_GEOMETRY U1 + U2: geometry checks in every dialog test and a sweep of every action's dialogs; 0 findings, and the F8 defect is caught when reintroduced
+[D681](RECORD.md#d681) — U1 found a crash: *Add lane* in the junction lane override recursed through the table focus rule; fixed

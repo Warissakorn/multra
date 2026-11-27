@@ -238,8 +238,17 @@ private:
                 if(widget!=table->viewport()&&table->viewport()->isAncestorOf(widget)) {
                     auto* editor=widget;
                     while(editor->parentWidget()!=table->viewport())editor=editor->parentWidget();
-                    const auto index=table->indexAt(editor->geometry().center());
-                    if(index.isValid()&&index!=table->currentIndex())table->setCurrentIndex(index);
+                    // D681: a cell widget names its own cell. Its geometry does not until the table lays it out: a
+                    // row just added (junction lanes) mapped to another row, whose widget took focus and mapped back,
+                    // without end. A delegate's editor (no cell widget) still goes by where it sits.
+                    QModelIndex index;
+                    if(auto* model=table->model())
+                        for(int r=0;r<model->rowCount()&&!index.isValid();++r)
+                            for(int c=0;c<model->columnCount();++c)
+                                if(table->indexWidget(model->index(r,c))==editor){index=model->index(r,c);break;}
+                    if(!index.isValid())index=table->indexAt(editor->geometry().center());
+                    static bool moving=false; // setCurrentIndex may move focus to another cell widget
+                    if(!moving&&index.isValid()&&index!=table->currentIndex()){moving=true;table->setCurrentIndex(index);moving=false;}
                 }
                 break;
             }

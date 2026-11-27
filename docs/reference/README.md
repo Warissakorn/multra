@@ -112,6 +112,6 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [DIFFUSION.md](DIFFUSION.md) | Removing a vehicle stuck waiting for a lane change, as Vissim's waiting time before diffusion: a behaviour's `diffusionTime`, schema 82, rows DF1–DF8 (D613) |
 | [YIELD_IMPATIENCE.md](YIELD_IMPATIENCE.md) | A waiting driver accepts less: Aimsun's gap reduction (a behaviour's yield time, a rule's or marker's final gap and timing) and SUMO's impatience at conflict areas, schema 84, rows YI1–YI9 (D618) |
 | [PRIORITY_RULES.md](PRIORITY_RULES.md) | Draft (D604), not implemented: Vissim-style priority rules, a stop line with conflict markers and no conflict area, rows PR1–PR10; waits on the owner's choices §8 |
-| [UI_GEOMETRY.md](UI_GEOMETRY.md) | Contract (D678), not implemented: dialog geometry checked on Linux (cell editors, clipping, overlap, text fit); options U1–U3, recommendation U1 then U2 |
+| [UI_GEOMETRY.md](UI_GEOMETRY.md) | Dialog geometry checked on Linux (cell editors, clipping, overlap, text fit): U1 in every dialog test, U2 a sweep of every action's dialogs at 1/1.5/2× in Thai and English (D678, D680) |
 
 Return to [the task reading map](../README.md#read-by-task).

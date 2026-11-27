@@ -65,7 +65,8 @@ The single live to-do, **open items only**: what shipped is in [PROGRESS](PROGRE
 
 - Work by [DEV_PIPELINE](plans/DEV_PIPELINE.md): sanitizer on the touched groups, one package per sitting, at most
   five owner items a round, one pull request per topic (PR #232 is open for this branch).
-- **Owner's choice:** [UI_GEOMETRY](reference/UI_GEOMETRY.md) U1, U2 or neither. Nothing is built yet.
+- **UI_GEOMETRY U1 + U2 done** (D680, [§5](reference/UI_GEOMETRY.md)). Next extension: select one object of each kind
+  before the sweep, so the about 40 dialogs that need a selection are checked too.
 - **Left from the D679 review, minor:**
   - a decision's kept position is overwritten when a shorter link clamps it (remember on `editingFinished` instead);
   - Compare and recovery ignore a file's `lineRest` off without a warning;
