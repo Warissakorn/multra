@@ -9,6 +9,8 @@ the whole directory.
 
 | File | What it holds |
 |---|---|
+| [`NEXT-state-2026-11-27.md`](NEXT-state-2026-11-27.md) | The whole of NEXT before it was cut to about 10,000 characters (2026-11-27, D682) |
+| [`patches/`](patches/) | The measuring patches of options not chosen, moved from `docs/evidence/` (D682); each evidence file links its own |
 | [`NEXT-state-2026-11-26.md`](NEXT-state-2026-11-26.md) | Text cut from NEXT when it was compacted to open items (2026-11-26): the W99 and line-stop slice history (D637–D667: LINE_STOP, LINE_QUEUE, PROTOTYPE_QUEUE, REACTION_STOP, STOP_PROFILE) |
 | [`NEXT-state-2026-11-22.md`](NEXT-state-2026-11-22.md) | Text cut from NEXT when it was compacted to open items (2026-11-22): the M3.2.7d, priority-rule and G7 slice history (D607–D619) |
 | [`NEXT-state-2026-11-19.md`](NEXT-state-2026-11-19.md) | The whole of NEXT before it was cut to open items again (2026-11-19, D319): the STOP_LINES, line-approach and merge-mouth slices of the day, M3.2.7d step 3–4 findings, and the M9/M10/M11.5/M12 done narration |

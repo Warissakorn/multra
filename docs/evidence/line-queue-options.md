@@ -6,7 +6,7 @@ marker stays.
 
 ## Method
 
-- **The patch.** A temporary patch on `src/core/simulation.cpp` ([patch](line-queue-options.patch), reverted)
+- **The patch.** A temporary patch on `src/core/simulation.cpp` ([patch](../archive/patches/line-queue-options.patch), reverted)
   selects an option with the variable `ZZ_Q`. Every branch requires `lineRest`, so bare M0 is untouched by
   construction.
 - **The probe.** A scratch probe, not committed. It is LINE_STOP's D651 probe with three measures added:

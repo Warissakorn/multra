@@ -21,7 +21,7 @@ are the same uncited, uncalibrated ones as BA27's.
 - Output: 22,933 lines (2,053 clamps, 20,880 amber onsets), SHA-256
   `4006334f872a2c4b3b613b183a430a5d35ca681d3eaf6e109ac3500b526a4388`; a rerun is
   byte-identical. Not committed (5 MB; the tool regenerates it). The clamp lines are
-  flattened to [w74-clamps.csv](w74-clamps.csv).
+  flattened to w74-clamps.csv (`w74-clamps.csv`, removed by D682 to keep the tree small: `git show 82f5e8d0:docs/evidence/w74-clamps.csv`, SHA-256 `b71e3b137041793c…`).
 
 ## Method
 

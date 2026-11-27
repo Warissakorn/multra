@@ -91,7 +91,7 @@ Seeds 42–81 × headways 3/7/12, gap time 5. Both sweep executables exit succes
 full replay, per-tick accounting, segment-body, swept-conflict-interval and braking checks.
 All 120 trajectory digests differ. Total safety clamps **225 → 226**, minor clamps **22 → 24**.
 The increase is measured and retained; no safety parameter was tuned to hide it. Full paired
-rows and source-output hashes: [stress evidence](connector-equation-tjunction.json).
+rows and source-output hashes: stress evidence (`connector-equation-tjunction.json`, removed by D682 to keep the tree small: `git show 82f5e8d0:docs/evidence/connector-equation-tjunction.json`, SHA-256 `917759e69fa18886…`).
 
 This headless result neither replaces Windows/Qt CI nor establishes physical collision
 avoidance between different lane curves. Existing M0/M3 owner gates remain open.

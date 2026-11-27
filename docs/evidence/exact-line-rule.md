@@ -38,7 +38,7 @@ stream's red, and nothing is released into its green.
   approaching major car is invisible until it is almost at the point. This is how PRIORITY_RULES §1 is written, not
   a slip; Vissim's conflict markers look upstream across links.
 
-## E1's fix, measured with a reverted patch ([patch](exact-line-rule-options.patch), `ZZ_F2`)
+## E1's fix, measured with a reverted patch ([patch](../archive/patches/exact-line-rule-options.patch), `ZZ_F2`)
 
 The rule's scan skips a span whose front is at most 1e-9 m into the conflict segment. Per run, seeds 42–51,
 `lineRest` on:

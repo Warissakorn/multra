@@ -6,7 +6,7 @@ change is committed, and the unvalidated marker stays.
 
 ## Method
 
-- **The patch.** A temporary patch on `src/core/simulation.cpp` ([patch](line-setback-options.patch), reverted).
+- **The patch.** A temporary patch on `src/core/simulation.cpp` ([patch](../archive/patches/line-setback-options.patch), reverted).
   - `ZZ_SB` sets the set-back `s` in metres. Under `lineRest`, the line law (`applyLineStop` and
     `applyDelayedLineStop`) aims at `line − s` instead of the line. The result is floored at 0.
   - `ZZ_SC` sets the scope:

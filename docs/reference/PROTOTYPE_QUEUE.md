@@ -117,7 +117,7 @@ The owner chose **P17** on 2026-11-25 ("P17"). That choice was made on D657's fi
   - the model's approach followed by the law's acceleration (1,320).
 
   It is not the hand-back, so BA261 is not needed. The profile is B's question.
-- **The attempt** ([patch](../evidence/prototype-queue-attempt.patch), not committed).
+- **The attempt** ([patch](../archive/patches/prototype-queue-attempt.patch), not committed).
   - The engine: `queueStop` became `lineRest`, and the start rule came after rule 3's hold.
   - Rows BA257–BA260 were written, and BA241's prototype row amended. Each of four mutations failed a row.
   - `multra-cli 42` was byte-identical.

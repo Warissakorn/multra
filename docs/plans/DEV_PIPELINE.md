@@ -11,7 +11,7 @@ rule in [AGENTS](../../AGENTS.md) and adds the changes marked **new**.
 | 1. Contract | Sources → contract with options and rows → every option measured with temporary patches and probes; callgrind when the hot path moves | The owner chooses |
 | 2. Code | Rows first, each with a forcing check; `core/` imports nothing, files ≤ 500 lines, no uncited default | — |
 | 3. Local ladder | (a) the touched test group, seconds; (b) **new:** the touched groups under `build/sanitizer` when a commit adds or edits tests; (c) `check`; (d) `multra-cli 42` byte-identical when `core/` moved; (e) callgrind on the hot path; (f) `multra-check-docs` | All pass |
-| 4. Record | RECORD row and index line, PROGRESS (≤ 10), NEXT, the Windows sheet when the owner must look | `check-docs` |
+| 4. Record | RECORD row and index line, PROGRESS (≤ 10), NEXT, the Windows sheet when the owner must look. **New (D682):** a small change (UI, test or docs only) is a RECORD row plus a bullet in that day's PROGRESS entry; NEXT stays under about 10,000 characters | `check-docs` |
 | 5. Push and CI | **New:** every push to `claude/**` runs `early (sanitizer)` (`early.yml`), so a memory error shows before a pull request exists; the full matrix (`native.yml`) runs on the pull request and on main | Green |
 | 6. Package | **New:** one *Package binaries* run per owner sitting, carrying every fix waiting for a look, named in the sheet by run and commit | — |
 | 7. Owner on Windows | **New:** at most five items per round. Look first at what Linux cannot see; geometry Linux can check is tested ([UI_GEOMETRY](../reference/UI_GEOMETRY.md)) | The owner's words |

@@ -6,7 +6,7 @@ unvalidated marker stays.
 
 ## Method
 
-- **The patch.** A temporary patch on `src/core/simulation.cpp` ([patch](reaction-stop-options.patch), reverted)
+- **The patch.** A temporary patch on `src/core/simulation.cpp` ([patch](../archive/patches/reaction-stop-options.patch), reverted)
   selects an option with `ZZ_R`. Every option applies only to a vehicle whose behaviour has a reaction delay
   (`reactionTicks > 0`), so runs without one are unchanged by construction. It adds two traces:
   - `ZZ_TRACE` for each clamp's situation;

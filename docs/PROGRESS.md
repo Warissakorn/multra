@@ -28,6 +28,12 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   still driving the dialog.
 - **Not reached:** about 40 dialogs that need a selected object. That is the next extension, listed in NEXT.
 - **Verified (Linux only):** `check` passes, `ctest` 382/382.
+- **Then the tree was trimmed (D682, the owner's "R1-R5 ตามแนะนำ"; recorded small, as its own rule now says):**
+  - 26 files and 3.0 MB left the tree: images and raw evidence, each recoverable with `git show 82f5e8d0:<path>`;
+  - the measuring patches moved to `docs/archive/patches/`;
+  - NEXT went from 25,991 to about 5,900 characters.
+  - Correction: only 12 images were unreferenced, not the 72 first stated. That count matched file names only,
+    and most images are named by their folder.
 
 ## 2026-11-27 — The development pipeline, an early sanitizer, and BA263's use-after-free (D678–D679)
 
@@ -113,19 +119,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
     merge rule `give-way/connector-44/to/connector-42`, so it holds the turner for the whole red (E1).
   - At green the turner is released while the next straight car, 1.35 s out on the link upstream, is invisible to
     a rule that scans only its conflict segment (E2), and that car is clamped behind it.
-- **E1's fix, measured with a reverted [patch](evidence/exact-line-rule-options.patch):** node analysis clamps
+- **E1's fix, measured with a reverted [patch](archive/patches/exact-line-rule-options.patch):** node analysis clamps
   4.7 → 0 (prototype), 19.0 → 15.7 (W74), 18.6 → 12.1 (W99). Every other shipped project is identical.
 - **E1 fixed (D673, "ทำ E1 เลย"):** in `simulation.cpp` as measured, plus a guard for a marker at the segment's start. Row
   PR17; both mutations fail it (no fix, and no guard). E2 (PRIORITY_RULES §1's scan range) is open.
 - **E2's contract** ([RULE_LOOKBACK](reference/RULE_LOOKBACK.md), D674; "เขียน contract E2 และวัดทางเลือก"):
   - Vissim's manual defines the gap by "the first upstream vehicle", across connectors, with *Look beyond red
     signals* optional.
-  - Measured with a reverted [patch](evidence/rule-lookback-options.patch): G1R (upstream, stopping at a red head)
+  - Measured with a reverted [patch](archive/patches/rule-lookback-options.patch): G1R (upstream, stopping at a red head)
     is identical to today except on M2.6 (prototype clamps 0.2 → 0, W99 hard braking 646 → 603); G1 (past red)
     worsens node analysis by 7.5–13.7 s of delay.
   - Recommendation: G1R with an index and callgrind first. The owner chose it ("ตามแนะนำ").
 - **G1R built and kept out (D675):** callgrind +3.31 % instructions on M2.6 and +1.80 % on node analysis, against a gain
-  on M2.6 only. G0 stays as a known limit; the code is [a patch](evidence/rule-lookback-g1r.patch).
+  on M2.6 only. G0 stays as a known limit; the code is [a patch](archive/patches/rule-lookback-g1r.patch).
 - **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (378 of 378).
 
 ## 2026-11-26 — A set-back at signal heads: `lineSetback`, and a lab for the checks (D670–D671)
@@ -155,7 +161,7 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   `jmStoplineGap` 1 m (0 at minor lines). Both are program defaults without a field source. NGSIM, on an unverified
   stop-bar stand-in, gives a median of 0.96 m.
 - **Contract** ([LINE_SETBACK](reference/LINE_SETBACK.md), D669), measured with a reverted
-  [patch](evidence/line-setback-options.patch):
+  [patch](archive/patches/line-setback-options.patch):
   - at signal heads, 0.5–1 m passes no red and changes delay by under 0.4 % (W74 on M2.6 +4–6 %);
   - startup lost time rises about 0.1 s per 0.5 m;
   - at give-way lines it costs 2–22 % of delay.

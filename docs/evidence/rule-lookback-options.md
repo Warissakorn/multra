@@ -1,7 +1,7 @@
 # How far upstream a priority rule looks: options measured — 2026-11-26
 
 Evidence for [RULE_LOOKBACK](../reference/RULE_LOOKBACK.md) (D674). The patch is
-[rule-lookback-options.patch](rule-lookback-options.patch) (reverted): `ZZ_E2=1` is G1 and `ZZ_E2=2` is G1R. It
+[rule-lookback-options.patch](../archive/patches/rule-lookback-options.patch) (reverted): `ZZ_E2=1` is G1 and `ZZ_E2=2` is G1R. It
 was built on `8e2906d` (with E1), Release, and `multra-cli 42` is byte-identical with it and after the revert. Per
 run, seeds 42–51, `lineRest` on. Arms are the project's own behaviours ("prototype"), the BA27 W74 fixture and the
 BA231 W99 fixture on every type.
@@ -24,5 +24,5 @@ BA231 W99 fixture on every type.
 ## G1R built: callgrind (D675)
 
 M2.6 4,353,654,959 → 4,497,851,028 Ir (+3.31 %); node analysis 2,774,360,638 → 2,824,386,143 Ir (+1.80 %). Release, one
-run, seed 42, `multra-cli --project`. The code is [rule-lookback-g1r.patch](rule-lookback-g1r.patch); details in RULE_LOOKBACK §7.
+run, seed 42, `multra-cli --project`. The code is [rule-lookback-g1r.patch](../archive/patches/rule-lookback-g1r.patch); details in RULE_LOOKBACK §7.
 

@@ -4,7 +4,7 @@ Baseline: `319b54d9cc29bb3e3ff330b88ed38388f2e1c34c` (PR #98 merged).
 Inputs were registered in local commit `c74b3fb` before the seeded comparisons;
 its published metadata counterpart is `addeb738`. See
 [inputs](connector-lane-centres-inputs.json), [project comparisons](connector-lane-centres-projects.json)
-and [T-junction sweep](connector-lane-centres-tjunction.json).
+and T-junction sweep (`connector-lane-centres-tjunction.json`, removed by D682 to keep the tree small: `git show 82f5e8d0:docs/evidence/connector-lane-centres-tjunction.json`, SHA-256 `4b902fcee422a63a…`).
 Linux, GCC 13.3.0, C++20 Release, `-fno-fast-math -ffp-contract=off`.
 
 ## What changed

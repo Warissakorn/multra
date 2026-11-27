@@ -6,7 +6,7 @@ stays.
 
 ## Method
 
-- **The patch.** A temporary patch on `src/core/simulation.cpp` ([patch](prototype-queue-options.patch), reverted)
+- **The patch.** A temporary patch on `src/core/simulation.cpp` ([patch](../archive/patches/prototype-queue-options.patch), reverted)
   selects an option with the variable `ZZ_P`. It adds two traces: `ZZ_TRACE` for each clamp and `ZZ_HARD` for
   each moving tick below −3 m/s². Every branch requires `lineRest` and a prototype behaviour, so W74, W99 and bare
   M0 are untouched by construction.
@@ -70,7 +70,7 @@ the model is in its following or braking mode). They are relabelled P7L, P14L, P
 figures stand for those variants.
 
 The rule PROTOTYPE_QUEUE §2 writes is P1 plus the start rule, with no late law. It was measured after the owner's
-choice, on the committed form ([attempt patch](prototype-queue-attempt.patch)), and is the row **P17** below.
+choice, on the committed form ([attempt patch](../archive/patches/prototype-queue-attempt.patch)), and is the row **P17** below.
 
 ## Results (per run, seeds 42–51)
 
@@ -181,7 +181,7 @@ The extra ticks are in the approaching mode, behind a moving leader, and at −3
 
 ## P17 as written, and the attempt (D658)
 
-The owner chose P17 ("P17"). The engine and rows were written ([attempt patch](prototype-queue-attempt.patch)) and
+The owner chose P17 ("P17"). The engine and rows were written ([attempt patch](../archive/patches/prototype-queue-attempt.patch)) and
 measured with the same probe.
 
 **P17 against P17L and P0** (four-leg, dt 0.1):

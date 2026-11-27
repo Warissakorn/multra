@@ -31,11 +31,11 @@ current; NEXT keeps each section's open lines. Links are rewritten for this fold
   a jump to 0); followers crawl without end (prototype 40–60 s, W74 25–30 s, predating D652). The owner chose
   **A then B**: one stop law for lines and standing vehicles, then a softer, cited stop profile. A first attempt
   of A failed nine groups and was not committed ([LINE_STOP §9](../reference/LINE_STOP.md#9-the-owners-look-on-windows-and-a-queue-behind-a-standing-car-open),
-  [patch](../evidence/line-stop-queue-attempt.patch)). **A is done for W74 and W99** ([LINE_QUEUE](../reference/LINE_QUEUE.md), D655 contract, D656 Q2): queues come to rest
+  [patch](patches/line-stop-queue-attempt.patch)). **A is done for W74 and W99** ([LINE_QUEUE](../reference/LINE_QUEUE.md), D655 contract, D656 Q2): queues come to rest
   without a crawl, and W99's clamps are 8 per run on BA231.
   **The prototype's crawl** ([PROTOTYPE_QUEUE](../reference/PROTOTYPE_QUEUE.md), D657–D658): the owner chose P17.
   The attempt was not committed: `lab` d217 clamps with `reactionTime` 0.5 s, three scene forcings were lost, and
-  BA197 served 4 % fewer ([patch](../evidence/prototype-queue-attempt.patch)). D657's "P17" figures were P17L's
+  BA197 served 4 % fewer ([patch](patches/prototype-queue-attempt.patch)). D657's "P17" figures were P17L's
   (corrected).
   **The reaction delay is done** ([REACTION_STOP](../reference/REACTION_STOP.md), D659–D661, the owner's R9). Under
   `lineRest`, delayed vehicles rest without clamps or red passes: at 0.5 s W74 clamps 9 / 44 per run (four-leg /

@@ -74,7 +74,7 @@ G1 is not recommended: it holds turners behind major cars that are stopped at th
 
 The owner chose the recommendation ("ตามแนะนำ"): G1R with an index, measured with callgrind first, and G0 if the cost
 is above the gain.
-- **Built** ([patch](../evidence/rule-lookback-g1r.patch), not committed to the engine): `src/core/rule_lookback.cpp`.
+- **Built** ([patch](../archive/patches/rule-lookback-g1r.patch), not committed to the engine): `src/core/rule_lookback.cpp`.
   - Per rule, the index holds the routes through its conflict segment and where each reaches it.
   - Per tick, the vehicles grouped by route are built lazily, as one flat array.
   - A per-rule cache per tick holds the answer for rules without a gap reduction.

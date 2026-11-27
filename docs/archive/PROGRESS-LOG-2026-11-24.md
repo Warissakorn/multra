@@ -95,7 +95,7 @@ Whole entries moved from the live PROGRESS log, newest first.
 ## 2026-11-25 — The stop laws under a reaction delay: contract and options (D659)
 
 - **Owner:** "ตามแนะนำ": contract the reaction delay for every model first (PROTOTYPE_QUEUE §6).
-- **Found** ([evidence](../evidence/reaction-stop-options.md); a temporary [patch](../evidence/reaction-stop-options.patch),
+- **Found** ([evidence](../evidence/reaction-stop-options.md); a temporary [patch](patches/reaction-stop-options.patch),
   reverted). The line and queue laws are delayed with the decision. At `reactionTime` 0.5 s:
   - **W74 clamps** 755 / 3,277 per run (four-leg / M2.6), against 23 / 91 with `lineRest` off, mostly behind a
     vehicle at rest;
@@ -118,7 +118,7 @@ Whole entries moved from the live PROGRESS log, newest first.
   - P17 as written: crawl 1.3 s at the median, clamps ≤ 0.8 per run at dt 0.1–0.5, jerk 8–13×, and moving hard
     braking 2.1–2.5×.
 - **Jerk traced:** it is the stop law's bang-bang profile behind a car at rest, not the hand-back. That is B.
-- **Attempt** ([patch](../evidence/prototype-queue-attempt.patch)):
+- **Attempt** ([patch](patches/prototype-queue-attempt.patch)):
   - Rows BA257–BA260 passed, and each of four mutations failed one. `multra-cli 42` was byte-identical.
   - **The full `check` failed five groups:**
     - `lab` d217 clamps with `reactionTime` 0.5 s;
@@ -138,7 +138,7 @@ Whole entries moved from the live PROGRESS log, newest first.
   - The prototype's desired gap `s0 + k·√v` closes as `k²/t`, so it never rests.
   - LINE_QUEUE's law alone clamps, because every clamp is a restart from an exact rest at `s0` (√v's slope is
     unbounded at 0).
-- **Measured** ([evidence](../evidence/prototype-queue-options.md); a temporary [patch](../evidence/prototype-queue-options.patch),
+- **Measured** ([evidence](../evidence/prototype-queue-options.md); a temporary [patch](patches/prototype-queue-options.patch),
   reverted). Six projects, options P0–P18, seeds 42–51, and dt 0.25 / 0.5 on the four-leg and M2.6:
   - **P17** (the stop law behind a car at rest, plus a start rule at the desired gap for `speedThreshold`) is the
     only option clean at every dt. Crawl medians are 2.5–4.7 s against 11–26 s, with 0–0.5 clamps per run.
@@ -178,7 +178,7 @@ Whole entries moved from the live PROGRESS log, newest first.
 
 - **Owner:** F9 on package #149: followers crawl without end. They asked whether a stop at a line and behind a
   car should be alike, chose A then B, then "เริ่มเขียนสัญญา A เลย".
-- **Measured** ([evidence](../evidence/line-queue-options.md); a temporary [patch](../evidence/line-queue-options.patch),
+- **Measured** ([evidence](../evidence/line-queue-options.md); a temporary [patch](patches/line-queue-options.patch),
   reverted). Six projects × four behaviours × options Q0–Q5, seeds 42–51:
   - **Today:** median crawl is 17 s (prototype) and 30–36 s (W74).
   - **Q2, for W74 and W99** (the line's stop law behind a vehicle at rest, plus a hold at the target):
@@ -282,7 +282,7 @@ Whole entries moved from the live PROGRESS log, newest first.
 ## 2026-11-24 — Stopping at the line: the contract and its measured options (D651)
 
 - **Owner:** reviewed line stops, M0 and other programs, then: "ถ้าต้องการให้โปรแกรมสมจริง มีประสิทธิภาพที่สุด"; "ทำตามแผนเขียนสัญญา".
-- **Measured** ([evidence](../evidence/line-stop-options.md); a temporary [patch](../evidence/line-stop-options.patch), reverted):
+- **Measured** ([evidence](../evidence/line-stop-options.md); a temporary [patch](patches/line-stop-options.patch), reverted):
   - five projects × prototype, W74 fixture, W74 SUMO preset, W99 × L0 / L1 / L1F / L3 / L3F, seeds 42–51;
   - L3 rests every model at every line type (0 m), cuts crawls from 10–14 s to about 0.5 s and moves startup lost
     time to +1.4 to +2.1 s (withdrawn by D653: a measurement artefact), at +1.1 % instructions;

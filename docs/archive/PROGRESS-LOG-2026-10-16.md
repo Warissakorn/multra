@@ -353,7 +353,7 @@ Properties forms now line up (`editor_interaction.cpp/.hpp`, `editor_inspector.c
 five keys per locale).
 - **Cause, measured:** `ReflowLabel`'s hint was its natural width and `QFormLayout` sizes the column
   to the widest label, so the English markings label pushed every Link field under its label, and
-  ID/Name, appearance and behaviour each had their own column ([before](../images/ui-properties-before/properties-en-1360.png)).
+  ID/Name, appearance and behaviour each had their own column (before (image removed by D682; `git show 82f5e8d0:docs/images/ui-properties-before/properties-en-1360.png`)).
 - **Column:** `alignFormLabels` marks the Properties form labels once; they take 120 px
   (`formLabelWidth`), wrap inside it and keep their wrapped height as a minimum. Below two columns a
   form switches to `WrapAllRows`: the first fixed-column build squeezed fields to slivers at 200 px.
@@ -428,7 +428,7 @@ The owner's B17 choice is in (`src/shell/editor_palette.cpp`, `editor_workspace.
 Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
 file sizes, docs and **149/149** CTest. Canvas after 100
 Steps: 807×394 English, 471×231 Thai (was 807×391 / 471×228). No Windows or high-DPI verification.
-[Before](../images/ui-palette-before/workspace-en.png) / [after](../images/ui-palette-after/workspace-en.png),
+Before (image removed by D682; `git show 82f5e8d0:docs/images/ui-palette-before/workspace-en.png`) / [after](../images/ui-palette-after/workspace-en.png),
 [icons only](../images/ui-palette-after/workspace-icons.png).
 
 ## 2026-10-16 — UI slice a: icon vocabulary (D192)
@@ -456,7 +456,7 @@ their glyphs; the contact sheet shows Grid/Conflict as another near pair for the
 Checked on Linux (Ubuntu 24.04, GCC 13.3, Qt 6.4.2 offscreen): desktop `check` passes architecture,
 file sizes, docs and **149/149** CTest. Workspace canvas 807×391 (English) and 471×228 (Thai, after
 100 Steps) before and after; the audit's 475×248 came from another font setup. No Windows or
-high-DPI verification. [Before](../images/ui-icons-before/contact-sheet.png) /
+high-DPI verification. Before (image removed by D682; `git show 82f5e8d0:docs/images/ui-icons-before/contact-sheet.png`) /
 [after](../images/ui-icons-after/contact-sheet.png).
 
 ## 2026-10-16 — Parallel tests, cheaper hit-testing, vcpkg cache (no decision)

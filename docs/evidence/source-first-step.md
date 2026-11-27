@@ -54,7 +54,7 @@ interval checks and reported maximum braking. These checks do not prove cross-pa
 
 The three differing runs are seed 48, one per headway. All drain. Source-clamp-free is an
 observation of this sweep, not a universal guarantee. Genuine moving clamps remain counted.
-Full paired reports, trajectory digests and source traces: [stress evidence](source-first-step-tjunction.json).
+Full paired reports, trajectory digests and source traces: stress evidence (`source-first-step-tjunction.json`, removed by D682 to keep the tree small: `git show 82f5e8d0:docs/evidence/source-first-step-tjunction.json`, SHA-256 `6c925a8356da0a78…`).
 
 ## Four supplied projects × 40 seeds
 

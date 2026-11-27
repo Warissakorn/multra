@@ -197,7 +197,7 @@ cycle.
   model under `lineRest`, and M0 is untouched.
 - **B.** A softer stop profile, from a cited source.
 
-**A first attempt, not committed** ([patch](../evidence/line-stop-queue-attempt.patch)):
+**A first attempt, not committed** ([patch](../archive/patches/line-stop-queue-attempt.patch)):
 - **What it did.** Behind a standing vehicle, the model was replaced by the law, and a SUMO-style safe-speed
   bound was added behind moving leaders.
 - **What worked.** BA252 (a queue of four comes to rest without a crawl, every model) passed.

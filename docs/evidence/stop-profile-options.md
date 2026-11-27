@@ -6,7 +6,7 @@ Evidence for [STOP_PROFILE](../reference/STOP_PROFILE.md) (D663). The sources ar
 ## Method
 
 - **The patch.** A temporary patch on `src/core/line_stop.cpp` and `src/core/simulation.cpp`
-  ([patch](stop-profile-options.patch), reverted). `ZZ_B` selects an option and `ZZ_T` sets T.
+  ([patch](../archive/patches/stop-profile-options.patch), reverted). `ZZ_B` selects an option and `ZZ_T` sets T.
   - It changes only the first part of `applyLineStop`: the line law toward `line`, which is the nearest holding line
     or a vehicle at rest less the standstill gap.
   - D258's floor for W74 and W99 after it is unchanged, and so is W99 §4's own call of `lineStopAcceleration`.

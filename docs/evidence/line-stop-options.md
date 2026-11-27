@@ -9,7 +9,7 @@ Evidence for [LINE_STOP](../reference/LINE_STOP.md) (D651).
 
 ## Inputs and method
 
-- **Build:** commit `c193433` plus [`line-stop-options.patch`](line-stop-options.patch), applied, measured, then
+- **Build:** commit `c193433` plus [`line-stop-options.patch`](../archive/patches/line-stop-options.patch), applied, measured, then
   reverted. Linux, GCC 13.3.0, Release (`build/perf`, `-O3 -DNDEBUG -g1 -fno-fast-math -ffp-contract=off`).
 - **Environment switches:** the patch adds three, read once per process.
   - **`ZZ_L1`.** Every line is handed to the model as D596's zone line. For the prototype that is a desired gap
