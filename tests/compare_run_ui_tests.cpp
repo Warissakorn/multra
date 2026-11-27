@@ -191,6 +191,17 @@ int main(int argc, char** argv) {
                 "A comparison after a cancel failed");
         QTest::qWait(50);
         require(w.comparisonResult()->comparison.seeds.size() == 1, "A cancelled comparison's result arrived late");
+        // D683: an alternative saved with lineRest off is compared with it on, and the line says so.
+        {
+            auto off = documentJson(busier); off["schemaVersion"] = 87; off["definition"]["clampRules"] = Json{{"lineRest", false}}; // D677: 87/88 only
+            const auto offFile = dir.filePath("line-rest-off.traffic.json");
+            { std::ofstream out(offFile.toStdString()); out << off.dump(2); }
+            w.compareWithFile(offFile);
+            require(w.batchRunning() && error->text().contains("lineRest") && error->text().contains("line-rest-off.traffic.json"),
+                    "Compare did not say the alternative's lineRest off is not used");
+            waitForWorker(w);
+            require(w.comparisonResult().has_value(), "The comparison against lineRest off did not finish");
+        }
 
         // CMP14 (D526): perInput projects compare paired by seed, and the note says so.
         {

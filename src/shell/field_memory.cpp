@@ -17,11 +17,32 @@ void rememberField(QCheckBox* on, QAbstractSpinBox* field, const QString& key) {
     if (auto* spin = qobject_cast<QDoubleSpinBox*>(field)) {
         if (on->isChecked()) memory()[key] = spin->value();
         else if (memory().contains(key)) spin->setValue(memory()[key].toDouble());
-        QObject::connect(spin, &QDoubleSpinBox::valueChanged, spin, [key](double v) { memory()[key] = v; });
+        // A kept value outside the field's range was clamped by a narrower range (a shorter Link), not
+        // edited: keep it while the field sits on the bound that clamped it, so `refitField` can bring it back when the range allows it again (D683).
+        QObject::connect(spin, &QDoubleSpinBox::valueChanged, spin, [spin, key](double v) {
+            const auto kept = memory().find(key);
+            if (kept != memory().end() && (v == spin->minimum() || v == spin->maximum()) &&
+                (kept->toDouble() < spin->minimum() || kept->toDouble() > spin->maximum())) return;
+            memory()[key] = v;
+        });
     } else if (auto* whole = qobject_cast<QSpinBox*>(field)) {
         if (on->isChecked()) memory()[key] = whole->value();
         else if (memory().contains(key)) whole->setValue(memory()[key].toInt());
-        QObject::connect(whole, &QSpinBox::valueChanged, whole, [key](int v) { memory()[key] = v; });
+        QObject::connect(whole, &QSpinBox::valueChanged, whole, [whole, key](int v) {
+            const auto kept = memory().find(key);
+            if (kept != memory().end() && (v == whole->minimum() || v == whole->maximum()) &&
+                (kept->toInt() < whole->minimum() || kept->toInt() > whole->maximum())) return;
+            memory()[key] = v;
+        });
+    }
+}
+void refitField(QAbstractSpinBox* field, const QString& key) {
+    const auto kept = memory().find(key);
+    if (kept == memory().end()) return;
+    if (auto* spin = qobject_cast<QDoubleSpinBox*>(field)) {
+        if (const double v = kept->toDouble(); v >= spin->minimum() && v <= spin->maximum()) spin->setValue(v);
+    } else if (auto* whole = qobject_cast<QSpinBox*>(field)) {
+        if (const int v = kept->toInt(); v >= whole->minimum() && v <= whole->maximum()) whole->setValue(v);
     }
 }
 void rememberField(QCheckBox* on, QLineEdit* field, const QString& key) { rememberField(on->isChecked(), field, key); }

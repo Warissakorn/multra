@@ -261,6 +261,10 @@ int main(int argc,char** argv) {
         require(w.history().document().definition->clampRules==ClampRules{},"lineRest off was not ignored");
         require(w.findChild<QLabel*>("editorError")->text().contains("lineRest"),"No warning that lineRest off is ignored");
         require(!documentJson(w.history().document())["definition"].contains("clampRules"),"lineRest written back");
+        // D683: a recovered draft saved with lineRest off says so too.
+        w.recoverFile(offFile);QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"Recovery used lineRest off");
+        require(w.findChild<QLabel*>("editorError")->text().contains("lineRest"),"Recovery did not say lineRest off is ignored");
         std::cout<<"Signal UI tests passed\n";
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

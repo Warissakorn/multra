@@ -129,8 +129,9 @@ void EditorWindow::compareWithFile(const QString& file) {
     }
     const auto alternativeName=QFileInfo(file).fileName();
     std::optional<RunSnapshot> alternative; std::optional<EvaluationSpec> alternativeSpec;
+    bool lineRestIgnored=false; // D683: the alternative's lineRest off is not used either, and is said (D677)
     try{
-        const auto document=readEditorDocument(file);
+        const auto document=readEditorDocument(file,&lineRestIgnored);
         const auto own=sideFilesBeside(file); // S5.5b (D332): its own side files, not the open project's
         alternative=compileDocument(document,data_,nullptr,&own);
         alternativeSpec=evaluationSpec(document,*alternative,data_);
@@ -148,6 +149,7 @@ void EditorWindow::compareWithFile(const QString& file) {
     auto names=std::pair{baseName(file_,history_.dirty()),alternativeName.toStdString()};
     clearRun("replacedByComparison"); // one table at a time: this cancels any batch or comparison and the single run
     error_->clear();
+    if(lineRestIgnored)error_->setText(text("editorCompareLineRestIgnored").arg(alternativeName));
     const auto total=2*list->size(); // read before the call: the capture below moves the list
     startWorker(total,true,[this,names=std::move(names),seeds=std::move(*list),
         baseScenario=std::move(base->scenario),baseSpec=std::move(*baseSpec),

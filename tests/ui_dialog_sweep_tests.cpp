@@ -15,6 +15,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSet>
+#include <QTableView>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QTimer>
@@ -22,7 +23,7 @@
 #include <iostream>
 using namespace multra;
 namespace {
-// Actions that run, save, close or switch the whole window are not dialogs to check; tools and toggles neither.
+// Actions that run, save, close, open another project (an example) or switch the whole window are not dialogs to check; tools and toggles neither.
 bool skipped(const QAction* a) {
     const QString n = a->objectName();
     static const QSet<QString> names{"editorNew", "editorOpen", "editorSave", "editorSaveAs", "editorRun", "editorStep",
@@ -30,7 +31,7 @@ bool skipped(const QAction* a) {
         "editorRemoveImage", "editorImportImage", "editorApplyImage", "editorBehaviourLab", "editorRunSeeds",
         "editorCompareSeeds", "editorRunMeso", "editorRunMacro", "editorSuggestNodes", "editorAnalyseNodes",
         "editorFindCrossings", "editorRecheck", "editorFit", "editorSnap", "editorUndo", "editorRedo"};
-    return n.isEmpty() || n.startsWith("_q_") || n.startsWith("editorTool") || n.startsWith("editorDelete") ||
+    return n.isEmpty() || n.startsWith("_q_") || n.startsWith("editorTool") || n.startsWith("editorExample") || n.startsWith("editorDelete") ||
            n.startsWith("editorCancel") || n.contains("Palette") || names.contains(n) || !n.startsWith("editor") || a->isCheckable();
 }
 // Buttons inside a dialog that open another dialog: their names say Add or Edit.
@@ -39,7 +40,8 @@ bool opener(const QPushButton* b) {
     return b->isVisible() && b->isEnabled() && (n.contains("Edit") || n.contains("Add")) && !n.contains("Delete") && !n.contains("Remove");
 }
 struct Sweep {
-    int dialogs = 0;
+    int dialogs = 0, actions = 0;
+    QSet<QString> reached; // every action triggered under any tag
     std::vector<std::string> findings;
     QString png, tag;
     QSet<QString> seen;
@@ -71,6 +73,56 @@ struct Sweep {
         act(); QApplication::processEvents();
     }
 };
+// Triggers every enabled action not triggered yet under this tag. An action that edits instead of opening a dialog
+// (Reverse, Opposite, Number nodes and the like) is undone, so every selection below sees the project as opened.
+void sweepActions(EditorWindow& w, Sweep& sweep, QSet<QString>& triggered) {
+    for (auto* a : w.findChildren<QAction*>()) {
+        if (!a->isEnabled() || skipped(a) || triggered.contains(a->objectName())) continue;
+        triggered.insert(a->objectName());
+        const auto revision = w.history().revision();
+        sweep.open([a] { a->trigger(); }, 0);
+        for (int k = 0; k < 20 && w.history().revision() != revision && w.history().canUndo(); ++k) {
+            w.findChild<QAction*>("editorUndo")->trigger(); QApplication::processEvents();
+        }
+        if (w.history().revision() != revision) throw std::runtime_error("Could not undo " + a->objectName().toStdString());
+    }
+}
+// D683 (UI_GEOMETRY §5): about 40 actions need a selected object. After the actions enabled with nothing
+// selected, the sweep selects on the canvas the first Link, the first Connector and the first two Links, then in
+// each table of the window its first row and, where several rows may be selected, its first two; after each
+// selection it triggers whatever has become enabled.
+void sweepSelections(EditorWindow& w, Sweep& sweep) {
+    QSet<QString> triggered;
+    const auto clear = [&] {
+        w.canvas()->select("");
+        for (auto* t : w.findChildren<QTableView*>()) if (t->window() == &w && t->selectionModel()) t->clearSelection();
+        QApplication::processEvents();
+    };
+    sweepActions(w, sweep, triggered);
+    const auto& network = w.history().document().network;
+    std::vector<std::vector<std::string>> picks;
+    if (!network.links.empty()) picks.push_back({network.links.front().id});
+    if (!network.connectors.empty()) picks.push_back({network.connectors.front().id});
+    if (network.links.size() > 1) picks.push_back({network.links[0].id, network.links[1].id});
+    for (const auto& ids : picks) {
+        clear(); w.canvas()->setSelection(ids); QApplication::processEvents();
+        sweepActions(w, sweep, triggered);
+    }
+    for (auto* t : w.findChildren<QTableView*>()) {
+        if (t->window() != &w || !t->model() || !t->selectionModel() || t->model()->rowCount() == 0) continue;
+        const bool several = t->selectionMode() == QAbstractItemView::ExtendedSelection || t->selectionMode() == QAbstractItemView::MultiSelection;
+        for (int rows = 1; rows <= (several && t->model()->rowCount() > 1 ? 2 : 1); ++rows) {
+            clear();
+            const QItemSelection chosen(t->model()->index(0, 0), t->model()->index(rows - 1, t->model()->columnCount() - 1));
+            t->setCurrentIndex(t->model()->index(0, 0));
+            t->selectionModel()->select(chosen, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            QApplication::processEvents();
+            sweepActions(w, sweep, triggered);
+        }
+    }
+    clear();
+    sweep.actions += triggered.size(); sweep.reached.unite(triggered);
+}
 }
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
@@ -91,11 +143,14 @@ int main(int argc, char** argv) {
                 w.openFile(copy); language->setCurrentIndex(lang); QApplication::processEvents();
                 sweep.tag = QString("%1-%2").arg(QFileInfo(QString::fromLocal8Bit(argv[file])).baseName(), lang ? "th" : "en");
                 sweep.seen.clear();
-                for (auto* a : w.findChildren<QAction*>())
-                    if (a->isEnabled() && !skipped(a)) sweep.open([a] { a->trigger(); }, 0);
+                sweepSelections(w, sweep);
             }
         }
-        std::cout << "UI dialog sweep: " << sweep.dialogs << " dialogs, " << sweep.findings.size() << " findings\n";
+        std::cout << "UI dialog sweep: " << sweep.actions << " actions, " << sweep.dialogs << " dialogs, " << sweep.findings.size() << " findings\n";
+        QStringList unreached; // still disabled under every selection the sweep makes
+        for (auto* a : w.findChildren<QAction*>()) if (!skipped(a) && !sweep.reached.contains(a->objectName())) unreached << a->objectName();
+        unreached.sort(); unreached.removeDuplicates();
+        std::cout << "Not reached (" << unreached.size() << "): " << unreached.join(' ').toStdString() << '\n';
         for (const auto& f : sweep.findings) std::cout << f << '\n';
         if (sweep.dialogs < 10) throw std::runtime_error("Fewer than ten dialogs reached");
         if (!sweep.findings.empty() && !qEnvironmentVariableIsSet("MULTRA_UI_GEOMETRY_REPORT")) throw std::runtime_error(sweep.findings.front());

@@ -1,9 +1,10 @@
 // UI_GEOMETRY (D680): each check of ui_geometry_support.hpp fires on a dialog built to break it, and a plain form passes.
-// Rows UG1-UG5; the forcing rows are what make "no findings" on the real dialogs mean something.
+// Rows UG1-UG6; the forcing rows are what make "no findings" on the real dialogs mean something.
 #include "ui_geometry_support.hpp"
 #include "../src/shell/editor_style.hpp"
 #include "../src/shell/table_grid.hpp"
 #include <QApplication>
+#include <QComboBox>
 #include <QDialog>
 #include <QFormLayout>
 #include <QGridLayout>
@@ -55,6 +56,18 @@ int main(int argc, char** argv) {
             auto* button = new QPushButton("a button far wider than twenty pixels", &e); button->setFixedWidth(20); row->addWidget(button);
             e.show(); QApplication::processEvents();
             require(has(uiGeometry::findings(e), "G4"), "UG4: a clipped button not caught");
+        }
+        {   // UG6 (D683): a widget set on a cell that cannot shrink to its row (the old 24 px field rule) is caught;
+            // under the editor style a combo on a cell fills it.
+            QDialog d; d.setStyleSheet(multra::editorStyleSheet()); auto* box = new QVBoxLayout(&d);
+            auto* t = table(&d); multra::makeSpreadsheetTable(t); box->addWidget(t);
+            auto* pinned = new QPushButton("x"); pinned->setFixedHeight(t->rowHeight(0) + 6); t->setCellWidget(0, 0, pinned);
+            d.resize(400, 300); d.show(); QApplication::processEvents();
+            require(has(uiGeometry::findings(d), "G1"), "UG6: a cell widget taller than its row not caught");
+            auto* combo = new QComboBox; combo->addItems({"major", "minor"}); t->setCellWidget(0, 0, combo); QApplication::processEvents();
+            const auto found = uiGeometry::findings(d);
+            for (const auto& f : found) std::cerr << f << '\n';
+            require(found.empty(), "UG6: a combo on a cell under the editor style does not fill it");
         }
         {   // UG5: a plain form under the editor style passes.
             QDialog d; d.setStyleSheet(multra::editorStyleSheet()); auto* form = new QFormLayout(&d);

@@ -134,6 +134,10 @@ QString editorStyleSheet() {
         QTableView QHeaderView { background: palette(base); } /* no grey band past the last row or column */
         /* F8 (owner, 2026-11-26): a cell's editor fills its cell (table_grid.cpp): not a pinned 24 px field. */
         QLineEdit[cellEditor="true"], QLineEdit[cellEditor="true"]:focus, QAbstractSpinBox[cellEditor="true"], QAbstractSpinBox[cellEditor="true"]:focus { min-height: 0; max-height: 9999px; margin: 0; padding: 0 @space1px; border: 1px solid palette(highlight); border-radius: 0; }
+        /* D683: a field set on a cell (a combo, spin box or line edit in a table) fills its cell too, as the
+           editor does: the 24 px field rule made a combo 1 px taller than a 23 px row and left 4 px under a spin box. */
+        QTableView QComboBox, QTableView QAbstractSpinBox, QTableView QLineEdit { min-height: 0; max-height: 9999px; border-radius: 0; }
+        QTableView QComboBox:focus, QTableView QAbstractSpinBox:focus, QTableView QLineEdit:focus { min-height: 0; max-height: 9999px; }
         /* F8: a table that is not used (disabled) reads as such: muted cells and headers, no current-cell frame. */
         QTableView:disabled { background: palette(midlight); color: palette(dark); }
         QTableView::item:disabled, QTableView::item:focus:disabled { border: 0; background: transparent; color: palette(dark); }
