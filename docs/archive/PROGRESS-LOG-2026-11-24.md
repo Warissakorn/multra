@@ -2,6 +2,23 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — B, a softer stop profile: the contract and its measured options (D663)
+
+- **Owner:** "อนุญาตให้ดาวน์โหลด PDF ได้", then "เขียนสัญญา B จากแหล่งที่อ่านแล้ว".
+- **Sources read** ([stop-profile-sources](../evidence/stop-profile-sources.md)):
+  - Kesting & Treiber (2008): IDM's equations and its braking strategy;
+  - Zhou et al. (2025), restating Treiber & Kesting: braking eases to zero at rest.
+  - Akçelik & Biggs (1987) and Deligianni (2017) are still unread.
+- **Contract** ([STOP_PROFILE](../reference/STOP_PROFILE.md)): IDM-shaped line laws, bounded by today's so the stop
+  still ends exactly at the target.
+  - B2–B4 remove the onset step (four-leg step jerk: prototype 296 → 23–25, W74 625 → 175–389, W99 266 → 56–154).
+  - The prototype's delay rises by 9–12 s, which is not traced.
+  - No option removes the last step to rest.
+  - SUMO 1.18 measured: Krauss is today's profile; IDM rests 0.11 m short.
+  - **Recommendation:** B3 (T = 0, no new value) after a trace of the delay. The owner chooses (§6).
+- **Verified (Linux only):** no engine change; `multra-cli 42` byte-identical after the patch's revert;
+  `check-docs` passes.
+
 ## 2026-11-25 — Prototype queues rest behind a standing car: P17 (D662)
 
 - **Owner:** "ทำ P17 ต่อเลย". Package #150 (`a5abe16`, D652–D661) was queued with owner item F10.

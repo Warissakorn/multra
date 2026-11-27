@@ -7,10 +7,10 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 and never reused; an item that took in an older one says so.
 
 **Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
-I.5 → F8 → F12 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
+I.5 → F12 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
 2026-11-22: P51 and P52 (words in PROGRESS; their findings D620). Answered 2026-11-26 on package #152: F7, F9, F10 and F11, all passed (words in
-PROGRESS).
+PROGRESS). Answered 2026-11-27 on #155: F8 passed; F12 b, d and e passed (a and c remain).
 
 ---
 
@@ -53,43 +53,16 @@ PROGRESS).
 
 ## F — Dialogs
 
-8. **CC1 as a distribution in the W99 dialog** (listed 2026-11-24, D648, W99 §5a). Edit a behaviour, choose
-    *W99*: is *CC1* set to *Distribution (per driver)* with an empty table and the `cc1` field greyed? Fill
-    the other nine keys, add rows (0.6, 0) and (1.5, 90), Confirm: is the error "· cc1Curve[1].share" and
-    the row selected? Change 90 to 100, Confirm, reopen: are the points kept? Switch to *Fixed*, enter cc1,
-    Confirm: is the curve gone? In Thai and English at 100/150 %: do the table, its headers and the Add /
-    Remove buttons fit without clipping? *Owner, on #153 (2026-11-26):* the table should look unused under
-    *Fixed*; a double-clicked cell's editor is not on its cell, check other tables. Both fixed (D676).
-    - **Recheck on run [#155](https://github.com/Warissakorn/multra/actions/runs/45808562900)** (`fca6669`, D676–D677; artifact `multra-windows-x64`; #154 is superseded): under *Fixed*, is the curve table grey, headers included? Double-click a
-      cell here, in *Study periods* and in a vehicle type's speed curve: does the editor sit exactly on the cell? Switch
-      to *Fixed*, Confirm, reopen and choose *Distribution*: are your points back? (Kept until the program closes.)
-      *Owner:*
-
-12. **The `lineSetback` field and a set-back at a red** (listed 2026-11-26; D669–D670;
-    [LINE_SETBACK](../reference/LINE_SETBACK.md) §7).
-    - **Package:** run #153 of *Package binaries* (`ae07ab7`, D670–D671; succeeded 2026-11-26), artifact
-      `multra-windows-x64`. It also carries F8.
+12. **The `lineSetback` field** (listed 2026-11-26; D669–D670, D677;
+    [LINE_SETBACK](../reference/LINE_SETBACK.md) §7, §9). Package: run
+    [#155](https://github.com/Warissakorn/multra/actions/runs/45808562900) (`fca6669`), artifact `multra-windows-x64`.
+    b, d and e passed on #155 (words in PROGRESS); two items remain.
     - **a. The field.** Edit a behaviour in *Driving behaviours*, for the prototype, W74 and W99 in turn. On the
-      junction page, is there a `lineSetback` checkbox with a field, unticked? Does it fit without clipping in Thai
+      junction page, are the `lineSetback` box, its field and the default note shown in full, without clipping, in Thai
       and English at 100/150 %?
-    - **b. At a red.** Open *File → Open example → Line-stop lab* (D671): every vehicle type is on `w99-lab`, with
-      the W74 behaviours `w74-lab` and `w74-sumo` ready, so no key is typed. Edit `w99-lab`, tick `lineSetback`,
-      enter 1, Confirm and run. Pause during a red. Does the first car of each queue stand about 1 m short of its stop
-      line, and leave at green without a jump? Optionally switch the types to `w74-lab` in the behaviour library and
-      look again.
-    - **c. Save and reopen.** Save, close, reopen. Is `lineSetback` still 1? Untick it and save: does the file no
-      longer carry it?
-    - Report the words for a–c. Linux closes none of these (rule 3). *Owner, on #153 (2026-11-26):* with `lineSetback`
-      unticked and ticked again, the 1 was gone; keep it, and check every field. Fixed for every such field (D676). Also
-      asked whether `lineRest` and `lineSetback` duplicate W99's own stop short of the line (answered in PROGRESS).
-    - **d. Recheck on run #155** (`fca6669`, D676): tick `lineSetback`, enter 1, Confirm, run; untick, Confirm, run;
-      reopen and tick again. Is it 1? Try one more field, e.g. a vehicle type's PCU or a speed area's deceleration.
-      *Owner:*
-    - **e. One setting, 1 m by default** (D677, LINE_SETBACK §9; run #155). *Run
-      settings* has five clamp-rule boxes, no `lineRest`. In the line-stop lab, with `lineSetback` unticked (the field
-      shows 1 and a note names the default), does the first car stand about 1 m short at a red? Tick it and enter 0:
-      does it stand at the line? If you kept the F9 file saved with `lineRest` unticked, open it: does the message line
-      say it is ignored, and does Save drop it? *Owner:*
+    - **c. Save and reopen.** In the line-stop lab, tick `lineSetback`, enter 0.5, save, close and reopen. Is it still
+      0.5? Untick it and save: does the file no longer carry it?
+    - Report the words for a and c. Linux closes none of these (rule 3). *Owner:*
 
 ## G — Object interchange
 

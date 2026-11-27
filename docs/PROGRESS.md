@@ -5,6 +5,15 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-27 — The owner's Windows checks F8 and F12 d–e pass on package #155
+
+- **Owner, on package #155** (`fca6669`, D676–D677): "F8 ผ่าน F12 d และ e ผ่านทั้งหมด".
+  - **F8:** the CC1 table, its muted look under *Fixed*, and cell editors on their cells.
+  - **F12 d:** an unticked value comes back when ticked again.
+  - **F12 e:** no `lineRest` box, a 1 m rest by default, 0 at the line, and the warning for a file saved with it off.
+- **Closed:** F8, removed from the [Windows sheet](plans/OWNER_SITTING_WINDOWS.md). F12 keeps a (the field fits) and c
+  (save and reopen), which have no words yet. F12 b, at a red, is covered by e.
+
 ## 2026-11-26 — `lineRest` always on, `lineSetback` 1 m by default (D677)
 
 - **Owner:** asked whether to remove `lineRest` and `lineSetback`. The session recommended removing only the switch,
@@ -163,20 +172,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 - **No code.** The trade-off changed, so the owner chooses again (STOP_PROFILE §9). The recommendation is B3P,
   B3 toward lines for the prototype only.
 - **Verified (Linux only):** `multra-cli 42` byte-identical after the patch's revert; `check-docs` passes.
-
-## 2026-11-25 — B, a softer stop profile: the contract and its measured options (D663)
-
-- **Owner:** "อนุญาตให้ดาวน์โหลด PDF ได้", then "เขียนสัญญา B จากแหล่งที่อ่านแล้ว".
-- **Sources read** ([stop-profile-sources](evidence/stop-profile-sources.md)):
-  - Kesting & Treiber (2008): IDM's equations and its braking strategy;
-  - Zhou et al. (2025), restating Treiber & Kesting: braking eases to zero at rest.
-  - Akçelik & Biggs (1987) and Deligianni (2017) are still unread.
-- **Contract** ([STOP_PROFILE](reference/STOP_PROFILE.md)): IDM-shaped line laws, bounded by today's so the stop
-  still ends exactly at the target.
-  - B2–B4 remove the onset step (four-leg step jerk: prototype 296 → 23–25, W74 625 → 175–389, W99 266 → 56–154).
-  - The prototype's delay rises by 9–12 s, which is not traced.
-  - No option removes the last step to rest.
-  - SUMO 1.18 measured: Krauss is today's profile; IDM rests 0.11 m short.
-  - **Recommendation:** B3 (T = 0, no new value) after a trace of the delay. The owner chooses (§6).
-- **Verified (Linux only):** no engine change; `multra-cli 42` byte-identical after the patch's revert;
-  `check-docs` passes.
