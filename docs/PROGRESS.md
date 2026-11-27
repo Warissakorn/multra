@@ -5,6 +5,21 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-27 — The development pipeline, CI on every push, and BA263's use-after-free (D678)
+
+- **CI:** PR #232's `linux (sanitizer)` job failed on `linestop`. ASan found BA263 (D661) holding a reference into a
+  temporary scenario. The row now copies the vehicle type: under `build/sanitizer`, the failure reproduced before the
+  fix and the group passes 20/20 after it.
+- **Owner:** asked for the most suitable pipeline, then "ตามแนะนำ".
+- **Done** ([DEV_PIPELINE](plans/DEV_PIPELINE.md), D678):
+  - `native.yml` runs on every push to `claude/**`;
+  - a local sanitizer step joins the ladder;
+  - one package per sitting, at most five owner items a round, one pull request per topic.
+- **Contract only:** [UI_GEOMETRY](reference/UI_GEOMETRY.md), dialog geometry checked on Linux. Options U1–U3, with
+  U1 then U2 recommended; the owner chooses.
+- **Also asked:** whether the repository is bloated. Answered in chat with measurements, no change: docs are
+  16 MB of the 28 MB tracked, against 4.3 MB of source.
+
 ## 2026-11-27 — The owner's Windows checks F8 and F12 pass on package #155
 
 - **Owner, on package #155** (`fca6669`, D676–D677): "F8 ผ่าน F12 d และ e ผ่านทั้งหมด".
@@ -163,14 +178,3 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   dt 0.25 the bound is tightened to 1 s.
 - **Verified (Linux only):** `check` passes; `multra-cli 42` byte-identical.
 - **Package #152** (`a18a229`) for the owner's [F11](plans/OWNER_SITTING_WINDOWS.md) (and F10).
-
-## 2026-11-25 — B3's delay traced: all of it is the approach to standing cars (D664)
-
-- **Owner:** "ตามแนะนำ" (B3, after STOP_PROFILE §5's trace).
-- **Trace** ([evidence](evidence/stop-profile-options.md#the-trace-of-the-prototypes-delay-d664)): B3 toward lines only
-  keeps the prototype's delay (four-leg 47.74 → 47.76 s), so all of the +9.5 s is the approach to a vehicle at rest.
-  - Most of B3's gain is there too: toward lines only, step jerk 296 → 299 and hard braking 1,027 → 903.
-  - W74 and W99 gain nothing toward lines only. Their jerk > 10 m/s³ rises by up to 56 %.
-- **No code.** The trade-off changed, so the owner chooses again (STOP_PROFILE §9). The recommendation is B3P,
-  B3 toward lines for the prototype only.
-- **Verified (Linux only):** `multra-cli 42` byte-identical after the patch's revert; `check-docs` passes.

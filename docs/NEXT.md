@@ -61,6 +61,12 @@ The single live to-do, **open items only**: what shipped is in [PROGRESS](PROGRE
   `missedExitAfter`) were compiled but never opened.
 - Gates: none closed by this study. A3/B4 stay the owner's.
 
+## Pipeline (D678, 2026-11-27)
+
+- Work by [DEV_PIPELINE](plans/DEV_PIPELINE.md): sanitizer on the touched groups, one package per sitting, at most
+  five owner items a round, one pull request per topic (PR #232 is open for this branch).
+- **Owner's choice:** [UI_GEOMETRY](reference/UI_GEOMETRY.md) U1, U2 or neither. Nothing is built yet.
+
 ## Owner checks on Windows — triaged, one sitting (D602, 2026-11-20)
 
 The Windows sheet was cut from about 70 items to 17 (D602). **Answered 2026-11-20:** C14, C15, E33, E34,

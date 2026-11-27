@@ -1,16 +1,19 @@
 name: Native C++
 # A push to a branch with an open pull request used to run every job twice (push and
-# pull_request on the same commit). Branches are covered by their pull request; main by push.
-# Run it by hand from the Actions tab for a branch without one.
+# pull_request on the same commit). main runs by push. D678: a session branch (claude/**) also
+# runs on every push, so a failure shows before any pull request is opened. Once its pull request
+# is open, a push runs twice; that is accepted, as a session opens one short-lived pull request per
+# topic. Skipping the pull_request jobs instead would leave same-named skipped checks that a
+# required-check rule could read as passed. Other branches: their pull request, or by hand.
 on:
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
   pull_request:
   workflow_dispatch:
-# A newer push to the same pull request supersedes the run still going for the old commit.
+# A newer push to the same pull request or session branch supersedes the run still going for the old commit.
 concurrency:
   group: native-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || startsWith(github.ref, 'refs/heads/claude/') }}
 permissions:
   contents: read
 jobs:

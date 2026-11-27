@@ -2,6 +2,17 @@
 
 Whole entries moved from the live PROGRESS log, newest first.
 
+## 2026-11-25 — B3's delay traced: all of it is the approach to standing cars (D664)
+
+- **Owner:** "ตามแนะนำ" (B3, after STOP_PROFILE §5's trace).
+- **Trace** ([evidence](../evidence/stop-profile-options.md#the-trace-of-the-prototypes-delay-d664)): B3 toward lines only
+  keeps the prototype's delay (four-leg 47.74 → 47.76 s), so all of the +9.5 s is the approach to a vehicle at rest.
+  - Most of B3's gain is there too: toward lines only, step jerk 296 → 299 and hard braking 1,027 → 903.
+  - W74 and W99 gain nothing toward lines only. Their jerk > 10 m/s³ rises by up to 56 %.
+- **No code.** The trade-off changed, so the owner chooses again (STOP_PROFILE §9). The recommendation is B3P,
+  B3 toward lines for the prototype only.
+- **Verified (Linux only):** `multra-cli 42` byte-identical after the patch's revert; `check-docs` passes.
+
 ## 2026-11-25 — B, a softer stop profile: the contract and its measured options (D663)
 
 - **Owner:** "อนุญาตให้ดาวน์โหลด PDF ได้", then "เขียนสัญญา B จากแหล่งที่อ่านแล้ว".

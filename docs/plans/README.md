@@ -28,5 +28,6 @@ the live queue. Owner observations are distinct from automated checks.
 | [M5_PLAN.md](M5_PLAN.md) | M5 slices M5.2–M5.7: batch, evaluation period, section delay, LOS, Copy/Export — 2026-10-08 |
 | [MULTI_LEVEL_MODELLING.md](MULTI_LEVEL_MODELLING.md) | Micro, Meso and Macro (four-step) levels, zones/OD, parking lots, dynamic assignment; milestones M8–M12 — 2026-10-09 (D145) |
 | [MULTI_LEVEL_WORKFLOW.md](MULTI_LEVEL_WORKFLOW.md) | Amends D145: one workflow from any level, Node and Road objects, StudyPeriod, run-time cut, offline-first imports, owner answers — 2026-10-15 (D175) |
+| [DEV_PIPELINE.md](DEV_PIPELINE.md) | The development pipeline agreed 2026-11-27 (D678): stages 0–8, CI on every session-branch push, one package per sitting, five owner items a round, one pull request per topic |
 
 Return to [the task reading map](../README.md#read-by-task).
