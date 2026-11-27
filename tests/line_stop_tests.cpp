@@ -367,7 +367,7 @@ TEST(linestop, ba263_a_delayed_w74_or_w99_queue_rests_without_a_clamp) { // BA26
         CHECK(r.lawBound > 0); // forcing: the queue law binds the last follower after the delay
         CHECK(r.clamps == 0); CHECK(r.still);
         // At rest, at most the room a start held for the delay needs (rule 3 holds a shorter close-up).
-        const auto& type = test::straight().vehicleTypes.front(); const double a = type.maxAcceleration;
+        const auto type = test::straight().vehicleTypes.front(); const double a = type.maxAcceleration; // a copy: the scenario was a temporary
         const double room = a * kReaction * kReaction / 2 + (a * kReaction) * (a * kReaction) / (2 * type.maxDeceleration);
         for (const double x : r.rests) { CHECK(x >= -1e-9); CHECK(x < room); }
     }
