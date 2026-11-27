@@ -24,6 +24,12 @@ bool sameShape(const Scenario& a, const Scenario& b) {
     const auto w74 = [](const Scenario& s) {
         return std::any_of(s.behaviours.begin(), s.behaviours.end(), [](const auto& d) { return d.w74.has_value(); });
     };
+    const auto w99 = [](const Scenario& s) {
+        return std::any_of(s.behaviours.begin(), s.behaviours.end(), [](const auto& d) { return d.w99.has_value(); });
+    };
+    const auto curve = [](const Scenario& s) { // D647: the CC1 share is drawn at generation too
+        return std::any_of(s.behaviours.begin(), s.behaviours.end(), [](const auto& d) { return d.w99 && !d.w99->cc1Curve.empty(); });
+    };
     return a.timeStep == b.timeStep && a.routes == b.routes && a.inputs == b.inputs && sameHeads &&
            sameIds(a.vehicleTypes, b.vehicleTypes) && sameIds(a.behaviours, b.behaviours) &&
            std::equal(a.behaviours.begin(), a.behaviours.end(), b.behaviours.begin(), b.behaviours.end(),
@@ -34,7 +40,7 @@ bool sameShape(const Scenario& a, const Scenario& b) {
            a.conflictZones == b.conflictZones && a.laneChanges == b.laneChanges &&
            a.routeDeadEnds == b.routeDeadEnds && a.routeDecisions == b.routeDecisions &&
            a.segmentBehaviours == b.segmentBehaviours && a.parkingLots == b.parkingLots &&
-           w74(a) == w74(b) && // traits are drawn at generation only when some behaviour is w74
+           w74(a) == w74(b) && w99(a) == w99(b) && curve(a) == curve(b) && // traits are drawn at generation only when some behaviour is w74 / w99 (D642)
            std::equal(a.segments.begin(), a.segments.end(), b.segments.begin(), b.segments.end(),
                       [](const auto& x, const auto& y) { return x.id == y.id && x.length == y.length && x.next == y.next; });
 }

@@ -4,6 +4,7 @@
 #include "document.hpp"
 #include "document_envelope.hpp"
 #include "map_settings.hpp"
+#include "procedure_codec.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <map>
@@ -44,19 +45,25 @@ class NetworkSchema {
         case Kind::vehicleTypes:rule={{"type","array"},{"items",reference(Object::vehicleType,version)}};break;
         case Kind::speedRange:rule=reference(Object::speedRange,version);break;
         case Kind::speedCurve:rule={{"type","array"},{"items",reference(Object::speedPoint,version)}};break;
+        case Kind::w99Cc1Curve:rule={{"type","array"},{"items",reference(Object::w99Cc1Point,version)}};break;
         case Kind::accelerationCurve:rule={{"type","array"},{"items",reference(Object::accelerationPoint,version)}};break;
         case Kind::axles:rule=reference(Object::axles,version);break;
         case Kind::pcu:rule=reference(Object::pcu,version);break;
         case Kind::kerbLanes:rule={{"type","integer"},{"x-multra-nativeType","integer-token"}};break;
-        case Kind::behaviours: { // D563: from 25 the model selects the W74 row
+        case Kind::behaviours: { // D563: from 25 the model selects the W74 row; D639: from 85 the W99 row
             Json items=reference(Object::behaviour,version);
+            if(version>=w99ModelVersion)items={{"if",{{"required",Json::array({"model"})},{"properties",{{"model",{{"const",kW99BehaviourModel}}}}}}},
+                {"then",reference(Object::w99Behaviour,version)},{"else",items}};
             if(version>=w74ModelVersion)items={{"if",{{"required",Json::array({"model"})},{"properties",{{"model",{{"const",kW74BehaviourModel}}}}}}},
                 {"then",reference(Object::w74Behaviour,version)},{"else",items}};
             rule={{"type","array"},{"items",items}};break;
         }
         case Kind::behaviourModel:
-            rule={{"type","string"},{"enum",version<w74ModelVersion?Json::array({kPrototypeBehaviourModel}):Json::array({kPrototypeBehaviourModel,kW74BehaviourModel})}};break;
+            rule={{"type","string"},{"enum",version<w74ModelVersion?Json::array({kPrototypeBehaviourModel})
+                :version<w99ModelVersion?Json::array({kPrototypeBehaviourModel,kW74BehaviourModel})
+                :Json::array({kPrototypeBehaviourModel,kW74BehaviourModel,kW99BehaviourModel})}};break;
         case Kind::w74Model:rule={{"type","string"},{"const",kW74BehaviourModel}};break;
+        case Kind::w99Model:rule={{"type","string"},{"const",kW99BehaviourModel}};break;
         case Kind::integerToken:rule={{"type","integer"},{"x-multra-nativeType","integer-token"}};break;
         case Kind::vehicleClasses:rule={{"type","array"},{"items",reference(Object::vehicleClass,version)}};break;
         case Kind::linkBehaviourTypes:rule={{"type","array"},{"items",reference(Object::linkBehaviourType,version)}};break;
@@ -130,6 +137,28 @@ class NetworkSchema {
         case Kind::modeOccupancy:rule={{"type","number"},{"minimum",1}};break;
         case Kind::modeNestPhi:rule={{"type","number"},{"exclusiveMinimum",0},{"maximum",1}};break;
         case Kind::logsumCost:rule={{"type","string"},{"const","logsum"}};break;
+        case Kind::procedures:rule={{"type","array"},{"minItems",1},{"items",reference(Object::procedure,version)}};break;
+        case Kind::procedureSteps: { // D636: `kind` selects the row; any other kind falls to the assignment row's enum
+            const std::pair<ProcedureStepKind,Object> rows[]={{ProcedureStepKind::tripGeneration,Object::generationStep},
+                {ProcedureStepKind::tripDistribution,Object::distributionStep},{ProcedureStepKind::modeChoice,Object::modeChoiceStep}};
+            Json items=reference(Object::assignmentStep,version);
+            for(auto row=std::rbegin(rows);row!=std::rend(rows);++row)
+                items={{"if",{{"required",Json::array({"kind"})},{"properties",{{"kind",{{"const",procedureStepKindName(row->first)}}}}}}},
+                    {"then",reference(row->second,version)},{"else",std::move(items)}};
+            rule={{"type","array"},{"minItems",1},{"items",std::move(items)}};break;
+        }
+        case Kind::stepKind: {
+            Json names=Json::array();
+            for(const auto k:{ProcedureStepKind::tripGeneration,ProcedureStepKind::tripDistribution,ProcedureStepKind::modeChoice,ProcedureStepKind::assignment})
+                names.push_back(procedureStepKindName(k));
+            rule={{"type","string"},{"enum",names}};break;
+        }
+        case Kind::procedureFeedback:rule=reference(Object::procedureFeedback,version);break;
+        case Kind::feedbackMethod:
+            rule={{"type","string"},{"enum",Json::array({feedbackMethodName(FeedbackMethod::msa),feedbackMethodName(FeedbackMethod::constantWeight)})}};break;
+        case Kind::feedbackWeight:rule={{"type","number"},{"minimum",0},{"exclusiveMaximum",1}};break; // constantWeight's, 0 ≤ w < 1
+        case Kind::feedbackTolerance:rule={{"type","number"},{"minimum",0}};break;
+        case Kind::feedbackIterations:rule={{"type","integer"},{"minimum",2},{"maximum",1000},{"x-multra-nativeType","integer-token"}};break;
         case Kind::numberMatrix:rule={{"type","array"},{"items",{{"type","array"},{"items",{{"type","number"}}}}}};break;
         case Kind::controllers:rule={{"type","array"},{"items",reference(Object::signalController,version)}};break;
         case Kind::groups:rule={{"type","array"},{"items",reference(Object::signalGroup,version)}};break;
@@ -232,6 +261,10 @@ class NetworkSchema {
         // path validity stays with the model. Required path fields still reject null.
         if(object==Object::rightOfWay || object==Object::controlPath || object==Object::measurementLine)result.erase("type");
         if(object==Object::definition)result["type"]=Json::array({"object","null"});
+        if(object==Object::procedureFeedback) // D636: constantWeight requires a weight, msa refuses one
+            conditions.push_back({{"if",{{"required",Json::array({"method"})},
+                {"properties",{{"method",{{"const",feedbackMethodName(FeedbackMethod::constantWeight)}}}}}}},
+                {"then",{{"required",Json::array({"weight"})}}},{"else",{{"properties",{{"weight",false}}}}}});
         if(!conditions.empty())result["allOf"]=std::move(conditions);
         return result;
     }
@@ -287,6 +320,8 @@ public:
                 case Object::pcu:return "pcu";
                 case Object::behaviour:return "behaviour";
                 case Object::w74Behaviour:return "w74Behaviour";
+                case Object::w99Behaviour:return "w99Behaviour";
+                case Object::w99Cc1Point:return "w99Cc1Point";
                 case Object::vehicleClass:return "vehicleClass";
                 case Object::linkBehaviourType:return "linkBehaviourType";
                 case Object::behaviourOverride:return "behaviourOverride";
@@ -319,6 +354,12 @@ public:
                 case Object::modeChoicePurpose:return "modeChoicePurpose";
                 case Object::modeChoiceAlternative:return "modeChoiceAlternative";
                 case Object::modeChoiceNest:return "modeChoiceNest";
+                case Object::procedure:return "procedure";
+                case Object::generationStep:return "generationStep";
+                case Object::distributionStep:return "distributionStep";
+                case Object::modeChoiceStep:return "modeChoiceStep";
+                case Object::assignmentStep:return "assignmentStep";
+                case Object::procedureFeedback:return "procedureFeedback";
                 }
                 throw std::logic_error("Unknown schema object");
             }();
@@ -330,8 +371,8 @@ public:
     }
     Json compose() {
         auto result=projectEnvelopeSchema();
-        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs-trip-rates-deterrence-cost-period-factors-mode-choice";
-        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, Macro settings and runs, owned trip-rate and deterrence sets, cost matrices, period factors, and mode-choice sets with nests and logsum. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
+        result["x-multra-coverage"]="envelope-background-network-link-lane-connector-reference-signal-head-signal-control-right-of-way-measurements-routes-inputs-routing-decisions-compositions-modes-vehicle-types-behaviours-behaviour-classes-zones-studies-map-macro-runs-trip-rates-deterrence-cost-period-factors-mode-choice-procedures";
+        result["$comment"]="Partial envelope/background and versioned Network/Link/Lane/Connector/SignalHead/geometry/attachment-reference and signal controller/group/program/phase and right-of-way/queue-counter/travel-time-section and base definition/Route/VehicleInput/interval/RoutingDecision and owned composition/type-share/interval, mode, vehicle-type per-model behaviour and vehicle-class/link-behaviour-type structure, and the root zone/zone-connector/OD-matrix/parking-lot layer, study periods, clockStart, study area, map settings, Macro settings and runs, owned trip-rate and deterrence sets, cost matrices, period factors, and mode-choice sets with nests and logsum, and procedures with their steps and feedback. Model invariants and other demand/optional features require the codec. Native integer tokens and UTF-8 byte limits also require the codec.";
         Json groups=Json::array();std::map<std::string,std::size_t> indices;
         for(int version=1;version<=kLatestSchema;++version) {
             const auto ref=reference(Object::network,version);

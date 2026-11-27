@@ -64,7 +64,7 @@ void anticipateJoin(FollowingResult& following, const Scenario& scenario, const 
             if (!nearest || gap < nearest->gap) nearest = Leader{gap, other.speed, other.acceleration};
         }
     if (!nearest) return;
-    const auto across = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, *nearest);
+    const auto across = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, scenario.timeStep, type, behaviour, *nearest);
     if (across.acceleration < following.acceleration) following = across;
 }
 }

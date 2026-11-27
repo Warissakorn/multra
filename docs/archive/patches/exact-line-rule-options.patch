@@ -1,0 +1,17 @@
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index 7798929..95c68ef 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -1,3 +1,4 @@
++#include <cstdlib>
+ #include "missed_exit.hpp"
+ #include "diffusion.hpp"
+ #include "yield_time.hpp"
+@@ -289,6 +290,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+             for (auto i = giveWay ? buckets.start[conflict + 1] : buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
+                 const auto& span = spans[buckets.items[i]];
+                 if (span.vehicleId == vehicle.id) continue;
++                if (std::getenv("ZZ_F2") && span.front <= 1e-9) continue; // ZZ temporary
+                 if (blocks) { // D606: only the marker's classes block; vehicles are in id order
+                     const auto at = std::lower_bound(vehicles.begin(), vehicles.end(), span.vehicleId, [](const auto& x, std::uint64_t id) { return x.id < id; });
+                     if (at == vehicles.end() || at->id != span.vehicleId || !(*blocks)[refs[static_cast<std::size_t>(at - vehicles.begin())].type]) continue;

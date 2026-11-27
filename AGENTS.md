@@ -114,7 +114,14 @@ below, whose reasoning is D7. The ones that get broken by accident:
   non-obvious decision, in a short entry; keep about ten entries and move older ones whole to the
   archive (`multra-check-docs` fails past twelve, D585). A new BA row takes the next free id;
   tests named for it stay in one group. Record new decision IDs and reasoning once in `docs/decisions/RECORD.md`. **What is
-  next goes in `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do.
+  next goes in `docs/NEXT.md` instead**, rewritten rather than appended, so there is one live to-do. Keep NEXT under about
+  10,000 characters (D682).
+- **A small change is recorded small (D682).** A UI fix, a test fix or a docs-only change gets:
+  - its RECORD row and index line;
+  - a bullet in that day's PROGRESS entry, not a new entry.
+
+  It needs no contract. NEXT changes only when an item opens or closes, and a module README only when a file is
+  added.
 - **Append to `docs/decisions/RECORD.md`, never read it whole** (D600 onward; D1–D599 are frozen in
   `RECORD-D001-D199.md`, `RECORD-D200-D399.md` and `RECORD-D400-D599.md`, D486): add the row
   with a shell append, and read a cited row by its anchor with `grep -n 'id="dNNN"' docs/decisions/RECORD*.md`

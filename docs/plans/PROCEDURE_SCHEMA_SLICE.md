@@ -1,7 +1,12 @@
 # PROCEDURE_SCHEMA_SLICE — the next schema slice: `procedures` (schema 73, feedback from 75)
 
-The brief for the slice after D573–D574, moved verbatim from [NEXT](../NEXT.md) on 2026-11-22. It waits for the
-owner's review of D573–D574; NEXT says when it is due. Contracts: [PROJECT_SCHEMA](../reference/PROJECT_SCHEMA.md),
+**Done 2026-11-23 (D636).** The owner accepted D573–D574 and the slice shipped as briefed, with two changes the
+code required: `network_fields.cpp` was at 472 lines, so the Macro sets' and procedures' tables moved to
+`macro_set_fields.cpp`; feedback is one row with a method condition rather than two rows. Results are rows PRS1–PRS3
+in [PROJECT_SCHEMA_FEATURES](../reference/PROJECT_SCHEMA_FEATURES.md#procedure-extension-d636). The brief below is
+kept as written.
+
+The brief for the slice after D573–D574, moved verbatim from [NEXT](../NEXT.md) on 2026-11-22. Contracts: [PROJECT_SCHEMA](../reference/PROJECT_SCHEMA.md),
 [PROJECT_SCHEMA_FEATURES](../reference/PROJECT_SCHEMA_FEATURES.md).
 
 - **Following slice (`procedures`, schema 73, feedback from 75), after owner review of D573–D574.**

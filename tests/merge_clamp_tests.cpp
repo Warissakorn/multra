@@ -21,7 +21,7 @@ const Vehicle& vehicleOf(const SimState& s, std::uint64_t id) {
     return *std::find_if(s.vehicles.begin(), s.vehicles.end(), [&](const auto& v) { return v.id == id; });
 }
 ClampRules only(bool leaderTravel, bool sideEntryAtLine, bool redLineStop, bool standingStopFloor = true) {
-    return {leaderTravel, sideEntryAtLine, redLineStop, false, standingStopFloor};
+    return {leaderTravel, sideEntryAtLine, redLineStop, false, standingStopFloor, false}; // lineRest off: these rows predate D652
 }
 // Two segments joining a shared one: D105's moving-merge fixture, with or without its rule.
 Scenario join(bool rule, ClampRules rules = {}) {
@@ -158,7 +158,7 @@ TEST(mergeclamps, ba167_the_switches_round_trip_at_schema_45) { // BA167
     CHECK(j["definition"].contains("clampRules")); // stops here, before reading it
     CHECK(j["definition"]["clampRules"] == Json{{"sideEntryAtLine", false}});
     CHECK(parseDocument(Json::parse(j.dump())) == d);
-    CHECK(compileDocument(d, test::root() / "data").scenario.clampRules == only(true, false, true));
+    CHECK(compileDocument(d, test::root() / "data").scenario.clampRules == (ClampRules{true, false, true, false, true, true}));
     auto older = j; older["schemaVersion"] = 44;
     CHECK(refused(older, "EDIT_UNSUPPORTED_FIELD", "definition.clampRules"));
     auto notBool = j; notBool["definition"]["clampRules"]["sideEntryAtLine"] = 0;

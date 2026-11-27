@@ -30,6 +30,8 @@ W74Result w74Acceleration(double speed, double desiredSpeed, const VehicleType& 
 // (seed, vehicle id) with integer arithmetic only, so every compiler gives the same bits and the
 // run's random stream is never touched.
 W74Traits w74Traits(std::uint32_t seed, std::uint64_t vehicleId, double driverFactor);
+// §5's u(i): draw `index` of the vehicle's hash, in [0, 1). W74 reads indices 0–14; W99's zW is 15.
+double w74Uniform(std::uint32_t seed, std::uint64_t vehicleId, std::uint64_t index);
 
 // The 18 W74 keys, in contract §5 order: the one list the codec, the validator and the serializer
 // read, so a key name exists once (hard rule 3).

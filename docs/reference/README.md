@@ -33,6 +33,13 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [LANE_PREFERENCE.md](LANE_PREFERENCE.md) | Lane preference by vehicle type: `kerbLanes` on the type, entry only on the kerb-most N lanes, absent = today, schema 42, rows BA124–BA130 (B-7 contract, D233; implemented, D234) |
 | [INPUT_STREAMS.md](INPUT_STREAMS.md) | Random streams per input (proposed contract, D496): today's single shared stream and its consumers, the `randomStreams` switch, keyed streams, rows IS1–IS9 and the owner's four choices; no code yet |
 | [JOIN_ANTICIPATION.md](JOIN_ANTICIPATION.md) | Anticipation across a join (M3.2.8a.1b): prototypes measured (D253); A4 implemented as the off-by-default `clampRules.joinAnticipation`, schema 46, rows BA168–BA172 (D254, D255) |
+| [LINE_STOP.md](LINE_STOP.md) | Stopping at the line for every line type and model: options measured (D651); L3F chosen and implemented as `clampRules.lineRest`, schema 87, dead ends excluded, M0 untouched, rows BA239–BA245 (D652) |
+| [LINE_QUEUE.md](LINE_QUEUE.md) | Stopping behind a standing vehicle with the line's stop law: options measured (D655); Q2 recommended for W74/W99; the owner chooses |
+| [PROTOTYPE_QUEUE.md](PROTOTYPE_QUEUE.md) | The prototype's crawl behind a standing car: options measured (D657); P17 (the stop law plus a start rule at `speedThreshold`) implemented (D662) |
+| [STOP_PROFILE.md](STOP_PROFILE.md) | B, a softer stop profile for the line law: IDM-shaped options measured against today's and SUMO (D663); the delay traced to standing-car approaches (D664); B3P implemented for the prototype at lines (D665); the approach to a car at rest measured on NGSIM (D666); closed with today's law toward vehicles (D667) |
+| [LINE_SETBACK.md](LINE_SETBACK.md) | A set-back at holding lines: the contract for a behaviour key with default 0, its home and scope measured (D669); sources in D668; an exact-line defect on the node-analysis project found |
+| [RULE_LOOKBACK.md](RULE_LOOKBACK.md) | How far upstream a priority rule looks for major vehicles: Vissim's definition, G1/G1R measured (D674); D672's E2 |
+| [REACTION_STOP.md](REACTION_STOP.md) | The stop laws (LINE_STOP, LINE_QUEUE) under PERCEPTION's `reactionTime`: options measured (D659); R9 implemented (D661): the laws undelayed, a hold at `s0`, a start that fits the delay |
 | [LINE_APPROACH.md](LINE_APPROACH.md) | Stopping cleanly at a line and behind a hard stop (M3.2.8a.1c): floors measured (D256); F1a implemented as `clampRules.standingStopFloor`, on by default, schema 47, rows BA173–BA178 (D257, D258) |
 | [NODES.md](NODES.md) | Nodes (S0, M5.1): a polygon over a junction, derived legs, turns and control, Micro per-turn delay, queue and letters; owner choices answered (D260); S0.1 object, codec, tool and tab (D261) S0.2 membership (D262, D263) S0.3 evaluation (D264) and S0.5 Suggest nodes (D265) implemented; S0.6 Node rows in Results (D278) |
 | [NODE_ANALYSIS.md](NODE_ANALYSIS.md) | Analytical junction capacity (M13, D370): HCM 7 Chapter 19 lane-group saturation flow, capacity, control delay and LOS on a Node; A1 and A2 implemented, later slices outlined (§12) |
@@ -78,6 +85,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [WEAVING_FIXTURE.md](WEAVING_FIXTURE.md) | The weaving lab: three Type A weaves as a synthetic fixture, demand and lateral variants, measures, rows BA179–BA183; mechanism evidence, not validation (M3.4, D449) |
 | [PERCEPTION.md](PERCEPTION.md) | Look-ahead, observed vehicles, look-back, rear time-to-collision and reaction time (M3.5.0 contract, D179; not implemented) |
 | [W74.md](W74.md) | W74 car-following equations, parameters, traits, state and model switch (runs since D138; not validated) |
+| [W99.md](W99.md) | W99 (CC0–CC9) car-following equations, parameters, trait, state and model switch; hand-checked cases (contract only, D637; no code) |
 | [POSITIONED_ROUTING.md](POSITIONED_ROUTING.md) | Positioned Route recognition and schema 20 |
 | [SIMULATION.md](SIMULATION.md) | Simulation core and network model |
 | [ENGINEERING_NOTES.md](ENGINEERING_NOTES.md) | Dated measurements, recipes, labs, test notes and the do-not-retry list (moved from NEXT 2026-10-15) |
@@ -85,7 +93,7 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [VEHICLE_POSE.md](VEHICLE_POSE.md) | Vehicle pose — rear axle reference and continuous lane changes |
 | [PROJECT_SCHEMA.md](PROJECT_SCHEMA.md) | Project schema inventory and partial formal envelope/background/Network/Link/Lane/Connector/reference/SignalHead and signal/right-of-way control measurement and base Route/VehicleInput/RoutingDecision coverage, with version rules |
 | [PROJECT_SCHEMA_DEMAND.md](PROJECT_SCHEMA_DEMAND.md) | Definition demand rows of the composed schema: Routes/VehicleInputs/intervals (D363), RoutingDecisions (D364), compositions (D558), modes (D559), vehicle types (D560), behaviours (D561/D563/D564), vehicle classes and link behaviour types (D565) |
-| [PROJECT_SCHEMA_FEATURES.md](PROJECT_SCHEMA_FEATURES.md) | Feature rows of the composed schema: zones (D566), studies/clockStart/study area (D567), map (D568), Macro settings/runs (D569), trip-rate sets (D570), deterrence sets/cost matrices (D571), period factors (D572), mode-choice sets/nests/logsum (D573, MCS1–MCS3) |
+| [PROJECT_SCHEMA_FEATURES.md](PROJECT_SCHEMA_FEATURES.md) | Feature rows of the composed schema: zones (D566), studies/clockStart/study area (D567), map (D568), Macro settings/runs (D569), trip-rate sets (D570), deterrence sets/cost matrices (D571), period factors (D572), mode-choice sets/nests/logsum (D573, MCS1–MCS3), procedures (D636, PRS1–PRS3) |
 | [NETWORK_EDITOR.md](NETWORK_EDITOR.md) | Native network editor |
 | [NETWORK_EDITOR_CONNECTORS.md](NETWORK_EDITOR_CONNECTORS.md) | Native network editor — Connectors |
 | [CONNECTOR_FOUR_POINT_MOUTH.md](CONNECTOR_FOUR_POINT_MOUTH.md) | Centred Connector axis and four-point mouths |
@@ -104,5 +112,6 @@ acceptance records live in [plans](../plans/README.md); milestone status lives i
 | [DIFFUSION.md](DIFFUSION.md) | Removing a vehicle stuck waiting for a lane change, as Vissim's waiting time before diffusion: a behaviour's `diffusionTime`, schema 82, rows DF1–DF8 (D613) |
 | [YIELD_IMPATIENCE.md](YIELD_IMPATIENCE.md) | A waiting driver accepts less: Aimsun's gap reduction (a behaviour's yield time, a rule's or marker's final gap and timing) and SUMO's impatience at conflict areas, schema 84, rows YI1–YI9 (D618) |
 | [PRIORITY_RULES.md](PRIORITY_RULES.md) | Draft (D604), not implemented: Vissim-style priority rules, a stop line with conflict markers and no conflict area, rows PR1–PR10; waits on the owner's choices §8 |
+| [UI_GEOMETRY.md](UI_GEOMETRY.md) | Dialog geometry checked on Linux (cell editors, clipping, overlap, text fit): U1 in every dialog test, U2 a sweep of every action's dialogs at 1/1.5/2× in Thai and English (D678, D680) |
 
 Return to [the task reading map](../README.md#read-by-task).

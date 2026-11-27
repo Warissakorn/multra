@@ -8,6 +8,7 @@
 #include "random_streams.hpp"
 #include "speed_decision_types.hpp"
 #include "w74_types.hpp"
+#include "w99_types.hpp"
 #include "yield_types.hpp"
 #include <cstdint>
 #include <limits>
@@ -55,11 +56,14 @@ struct DriverBehaviour {
     std::optional<double> curveLateralAcceleration, kerbLaneBias, commitmentDeceleration, mandatoryDecelerationOwn, mandatoryDecelerationTrailingVehicle, stopDwellTime; // m/s²: D212, D215, D219, D221; s: B-8 Stop dwell (D231)
     std::optional<double> driverFactorSpread, redRunningShare, redRunningTime; // B-4 (DRIVER_FACTOR, D236): the factor's deviation; B-9 (RED_RUNNING, D238): a pair
     bool stopFloor{}; // runtime only, never in a file: set by createSimulation from clampRules.standingStopFloor and amberDeceleration (LINE_APPROACH §7, D258)
+    bool lineRest{}; // runtime only: clampRules.lineRest for a w74/w99 behaviour or one carrying amberDeceleration (LINE_STOP §5, D652)
     bool standingTarget{}, stopArrival{}; // runtime only, off by default: the M6 sweep's engine levers D and E (M6_SWEEP §4, D546)
     std::optional<double> missedExitAfter; // s at a dead end, then the vehicle gives up its turn (LANE_LOCKS B, D581); absent: never
     std::optional<double> diffusionTime; // s at a dead end, then the vehicle is removed (DIFFUSION, D613); absent: never
     std::optional<double> inattentionDuration, inattentionProbability; // START_UP §3 (D608): a pair; absent: always attentive
     std::optional<double> yieldTime, yieldTimeDeviation, yieldTimeMinimum, yieldTimeMaximum, impatience, timeToImpatience; // s (Aimsun), SUMO: YIELD_IMPATIENCE (D618)
+    std::optional<double> lineSetback; // m, LINE_SETBACK (D670): under lineRest, rest this far short of a signal head's line; absent: 1 m (D677)
+    std::optional<W99Parameters> w99; // present iff the model is `w99` (W99.md §9, D639); Run refuses it until composition
     bool operator==(const DriverBehaviour&) const = default;
 };
 struct VehicleAxles { double wheelbase{}, frontOverhang{}, rearOverhang{}; bool operator==(const VehicleAxles&) const = default; };
@@ -211,7 +215,7 @@ struct SegmentBehaviour {
     bool operator==(const SegmentBehaviour&) const = default;
 };
 // MERGE_CLAMPS §2-§3 (D250/D251): three project switches that relieve a cap on a tick that would clamp.
-struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}, joinAnticipation{false}, standingStopFloor{true}; bool operator==(const ClampRules&) const = default; }; // joinAnticipation: JOIN_ANTICIPATION §5 (D254), off by default; standingStopFloor: LINE_APPROACH §7 (D257)
+struct ClampRules { bool leaderTravel{true}, sideEntryAtLine{true}, redLineStop{true}, joinAnticipation{false}, standingStopFloor{true}, lineRest{true}; bool operator==(const ClampRules&) const = default; }; // lineRest: engine only since D677, never read from or written to a file // joinAnticipation: JOIN_ANTICIPATION §5 (D254), off by default; standingStopFloor: LINE_APPROACH §7 (D257)
 struct ScenarioDefinition {
     double duration{}, timeStep{};
     std::vector<Route> routes;
@@ -312,6 +316,8 @@ struct ScenarioIndex {
     // Scenario::segmentBehaviours. EMPTY when nothing is assigned: then the type alone decides.
     std::vector<std::size_t> behaviourOfSegmentType;
     bool w74{};                                      // any behaviour is w74: vehicles carry traits
+    bool w99{};                                      // any behaviour is w99: vehicles carry zW (D641)
+    bool w99Cc1Curve{};                              // any w99 behaviour has cc1Curve: vehicles carry a CC1 share (D647)
     // The slots a released vehicle is stamped with. An input's route and type never change, so
     // resolving them per input per tick -- which is what generateArrivals did once the vehicle
     // stopped carrying ids -- was the same lookup in a new place.
@@ -347,6 +353,11 @@ struct PendingVehicle {
     // M3.3.3a (D137): hashed at generation, never redrawn; present iff the scenario holds any
     // w74 behaviour (docs/reference/W74.md §5). Last, so brace-initialisation keeps its meaning.
     std::optional<W74Traits> w74Traits;
+    // M3.3.3b (D641): zW, hashed at generation and never redrawn; present iff the scenario holds any
+    // w99 behaviour (docs/reference/W99.md §5). After w74Traits for the same reason.
+    std::optional<double> w99Trait;
+    // W99 §5a (D647): the driver's CC1 share u(16), present iff a w99 behaviour has cc1Curve.
+    std::optional<double> w99Cc1Share;
     // INPUT_STREAMS §4, set only under perInput: the key of the input or lot that made the vehicle and
     // its ordinal there, which its hashed routing draws use. Zero under shared, so states are unchanged.
     std::uint64_t streamKey{}; std::uint32_t ordinal{};
@@ -456,7 +467,7 @@ bool waitingAtDeadEnd(const ScenarioIndex&, std::size_t route, const Vehicle&, c
 // - laneChangeTargetOf: the first span target a vehicle with this front and rear may change to,
 //   in the index's order (fewest changes left, then the lower slot); null inside no span.
 // - mappedOnto: a distance along a span's source, as a distance along its target.
-bool deadEndGoverns(const ScenarioIndex&, std::size_t route, const Vehicle&, const VehicleType&, const DriverBehaviour&);
+bool deadEndGoverns(const ScenarioIndex&, std::size_t route, const Vehicle&, const VehicleType&, const DriverBehaviour&, double timeStep);
 const RouteLaneChange* laneChangeTargetOf(const ScenarioIndex&, std::size_t route, double front, double rear);
 double mappedOnto(const RouteLaneChange&, double at);
 // M3.3.2b (D127, DRIVING_BEHAVIOUR.md §3): the one behaviour every consumer uses -- following,

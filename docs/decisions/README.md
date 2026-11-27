@@ -103,3 +103,51 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D627](RECORD.md#d627) — the by-rear leader order kept across ticks, measured and not shipped: study −8.8 %, benchmark +0.6 to +0.8 %.
 [D630](RECORD.md#d630) — the root `CMakeLists.txt` split into `cmake/` includes by responsibility (498 → 194 lines); generated build byte-identical.
 [D634](RECORD.md#d634) — Results tabs fit at 1024 in Thai without shorter labels (proved, every tab forced); the clamp note opens with not-validated.
+[D635](RECORD.md#d635) — insertion rebuilds span buckets only for a later candidate, not after every arrival: benchmark −0.81 %, same events.
+[D636](RECORD.md#d636) — `procedures` (73) and feedback (75) in the composed schema; step rows by kind, exclusive assignment; zero disagreements.
+[D637](RECORD.md#d637) — the W99 contract before code: demo thresholds and regimes, PTV meanings, seven recorded deviations, rows BA224–BA232.
+[D638](RECORD.md#d638) — W99 slice 1: the pure function, thresholds and key list; BA224, BA225, BA227 pass; not composed.
+[D639](RECORD.md#d639) — W99 slice 2: schema 85 codec and composed-schema row; Run refuses a used w99 behaviour; the dialog declines it until its slice.
+[D640](RECORD.md#d640) — W99 slice 3: the behaviour dialog edits a w99 behaviour (ten empty fields, range-checked); the lab refuses Apply to one
+[D641](RECORD.md#d641) — W99 slice 4: the hashed driver trait zW (index 15), only when a w99 behaviour exists; legacy runs byte-identical
+[D642](RECORD.md#d642) — W99 slice 5: composed into the tick through follow with aPrev and zW; the Run refusal lifted
+[D643](RECORD.md#d643) — the behaviour dialog names the first empty or out-of-range key in order (the owner's F7 finding); a model-neutral range message
+[D644](RECORD.md#d644) — W99 does not halve heavy vehicles' acceleration; the type's own acceleration limit bounds it (owner)
+[D645](RECORD.md#d645) — W99's CC1 may be a per-driver cumulative curve (u(16)), the dialog's default mode; a new schema floor; contract only (BA233–BA237)
+[D646](RECORD.md#d646) — CC1 curve slice 1: codec and schema 86; Run and the dialog refuse a curve until their slices (BA233)
+[D647](RECORD.md#d647) — CC1 curve slice 2: the per-driver share u(16), the shared curve inverse and composition; a curved behaviour runs (BA234–BA236)
+[D648](RECORD.md#d648) — CC1 curve slice 3: the dialog's Fixed / Distribution (default) and curve table; the decline removed (BA237)
+[D649](RECORD.md#d649) — BA231 recorded: W99 queue discharge at three timesteps; headway falls with dt; standing-creep clamps traced, not fixed
+[D650](RECORD.md#d650) — W99's standstill creep waits until one creep fits before CC0 (`CC7·dt²`); the every-tick clamps gone (BA238)
+[D651](RECORD.md#d651) — Stopping at the line: contract and measured options (L1, L3, floors); L3F recommended as `clampRules.lineRest`, M0 untouched; the owner chooses
+[D652](RECORD.md#d652) — LINE_STOP L3F implemented: `clampRules.lineRest` (schema 87), every W74/W99 and amber prototype stops at the line; dead ends stay leaders; M0 bytes kept
+[D653](RECORD.md#d653) — A front exactly at a line has not passed it (`pastLine`, discharge/stop-line/priority-line observers); D652's startup-lost-time claim withdrawn as its artefact; BA27/BA231 and the M0 SUMO look re-run
+[D654](RECORD.md#d654) — W99 §4: behind a standing obstacle, no more than the exact stop at CC0 (the line law); BA231's W99 clamps 345 → 42 per run, headway unchanged
+[D655](RECORD.md#d655) — Stopping behind a standing vehicle: contract and measured options (Q0–Q5); Q2 recommended for W74/W99, the prototype's crawl its own question; the owner chooses
+[D656](RECORD.md#d656) — LINE_QUEUE Q2 implemented: W74/W99 behind a vehicle at rest stop by the line's law at the rear less the standstill gap, then wait; prototype and M0 unchanged
+[D657](RECORD.md#d657) — The prototype's crawl: contract and measured options (P0–P18); P17, the stop law plus a start rule at `speedThreshold`, the only one clean at every dt; the owner chooses
+[D658](RECORD.md#d658) — P17 chosen and attempted, not committed: D657's "P17" corrected (P17L); jerk is the stop law's profile; the reaction delay is a gap reaching D656 (W74 755 clamps per run at `reactionTime` 0.5 s)
+[D659](RECORD.md#d659) — The stop laws under a reaction delay: contract and options R0–R7; today W74 clamps 755–3,277 per run and the prototype passes reds; R7 (the line law undelayed, the model behind standing cars) recommended; the owner chooses
+[D660](RECORD.md#d660) — Under a delay R7's crawl is creep-stop-creep (W74's own); R9 (laws undelayed, hold at `s0`, a start that fits the delay) rests delayed queues with W74 9–44 and W99 8–29 clamps per run; the owner chooses
+[D661](RECORD.md#d661) — REACTION_STOP R9 implemented: delayed vehicles under `lineRest` rest without clamps or red passes (W74 755 → 9, prototype red passes 128 → 0 per run); runs without a delay unchanged
+[D662](RECORD.md#d662) — PROTOTYPE_QUEUE P17 implemented: prototype queues rest behind a standing car (crawl 17 → 1.3 s, 0 clamps); three scene forcings settled, BA197's floor 350
+[D663](RECORD.md#d663) — B's contract: an IDM-shaped stop with the type's a and b, bounded by today's law; B3 (no new value) cuts the prototype's step jerk 296 → 25 at +9.5 s delay (untraced); the owner chooses
+[D664](RECORD.md#d664) — B3's +9.5 s delay is all the approach to standing cars; toward lines only it costs nothing but gains little; recommendation B3P (lines, prototype only); the owner chooses again
+[D665](RECORD.md#d665) — STOP_PROFILE B3P implemented: the prototype eases into its stop at a holding line (IDM, T = 0, the type's a and b); standing cars, W74 and W99 unchanged
+[D666](RECORD.md#d666) — NGSIM Lankershim: drivers start slowing for a car at rest at a median 1.4–1.9 m/s² of required deceleration, nearer today's law (2.0) than B3 (0.8); recommendation: keep today's law toward queues
+[D667](RECORD.md#d667) — B closed: today's law stays toward vehicles at rest; the staged approach, higher final braking and last step to rest are known deviations
+[D668](RECORD.md#d668) — a set-back at holding lines: Vissim 0.5 m and SUMO 1 m are program defaults without a field source; NGSIM shows about 1 m on an unverified stop bar; recommendation: a key with default 0
+[D669](RECORD.md#d669) — LINE_SETBACK contract: the line law aims at line − s, default 0; at signals s 0.5–1 m costs little, at give-way lines 2–22 % of delay; recommendation H1 + C1; an exact-line defect found on the node-analysis project
+[D670](RECORD.md#d670) — LINE_SETBACK H1 + C1 implemented: a behaviour's `lineSetback` (schema 88) at signal heads only, default absent; rows BA273–BA277
+[D671](RECORD.md#d671) — the line-stop lab: a shipped four-leg with W74 and W99 test behaviours for the owner's checks, no keys typed
+[D672](RECORD.md#d672) — node-analysis exact-line clamps diagnosed: a front exactly at a connector's start falsely holds a merge rule (E1), and a rule sees only its conflict segment (E2); E1's fix measured
+[D673](RECORD.md#d673) — E1 fixed: a front exactly at the conflict segment's start has not entered it for a priority rule; node-analysis clamps 4.7 → 0 (prototype); row PR17
+[D674](RECORD.md#d674) — RULE_LOOKBACK contract: a rule looking upstream stopping at red (G1R) changes only M2.6, slightly; past red (G1) worsens node analysis; recommendation G1R after callgrind
+[D675](RECORD.md#d675) — G1R built and measured (+3.3 % / +1.8 % instructions) for a small M2.6 gain; kept out, the rule's scan range is a known limit
+[D676](RECORD.md#d676) — F8/F12 findings: cell editors on their cell, unused tables muted, unticked values kept for the session (never written)
+[D677](RECORD.md#d677) — `lineRest` always on (a file's off ignored with a warning); `lineSetback` absent is 1 m (SUMO's default)
+[D678](RECORD.md#d678) — development pipeline: CI on every session-branch push, sanitizer locally, one package per sitting, five owner items a round, one PR per topic; UI_GEOMETRY contract
+[D679](RECORD.md#d679) — review acted on: only `early (sanitizer)` on session-branch pushes; kept values cleared per project; `lineSetback` note clarified
+[D680](RECORD.md#d680) — UI_GEOMETRY U1 + U2: geometry checks in every dialog test and a sweep of every action's dialogs; 0 findings, and the F8 defect is caught when reintroduced
+[D681](RECORD.md#d681) — U1 found a crash: *Add lane* in the junction lane override recursed through the table focus rule; fixed
+[D682](RECORD.md#d682) — the tree trimmed (R1–R5): 26 files and 3.0 MB out, NEXT cut to about 5,900 characters, small changes recorded small

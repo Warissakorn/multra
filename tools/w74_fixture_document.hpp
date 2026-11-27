@@ -27,11 +27,12 @@ inline ProjectDocument base(const std::filesystem::path& project, const std::fil
     putDemandCatalog(d, resolveDemandCatalog(*d.definition, data));
     return d;
 }
-// `w74` null: the prototype arm.
-inline ProjectDocument arm(ProjectDocument d, const DriverBehaviour* w74, double dt) {
+// `w74` null: the prototype arm. The W99 sweep (BA231) passes its own behaviour and name.
+inline ProjectDocument arm(ProjectDocument d, const DriverBehaviour* w74, double dt,
+                           const std::string& name = "W74 discharge fixture") {
     const double duration = d.definition->duration;
     if (w74) {
-        putBehaviour(d, *w74, "W74 discharge fixture");
+        putBehaviour(d, *w74, name);
         for (auto& t : d.definition->vehicleTypes) t.behaviourId = w74->id;
     }
     changeRunSettings(d, duration, dt);

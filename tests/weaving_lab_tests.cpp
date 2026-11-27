@@ -249,7 +249,7 @@ TEST(weavinglab, ba197_switched_on_no_clamp_where_a_leader_hid_the_dead_end) {
     // it was nearer than the moving vehicle ahead.
     const auto r = scene(2, 1.0, true, 42);
     CHECK(r.movements.safetyClamps == 0);
-    CHECK(served(r) >= 365); // D458 revised: 387 after D456, 372 since gap seeking slice 2 (BA205)
+    CHECK(served(r) >= 350); // D458 revised: 387 after D456, 372 since gap seeking slice 2 (BA205); 357 since D662 (a prototype at rest starts once its gap admits speedThreshold)
     CHECK(r.removed == 0 && !r.overlap);
 }
 TEST(weavinglab, ba205_switched_on_a_refused_changer_falls_back_behind_its_blocker) {

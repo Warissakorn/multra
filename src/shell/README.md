@@ -70,7 +70,8 @@ The other headers:
 | `legacy_storage.*` | The one-time move of per-user folders from the earlier application name | [D286](../../docs/decisions/RECORD-D200-D399.md#d286) |
 | `form_values.*` | Precision-preserving staged values, language-switch drafts and validation before modal acceptance | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `table_layout.*` | Bounded initial columns, stable user widths and active-tab minima | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
-| `table_grid.*` | The spreadsheet half of the table recipe: cell selection, numbered rows, Ctrl+C as Excel text, selected rows of a cell selection (D490) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `table_grid.*` | The spreadsheet half of the table recipe: cell selection, numbered rows, Ctrl+C as Excel text, selected rows of a cell selection (D490); a cell editor on its whole cell (D676) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
+| `field_memory.*` | A value behind a tick box kept while unticked, until another project opens (D676, D679); never written | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `folded_note.*` | A Results note folded to one elided line; the whole text is its tooltip, and a click, Space or Enter opens it (D490) | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `workspace_layout.*` | Palette width transfer with explicit preset Properties size and deferred Qt bounds | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |
 | `presentation.*` | Session UI density and translated menu, shared by editor and Lab | [EDITOR_WORKFLOW](../../docs/reference/EDITOR_WORKFLOW.md) |

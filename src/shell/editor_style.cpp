@@ -132,6 +132,12 @@ QString editorStyleSheet() {
         QHeaderView::section:vertical { padding: 0 @space1px; color: palette(window-text); font-weight: 400; }
         QHeaderView::section:checked { background: palette(mid); color: palette(text); }
         QTableView QHeaderView { background: palette(base); } /* no grey band past the last row or column */
+        /* F8 (owner, 2026-11-26): a cell's editor fills its cell (table_grid.cpp): not a pinned 24 px field. */
+        QLineEdit[cellEditor="true"], QLineEdit[cellEditor="true"]:focus, QAbstractSpinBox[cellEditor="true"], QAbstractSpinBox[cellEditor="true"]:focus { min-height: 0; max-height: 9999px; margin: 0; padding: 0 @space1px; border: 1px solid palette(highlight); border-radius: 0; }
+        /* F8: a table that is not used (disabled) reads as such: muted cells and headers, no current-cell frame. */
+        QTableView:disabled { background: palette(midlight); color: palette(dark); }
+        QTableView::item:disabled, QTableView::item:focus:disabled { border: 0; background: transparent; color: palette(dark); }
+        QTableView:disabled QHeaderView::section { color: palette(dark); }
         QTableView QTableCornerButton::section { background: palette(window); border: 0; border-right: 1px solid palette(mid); border-bottom: 1px solid palette(mid); }
         QLabel#editorScope { background: palette(window); color: palette(text); padding: @space1px @space2px; border-bottom: 1px solid palette(mid); }
         QLabel#editorRunInfo { background: palette(base); color: palette(text); padding: @space1px @space2px; }

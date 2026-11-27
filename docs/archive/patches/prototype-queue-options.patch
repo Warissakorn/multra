@@ -1,0 +1,84 @@
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index d2cc2cf..61b0d82 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -2,6 +2,8 @@
+ #include "diffusion.hpp"
+ #include "yield_time.hpp"
+ #include "simulation.hpp"
++#include <cstdlib>
++#include <cstdio>
+ #include "conflicts.hpp"
+ #include "detail.hpp"
+ #include "following.hpp"
+@@ -324,8 +326,12 @@ SimState stepSimulation(SimState&& state, double dt) {
+         // not one: its approach is the lane change's (LINE_STOP §6), so it stays a leader as before.
+         // LINE_QUEUE §2 (D655): for W74 and W99, a vehicle at rest ahead is stopped behind by the same law, at its
+         // rear less the standstill gap; the model follows moving vehicles only.
+-        const bool queueStop = behaviour.lineRest && (behaviour.w74 || behaviour.w99);
+-        const double standing = queueStop && vehicleLeader && vehicleLeader->speed == 0
++        static const int zzP = std::getenv("ZZ_P") ? std::atoi(std::getenv("ZZ_P")) : 0; static const bool zzT = std::getenv("ZZ_TRACE"); // ZZ temporary
++        const bool queueStop = behaviour.lineRest && (behaviour.w74 || behaviour.w99 || zzP >= 1);
++        const bool zzLate = zzP >= 6 && queueStop && !behaviour.w74 && !behaviour.w99 && vehicleLeader && vehicleLeader->speed == 0 && [&] {
++            const auto m = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, vehicleLeader).mode;
++            return m == FollowingMode::free || m == FollowingMode::approaching; }(); // ZZ P6: the model approaches, the law finishes
++        const double standing = queueStop && !zzLate && vehicleLeader && vehicleLeader->speed == 0
+             ? std::max(0.0, vehicleLeader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
+         const double line = std::min({headLine, giveWayLine, gateLine, standing});
+         const bool lineStop = behaviour.lineRest && std::isfinite(line);
+@@ -338,6 +344,10 @@ SimState stepSimulation(SimState&& state, double dt) {
+         if (behaviour.lineRest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt);
+         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
+             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
++        if ((zzP == 3 || zzP == 4) && queueStop && !behaviour.w74 && !behaviour.w99 && vehicleLeader && following.mode == FollowingMode::braking &&
++            vehicleLeader->speed < vehicle.speed && vehicle.speed > 0) // ZZ R5: D258's floor behind a slower vehicle
++            following.acceleration = std::max(-type.maxDeceleration, std::min(following.acceleration,
++                -(vehicle.speed * vehicle.speed) / (2 * std::max(1e-12, vehicleLeader->gap - behaviour.standstillDistance))));
+         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
+         if (yields) {
+             // Both from the same previous state; the kept result's state is the one stored, and
+@@ -365,6 +375,17 @@ SimState stepSimulation(SimState&& state, double dt) {
+         // residue would otherwise inch it forward tick on, tick off.
+         if (queueStop && vehicle.speed == 0 && vehicleLeader && vehicleLeader->speed == 0 &&
+             vehicleLeader->gap - standstillGap(behaviour) <= 1e-6) following.acceleration = std::min(0.0, following.acceleration);
++        if ((zzP == 2 || zzP == 4 || zzP == 6) && queueStop && !behaviour.w74 && !behaviour.w99 && vehicle.speed == 0 && vehicleLeader && following.acceleration > 0 &&
++            vehicleLeader->gap < desiredGap(behaviour, vehicle.driverFactor, following.acceleration * dt)) following.acceleration = 0; // ZZ R1: start rule
++        if (zzP == 16 && queueStop && !behaviour.w74 && !behaviour.w99 && vehicle.speed == 0 && vehicleLeader && following.acceleration > 0 &&
++            vehicleLeader->gap < desiredGap(behaviour, vehicle.driverFactor, vehicleLeader->speed)) following.acceleration = 0; // ZZ P16: start at the leader's speed
++        if ((zzP == 17 || zzP == 18) && queueStop && !behaviour.w74 && !behaviour.w99 && vehicle.speed == 0 && vehicleLeader && following.acceleration > 0 &&
++            vehicleLeader->gap < desiredGap(behaviour, vehicle.driverFactor, behaviour.speedThreshold)) following.acceleration = 0; // ZZ P17
++        if ((zzP == 7 || zzP == 18) && queueStop && !behaviour.w74 && !behaviour.w99 && vehicle.speed == 0 && vehicleLeader && following.acceleration > 0) { // ZZ P7: start bound
++            const double k = behaviour.additiveSafetyDistance + behaviour.multiplicativeSafetyDistance * vehicle.driverFactor;
++            const double room = std::max(0.0, vehicleLeader->gap - behaviour.standstillDistance);
++            following.acceleration = std::min(following.acceleration, (k > 0 ? (room / k) * (room / k) : following.acceleration * dt) / dt);
++        }
+         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
+         double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
+         double braking = type.comfortableDeceleration;
+@@ -378,6 +399,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+             following.acceleration = std::min(following.acceleration, (target - vehicle.speed) / dt);
+         const bool aboveTarget = vehicle.speed > target;
+         if (aboveTarget) following.acceleration = std::min(following.acceleration, std::max(-braking, (target - vehicle.speed) / dt));
++        if (std::getenv("ZZ_HARD") && vehicle.speed > 0.1 && following.acceleration < -3) std::fprintf(stderr, "ZZH id %llu v %.3f a %.3f mode %d lv %.3f lg %.3f line %.3f dg %.3f\n", (unsigned long long)vehicle.id, vehicle.speed, following.acceleration, int(following.mode), vehicleLeader ? vehicleLeader->speed : -1.0, vehicleLeader ? vehicleLeader->gap : -1.0, line, desiredGap(behaviour, vehicle.driverFactor, vehicle.speed));
+         const auto motion = integrate(vehicle.speed, following.acceleration, dt);
+         auto& move = moves[v];
+         move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false, following.w74};
+@@ -385,7 +407,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+         if (lineStop && allowedDistance >= line - 1e-9 && move.distance > allowedDistance && move.distance <= allowedDistance + 1e-6)
+             move = {allowedDistance, 0, -vehicle.speed / dt, FollowingMode::braking, false, following.w74}; // LINE_STOP §2: D596's finish at any line
+         if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking; §2 Q (D251) at a signal head too, with amberDeceleration
+-            const bool standingBody = behaviour.stopFloor && !behaviour.w74 && !behaviour.w99 && vehicleLeader && vehicleLeader->speed == 0 && leaderCap == allowedDistance; // §8 (D583)
++            const bool standingBody = behaviour.stopFloor && !behaviour.w74 && !behaviour.w99 && vehicleLeader && (vehicleLeader->speed == 0 || (zzP == 14 && behaviour.lineRest && vehicleLeader->speed < vehicle.speed)) && leaderCap == allowedDistance; // §8 (D583)
+             // D596: at a zone's line with only a rounding residue of speed left (the law's own stop ended
+             // exactly there), coming to rest is not an emergency stop.
+             if (zoneLine == allowedDistance && vehicle.speed < 1e-6) move = {allowedDistance, 0, -vehicle.speed / dt, FollowingMode::braking, false, following.w74};
+@@ -395,7 +417,8 @@ SimState stepSimulation(SimState&& state, double dt) {
+                 // speed a later tick would read as still moving (and as unable to stop).
+                 if (zoneLine == allowedDistance && stop.distance >= allowedDistance - 1e-9) stop = {0, allowedDistance};
+                 move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
+-            } else { move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
++            } else { if (zzT) std::fprintf(stderr, "ZZC t %.1f id %llu v %.4f a %.3f mode %d lv %s lg %s allowed %.4f want %.4f line %.4f\n", time, (unsigned long long)vehicle.id, vehicle.speed, following.acceleration, int(following.mode), vehicleLeader ? std::to_string(vehicleLeader->speed).c_str() : "-", vehicleLeader ? std::to_string(vehicleLeader->gap).c_str() : "-", allowedDistance, move.distance, line);
++                move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
+         }
+     }
+     // A Stop finishes the stop the model only approaches (M3.2.5): from below walking pace, so at

@@ -179,17 +179,25 @@ below; B3 needed nothing (B1 already typed perception and lateral).
 - **Model tag.** Below 21 `model` and `name` are refused at `behaviours[i].<key>` even when null
   (`rejectBehaviourLibraryBefore21`), so every row is the prototype. From 21 `model` is required:
   missing, non-text or unknown is `UNSUPPORTED_BEHAVIOUR_MODEL` at `behaviours[i].model`
-  (`parseBehaviourLibrary`). `"w74"` below 25 is the same code (`rejectW74Before25`). Values:
-  `kPrototypeBehaviourModel`, `kW74BehaviourModel`.
+  (`parseBehaviourLibrary`). `"w74"` below 25 is the same code (`rejectW74Before25`), and `"w99"`
+  below 85 (`rejectW99Before85`, D639). Values: `kPrototypeBehaviourModel`, `kW74BehaviourModel`,
+  `kW99BehaviourModel`.
 - **Prototype row.** Requires text `id` and numeric `standstillDistance`, `additiveSafetyDistance`,
   `multiplicativeSafetyDistance`, `followingTime`, `speedThreshold` (field sentences). Optional
   numbers, contains-based: `maxDecelerationCooperativeBraking`, `discretionaryLaneChangeThreshold`,
   `acceptedDecelerationTrailingVehicle`, `discretionaryLaneChangeHoldTime`, `amberDeceleration`.
-  Any W74 key is `EDIT_UNSUPPORTED_FIELD` at `<path>.<key>` at every version.
+  Any W74 or W99 key is `EDIT_UNSUPPORTED_FIELD` at `<path>.<key>` at every version.
 - **W74 row.** Requires text `id` and every `w74ParameterKeys()` entry (18) as a number
   (`INVALID_BEHAVIOUR_PARAMETER` at the key). The eight prototype-only keys (the five required
-  above plus the three lane-change ones) are `EDIT_UNSUPPORTED_FIELD`. Optional
+  above plus the three lane-change ones) and every W99 key are `EDIT_UNSUPPORTED_FIELD`. Optional
   `maxDecelerationCooperativeBraking` and `amberDeceleration`.
+- **W99 row (85, D639).** Requires text `id` and every `w99ParameterKeys()` entry (10, `cc0`–`cc9`) as
+  a number (`INVALID_BEHAVIOUR_PARAMETER` at the key); the eight prototype-only keys and every W74 key
+  are `EDIT_UNSUPPORTED_FIELD`; the same optional and either-model keys as the W74 row. The schema
+  selects it with `if model == w99` inside the W74 branch's `else` from 85; ranges stay the validator's.
+  From 86 (D646, W99 §5a) `cc1` is required unless `cc1Curve` is present and refused when it is, and
+  `cc1Curve` (an array of closed `w99Cc1Point` objects, `value` and `share` numbers) the reverse (D566's
+  pattern); the curve's point rules are the validator's (`w99ParameterIssues`), each at its point.
 - **Both models.** `perceptionParameterKeys()` (5; `observedVehiclesAhead` and the integer flag
   make it a JSON integer token), `lateralParameterKeys()` (3) and the `readOptionals` numbers
   (`curveLateralAcceleration`, `kerbLaneBias`, `commitmentDeceleration`, `mandatoryDecelerationOwn`,

@@ -257,7 +257,7 @@ namespace {
 // One car to B placed standing with its front `front` metres past the split, held there by a red head
 // just ahead of it; the inputs to B are dropped, so only cars to C come up behind it.
 SimState standingOnB(const Fork& f, const Shape& sh, double front) {
-    auto s = heldOnB(compileDocument(f.d, data()).scenario, sh, 1, front + 2.5, 10000);
+    auto s = heldOnB(compileDocument(f.d, data()).scenario, sh, 1, front, 10000); // D652: it rests at the line itself
     std::erase_if(s.inputs, [](const auto& i) { return i.id.find("in-b") != std::string::npos; });
     auto st = createSimulation(s, 42);
     Vehicle v;

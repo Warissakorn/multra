@@ -9,7 +9,8 @@ and never reused; an item that took in an older one says so.
 **Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
 I.5 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
-2026-11-22: P51 and P52 (words in PROGRESS; their findings D620).
+2026-11-22: P51 and P52 (words in PROGRESS; their findings D620). Answered 2026-11-26 on package #152: F7, F9, F10 and F11, all passed (words in
+PROGRESS). Answered 2026-11-27 on #155: F8 and F12 (a–e), all passed.
 
 ---
 
@@ -49,6 +50,10 @@ E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E
     window; mismatched window/T disables Confirm, Cancel is unchanged, Manual counts labels and
     CSV countsSource are clear. Re-Analyse/reopen requires confirmation again and Save adds no
     field. Are tables, notes, scrollbars and fixed footers readable without clipping? *Owner:*
+
+## F — Dialogs
+
+None open: F7–F12 passed on 2026-11-26 and 2026-11-27 (words in [PROGRESS](../PROGRESS.md)).
 
 ## G — Object interchange
 

@@ -179,6 +179,10 @@ ScenarioIndex buildScenarioIndex(const Scenario& scenario) {
         std::any_of(scenario.priorityRules.begin(), scenario.priorityRules.end(), [](const auto& r) { return r.stop; }); // D615
     index.w74 = std::any_of(scenario.behaviours.begin(), scenario.behaviours.end(),
                             [](const auto& b) { return b.w74.has_value(); });
+    index.w99 = std::any_of(scenario.behaviours.begin(), scenario.behaviours.end(),
+                            [](const auto& b) { return b.w99.has_value(); });
+    index.w99Cc1Curve = std::any_of(scenario.behaviours.begin(), scenario.behaviours.end(),
+                                    [](const auto& b) { return b.w99 && !b.w99->cc1Curve.empty(); });
     indexLaneChanges(scenario, index);
     if (!scenario.parkingLots.empty()) { // M8.4a: which lot each gate route ends at
         index.lotOfRoute.assign(scenario.routes.size(), SIZE_MAX);

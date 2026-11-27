@@ -24,7 +24,7 @@ Scenario crossing(ZoneControl control, double minorPerHour, double majorPerHour)
 }
 EvaluationSpec spec() { EvaluationSpec e; e.queue = {5 / 3.6, 10 / 3.6, 20}; e.warmup = 60; e.end = 600; return e; }
 // What a test counts on its own: each passage's interpolated time, and for minor vehicles the time
-// they first stood short of the line.
+// they first stood short of or at the line. A front at the line has not passed it (D653).
 struct Passage { double time{}; std::optional<double> stood; };
 struct Independent { std::vector<Passage> minor; std::vector<double> major; };
 Independent runBoth(const Scenario& s, PriorityLineAccumulator& counter, std::uint32_t seed = 42) {
@@ -38,7 +38,7 @@ Independent runBoth(const Scenario& s, PriorityLineAccumulator& counter, std::ui
         // Queued as the contract says: standing, within maxGap of the line or of the rear ahead.
         std::vector<const Vehicle*> minors;
         for (const auto& v : state.vehicles)
-            if (state.scenario->routes[v.routeIndex].id == "minorRoute" && v.distance < 90) minors.push_back(&v);
+            if (state.scenario->routes[v.routeIndex].id == "minorRoute" && v.distance <= 90) minors.push_back(&v);
         std::sort(minors.begin(), minors.end(), [](const auto* a, const auto* b) { return a->distance > b->distance || (a->distance == b->distance && a->id < b->id); });
         for (std::size_t k = 0; k < minors.size(); ++k) {
             const double gap = k == 0 ? 90 - minors[k]->distance
@@ -52,8 +52,8 @@ Independent runBoth(const Scenario& s, PriorityLineAccumulator& counter, std::ui
             now[v.id] = {v.routeIndex, v.distance};
             const auto p = before.find(v.id);
             const double from = p != before.end() ? p->second.second : 0.0;
-            if (p == before.end() && v.distance >= line) continue;
-            if (from < line && v.distance >= line) {
+            if (p == before.end() && v.distance > line) continue;
+            if (from <= line && v.distance > line) {
                 const double t = state.time - dt + dt * (line - from) / (v.distance - from);
                 CHECK(t > state.time - dt - 1e-9); CHECK(t <= state.time + 1e-9); // PL1: inside the tick
                 if (minor) seen.minor.push_back({t, stood.contains(v.id) ? std::optional{stood[v.id]} : std::nullopt});

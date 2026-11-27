@@ -142,7 +142,7 @@ void anticipate(FollowingResult& following, const Scenario& scenario, const std:
             ? scenario.vehicleTypes[refs[static_cast<std::size_t>(between - vehicles.begin())].type].length : 0.0;
         reserved += length + standstillGap(behaviour);
         const auto& ahead = perceived[k].leader;
-        auto further = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour,
+        auto further = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, scenario.timeStep, type, behaviour,
                               Leader{ahead.gap - reserved, ahead.speed, ahead.acceleration});
         if (further.acceleration < following.acceleration) following = further;
     }

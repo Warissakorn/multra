@@ -5,13 +5,19 @@
 namespace multra {
 // B-5 (docs/reference/SPEED_DISTRIBUTION.md §3, D229). The speed of cumulative share u, and the share
 // of a speed. Without a curve both are the uniform formulas the engine always used, to the bit.
+// §3's inverse of a cumulative curve at share u, for any point type with a `share` and a value
+// (`valueOf`): the desired-speed curve here and W99's CC1 curve (W99 §5a, D647) share it.
+template <class Points, class ValueOf>
+double cumulativeInverse(const Points& c, double u, ValueOf valueOf) {
+    for (std::size_t i = 1; i < c.size(); ++i) {
+        const auto& a = c[i - 1]; const auto& b = c[i];
+        if (u <= b.share && b.share > a.share) return valueOf(a) + (u - a.share) / (b.share - a.share) * (valueOf(b) - valueOf(a));
+    }
+    return valueOf(c.back());
+}
 inline double speedAt(const SpeedRange& r, double u) {
     if (r.curve.empty()) return r.min + u * (r.max - r.min);
-    for (std::size_t i = 1; i < r.curve.size(); ++i) {
-        const auto& a = r.curve[i - 1]; const auto& b = r.curve[i];
-        if (u <= b.share && b.share > a.share) return a.speed + (u - a.share) / (b.share - a.share) * (b.speed - a.speed);
-    }
-    return r.curve.back().speed;
+    return cumulativeInverse(r.curve, u, [](const SpeedPoint& p) { return p.speed; });
 }
 // §3: an edited min/max moves every curve speed linearly onto the new range, keeping the shares.
 inline void fitCurve(SpeedRange& r) {

@@ -47,7 +47,7 @@ void EditorWindow::editRunSettings() {
     streams->addItem(QStringLiteral("shared"),static_cast<int>(RandomStreams::shared));
     streams->addItem(QStringLiteral("perInput"),static_cast<int>(RandomStreams::perInput));
     streams->setCurrentIndex(streams->findData(static_cast<int>(def.randomStreams)));form->addRow(text("editorRandomStreams"),streams);
-    // M3.2.8a.1 (MERGE_CLAMPS §3, D251; JOIN_ANTICIPATION §5, D255; LINE_APPROACH §7, D258): the clamp rules, labelled with their keys like the behaviour rows.
+    // M3.2.8a.1 (MERGE_CLAMPS §3, D251; JOIN_ANTICIPATION §5, D255; LINE_APPROACH §7, D258): the clamp rules; lineRest is always on (LINE_STOP §8, D677), labelled with their keys like the behaviour rows.
     const auto rule=[&](const char* key,const char* name,bool on){auto* box=new QCheckBox(QString::fromUtf8(key),&dialog);box->setObjectName(name);
         box->setChecked(on);form->addRow(box);return box;};
     auto* leaderTravel=rule("leaderTravel","editorLeaderTravel",def.clampRules.leaderTravel);
@@ -69,7 +69,7 @@ void EditorWindow::editRunSettings() {
         changeEvaluationPeriod(d,formNumber(warmup),period.end,formNumber(cooldown));
         if(clock->time()!=clockShown)demand(d).clockStart=QTime(0,0).secsTo(clock->time()); // untouched keeps a value past midnight
         changeRandomStreams(d,static_cast<RandomStreams>(streams->currentData().toInt()));
-        changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked(),standingStopFloor->isChecked()});});},[this](const char* key){return text(key);});
+        changeClampRules(d,{leaderTravel->isChecked(),sideEntry->isChecked(),redLineStop->isChecked(),joinAnticipation->isChecked(),standingStopFloor->isChecked(),def.clampRules.lineRest});});},[this](const char* key){return text(key);});
     dialog.exec();
 }
 void EditorWindow::editProgram(const std::string& id) {

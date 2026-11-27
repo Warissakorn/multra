@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "editor_interaction.hpp"
 #include "demand_catalog_dialog.hpp"
 #include "dialog_fit.hpp"
@@ -106,6 +107,12 @@ bool editCatalogType(QWidget* parent,VehicleType& type,std::string& name,const s
     auto* pcuSource=new QLineEdit(type.pcu?QString::fromStdString(type.pcu->source):QString(),&dialog);
     pcuSource->setObjectName("editorCatalogPcuSource");pcuSource->setPlaceholderText(text("catalogPcuSource"));
     form->addRow(pcuOn,pcu);form->addRow(text("catalogPcuSource"),pcuSource);
+    { // F12 (owner, 2026-11-26): what an unticked box holds is kept for the session (field_memory.hpp)
+        const auto scope="vehicleType/"+QString::fromStdString(type.id)+"/";
+        rememberTable(curveOn,curve,scope+"desiredSpeedCurve");rememberTable(accelOn,accel,scope+"accelerationCurve");
+        rememberField(axles,wheelbase,scope+"wheelbase");rememberField(axles,front,scope+"frontOverhang");rememberField(axles,rear,scope+"rearOverhang");
+        rememberField(kerbOn,kerb,scope+"kerbLanes");rememberField(pcuOn,pcu,scope+"pcu");rememberField(pcuOn,pcuSource,scope+"pcuSource");
+    }
     const auto sync=[&]{
         kerb->setEnabled(kerbOn->isChecked());pcu->setEnabled(pcuOn->isChecked());pcuSource->setEnabled(pcuOn->isChecked());
         for(auto* f:{wheelbase,front,rear})f->setEnabled(axles->isChecked());

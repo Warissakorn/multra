@@ -36,7 +36,7 @@ bool changes(const SimState& s, std::uint64_t id) {
 // The changer's own acceleration against one leader, as safeAt and the gain compute it.
 double against(const SimState& s, std::uint64_t id, std::optional<Leader> leader) {
     const auto& v = find(s, id);
-    return follow(v.speed, v, std::nullopt, s.scenario->vehicleTypes[v.typeIndex], s.scenario->behaviours.front(), leader).acceleration;
+    return follow(v.speed, v, std::nullopt, 0, s.scenario->timeStep, s.scenario->vehicleTypes[v.typeIndex], s.scenario->behaviours.front(), leader).acceleration;
 }
 // D95's two-lane road (discretionary_tests.cpp): both full routes, spans both ways.
 Scenario twoLanes() {

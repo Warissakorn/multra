@@ -181,15 +181,15 @@ std::vector<ValidationIssue> commitmentParameterIssues(const DriverBehaviour& b,
     if (std::isfinite(d) && d > 0 && d <= 15) return {};
     return {{"INVALID_BEHAVIOUR_PARAMETER", path + ".commitmentDeceleration"}};
 }
-double stopLineReach(const DriverBehaviour& b, double driverFactor) {
-    return desiredGap(b, driverFactor, kStoppedSpeed) + kLineReach;
+double stopLineReach(const DriverBehaviour& b, double driverFactor, std::optional<double> cc1Share) {
+    return desiredGap(b, driverFactor, kStoppedSpeed, cc1Share) + kLineReach;
 }
 bool atStopLine(const Vehicle& vehicle, double line, const DriverBehaviour& behaviour) {
-    return vehicle.speed < kStoppedSpeed && line - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor);
+    return vehicle.speed < kStoppedSpeed && line - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor, vehicle.w99Cc1Share);
 }
 bool stopMade(const Vehicle& vehicle, double line, const DriverBehaviour& behaviour) {
     if (!behaviour.stopArrival) return atStopLine(vehicle, line, behaviour);
-    return vehicle.speed < 0.5 && line - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor); // M6_SWEEP §4 (D546), lever E
+    return vehicle.speed < 0.5 && line - vehicle.distance <= stopLineReach(behaviour, vehicle.driverFactor, vehicle.w99Cc1Share); // M6_SWEEP §4 (D546), lever E
 }
 std::uint64_t stopDwellTicks(const DriverBehaviour& b, double dt) {
     if (!b.stopDwellTime) return 1;

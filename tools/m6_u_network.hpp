@@ -36,6 +36,7 @@ inline Junction junction(double vc) {
     d.network.id = "m6-u-junction";
     d.network.drivingSide = DrivingSide::left;
     d.definition = AuthoringDefinition{};
+    d.definition->clampRules.lineRest = false; // the M6 U record (D543) and sweep (D546) predate LINE_STOP (D652)
     const auto nearLink = addLink(d, {p(-far, -centre), p(far, -centre)}, 1, w);
     const auto farLink = addLink(d, {p(far, centre), p(-far, centre)}, 1, w);
     const auto minor = addLink(d, {p(0, -far), p(0, -minorEnd)}, 1, w);

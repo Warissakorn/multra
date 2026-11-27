@@ -1,7 +1,7 @@
 # Driving behaviour assignment contract
 
 Design before implementation, 2026-10-06 (D120). This contract owns the proposed
-M3.3 assignment seam. W74 runs since D138 (not validated); W99 and motorcycles do not. §7 records what M3.3.2a implemented (storage and editing), §8 the
+M3.3 assignment seam. W74 runs since D138 (not validated); W99 has a contract ([W99](W99.md), D637) but no code, and motorcycles do not run. §7 records what M3.3.2a implemented (storage and editing), §8 the
 M3.3.2b runtime selection and §9 the M3.3.2c editor. [ROADMAP](../ROADMAP.md#m33--driving-behaviour-library-and-models)
 owns milestone status; [the delivery plan](../plans/DRIVING_BEHAVIOUR.md) owns
 acceptance rows. Existing [SIMULATION](SIMULATION.md),
@@ -129,7 +129,7 @@ not appear as a working setting just because the catalog can store a number.
 |---|---|
 | DB_01–DB_07 library, Duplicate, region assignment | Owned behaviours exist; named library workflows/class/road assignment are M3.3 work |
 | W74 ax, bx_add, bx_mult | Similar prototype fields exist; full W74 dynamics and traits are contracted in [W74](W74.md) (D129), not implemented |
-| W99 CC0–CC9 | Planned following model; none are aliases of `followingTime` or other prototype fields |
+| W99 CC0–CC9 | Contracted following model ([W99](W99.md) §5, D637; no code); keys `cc0`–`cc9`, none an alias of `followingTime`, other prototype fields or W74's |
 | Desired speed / type length and width | Existing type fields; additional distribution families and motorcycle occupation are separate work |
 | Transit acceleration CC8/CC9 | Type has scalar acceleration limits; speed-dependent model acceleration needs a contract; no transit-stop/articulation claim |
 | Look ahead/back min/max; observed vehicles | Planned bounded perception; do not limit hard collision constraints with perception ([contract](PERCEPTION.md), D179) |

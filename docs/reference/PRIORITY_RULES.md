@@ -25,6 +25,9 @@ off. Vissim models these with a *priority rule*: a stop line on the minor path a
   standing major vehicle beyond the headway does not block; a driver who cannot stop at the line
   goes unless the marker is occupied (M3.2.8a, D219). Validation, route incidence (`routeRules`) and
   join anticipation (D255) read them.
+  A major vehicle whose front is exactly at the marker segment's start (its body on the segment before)
+  has not entered it (D673, as D653 for observers), unless the marker itself is at the start (PR17).
+  Looking upstream of the marker's segment was measured and kept out (RULE_LOOKBACK, D674–D675): a known limit.
 - **Only merges use it.** The rules come from `resolveRightOfWay`'s automatic merge ranking
   (`derivedPriorityRules`); the file's `priorityRules` rows (`AuthoredPriorityRule`) only carry an
   area's `gapTime`/`headway` by `conflictAreaId` and compile to a conflict zone, not to a rule.
@@ -111,6 +114,7 @@ speed on the headway test and vehicle-class filters (§3).
 | PR14 | A Stop on the line: with an empty major road a minor vehicle stands at the line before it crosses; with Yield it drives through (the forcing) |
 | PR15 | After the stop, a major vehicle within the headway still holds it; it goes once the major road clears |
 | PR16 | A Stop control with no area on a marker line round-trips at 83 and compiles every marker rule to a Stop (Yield: none); on a line no marker rule names it is still `INVALID_STOP_CONTROL` |
+| PR17 | D673: a major vehicle whose front is exactly at the conflict segment's start (its body on the segment before) has not entered it and does not hold the minor; 0.5 m in, within the headway, it holds (the forcing); a marker at the segment's start still counts a front there |
 
 ## 7. Out of scope
 

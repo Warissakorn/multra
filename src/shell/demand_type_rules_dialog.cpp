@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "editor_interaction.hpp"
 #include "demand_type_rules_dialog.hpp"
 #include "../project/demand_time_types.hpp"
@@ -38,6 +39,8 @@ bool editDemandTypeRules(QWidget* parent,RoutingDecision& decision,const std::ve
                 auto* spin=new QDoubleSpinBox(table);spin->setRange(0,std::max(1e12,original));spin->setDecimals(12);spin->setValue(original);
                 spin->setProperty("original",original);spin->setProperty("edited",false);
                 QObject::connect(spin,&QDoubleSpinBox::valueChanged,spin,[spin]{spin->setProperty("edited",true);});table->setCellWidget(r,c,spin);
+                // F12: an unticked type's weights are kept for the session (field_memory.hpp)
+                rememberField(enabled,spin,QString::fromStdString("decision/"+decision.id+"/typeRule/"+id+"/"+target.routeId+"/"+target.destinationLinkId+"/")+QString::number(c));
             }
         }
         table->setEnabled(existing);QObject::connect(enabled,&QCheckBox::toggled,table,&QWidget::setEnabled);

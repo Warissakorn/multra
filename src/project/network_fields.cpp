@@ -2,6 +2,7 @@
 #include "latest_schema.hpp"
 #include "../core/validate.hpp"
 #include "../core/w74.hpp"
+#include "../core/w99.hpp"
 #include "../core/perception.hpp"
 #include "../core/lateral.hpp"
 #include <nlohmann/json.hpp>
@@ -151,6 +152,7 @@ constexpr Field vehicleTypeFields[]={
     {"pcu",Kind::pcu,false,0,modeVersion},{"accelerationCurve",Kind::accelerationCurve,false,0,startUpVersion}};
 constexpr Field speedRangeFields[]={{"min",Kind::number,true},{"max",Kind::number,true},{"curve",Kind::speedCurve,false,0,speedCurveVersion}};
 constexpr Field speedPointFields[]={{"speed",Kind::number,true},{"share",Kind::number,true}};
+constexpr Field w99Cc1PointFields[]={{"value",Kind::number,true},{"share",Kind::number,true}}; // W99 §5a (D646)
 constexpr Field accelerationPointFields[]={{"speed",Kind::number,true},{"acceleration",Kind::number,true}}; // D608
 constexpr Field axleFields[]={{"wheelbase",Kind::number,true},{"frontOverhang",Kind::number,true},{"rearOverhang",Kind::number,true}};
 constexpr Field pcuFields[]={{"value",Kind::number,true},{"source",Kind::text,true}};
@@ -173,44 +175,10 @@ constexpr Field rootFeatureFields[]={{"zones",Kind::zones,false,0,zoneLayerVersi
     {"tripRateSets",Kind::tripRateSets,false,0,tripRateVersion},
     {"deterrenceSets",Kind::deterrenceSets,false,0,distributionVersion},{"costMatrices",Kind::costMatrices,false,0,distributionVersion},
     {"periodFactors",Kind::periodFactors,false,0,periodFactorVersion},
-    {"modeChoiceSets",Kind::modeChoiceSets,false,0,modeChoiceVersion}};
+    {"modeChoiceSets",Kind::modeChoiceSets,false,0,modeChoiceVersion},{"procedures",Kind::procedures,false,0,procedureVersion}};
 // D569: macro_run_definition.cpp's run row and macro_settings.cpp's settings row (both closed).
 constexpr Field macroRunFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"period",Kind::text,true},{"settings",Kind::macroSettings,true}};
 constexpr Field macroSettingsFields[]={{"targetGap",Kind::targetGap,true},{"maxIterations",Kind::iterationCap,true}};
-// D570: trip_rate_codec.cpp's rows (all closed). A side is one of two rows chosen by `method`; the
-// codec's other rules (unique ids and attributes, nonblank text, nonempty categories) stay with it.
-constexpr Field tripRateSetFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::citedSource,true},
-    {"unit",Kind::text,true},{"purposes",Kind::tripRatePurposes,true}};
-// D574: the cited source shared by trip-rate, deterrence and mode-choice sets (a cost matrix's
-// source holds citation only). A key added here is legal in all three readers.
-constexpr Field citedSourceFields[]={{"citation",Kind::text},{"table",Kind::text}};
-constexpr Field tripRatePurposeFields[]={{"id",Kind::text,true},{"productions",Kind::tripRateSide,true},{"attractions",Kind::tripRateSide,true}};
-constexpr Field tripRateCrossFields[]={{"method",Kind::crossMethod,true},{"categories",Kind::tripRateCategories,true}};
-constexpr Field tripRateRegressionFields[]={{"method",Kind::regressionMethod,true},{"constant",Kind::number,true},{"terms",Kind::tripRateTerms,true}};
-constexpr Field tripRateCategoryFields[]={{"attribute",Kind::text,true},{"rate",Kind::rate,true}};
-constexpr Field tripRateTermFields[]={{"attribute",Kind::text,true},{"coefficient",Kind::number,true}};
-// D571: deterrence_codec.cpp and cost_matrix_codec.cpp's closed rows. Deterrence reuses the
-// trip-rate source row; a matrix source permits citation only. Blank/unique ids and n-by-n
-// agreement stay with the codecs. The document owns the constraint floors.
-constexpr Field deterrenceSetFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::citedSource,true},
-    {"function",Kind::exponentialFunction,true},{"costUnit",Kind::minuteUnit,true},{"purposes",Kind::deterrencePurposes,true}};
-constexpr Field deterrencePurposeFields[]={{"id",Kind::text,true},{"beta",Kind::deterrenceBeta,true},
-    {"intrazonalShare",Kind::intrazonalShare},{"constraint",Kind::deterrenceConstraint,false,0,constraintVersion}};
-constexpr Field costMatrixFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::costMatrixSource},
-    {"unit",Kind::minuteUnit,true},{"zoneIds",Kind::nonemptyTexts,true},{"rows",Kind::costRows,true}};
-constexpr Field costMatrixSourceFields[]={{"citation",Kind::text}};
-// D572: period_factor_codec.cpp's exact row; blank ids, the share sum, known periods and unique pairs stay with the codec.
-constexpr Field periodFactorFields[]={{"purposeId",Kind::text,true},{"periodId",Kind::text,true},
-    {"productionToAttraction",Kind::periodShare,true},{"attractionToProduction",Kind::periodShare,true}};
-// D573: mode_choice_codec.cpp's closed rows; source reuses citedSource. Semantic checks stay in the codec.
-constexpr Field modeChoiceSetFields[]={{"id",Kind::text,true},{"name",Kind::text,true},{"source",Kind::citedSource,true},
-    {"costUnit",Kind::minuteUnit,true},{"purposes",Kind::modeChoicePurposes,true}};
-constexpr Field modeChoicePurposeFields[]={{"id",Kind::text,true},{"alternatives",Kind::modeChoiceAlternatives,true},
-    {"nests",Kind::modeChoiceNests,false,0,modeNestVersion},{"distributionCost",Kind::logsumCost,false,0,logsumVersion}};
-constexpr Field modeChoiceAlternativeFields[]={{"id",Kind::text,true},{.name="modeId",.kind=Kind::text,.atLeastOne=true},
-    {.name="costMatrix",.kind=Kind::text,.atLeastOne=true},
-    {"constant",Kind::number,true},{"timeCoefficient",Kind::modeCoefficient,true},{"occupancy",Kind::modeOccupancy}};
-constexpr Field modeChoiceNestFields[]={{"id",Kind::text,true},{"phi",Kind::modeNestPhi,true},{"alternatives",Kind::nonemptyTexts,true}};
 // D568: map_codec.cpp's two closed objects; the CRS-anchor agreement stays with validateMapSettings.
 constexpr Field mapFields[]={{"providerId",Kind::providerId,true},{"opacity",Kind::opacity,true},{"reference",Kind::mapReference,true}};
 constexpr Field mapReferenceFields[]={{"projectedCrs",Kind::utmCrs,true},{"anchorLongitude",Kind::longitude,true},
@@ -254,14 +222,24 @@ const BehaviourNumber sharedOptional[]={{"maxDecelerationCooperativeBraking",&B:
     {"diffusionTime",&B::diffusionTime,diffusionVersion,true},
     {"yieldTime",&B::yieldTime,yieldVersion,true},{"yieldTimeDeviation",&B::yieldTimeDeviation,yieldVersion,true},
     {"yieldTimeMinimum",&B::yieldTimeMinimum,yieldVersion,true},{"yieldTimeMaximum",&B::yieldTimeMaximum,yieldVersion,true},
-    {"impatience",&B::impatience,yieldVersion,true},{"timeToImpatience",&B::timeToImpatience,yieldVersion,true}}; // D618
-std::vector<Field> behaviourRow(bool w74) {
-    const int notThis=w74?1:0,notOther=w74?0:1;
+    {"impatience",&B::impatience,yieldVersion,true},{"timeToImpatience",&B::timeToImpatience,yieldVersion,true}, // D618
+    {"lineSetback",&B::lineSetback,lineSetbackVersion,true}}; // D670
+enum class Model { prototype, w74, w99 };
+std::vector<Field> behaviourRow(Model model) {
+    // rejectFrom 1: refused at every version, on the rows of the models that do not own the key.
+    const auto own=[&](Model m){return model==m;};
+    const auto refused=[&](Model m){return own(m)?0:1;};
     std::vector<Field> row{{"id",Kind::text,true},{"name",Kind::text,false,0,behaviourVersion},
-        {"model",w74?Kind::w74Model:Kind::behaviourModel,true,0,behaviourVersion}};
-    for(const auto* key:prototypeRequired)row.push_back({key,Kind::number,!w74,0,0,false,notThis});
-    for(const auto* key:prototypeOptional)row.push_back({key,Kind::number,false,0,0,false,notThis});
-    for(const auto& key:w74ParameterKeys())row.push_back({key.name,Kind::number,w74,0,0,false,notOther});
+        {"model",own(Model::w74)?Kind::w74Model:own(Model::w99)?Kind::w99Model:Kind::behaviourModel,true,0,behaviourVersion}};
+    for(const auto* key:prototypeRequired)row.push_back({key,Kind::number,own(Model::prototype),0,0,false,refused(Model::prototype)});
+    for(const auto* key:prototypeOptional)row.push_back({key,Kind::number,false,0,0,false,refused(Model::prototype)});
+    for(const auto& key:w74ParameterKeys())row.push_back({key.name,Kind::number,own(Model::w74),0,0,false,refused(Model::w74)});
+    for(const auto& key:w99ParameterKeys()) { // D639; D646: on the w99 row, cc1 or cc1Curve, exactly one
+        if(own(Model::w99) && std::string_view(key.name)=="cc1")row.push_back({.name=key.name,.kind=Kind::number,.required=true,.unless="cc1Curve"});
+        else row.push_back({key.name,Kind::number,own(Model::w99),0,0,false,refused(Model::w99)});
+    }
+    if(own(Model::w99))row.push_back({.name="cc1Curve",.kind=Kind::w99Cc1Curve,.required=true,.knownFrom=w99Cc1CurveVersion,.unless="cc1"});
+    else row.push_back({.name="cc1Curve",.kind=Kind::w99Cc1Curve,.rejectFrom=1});
     for(const auto& key:sharedOptional)row.push_back({key.name,Kind::number,false,0,key.floor});
     for(const auto& key:perceptionParameterKeys())row.push_back({key.name,key.integer?Kind::integerToken:Kind::number,false,0,perceptionVersion});
     for(const auto& key:lateralParameterKeys())row.push_back({key.name,Kind::number,false,0,lateralVersion});
@@ -309,11 +287,13 @@ std::span<const Field> fields(Object object) {
     case Object::vehicleType:return vehicleTypeFields;
     case Object::speedRange:return speedRangeFields;
     case Object::speedPoint:return speedPointFields;
+    case Object::w99Cc1Point:return w99Cc1PointFields;
     case Object::accelerationPoint:return accelerationPointFields;
     case Object::axles:return axleFields;
     case Object::pcu:return pcuFields;
-    case Object::behaviour:{static const auto row=behaviourRow(false);return row;}
-    case Object::w74Behaviour:{static const auto row=behaviourRow(true);return row;}
+    case Object::behaviour:{static const auto row=behaviourRow(Model::prototype);return row;}
+    case Object::w74Behaviour:{static const auto row=behaviourRow(Model::w74);return row;}
+    case Object::w99Behaviour:{static const auto row=behaviourRow(Model::w99);return row;}
     case Object::vehicleClass:return vehicleClassFields;
     case Object::linkBehaviourType:return linkBehaviourTypeFields;
     case Object::behaviourOverride:return behaviourOverrideFields;
@@ -330,22 +310,13 @@ std::span<const Field> fields(Object object) {
     case Object::mapReference:return mapReferenceFields;
     case Object::macroRun:return macroRunFields;
     case Object::macroSettings:return macroSettingsFields;
-    case Object::tripRateSet:return tripRateSetFields;
-    case Object::citedSource:return citedSourceFields;
-    case Object::tripRatePurpose:return tripRatePurposeFields;
-    case Object::tripRateCrossSide:return tripRateCrossFields;
-    case Object::tripRateRegressionSide:return tripRateRegressionFields;
-    case Object::tripRateCategory:return tripRateCategoryFields;
-    case Object::tripRateTerm:return tripRateTermFields;
-    case Object::deterrenceSet:return deterrenceSetFields;
-    case Object::deterrencePurpose:return deterrencePurposeFields;
-    case Object::costMatrix:return costMatrixFields;
-    case Object::costMatrixSource:return costMatrixSourceFields;
-    case Object::periodFactor:return periodFactorFields;
-    case Object::modeChoiceSet:return modeChoiceSetFields;
-    case Object::modeChoicePurpose:return modeChoicePurposeFields;
-    case Object::modeChoiceAlternative:return modeChoiceAlternativeFields;
-    case Object::modeChoiceNest:return modeChoiceNestFields;
+    case Object::tripRateSet: case Object::citedSource: case Object::tripRatePurpose: case Object::tripRateCrossSide:
+    case Object::tripRateRegressionSide: case Object::tripRateCategory: case Object::tripRateTerm:
+    case Object::deterrenceSet: case Object::deterrencePurpose: case Object::costMatrix:
+    case Object::costMatrixSource: case Object::periodFactor: case Object::modeChoiceSet:
+    case Object::modeChoicePurpose: case Object::modeChoiceAlternative: case Object::modeChoiceNest:
+    case Object::procedure: case Object::generationStep: case Object::distributionStep: case Object::modeChoiceStep:
+    case Object::assignmentStep: case Object::procedureFeedback: return macroSetFields(object); // macro_set_fields.cpp
     }
     return {};
 }
@@ -363,13 +334,10 @@ bool allowsAdditionalFields(Object object,int version) {
        object==Object::zoneLinkConnector || object==Object::zoneStreetConnector || object==Object::odMatrix ||
        object==Object::parkingLot || object==Object::studyPeriod || object==Object::studyArea || object==Object::gateFlow ||
        object==Object::map || object==Object::mapReference || object==Object::macroRun || object==Object::macroSettings ||
-       object==Object::tripRateSet || object==Object::citedSource || object==Object::tripRatePurpose || object==Object::tripRateCrossSide ||
-       object==Object::tripRateRegressionSide || object==Object::tripRateCategory || object==Object::tripRateTerm || object==Object::deterrenceSet ||
-       object==Object::deterrencePurpose || object==Object::costMatrix || object==Object::costMatrixSource || object==Object::periodFactor ||
-       object==Object::modeChoiceSet || object==Object::modeChoicePurpose || object==Object::modeChoiceAlternative || object==Object::modeChoiceNest)return false;
+       !macroSetFields(object).empty())return false; // every Macro set and procedure row is closed
     if(object==Object::rootFeatures)return true; // the root: other features have their own codecs
     // D562 (owner, OWNER_SITTING 49b): desiredSpeed and its curve points close with the type row.
-    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::speedRange || object==Object::speedPoint || object==Object::accelerationPoint)return version<behaviourVersion;
+    if(object==Object::vehicleType || object==Object::behaviour || object==Object::w74Behaviour || object==Object::w99Behaviour || object==Object::w99Cc1Point || object==Object::speedRange || object==Object::speedPoint || object==Object::accelerationPoint)return version<behaviourVersion;
     if(object==Object::route || object==Object::vehicleInput || object==Object::volumeInterval || object==Object::routingInterval)return true;
     if(object==Object::signalProgram || object==Object::signalPhase || object==Object::definition)return true;
     return version<strictVersion;
@@ -426,7 +394,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     if(found==list.end())throw std::logic_error("Unknown network codec field");
     const char* expected=nullptr;
     switch(found->kind) {
-    case Kind::text:case Kind::behaviourModel:case Kind::w74Model:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
+    case Kind::text:case Kind::behaviourModel:case Kind::w74Model:case Kind::w99Model:case Kind::side:case Kind::color:case Kind::conflictKind:case Kind::conflictPriority:case Kind::stopMode:case Kind::sectionControl:if(!v.is_string())expected="Expected text: ";break;
     case Kind::boolean:if(!v.is_boolean())expected="Expected true or false: ";break;
     case Kind::number:if(!v.is_number())expected="Expected number: ";break;
     case Kind::level:
@@ -443,7 +411,7 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::routes:case Kind::inputs:case Kind::volumeIntervals:
     case Kind::routingDecisions:case Kind::routingRoutes:case Kind::routingIntervals:case Kind::routingTypeRules:case Kind::numberMatrix:
     case Kind::compositions:case Kind::compositionShares:case Kind::compositionIntervals:case Kind::modes:
-    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::accelerationCurve:case Kind::behaviours:
+    case Kind::vehicleTypes:case Kind::speedCurve:case Kind::accelerationCurve:case Kind::behaviours:case Kind::w99Cc1Curve:
     case Kind::vehicleClasses:case Kind::linkBehaviourTypes:case Kind::behaviourOverrides:
         if(!v.is_array())expected="Expected array: ";
         break;
@@ -464,7 +432,9 @@ const Json& value(const Json& j,Object object,const char* name) {
     case Kind::costMatrices:case Kind::costMatrixSource:case Kind::costRows:
     case Kind::periodFactors:case Kind::periodShare:
     case Kind::modeChoiceSets:case Kind::modeChoicePurposes:case Kind::modeChoiceAlternatives:case Kind::modeChoiceNests:
-    case Kind::modeCoefficient:case Kind::modeOccupancy:case Kind::modeNestPhi:case Kind::logsumCost:break;
+    case Kind::modeCoefficient:case Kind::modeOccupancy:case Kind::modeNestPhi:case Kind::logsumCost:
+    case Kind::procedures:case Kind::procedureSteps:case Kind::stepKind:case Kind::procedureFeedback:case Kind::feedbackMethod:case Kind::feedbackIterations:
+    case Kind::feedbackWeight:case Kind::feedbackTolerance:break;
     }
     if(expected)throw std::invalid_argument(std::string(expected)+name);
     return v;

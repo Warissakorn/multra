@@ -27,6 +27,10 @@ void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const Scenar
     auto& candidateRefs = snapshot.refs;
     auto& candidateSpans = snapshot.spans; auto& candidateBuckets = snapshot.buckets;
     bool& spansBuilt = snapshot.built;
+    // An insertion appends to refs and spans at once, but the buckets are rebuilt only when a later
+    // candidate reads them: after the tick's last arrival nobody does, because stepSimulation then
+    // resolves the snapshot again (the merge by id reorders the fleet). Same buckets whenever read.
+    bool bucketsStale = false;
     for (const auto& pending : candidates) {
         const auto& route = scenario.routes[pending.routeIndex];
         if (!attemptedSources.insert(route.segmentIds.front()).second) continue;
@@ -36,6 +40,10 @@ void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const Scenar
             candidateSpans = occupiedSpans(scenario, vehicles, index, candidateRefs);
             candidateBuckets = bucketSpans(candidateSpans, scenario.segments.size());
             spansBuilt = true;
+        }
+        if (bucketsStale) {
+            candidateBuckets = bucketSpans(candidateSpans, scenario.segments.size());
+            bucketsStale = false;
         }
         Vehicle vehicle;
         static_cast<PendingVehicle&>(vehicle) = pending;
@@ -53,7 +61,7 @@ void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const Scenar
         // later lane-change/signal/conflict constraints still use the normal safety checks.
         if (leader) {
             // A vehicle entering has no w74 state: its first evaluation initialises one (W74.md §7).
-            const auto first=follow(0,vehicle,std::nullopt,type,behaviour,leader);
+            const auto first=follow(0, vehicle, std::nullopt, 0, dt, type,behaviour,leader);
             if (integrate(0,first.acceleration,dt).distance > leader->gap-standstillGap(behaviour)) continue;
         }
         const VehicleRefs inserted{static_cast<std::size_t>(&route - scenario.routes.data()),
@@ -63,7 +71,7 @@ void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const Scenar
         vehicles.push_back(vehicle);
         candidateRefs.push_back(inserted);
         appendVehicleSpans(candidateSpans, scenario, index, vehicle, inserted);
-        candidateBuckets = bucketSpans(candidateSpans, scenario.segments.size());
+        bucketsStale = true;
         next.inputs[pending.inputIndex].queue.erase(next.inputs[pending.inputIndex].queue.begin());
         if (!next.lots.empty()) noteInserted(next, vehicle.id); // a departure on the road frees its space
         // Events still carry the route's NAME: they are the run's output, read by the evaluator
@@ -71,5 +79,6 @@ void insertArrivals(SimState& next, std::vector<Vehicle>& vehicles, const Scenar
         events.emplace_back(DepartedEvent{startTime, vehicle.id, route.id,
                                          vehicle.scheduledTime, vehicle.desiredSpeed});
     }
+    if (bucketsStale) spansBuilt = false; // not reused (an arrival changed the fleet); never left inexact
 }
 }

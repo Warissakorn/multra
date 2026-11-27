@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
                 require(item<QLineEdit>(e, "exAdd")->text() == "2", "w74 value not shown");
                 item<QLineEdit>(e, "exAdd")->setText("0.5"); confirm(e);
                 require(e.isVisible(), "Out-of-range w74 value accepted");
-                require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("behaviour.exAdd"), "Range error not shown");
+                require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("exAdd"), "Range error not shown");
                 require(item<QCheckBox>(e, "curveLateralAccelerationSet")->isChecked() && item<QDoubleSpinBox>(e, "curveLateralAcceleration")->value() == 2.5
                         && item<QCheckBox>(e, "reactionTimeSet")->isChecked() && item<QDoubleSpinBox>(e, "reactionTime")->value() == .4
                         && !item<QCheckBox>(e, "lateralSet")->isChecked(), "w74 either-model keys not shown (D217)");
@@ -283,6 +283,180 @@ int main(int argc, char** argv) {
         });
         require(documentJson(w.history().document()) == before, "Cancel changed the behaviour");
         // EN/TH: the model and the W74 help are translated.
+        // D640 (W99 §9): a w99 behaviour is edited in the dialog -- its ten keys, its model, inline range checks.
+        {
+            auto withW99 = w.history().document();
+            DriverBehaviour w99{"w99-set"}; w99.w99 = W99Parameters{1.5, 1.3, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5};
+            putBehaviour(withW99, w99, ""); validateDocument(withW99);
+            QFile h(path); require(h.open(QIODevice::WriteOnly), "Fixture write failed");
+            h.write(QByteArray::fromStdString(documentJson(withW99).dump())); h.close(); w.openFile(path);
+            require(documentJson(w.history().document())["schemaVersion"] == 85, "w99 file not schema 85");
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-set"); }, [](QDialog& e) {
+                    require(item<QComboBox>(e, "editorBehaviourModel")->currentIndex() == 2, "w99 not shown as W99");
+                    requireFitsScreen(e);
+                    require(item<QLineEdit>(e, "cc2")->text() == "4", "w99 value not shown");
+                    item<QLineEdit>(e, "cc0")->setText("0"); confirm(e);
+                    require(e.isVisible(), "Out-of-range w99 value accepted");
+                    require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc0"), "W99 range error not shown");
+                    item<QLineEdit>(e, "cc0")->setText("1.5"); item<QLineEdit>(e, "cc6")->setText("7");
+                    item<QLineEdit>(e, "editorBehaviourName")->setText("Urban W99"); confirm(e);
+                });
+            });
+            auto edited = *w99.w99; edited.cc6 = 7;
+            require(behaviour("w99-set").w99 && *behaviour("w99-set").w99 == edited && !behaviour("w99-set").w74, "w99 key not edited");
+            require(w.history().document().definition->behaviourNames.at("w99-set") == "Urban W99", "w99 name not edited");
+            require(documentJson(w.history().document())["schemaVersion"] == 85, "edited w99 file not schema 85");
+            // W99 -> prototype: values come from the library's first prototype behaviour (data).
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-set"); }, [](QDialog& e) {
+                    item<QComboBox>(e, "editorBehaviourModel")->setCurrentIndex(0); confirm(e);
+                });
+            });
+            const auto& all = w.history().document().definition->behaviours;
+            const auto& first = *std::find_if(all.begin(), all.end(), [](const auto& b) { return !b.w74 && !b.w99 && b.id != "w99-set"; });
+            require(!behaviour("w99-set").w99 && !behaviour("w99-set").w74 && behaviour("w99-set").followingTime == first.followingTime,
+                    "W99 -> Prototype kept the w99 keys or did not take the library's values");
+            // Prototype -> W99: the fields start empty (no code defaults); an empty one is refused.
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                    item<QComboBox>(e, "editorBehaviourModel")->setCurrentIndex(2);
+                    for (const char* key : {"cc0", "cc1", "cc2", "cc3", "cc4", "cc5", "cc6", "cc7", "cc8", "cc9"})
+                        require(item<QLineEdit>(e, key)->text().isEmpty(), "W99 field pre-filled by code");
+                    // D648 (W99 §5a): a new W99 behaviour starts with CC1 drawn per driver, from an empty curve.
+                    require(item<QComboBox>(e, "editorBehaviourCc1Mode")->currentIndex() == 1, "CC1 not Distribution by default");
+                    require(item<QTableWidget>(e, "editorBehaviourCc1Curve")->rowCount() == 0, "CC1 curve pre-filled by code");
+                    require(!item<QLineEdit>(e, "cc1")->isEnabled(), "cc1 editable in Distribution");
+                    item<QComboBox>(e, "editorBehaviourCc1Mode")->setCurrentIndex(0); // Fixed, for the rest of this case
+                    require(item<QLineEdit>(e, "cc1")->isEnabled(), "cc1 not editable in Fixed");
+                    confirm(e); require(e.isVisible(), "Empty w99 field accepted");
+                    require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc0"), "Empty W99 field error not shown");
+                    // F7 item 4 (D643): an out-of-range value is reported before a later empty key, at its own field.
+                    item<QLineEdit>(e, "cc0")->setText("0"); confirm(e); require(e.isVisible(), "Out-of-range cc0 accepted");
+                    const auto rangeText = item<QLabel>(e, "editorBehaviourEditError")->text();
+                    require(rangeText.endsWith(" · cc0") && !rangeText.contains("w74") && !rangeText.contains("cc1"), "cc0's range error not shown first");
+                    require(e.focusWidget() == item<QLineEdit>(e, "cc0"), "Focus left the out-of-range field");
+                    item<QLineEdit>(e, "cc0")->setText("1.5"); confirm(e);
+                    require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc1"), "The next empty key not named");
+                    require(e.focusWidget() == item<QLineEdit>(e, "cc1"), "Focus not on the next empty key");
+                    const std::vector<std::pair<const char*, const char*>> values{{"cc0", "1.5"}, {"cc1", "0.9"}, {"cc2", "4"},
+                        {"cc3", "-8"}, {"cc4", "-0.35"}, {"cc5", "0.35"}, {"cc6", "11.44"}, {"cc7", "0.25"}, {"cc8", "3.5"}, {"cc9", "1.5"}};
+                    for (const auto& [key, value] : values) item<QLineEdit>(e, key)->setText(value);
+                    confirm(e);
+                });
+            });
+            require(behaviour(kDefault).w99 && behaviour(kDefault).w99->cc6 == 11.44 && !behaviour(kDefault).w74, "Model not switched to w99");
+            require(behaviour(kDefault).followingTime == 0 && !behaviour(kDefault).discretionaryLaneChangeThreshold,
+                    "Prototype keys kept on a w99 behaviour");
+            const auto unchanged = documentJson(w.history().document());
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                    item<QLineEdit>(e, "cc9")->setText("2"); e.reject();
+                });
+            });
+            require(documentJson(w.history().document()) == unchanged, "Cancel changed the w99 behaviour");
+            // D648 (BA237): CC1's curve is edited here -- Distribution with its rows, refusals with the point, Fixed.
+            {
+                auto withCurve = w.history().document();
+                DriverBehaviour curve{"w99-curve"}; curve.w99 = W99Parameters{1.5, 0, 4, -12, -0.25, 0.35, 6, 0.25, 2, 1.5};
+                curve.w99->cc1Curve = {{0.6, 0}, {1.5, 1}};
+                putBehaviour(withCurve, curve, ""); validateDocument(withCurve);
+                QFile c(path); require(c.open(QIODevice::WriteOnly), "Fixture write failed");
+                c.write(QByteArray::fromStdString(documentJson(withCurve).dump())); c.close(); w.openFile(path);
+                require(documentJson(w.history().document())["schemaVersion"] == 86, "curved file not schema 86");
+                const auto rows = [](QDialog& e, const std::vector<std::pair<const char*, const char*>>& points) {
+                    auto* t = item<QTableWidget>(e, "editorBehaviourCc1Curve"); t->setRowCount(0);
+                    for (const auto& [value, share] : points) {
+                        const int r = t->rowCount(); t->insertRow(r);
+                        t->setItem(r, 0, new QTableWidgetItem(value)); t->setItem(r, 1, new QTableWidgetItem(share));
+                    }
+                };
+                library([&](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [&](QDialog& e) {
+                        require(e.objectName() == "editorBehaviourEditDialog", "curved behaviour not opened");
+                        require(item<QComboBox>(e, "editorBehaviourCc1Mode")->currentIndex() == 1, "curve not shown as Distribution");
+                        auto* t = item<QTableWidget>(e, "editorBehaviourCc1Curve");
+                        require(t->rowCount() == 2 && t->item(1, 0)->text() == "1.5" && t->item(1, 1)->text() == "100", "curve rows not shown");
+                        // F8 (owner, 2026-11-26): a cell's editor covers its cell exactly, not 4 px right and taller.
+                        t->setCurrentCell(0, 0); t->editItem(t->item(0, 0)); QApplication::processEvents();
+                        auto* cellEditor = t->viewport()->findChild<QLineEdit*>(); require(cellEditor, "No cell editor");
+                        require(cellEditor->geometry() == t->visualItemRect(t->item(0, 0)), "Cell editor not on its cell");
+                        t->setCurrentCell(1, 1); QApplication::processEvents();
+                        rows(e, {}); confirm(e); require(e.isVisible(), "empty curve accepted");
+                        require(item<QLabel>(e, "editorBehaviourEditError")->text().contains("cc1Curve"), "empty curve not named");
+                        rows(e, {{"0.6", "0"}, {"1.5", "90"}}); confirm(e); require(e.isVisible(), "curve not ending at 100 % accepted");
+                        require(item<QLabel>(e, "editorBehaviourEditError")->text().endsWith("cc1Curve[1].share"), "bad point not named");
+                        rows(e, {{"0.6", "0"}, {"0.9", "50"}, {"1.5", "100"}}); confirm(e);
+                    });
+                });
+                const std::vector<W99Cc1Point> saved{{0.6, 0}, {0.9, 0.5}, {1.5, 1}};
+                require(behaviour("w99-curve").w99 && behaviour("w99-curve").w99->cc1Curve == saved, "curve not saved");
+                require(documentJson(w.history().document())["schemaVersion"] == 86, "edited curve not schema 86");
+                library([](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [](QDialog& e) {
+                        item<QComboBox>(e, "editorBehaviourCc1Mode")->setCurrentIndex(0);
+                        item<QLineEdit>(e, "cc1")->setText("0.9"); confirm(e);
+                    });
+                });
+                require(behaviour("w99-curve").w99->cc1 == 0.9 && behaviour("w99-curve").w99->cc1Curve.empty(), "Fixed not saved");
+                // F12 (owner, 2026-11-26): the curve set aside by Fixed comes back in Distribution, this session.
+                library([](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [](QDialog& e) {
+                        auto* t = item<QTableWidget>(e, "editorBehaviourCc1Curve");
+                        require(!t->isEnabled() && t->rowCount() == 3 && t->item(2, 1)->text() == "100", "Curve not kept beside Fixed");
+                        item<QComboBox>(e, "editorBehaviourCc1Mode")->setCurrentIndex(1); require(t->isEnabled(), "Curve not in use in Distribution");
+                        e.reject();
+                    });
+                });
+                // F12: an unticked key keeps its number; ticking it again brings the number back.
+                const auto setback = [&](bool on, double value) {
+                    library([&](QDialog& d) {
+                        modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [&](QDialog& e) {
+                            auto* box = item<QCheckBox>(e, "lineSetbackSet"); auto* spin = item<QDoubleSpinBox>(e, "lineSetback");
+                            if (!on) require(box->isChecked() == false || spin->value() == value, "Ticked value not shown");
+                            box->setChecked(on); if (on && value > 0) spin->setValue(value);
+                            confirm(e);
+                        });
+                    });
+                };
+                setback(true, 1); require(behaviour("w99-curve").lineSetback == 1.0, "lineSetback not set");
+                setback(false, 1); require(!behaviour("w99-curve").lineSetback, "Unticked lineSetback written");
+                library([](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [](QDialog& e) {
+                        require(!item<QCheckBox>(e, "lineSetbackSet")->isChecked() && item<QDoubleSpinBox>(e, "lineSetback")->value() == 1,
+                                "Unticked lineSetback lost its number");
+                        item<QCheckBox>(e, "lineSetbackSet")->setChecked(true); confirm(e);
+                    });
+                });
+                require(behaviour("w99-curve").lineSetback == 1.0, "Ticking again did not bring 1 back");
+                // D678: another project open forgets the kept numbers (ids repeat between projects).
+                setback(true, 0.5); setback(false, 0.5); w.openFile(path);
+                library([](QDialog& d) {
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", "w99-curve"); }, [](QDialog& e) {
+                        require(item<QDoubleSpinBox>(e, "lineSetback")->value() == 1, "A kept number survived opening a project");
+                        e.reject();
+                    });
+                });
+                library([](QDialog& d) { // a fixed w99 behaviour opens in Fixed
+                    modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                        require(item<QComboBox>(e, "editorBehaviourCc1Mode")->currentIndex() == 0, "fixed cc1 not shown as Fixed");
+                        e.reject();
+                    });
+                });
+            }
+            // W99 -> prototype with the w99 behaviour first in the library: the values come from the first
+            // prototype one, never from a w99 entry (whose prototype fields are unused).
+            require(w.history().document().definition->behaviours.front().id == kDefault, "Default behaviour not first");
+            library([](QDialog& d) {
+                modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                    item<QComboBox>(e, "editorBehaviourModel")->setCurrentIndex(0); confirm(e);
+                });
+            });
+            const auto& now = w.history().document().definition->behaviours; // re-read: the edit replaced the document
+            const auto& prototypeSource = *std::find_if(now.begin(), now.end(), [](const auto& b) { return !b.w74 && !b.w99 && b.id != kDefault; });
+            require(!behaviour(kDefault).w99 && behaviour(kDefault).followingTime > 0
+                    && behaviour(kDefault).followingTime == prototypeSource.followingTime, "Prototype values taken from a w99 entry");
+        }
         item<QComboBox>(w, "editorLanguage")->setCurrentIndex(1); QApplication::processEvents();
         const std::string shot = argc > 2 ? argv[2] : "";
         library([&](QDialog& d) {
@@ -291,6 +465,14 @@ int main(int argc, char** argv) {
                 if (!shot.empty()) { QApplication::processEvents(); require(e.grab().save(QString::fromStdString(shot)), "Screenshot failed"); }
                 require(item<QLabel>(e, "editorBehaviourW74Help")->text().contains("W74"), "W74 help missing");
                 require(item<QComboBox>(e, "editorBehaviourModel")->itemText(0) == "Prototype", "Model item missing");
+                e.reject();
+            });
+        });
+        library([](QDialog& d) { // D640: the W99 item and help, in Thai
+            modal([&] { click(d, "editorBehaviours", "catalogEdit", kDefault); }, [](QDialog& e) {
+                require(item<QComboBox>(e, "editorBehaviourModel")->itemText(2) == "W99 (Wiedemann 99)", "W99 item missing");
+                require(item<QComboBox>(e, "editorBehaviourCc1Mode")->itemText(0) == QString::fromUtf8("ค่าคงที่"), "CC1 mode not in Thai");
+                require(item<QLabel>(e, "editorBehaviourW99Help")->text().startsWith(QString::fromUtf8("ทุกคีย์ของ W99")), "W99 help not in Thai");
                 e.reject();
             });
         });

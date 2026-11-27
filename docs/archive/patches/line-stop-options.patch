@@ -1,0 +1,184 @@
+diff --git a/cmake/tools.cmake b/cmake/tools.cmake
+index d3a5db5..1ee9723 100644
+--- a/cmake/tools.cmake
++++ b/cmake/tools.cmake
+@@ -102,3 +102,5 @@ target_precompile_headers(multra-node-example REUSE_FROM multra-four-leg-fixture
+ add_executable(multra-lateral-fixture tools/lateral_lab_fixture.cpp)
+ target_link_libraries(multra-lateral-fixture PRIVATE multra_commands multra_options)
+ target_precompile_headers(multra-lateral-fixture REUSE_FROM multra-four-leg-fixture)
++add_executable(zz-lineopt tools/zz_line_options.cpp)
++target_link_libraries(zz-lineopt PRIVATE multra_commands multra_options)
+diff --git a/src/core/following.cpp b/src/core/following.cpp
+index 49d0f0c..2d92ec9 100644
+--- a/src/core/following.cpp
++++ b/src/core/following.cpp
+@@ -1,4 +1,5 @@
+ #include "following.hpp"
++#include "zz_probe.hpp" // ZZ
+ #include "w74.hpp"
+ #include "w99.hpp"
+ #include "start_up.hpp"
+@@ -70,6 +71,7 @@ double desiredGap(const DriverBehaviour& b, double driverFactor, double speed, s
+ }
+ FollowingResult follow(double speed, const PendingVehicle& driver, std::optional<W74State> previous,
+     double previousAcceleration, double timeStep, const VehicleType& type, const DriverBehaviour& behaviour, std::optional<Leader> leader) {
++    if (zz::l1() && leader && leader->zoneLine && (behaviour.w74 || behaviour.w99)) leader->gap += standstillGap(behaviour); // ZZ
+     if (behaviour.w99) { // W99 §6-§7 (D642): no state of its own, so the result carries none
+         if (!driver.w99Trait) throw std::logic_error("w99 behaviour without driver trait");
+         const auto r = w99Acceleration(speed, driver.desiredSpeed, previousAcceleration, timeStep, driver.driverFactor,
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index 01b9021..6564366 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -2,6 +2,7 @@
+ #include "diffusion.hpp"
+ #include "yield_time.hpp"
+ #include "simulation.hpp"
++#include "zz_probe.hpp" // ZZ temporary
+ #include "conflicts.hpp"
+ #include "detail.hpp"
+ #include "following.hpp"
+@@ -316,7 +317,24 @@ SimState stepSimulation(SimState&& state, double dt) {
+             holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold); zoneLine = std::min(zoneLine, *hold);
+             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0, true}; // D596: rest at the line
+         }
+-        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, leader);
++        // ZZ temporary: line-stop options (L1 shift, L3 separate law, F floor for w74/w99).
++        const double zzLine = std::min({headLine, giveWayLine, deadEnd});
++        const bool zzLineLeads = std::isfinite(zzLine) && leader && zzLine <= leader->gap + 1e-9;
++        if (zz::l1() && zzLineLeads) leader->zoneLine = true;
++        auto zzModelLeader = leader;
++        if (zz::l3() && zzLineLeads) zzModelLeader = perceived.empty() ? vehicleLeader : std::optional<Leader>(perceived.front().leader);
++        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, zzModelLeader);
++        if (zz::l3() && std::isfinite(zzLine)) {
++            const double aLine = zz::stopLaw(vehicle.speed, zzLine, type.comfortableDeceleration, type.maxDeceleration, dt);
++            if (aLine < following.acceleration) { following.acceleration = aLine; following.mode = FollowingMode::braking; }
++        }
++        if (zz::floor() && (behaviour.w74 || behaviour.w99) && vehicle.speed > 0 && following.acceleration < 0) {
++            double stopAt = std::numeric_limits<double>::infinity();
++            if (zzLineLeads || (std::isfinite(zzLine) && zz::l3())) stopAt = zzLine;
++            if (vehicleLeader && vehicleLeader->speed == 0) stopAt = std::min(stopAt, vehicleLeader->gap - standstillGap(behaviour));
++            if (std::isfinite(stopAt)) following.acceleration = std::min(following.acceleration,
++                std::max(-type.maxDeceleration, -(vehicle.speed * vehicle.speed) / (2 * std::max(0.01, stopAt))));
++        }
+         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
+             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
+         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
+@@ -331,7 +349,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+             if (held.acceleration < following.acceleration) following = held;
+         }
+         if (std::isfinite(deadEnd) && leader->gap < deadEnd) // D456: the dead end behind a nearer leader
+-            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
++            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, Leader{deadEnd, 0, 0, zz::l1()}); held.acceleration < following.acceleration && !zz::l3()) following = held;
+         if (const auto delay = reactionTicks(sight, dt)) {
+             decisions.push_back({v, delay, following});
+             auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;
+@@ -359,12 +377,15 @@ SimState stepSimulation(SimState&& state, double dt) {
+         auto& move = moves[v];
+         move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false, following.w74};
+         const double allowedDistance = tickCap(scenario, vehicles, refs, vehicle, parts, spans, buckets, &lateral, vehicleLeader, leaderCap, holdCap, giveWayLine, move.distance, dt); // MERGE_CLAMPS §2
++        if ((zz::l1() || zz::l3()) && std::isfinite(zzLine) && allowedDistance >= zzLine - 1e-9 && move.distance > allowedDistance &&
++            move.distance <= allowedDistance + 1e-6) // ZZ: D596's finish at any line: a rounding residue is rest, not a clamp
++            move = {allowedDistance, 0, -vehicle.speed / dt, FollowingMode::braking, false, following.w74};
+         if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking; §2 Q (D251) at a signal head too, with amberDeceleration
+             const bool standingBody = behaviour.stopFloor && !behaviour.w74 && !behaviour.w99 && vehicleLeader && vehicleLeader->speed == 0 && leaderCap == allowedDistance; // §8 (D583)
+             // D596: at a zone's line with only a rounding residue of speed left (the law's own stop ended
+             // exactly there), coming to rest is not an emergency stop.
+             if (zoneLine == allowedDistance && vehicle.speed < 1e-6) move = {allowedDistance, 0, -vehicle.speed / dt, FollowingMode::braking, false, following.w74};
+-            else if (const auto a = giveWayLine == allowedDistance || standingBody || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
++            else if (const auto a = giveWayLine == allowedDistance || standingBody || ((zz::l1() || zz::l3()) && std::isfinite(zzLine) && allowedDistance >= zzLine - 1e-9) || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
+                 auto stop = integrate(vehicle.speed, *a, dt);
+                 // D596: a stop that ends at a zone's line rests there, without a rounding residue of
+                 // speed a later tick would read as still moving (and as unable to stop).
+@@ -372,6 +393,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+                 move = {stop.distance, stop.speed, *a, FollowingMode::braking, false, following.w74};
+             } else { move.distance = allowedDistance; move.speed = 0; move.acceleration = -vehicle.speed / dt; move.clamped = true; }
+         }
++        if (std::isfinite(zzLine) && (!vehicleLeader || vehicleLeader->gap > zzLine)) zz::observe(vehicle.id, zzLine - move.distance, move.speed, move.acceleration, dt); // ZZ
+     }
+     // A Stop finishes the stop the model only approaches (M3.2.5): from below walking pace, so at
+     // most kStoppedSpeed/dt of ordinary braking -- not an emergency clamp.
+diff --git a/src/core/zz_probe.hpp b/src/core/zz_probe.hpp
+new file mode 100644
+index 0000000..c2a7486
+--- /dev/null
++++ b/src/core/zz_probe.hpp
+@@ -0,0 +1,26 @@
++// ZZ temporary: line-stop option switches and observations (LINE_STOP measurements). Not committed.
++#pragma once
++#include <cmath>
++#include <cstdint>
++#include <cstdlib>
++#include <map>
++namespace multra::zz {
++inline bool env(const char* n) { const char* v = std::getenv(n); return v && *v == '1'; }
++inline bool l1() { static const bool b = env("ZZ_L1"); return b; }
++inline bool l3() { static const bool b = env("ZZ_L3"); return b; }
++inline bool floor() { static const bool b = env("ZZ_FLOOR"); return b; }
++// SUMO-style: the speed after this tick from which braking at b stops at the line (ballistic tick).
++inline double stopLaw(double v, double gap, double b, double maxDecel, double dt) {
++    const double c = gap - v * dt / 2;
++    const double v1 = c <= 0 ? 0 : b * (-dt / 2 + std::sqrt(dt * dt / 4 + 2 * c / b));
++    return std::max(-maxDecel, (v1 - v) / dt);
++}
++struct Obs { double rest = NAN, crawl = 0; int hardAfterGo = 0; bool stood = false; };
++inline std::map<std::uint64_t, Obs>& obs() { static std::map<std::uint64_t, Obs> m; return m; }
++inline void observe(std::uint64_t id, double toLine, double speed, double a, double dt) {
++    auto& o = obs()[id];
++    if (speed < 0.1 && toLine < 15) { o.rest = toLine; o.stood = true; }
++    if (toLine < 15 && speed >= 0.1 && speed < 1) o.crawl += dt;
++    if (o.stood && toLine < 15 && a < -2) ++o.hardAfterGo;
++}
++}
+diff --git a/tools/zz_line_options.cpp b/tools/zz_line_options.cpp
+new file mode 100644
+index 0000000..880500a
+--- /dev/null
++++ b/tools/zz_line_options.cpp
+@@ -0,0 +1,46 @@
++// ZZ temporary: LINE_STOP option measurements. Not committed.
++#include "discharge_options.hpp"
++#include "w74_fixture_document.hpp"
++#include "../src/core/zz_probe.hpp"
++#include "../src/core/simulation.hpp"
++#include "../src/project/evaluation.hpp"
++#include "../src/project/run.hpp"
++#include <algorithm>
++#include <cstdio>
++#include <iostream>
++using namespace multra;
++int main(int, char** argv) {
++    const std::string arm = argv[1]; const std::filesystem::path project = argv[2], data = argv[3];
++    const bool discharge = std::string(argv[4]) == "1";
++    auto base = w74fixture::base(project, data);
++    std::optional<DriverBehaviour> b;
++    if (arm != "prototype") b = parseBehaviour(w74fixture::read(arm));
++    const auto d = w74fixture::arm(base, b ? &*b : nullptr, base.definition->timeStep, "probe");
++    const auto snap = compileDocument(d, data);
++    std::vector<double> rests, crawls; long clamps = 0, hard = 0, done = 0; double delay = 0; long trips = 0;
++    std::vector<double> heads, startups;
++    for (std::uint32_t seed = 42; seed <= 51; ++seed) {
++        zz::obs().clear();
++        std::optional<DischargeAccumulator> release; DischargeSpec options;
++        if (discharge) { options = DischargeOptions{}.forDuration(snap.scenario.duration); release.emplace(options, evaluationSpec(d, snap, data).queue); }
++        auto state = createSimulation(snap.scenario, seed);
++        if (release) release->observe(state);
++        while (state.tick < totalTicks(snap.scenario)) {
++            state = stepSimulation(std::move(state));
++            if (release) release->observe(state);
++            for (const auto& e : state.events) {
++                clamps += std::holds_alternative<SafetyClampEvent>(e);
++                if (const auto* a = std::get_if<ArrivedEvent>(&e)) { ++trips; delay += a->travelTime - a->freeFlowTime; }
++            }
++        }
++        for (const auto& [id, o] : zz::obs()) { if (o.stood) rests.push_back(o.rest); if (o.crawl > 0) crawls.push_back(o.crawl); hard += o.hardAfterGo; }
++        if (release) for (const auto& c : release->report()) { const auto e = estimateDischarge(c, options);
++            if (e.meanHeadway) heads.push_back(*e.meanHeadway); if (e.startupLostTime) startups.push_back(*e.startupLostTime); }
++    }
++    const auto q = [](std::vector<double> v, double p) { if (v.empty()) return double(NAN); std::sort(v.begin(), v.end()); return v[std::min(v.size() - 1, std::size_t(p * v.size()))]; };
++    const auto mean = [](const std::vector<double>& v) { double s = 0; for (double x : v) s += x; return v.empty() ? double(NAN) : s / v.size(); };
++    std::printf("stops %5zu rest med %.2f p90 %.2f max %.2f | crawl>0 %4zu med %.1fs max %.1fs | hard %4ld | clamps/run %7.1f | delay/veh %.2fs",
++        rests.size(), q(rests, .5), q(rests, .9), q(rests, 1), crawls.size(), q(crawls, .5), q(crawls, 1), hard, clamps / 10.0, trips ? delay / trips : NAN);
++    if (discharge) std::printf(" | headway %.3f startup %.3f", mean(heads), mean(startups));
++    std::printf("\n");
++}

@@ -14,7 +14,7 @@ struct Move { double distance{}, speed{}, acceleration{}; FollowingMode mode{}; 
 // A decision taken this tick by a driver with a reaction time, stored at publication.
 struct Reaction { std::size_t vehicle, ticks; FollowingResult action; };
 // The refs, spans and buckets insertion built over the survivors (D584). `built` is false on a tick
-// with no candidate; once one is inserted they cover the grown list in append order, not id order.
+// with no candidate, and after an insertion: the merge by id then reorders the fleet, so they are rebuilt.
 struct Snapshot { std::vector<VehicleRefs> refs; std::vector<OccupiedSpan> spans; SpanBuckets buckets; bool built{}; };
 // Source insertion (D108): at most one queued arrival per source segment enters `vehicles`, appended
 // after the survivors in scheduled-time order, when its first step fits the leader's buffer.

@@ -42,6 +42,8 @@ every existing file runs byte-identically.
   later draw (driver factor, arrivals) is unchanged.
 - **Without a curve:** `min + u · (max − min)`, as now.
 - **Two points `(min, 0), (max, 1)`:** the same value as without a curve, to the last bit.
+- **Shared (D647).** The inverse is `cumulativeInverse` in `src/core/speed_distribution.hpp`; W99's CC1 curve
+  (W99 §5a) reads the same function, so the two cannot drift.
 - **Quantile.** Wherever a vehicle's place in its type's range is read, it is the curve's share at
   the vehicle's speed, interpolated in the segment that holds the speed; without a curve it is the
   old linear formula. The places are:

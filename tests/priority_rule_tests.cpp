@@ -222,3 +222,17 @@ TEST(priority_rule, pr16_a_stop_control_with_no_area_on_a_marker_line) {
     d.network.rightOfWay.stopControls[0].waitingLineId = "other";
     test::throws([&] { validateDocument(d); }, "INVALID_STOP_CONTROL");
 }
+
+// D673 (D672 E1): PR17. A major vehicle whose front is exactly at the conflict segment's start, its body still on the
+// segment before, has not entered it, so it does not hold the minor; 0.5 m in, it does. A marker at the start itself
+// still counts a front there.
+TEST(priority_rule, pr17_a_front_exactly_at_the_segment_start_has_not_entered) {
+    auto s = crossing(3, 5);
+    s.segments.push_back({"majorUp", 50, {"major"}});
+    s.routes.push_back({"upRoute", {"majorUp", "major"}});
+    s.priorityRules = {{"rule#0", "minor", 100, "major", 3, 3, 5}}; // a marker 3 m in, as a 2.73 m connector's end
+    CHECK(!goes(s, {onMajor(2, 50.5, 0, "car", "upRoute")})); // forcing: 0.5 m in, within the headway, it holds
+    CHECK(goes(s, {onMajor(2, 50, 0, "car", "upRoute")}));    // exactly at the start: not entered
+    s.priorityRules = {{"rule#0", "minor", 100, "major", 0, 3, 5}}; // the marker at the start itself
+    CHECK(!goes(s, {onMajor(2, 50, 0, "car", "upRoute")}));
+}

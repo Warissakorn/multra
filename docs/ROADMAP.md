@@ -186,7 +186,8 @@ M3.2.7 alone did not close M3.2 (D625 did); the not-yet-validated marker remains
 
 ### M3.2.8a.1 — Remaining moving merge and source-clearance clamps
 
-**Open (D105/D108, 2026-10-04).** The moving-leader standstill cap ([W74 clamp trace](evidence/w74-clamps.md)) is booked here by D201 (sitting B5).
+**Open (D105/D108, 2026-10-04).** Stopping at the line for every line type and model is contracted, measured and implemented
+([LINE_STOP](reference/LINE_STOP.md), D651; L3F as `clampRules.lineRest`, D652; a front at the line has not passed it in the observers, D653; W99 stops at CC0 behind a standing obstacle, D654; W74/W99 queues stop by the same law, LINE_QUEUE, D655–D656; the prototype's queues rest, PROTOTYPE_QUEUE, D657–D658, D662; the stop laws under a reaction delay, REACTION_STOP, D659–D661; a softer stop profile, STOP_PROFILE, D663 contract, D664 trace, D665 B3P, D666 NGSIM approach, D667 closed). The moving-leader standstill cap ([W74 clamp trace](evidence/w74-clamps.md)) is booked here by D201 (sitting B5).
 Implemented: source first-step clearance (D108), the give-way stop (D240) and `clampRules` (D251, D258), leaving M2.6 at 5 clamps (pull-out 1, late catch-up 4) and the lane lab at 1; `joinAnticipation` ships off (D255); source clearance remains ([history D105–D258](archive/ROADMAP-implemented-2026-10-27.md#m328a1-clamp-history-d105d258)).
 
 **Scope:** define how a minor approaching a merge anticipates the shared leader's standstill buffer before its span appears, and how a source insertion fits its first acceleration step into a small positive clearance. Keep the 1 m derived setback (D50), buffer and maximum deceleration until an explicit new contract says otherwise; do not suppress events or relax collision checks to remove counts.
@@ -282,8 +283,8 @@ tracking (D121–D125, [DISCHARGE](reference/DISCHARGE.md)); M3.3.2 library, cla
 prototype selection and dialog (D126–D128; owner visual review open); M3.3.3a W74 contract and
 implementation, runnable in schema 25 and **not validated** (D129, D135–D139, [W74](reference/W74.md)).
 A cited, uncalibrated preset (SUMO's defaults, not auto-loaded) is recorded (D176,
-[evidence](evidence/w74-preset.md)). **Next:** the M3.3.3b W99 contract before code, seventh in
-the [review](audits/DRIVING_BEHAVIOUR_REVIEW.md)'s order (D177) so it consumes M3.5's observation. Evidence:
+[evidence](evidence/w74-preset.md)). **M3.3.3b:** the W99 contract is written ([W99](reference/W99.md), D637; rows BA224–BA232
+pending except BA224, BA225, BA227 (pure function, D638) and BA228 (codec, schema 85, D639); the dialog edits it (D640); BA229 (trait `zW`, D641); BA226, BA230, BA232 (composed, D642), so Run accepts it); it consumes M3.5's observation through `follow`, as the review's order (D177) asked. BA231's timestep record (D649); the creep's hold before the hard cap (BA238, D650). **Next:** a stop-at-the-line contract for every line and model (the arrival clamps). Evidence:
 [delivery rows](plans/DRIVING_BEHAVIOUR.md), [interface](reference/DRIVING_BEHAVIOUR.md). M0/M6
 gates, D102's off state and legacy baselines are unchanged.
 

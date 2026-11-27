@@ -1,6 +1,7 @@
 #include "vehicle_color_dialog.hpp"
 #include "dialog_fit.hpp"
 #include "editor_interaction.hpp"
+#include <map>
 #include <QCheckBox>
 #include <QColor>
 #include <QColorDialog>
@@ -124,7 +125,13 @@ bool editVehicleColors(QWidget* parent,DisplayCatalog& catalog,const std::vector
     QObject::connect(types,&QComboBox::currentIndexChanged,&dialog,[&]{load();});
     QObject::connect(mixed,&QCheckBox::toggled,&dialog,[&](bool enabled){
         if(loading)return;
-        if(enabled)usePalette();else{
+        // F12 (owner, 2026-11-26): the mixed colours unticked away are kept for the session, and ticking
+        // the box again brings them back rather than the catalog's palette.
+        static std::map<std::string,std::vector<std::string>> unticked;
+        if(enabled){
+            if(const auto kept=unticked.find(id());kept!=unticked.end()){colors=kept->second;store();}else usePalette();
+        }else{
+            if(colors.size()>1)unticked[id()]=colors;
             const int at=list->currentRow();const auto selected=colors.at(at<0?0:at);colors={selected};store();
         }
     });

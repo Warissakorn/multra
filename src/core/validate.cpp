@@ -1,5 +1,6 @@
 #include "missed_exit.hpp"
 #include "diffusion.hpp"
+#include "line_stop.hpp"
 #include "yield_time.hpp"
 #include "text.hpp"
 #include "validate.hpp"
@@ -9,6 +10,7 @@
 #include "parking.hpp"
 #include "routing.hpp"
 #include "w74.hpp"
+#include "w99.hpp"
 #include "perception.hpp"
 #include "lateral.hpp"
 #include "speed_control.hpp"
@@ -282,8 +284,12 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
     for (std::size_t i = 0; i < s.behaviours.size(); ++i) {
         const auto& b = s.behaviours[i];
         const auto p = "behaviours[" + std::to_string(i) + "]";
-        if (b.w74) {
-            for (auto& issue : w74ParameterIssues(*b.w74, p)) issues.push_back(std::move(issue));
+        if (b.w74 || b.w99) {
+            if (b.w74) for (auto& issue : w74ParameterIssues(*b.w74, p)) issues.push_back(std::move(issue));
+            else {
+                for (auto& issue : w99ParameterIssues(*b.w99, p)) issues.push_back(std::move(issue)); // W99 §5
+                // D647: the CC1 draw is composed (BA236), so D646's interim Run refusal is gone.
+            } // D642: composed (BA230), so D639's Run refusal is gone
             if (b.maxDecelerationCooperativeBraking)
                 number(*b.maxDecelerationCooperativeBraking, p + ".maxDecelerationCooperativeBraking");
             if (b.amberDeceleration) number(*b.amberDeceleration, p + ".amberDeceleration"); // M4.2
@@ -297,6 +303,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
             for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
             for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
             for (auto& issue : diffusionIssues(b, p)) issues.push_back(std::move(issue)); // D613
+            for (auto& issue : lineSetbackIssues(b, p)) issues.push_back(std::move(issue)); // D670
             for (auto& issue : yieldBehaviourIssues(b, p)) issues.push_back(std::move(issue)); // D618
             for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
             for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)
@@ -318,6 +325,7 @@ std::vector<ValidationIssue> validateScenario(const Scenario& s) {
         for (auto& issue : redRunningIssues(b, p)) issues.push_back(std::move(issue)); // B-9 (D238)
         for (auto& issue : missedExitIssues(b, p)) issues.push_back(std::move(issue)); // D581
         for (auto& issue : diffusionIssues(b, p)) issues.push_back(std::move(issue)); // D613
+        for (auto& issue : lineSetbackIssues(b, p)) issues.push_back(std::move(issue)); // D670
         for (auto& issue : yieldBehaviourIssues(b, p)) issues.push_back(std::move(issue)); // D618
         for (auto& issue : inattentionIssues(b, p)) issues.push_back(std::move(issue)); // D608
         for (auto& issue : mandatoryParameterIssues(b, p)) issues.push_back(std::move(issue)); // B-3 (D221)

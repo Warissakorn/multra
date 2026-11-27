@@ -137,7 +137,7 @@ int documentSchemaVersion(const ProjectDocument& d) {
     const bool markers=std::any_of(row.priorityRules.begin(),row.priorityRules.end(),[](const auto& r){return r.markerForm();}); // D606
     const bool gapReductions=std::any_of(row.priorityRules.begin(),row.priorityRules.end(),[](const auto& r){
         return r.gapReduction || std::any_of(r.markers.begin(),r.markers.end(),[](const auto& m){return m.gapReduction.has_value();});}); // D618
-    return gapReductions || ownsYield(d) ? networkCodec::yieldVersion : markers ? networkCodec::priorityMarkerVersion : ownsDiffusion(d) ? networkCodec::diffusionVersion : ownsStartUp(d) ? networkCodec::startUpVersion : visibility ? networkCodec::visibilityVersion : derivedLines ? networkCodec::derivedLineVersion : ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? 75 : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? 73 : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
+    return ownsLineSetback(d) ? networkCodec::lineSetbackVersion : ownsW99Cc1Curve(d) ? networkCodec::w99Cc1CurveVersion : ownsW99Behaviour(d) ? networkCodec::w99ModelVersion : gapReductions || ownsYield(d) ? networkCodec::yieldVersion : markers ? networkCodec::priorityMarkerVersion : ownsDiffusion(d) ? networkCodec::diffusionVersion : ownsStartUp(d) ? networkCodec::startUpVersion : visibility ? networkCodec::visibilityVersion : derivedLines ? networkCodec::derivedLineVersion : ownsMissedExit(d) ? networkCodec::missedExitVersion : entryLanes ? networkCodec::entryLanesVersion : logsum ? networkCodec::logsumVersion : std::any_of(d.procedures.begin(),d.procedures.end(),[](const auto& p){return p.feedback.has_value();}) ? networkCodec::feedbackVersion : ownsRandomStreams(d) ? 74 : !d.procedures.empty() ? networkCodec::procedureVersion : toDestinations ? networkCodec::destinationConstraintVersion : nested ? networkCodec::modeNestVersion : !d.modeChoiceSets.empty() || generated ? networkCodec::modeChoiceVersion : !d.periodFactors.empty() ? networkCodec::periodFactorVersion : constrained ? networkCodec::constraintVersion : !d.deterrenceSets.empty() || !d.costMatrices.empty() ? networkCodec::distributionVersion : !d.tripRateSets.empty() ? networkCodec::tripRateVersion : usesNodeNumbers(d) ? 65 : usesNodeAnalysisSource(d) ? 64 : usesTransitionFields(d) ? 63 :
         std::any_of(d.network.links.begin(),d.network.links.end(),[](const auto& l){return l.generated;}) ? 62 :
         usesJunctionFields(d) ? 61 :
         usesLinkSpeedLimits(d) ? 60 :
@@ -354,9 +354,9 @@ ProjectDocument parseDocument(const Json& j) {
                     throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "modeChoiceSets[" + std::to_string(i) + "].purposes[" + std::to_string(k) + "].distributionCost"}});
         }
     d.modeChoiceSets = parseOwnedModeChoiceSets(j); // M10.4 E2
-    if (version < 73 && j.contains("procedures")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures"}});
+    if (version < networkCodec::procedureVersion && j.contains("procedures")) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures"}});
     d.procedures = parseProcedures(j); // D484
-    for (std::size_t i = 0; version < 75 && i < d.procedures.size(); ++i) // PROCEDURE_FEEDBACK §2 (D547)
+    for (std::size_t i = 0; version < networkCodec::feedbackVersion && i < d.procedures.size(); ++i) // PROCEDURE_FEEDBACK §2 (D547)
         if (d.procedures[i].feedback) throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", "procedures[" + std::to_string(i) + "].feedback"}});
     d.zones=parseZoneLayer(j,version);
     d.zones.studyPeriods=parseStudyPeriods(j,version);
@@ -364,6 +364,10 @@ ProjectDocument parseDocument(const Json& j) {
     if (version < 21) rejectBehaviourLibraryBefore21(j);
     if (version < 22) rejectEvaluationPeriodBefore22(j);
     if (version < networkCodec::w74ModelVersion) rejectW74Before25(j);
+    if (version < networkCodec::w99ModelVersion) rejectW99Before85(j); // D639
+    if (version < networkCodec::w99Cc1CurveVersion) rejectW99Cc1CurveBefore86(j); // D646
+    if (version < networkCodec::lineRestVersion) rejectLineRestBefore87(j); // D652
+    if (version < networkCodec::lineSetbackVersion) rejectLineSetbackBefore88(j); // D670
     if (version < networkCodec::countedVolumeVersion) rejectCountedVolumesBefore26(j);
     if (version < 27) rejectCooldownBefore27(j);
     if (version < networkCodec::amberVersion) rejectAmberBefore28(j);

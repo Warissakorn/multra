@@ -12,7 +12,9 @@ Per conflict area (`Scenario::conflictZones`, Stop and Yield alike), in `Scenari
 
 - **A minor crossing:** a vehicle on a route whose minor side meets the area has its front pass
   the area's waiting line (`RouteZone::waitAt`) between two snapshots. Its time is interpolated
-  linearly between the two snapshots' distances, so it lies in `(t − Δt, t]`.
+  linearly between the two snapshots' distances, so it lies in `(t − Δt, t]`. A front exactly at a
+  line has not passed it (D653, `pastLine`): a vehicle resting at its waiting line is still short of
+  it, so it is queued there and crosses when it leaves.
 - **A major entry:** a vehicle on a route whose major side meets the area has its front pass the
   area's entry on that route (`RouteZone::entryAt`), timed the same way.
 - A crossing counts when its time lies in the evaluation window `[warmup, end]` (the run's end

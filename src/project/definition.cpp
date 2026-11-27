@@ -2,6 +2,7 @@
 #include "../core/text.hpp"
 #include "document.hpp"
 #include "../core/w74.hpp"
+#include "../core/w99.hpp"
 #include "../core/perception.hpp"
 #include "../core/lateral.hpp"
 #include "demand_catalog.hpp"
@@ -178,6 +179,7 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.redRunningTime) item["redRunningTime"] = *b.redRunningTime;
             if (b.missedExitAfter) item["missedExitAfter"] = *b.missedExitAfter; // D581
             if (b.diffusionTime) item["diffusionTime"] = *b.diffusionTime; // D613
+            if (b.lineSetback) item["lineSetback"] = *b.lineSetback; // D670
             for (const auto& [key, value] : {std::pair{"yieldTime", &b.yieldTime}, {"yieldTimeDeviation", &b.yieldTimeDeviation}, // D618
                      {"yieldTimeMinimum", &b.yieldTimeMinimum}, {"yieldTimeMaximum", &b.yieldTimeMaximum}, {"impatience", &b.impatience}, {"timeToImpatience", &b.timeToImpatience}})
                 if (*value) item[key] = **value;
@@ -185,9 +187,16 @@ Json definitionJson(const AuthoringDefinition& d) {
             if (b.inattentionProbability) item["inattentionProbability"] = *b.inattentionProbability; // D608
         };
         for (const auto& b : d.behaviours) {
-            if (b.w74) { // D136: the W74 keys only; addBehaviourLibraryJson tags the model
+            if (b.w74 || b.w99) { // D136, D639: the model's own keys only; addBehaviourLibraryJson tags the model
                 Json item{{"id",b.id}};
-                for (const auto& key : w74ParameterKeys()) item[key.name] = (*b.w74).*key.member;
+                if (b.w74) for (const auto& key : w74ParameterKeys()) item[key.name] = (*b.w74).*key.member;
+                else for (const auto& key : w99ParameterKeys()) {
+                    const auto& p = *b.w99;
+                    if (std::string_view(key.name) != "cc1" || p.cc1Curve.empty()) { item[key.name] = p.*key.member; continue; }
+                    Json curve = Json::array(); // W99 §5a (D646): the curve stands in cc1's place
+                    for (const auto& point : p.cc1Curve) curve.push_back({{"value", point.value}, {"share", point.share}});
+                    item["cc1Curve"] = std::move(curve);
+                }
                 if (b.maxDecelerationCooperativeBraking) item["maxDecelerationCooperativeBraking"] = *b.maxDecelerationCooperativeBraking;
                 if (b.amberDeceleration) item["amberDeceleration"] = *b.amberDeceleration; // M4.2, schema 28
                 optionalKeys(b, item);

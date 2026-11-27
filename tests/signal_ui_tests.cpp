@@ -247,6 +247,20 @@ int main(int argc,char** argv) {
         require(floored["schemaVersion"]==47 && floored["definition"]["clampRules"]==Json{{"standingStopFloor",false}},"standingStopFloor off did not write schema 47");
         w.findChild<QAction*>("editorUndo")->trigger();QApplication::processEvents();
         require(w.history().document().definition->clampRules==ClampRules{},"Undo did not restore standingStopFloor");
+        // LINE_STOP §11 (D677, BA245): no lineRest box; a file saved with it off opens, says so, and Save drops it.
+        QTimer::singleShot(0,[&]{
+            auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
+            require(dialog && !dialog->findChild<QCheckBox*>("editorLineRest"),"Run settings still has a lineRest box");
+            dialog->reject();
+        });
+        w.findChild<QAction*>("editorRunSettings")->trigger();QApplication::processEvents();
+        auto off=documentJson(w.history().document());off["schemaVersion"]=87;off["definition"]["clampRules"]=Json{{"lineRest",false}};
+        const auto offFile=temp.filePath("line-rest-off.traffic.json");
+        {QFile f(offFile);require(f.open(QIODevice::WriteOnly),"Fixture write failed");f.write(QByteArray::fromStdString(off.dump()));}
+        w.openFile(offFile);QApplication::processEvents();
+        require(w.history().document().definition->clampRules==ClampRules{},"lineRest off was not ignored");
+        require(w.findChild<QLabel*>("editorError")->text().contains("lineRest"),"No warning that lineRest off is ignored");
+        require(!documentJson(w.history().document())["definition"].contains("clampRules"),"lineRest written back");
         std::cout<<"Signal UI tests passed\n";
         return 0;
     } catch(const std::exception& e) {std::cerr<<e.what()<<'\n';return 1;}

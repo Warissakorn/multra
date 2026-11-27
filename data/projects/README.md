@@ -1,6 +1,6 @@
 # Shipped example projects
 
-Eleven projects, installed with the program and opened by the tests and the CLI. Each is built by a
+Twelve projects, installed with the program and opened by the tests and the CLI. Each is built by a
 C++ builder in `tools/` through the editor's own commands, and a test fails when the committed
 file and its builder differ: regenerate with the named tool, never edit the JSON by hand.
 
@@ -15,6 +15,7 @@ counts, and no result from them is a claim about a real road (PRINCIPLES rule 4)
 | `t-junction-priority.traffic.json` | An unsignalised Yield T-junction whose minor turn crosses one major stream and merges into the other (M3.2.7, A26); the M3.2.7d owner exercise | Right-hand | `tools/t_junction_network.hpp` → `multra-t-junction-fixture` |
 | `yield-impatience-lab.traffic.json` | The T-junction with 700 veh/h each way on the major road, every area's gap reduced as Aimsun does (5 s to 2 s over 1–2 × the yield time) and SUMO's impatience 0.2 on every behaviour (YIELD_IMPATIENCE, D618); lab placeholders, not validated; the owner's Windows look (OWNER_SITTING_WINDOWS item 52) | Right-hand | `tools/yield_impatience_network.hpp` → `multra-yield-impatience-fixture` |
 | `priority-rule-lab.traffic.json` | The T-junction's roads and demand with two Vissim priority rules instead of conflict areas (PRIORITY_RULES, D614–D616): the right turn yields to both streams at its stop line, the left turn has a Stop with no area; the owner's Windows look (OWNER_SITTING_WINDOWS item 51) | Left-hand | `tools/priority_rule_network.hpp` → `multra-priority-rule-fixture` |
+| `line-stop-lab.traffic.json` | The four-leg with its catalogs owned and three test behaviours for the owner's line-stop checks (LINE_SETBACK §8, D671): `w74-lab` (BA27's W74 fixture), `w74-sumo` (the SUMO-defaults preset) and `w99-lab` (BA231's W99 fixture); every vehicle type starts on `w99-lab`. Test values, not presets, not validated | Left-hand | `tools/line_stop_lab_network.hpp` → `multra-line-stop-lab-fixture` (takes the data directory first) |
 | `m2.6-study-template.traffic.json` | The four-leg drawing set up as a gate study: one routeless input per approach over four 15-minute intervals, split by routing decisions, 1 h. **Placeholder volumes, a guessed timing-to-approach mapping and no aerial image**: replace them with a study's counts (OWNER_SITTING B4) | Left-hand | `tools/m26_study_network.hpp` → `multra-m26-study` |
 | `lane-change-lab.traffic.json` | A development bed for lane changing, not an acceptance fixture: four separate scenes (overtaking, three lanes, lane drop, diverge) that run in seconds (D98) | Left-hand | `tools/lane_change_network.hpp` → `multra-lane-change-fixture` |
 | `weaving-lab.traffic.json` | A synthetic weaving fixture, not a study: three Type A weaves of 150, 300 and 500 m, each starting at the network edge, origins by entry lane, and a 300 m weave with two entry Links (D449, D459, [WEAVING_FIXTURE](../../docs/reference/WEAVING_FIXTURE.md)) | Left-hand | `tools/weaving_network.hpp` → `multra-weaving-fixture` |

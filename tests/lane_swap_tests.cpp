@@ -234,7 +234,7 @@ TEST(laneswap, ba186_switched_on_an_approaching_partner_is_taken_where_it_will_w
     // Z's landing (so D450 (b) as first written lets Z start).
     const auto& w = *byId(state, 2);
     const auto& wType = state.scenario->vehicleTypes[w.typeIndex];
-    CHECK(deadEndGoverns(*state.index, w.routeIndex, w, wType, state.scenario->behaviours.front()));
+    CHECK(deadEndGoverns(*state.index, w.routeIndex, w, wType, state.scenario->behaviours.front(), state.scenario->timeStep));
     CHECK(!waitingAtDeadEnd(*state.index, w.routeIndex, w, state.scenario->behaviours.front()));
     const double length = wType.length, standstill = state.scenario->behaviours.front().standstillDistance;
     CHECK(234 + standstill < 249 - length); // W's place now, widened, ends behind Z's landing
@@ -308,7 +308,7 @@ TEST(laneswap, ba190_switched_on_a_held_change_that_may_not_land_claims_nothing)
     const double length = state.scenario->vehicleTypes[z.typeIndex].length;
     CHECK(249 - length < 246 && 246 - length < 249);
     const auto& w = *byId(state, 2);
-    CHECK(deadEndGoverns(*state.index, w.routeIndex, w, state.scenario->vehicleTypes[w.typeIndex], behaviour));
+    CHECK(deadEndGoverns(*state.index, w.routeIndex, w, state.scenario->vehicleTypes[w.typeIndex], behaviour, state.scenario->timeStep));
     CHECK(!waitingAtDeadEnd(*state.index, w.routeIndex, w, behaviour));
     std::map<std::uint64_t, std::vector<std::string>> routes;
     int clamps = 0; bool overlap = false;
@@ -339,7 +339,7 @@ TEST(laneswap, ba192_the_yielding_partner_brakes_as_cooperative_braking_does) {
     const auto& x = *byId(state, 1);
     const auto& type = state.scenario->vehicleTypes[x.typeIndex];
     const auto& behaviour = state.scenario->behaviours.front();
-    CHECK(deadEndGoverns(*state.index, x.routeIndex, x, type, behaviour));
+    CHECK(deadEndGoverns(*state.index, x.routeIndex, x, type, behaviour, state.scenario->timeStep));
     CHECK(10.0 * 10.0 / (2 * (250 - 230)) > type.comfortableDeceleration);
     CHECK(behaviour.maxDecelerationCooperativeBraking.has_value());
     int clamps = 0;
@@ -365,7 +365,7 @@ TEST(laneswap, ba196_a_nearer_leader_does_not_hide_the_dead_end) {
     const auto& a = *byId(state, 1);
     const auto& type = state.scenario->vehicleTypes[a.typeIndex];
     const auto& behaviour = state.scenario->behaviours.front();
-    CHECK(follow(a.speed, a, a.w74State, type, behaviour, Leader{250 - 184, 0, 0}).acceleration < -1);
+    CHECK(follow(a.speed, a, a.w74State, a.acceleration, state.scenario->timeStep, type, behaviour, Leader{250 - 184, 0, 0}).acceleration < -1);
     state = stepSimulation(std::move(state));
     CHECK(routeOf(state, 1) == "A-stub"); // its change is refused
     CHECK(byId(state, 1)->acceleration < -1); // it brakes for the dead end now (before: 0)
@@ -390,7 +390,7 @@ TEST(laneswap, ba204_switched_on_a_refused_changer_falls_back_behind_its_blocker
     // The forcing: the switch is on, A is refused, and its dead end is outside its look-ahead.
     CHECK(state.index->lateral.on);
     const auto& a = *byId(state, 1);
-    CHECK(!deadEndGoverns(*state.index, a.routeIndex, a, state.scenario->vehicleTypes[a.typeIndex], state.scenario->behaviours.front()));
+    CHECK(!deadEndGoverns(*state.index, a.routeIndex, a, state.scenario->vehicleTypes[a.typeIndex], state.scenario->behaviours.front(), state.scenario->timeStep));
     double at = -1, hardest = 0;
     int clamps = 0; bool overlap = false;
     for (int k = 0; k < 600 && byId(state, 1) && routeOf(state, 1) == "A-stub"; ++k) {

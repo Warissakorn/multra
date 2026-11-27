@@ -28,6 +28,7 @@ Scenario road(std::vector<std::string> segments, double length = 50) {
     s.behaviours = {w74("w74"), w74("w74b"), prototype("proto")};
     s.vehicleTypes = {{"car", 4, 2, {15, 15}, 3, 2, 6, "w74"}, {"truck", 4, 2, {15, 15}, 3, 2, 6, "proto"},
                       {"carProto", 4, 2, {15, 15}, 3, 2, 6, "proto"}, {"truckW74", 4, 2, {15, 15}, 3, 2, 6, "w74"}};
+    s.clampRules.lineRest = false; // the W74 law's own composition (BA23â€“BA28), without LINE_STOP (D652)
     return s;
 }
 struct Placed { std::uint64_t id; double distance, speed, acceleration{}; std::string type{"car"};
@@ -270,7 +271,7 @@ TEST(w74run, a_courtesy_hold_that_wins_stores_its_own_state) { // BA28, W74.md Â
         for (std::size_t v = 0; v < holds.size(); ++v)
             if (std::isfinite(holds[v].gap)) {
                 const auto& x = s.vehicles[v];
-                held[x.id] = follow(x.speed, x, x.w74State, s.scenario->vehicleTypes[refs[v].type],
+                held[x.id] = follow(x.speed, x, x.w74State, x.acceleration, s.scenario->timeStep, s.scenario->vehicleTypes[refs[v].type],
                                     s.scenario->behaviours[refs[v].behaviour],
                                     Leader{holds[v].gap, holds[v].speed, holds[v].acceleration});
             }

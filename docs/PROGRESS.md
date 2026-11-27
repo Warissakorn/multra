@@ -5,160 +5,199 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-23 — The four parallel slices merged (D626 kept)
+## 2026-11-27 — Dialog geometry checked on Linux: UI_GEOMETRY U1 and U2, and a crash it found (D680–D681)
 
-- **User:** "ตามแนะนำ merge ทั้งหมดเลย", after the review: D626 kept (benchmark −5.9 %, study +0.15 %, M2.6 +0.25 %,
-  inside D598's 0.5 % for the same trade, though outside slice A's brief).
-- Merged D, C, A, B in that order. Conflicts only in PROGRESS, NEXT's slice lines and the RECORD/index tails
-  (rows ordered by ID). Three entries moved whole to [PROGRESS-LOG-2026-11-21](archive/PROGRESS-LOG-2026-11-21.md).
-- **Review before merging (Linux):** B's configure output equals the base's (368 tests and their commands, the
-  target list and `compile_commands.json`); C's `results-tabs-ui` re-run with screenshots; D's moved prose
-  spot-checked against its contracts. Merged tree: see the checks recorded with the merge commit.
+- **Owner:** "UI_GEOMETRY U1, U2".
+- **U1:** four checks run in every `requireFitsScreen` call (22 places in 12 UI suites). A cell editor must cover
+  its cell, a widget must not be clipped by its parent, siblings must not overlap, and text must show whole.
+- **U2:** `ui-dialog-sweep` at 1×, 1.5× and 2× opens every editor action's dialog, then the Add/Edit dialogs inside
+  it. It runs in English and Thai, and each dialog is checked as opened and again with every box ticked.
+- **Forcing:**
+  - UG1–UG5 make each check fire on a dialog built to break it.
+  - Removing D676's delegate makes the sweep report the owner's F8 geometry exactly: editor at 4,2, 91×24, on a
+    99×23 cell.
+- **Measured:** 0 findings in 111 U1 checks and in 104 dialog views per scale. One false-positive kind was removed:
+  a label's mnemonic `&`.
+- **A crash found (D681):**
+  - In an active dialog, *Add lane* in the junction lane override recursed through the table focus rule until the
+    stack overflowed. The rule dates from 2026-11-02.
+  - The tests had clicked in an inactive window, which receives no focus events. U1's layout pass made the dialog
+    active, and `junction-recipe-ui` segfaulted.
+  - The rule now uses the cell widget's own cell and cannot re-enter itself.
+- **Also changed:** G1 runs only in the sweep, since opening an editor moves a table's current cell under a test
+  still driving the dialog.
+- **Not reached:** about 40 dialogs that need a selected object. That is the next extension, listed in NEXT.
+- **Verified (Linux only):** `check` passes, `ctest` 382/382.
+- **Then the tree was trimmed (D682, the owner's "R1-R5 ตามแนะนำ"; recorded small, as its own rule now says):**
+  - 26 files and 3.0 MB left the tree: images and raw evidence, each recoverable with `git show 82f5e8d0:<path>`;
+  - the measuring patches moved to `docs/archive/patches/`;
+  - NEXT went from 25,991 to about 5,900 characters.
+  - Correction: only 12 images were unreferenced, not the 72 first stated. That count matched file names only,
+    and most images are named by their folder.
 
-## 2026-11-23 — Slice D: ARCHITECTURE's *Editor boundary* moved into the contracts
+## 2026-11-27 — The development pipeline, an early sanitizer, and BA263's use-after-free (D678–D679)
 
-- **Brief:** [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md) D. ARCHITECTURE's 130 lines of per-decision notes now
-  sit with the behaviour they describe; ARCHITECTURE keeps 22 lines: `ProjectDocument` owns the document, commands
-  commit through `History`, project never imports commands or Qt, the canvas/window split, and one link per contract.
-- Merged, not copied (rule 3): sentences a contract already said were dropped, only the code seams it lacked were added.
-  NETWORK_EDITOR was at 500 lines, so its *Geometry and end handles* and *Attachment stations* sections moved whole to
-  NETWORK_EDITOR_CONNECTORS (stubs left, as for the earlier two); the moved text's stale "square fallback" now reads as
-  D80's P1–P4 mouth. No link pointed into the old section (`grep 'ARCHITECTURE.md#'`: none).
+- **CI:** PR #232's `linux (sanitizer)` job failed on `linestop`. ASan found BA263 (D661) holding a reference into a
+  temporary scenario. The row now copies the vehicle type: under `build/sanitizer`, the failure reproduced before the
+  fix and the group passes 20/20 after it.
+- **Owner:** asked for the most suitable pipeline, then "ตามแนะนำ".
+- **Done** ([DEV_PIPELINE](plans/DEV_PIPELINE.md), D678):
+  - `native.yml` runs on every push to `claude/**`;
+  - a local sanitizer step joins the ladder;
+  - one package per sitting, at most five owner items a round, one pull request per topic.
+- **Contract only:** [UI_GEOMETRY](reference/UI_GEOMETRY.md), dialog geometry checked on Linux. Options U1–U3, with
+  U1 then U2 recommended; the owner chooses.
+- **Review, then "ตามแนะนำ" (D679):**
+  - the push trigger ran every job twice and cancelled Windows runs, so only `early (sanitizer)` (`early.yml`) now
+    runs on push;
+  - kept unticked values could carry a number into another project with the same behaviour id. They are now cleared
+    on open, on new and on recovery. A row checks this, and it fails without the fix;
+  - the `lineSetback` note now says the field's number is used only when ticked.
+  - verified on Linux only: `check` passes, `ctest` 378/378.
+- **Also asked:** whether the repository is bloated. Answered in chat with measurements, no change: docs are
+  16 MB of the 28 MB tracked, against 4.3 MB of source.
 
-| Old paragraph (ARCHITECTURE lines) | Now in |
-|---|---|
-| Automation server, GUI-thread dispatch, patches through History (152–158) | DESKTOP_AUTOMATION *Request and response* |
-| `ProjectDocument`, `History` commit, project never imports commands (160–165, 170) | stays in ARCHITECTURE |
-| `History::states`, `restore` (163–165) | EDITOR_WORKFLOW *History* |
-| Keyboard nudge command, level-filter callback, gesture cancel (166–169) | EDITOR_WORKFLOW *Keyboard moves* (cancel already there) |
-| `rotation.cpp`, `rotateObjects` (172–176) | EDITOR_WORKFLOW *Rotate a selection* |
-| `road_crossbar.*`, route hover, `routeDestinations` (178–182) | EDITOR_WORKFLOW *Draw a route* (destinations already there) |
-| `editor_interaction`, `ReflowLabel` (183–184) | EDITOR_WORKFLOW *Safe form and document refreshes* |
-| `EditorCanvas`/`EditorWindow` (186–190) | stays in ARCHITECTURE; immutable background bytes already in NETWORK_EDITOR |
-| Connector commands, `connectorCurve`, `connectorPaths`, path IDs (191–204) | NETWORK_EDITOR_CONNECTORS *Code seams* |
-| `AuthoringDefinition`, `compileDocument`, `RunSnapshot` (206–211) | NETWORK_EDITOR *Check and Run* |
-| `editor_storage`, UUID recovery, `QLockFile`, schema 1–4 reads (213–217, 239) | NETWORK_EDITOR *Save, recovery and formats* |
-| `laneOffset`, `laneBlend`, stations, `laneAttachment`, `runtimeSections`, widths (218–238) | NETWORK_EDITOR_CONNECTORS *Code seams*; copies in EDITOR_WORKFLOW *Selection* |
-| Markings, Link geometry commands, advisories (241–247) | AUTHORING_EXTENSIONS (schema 7 rejection already in NETWORK_EDITOR) |
-| `directionAlong`, D80 axis and surface (249–255) | CONNECTOR_FOUR_POINT_MOUTH *Axis before edges* |
-| D109/D115/D117/D118 conflict groups, overlaps, bands, polygon math, D114 adapters (256–273) | M3_CONTRACT §1 |
-| Surface mouths, `selfIntersecting`, waiting bars (275–280) | already in CONNECTOR_FOUR_POINT_MOUTH; links kept in ARCHITECTURE's table |
+## 2026-11-27 — The owner's Windows checks F8 and F12 pass on package #155
 
-- No decision numbers used (638–641 left unused). Docs only; headless preset built for the tools;
-  `multra-check-docs .` and `multra-check-file-sizes .` pass.
+- **Owner, on package #155** (`fca6669`, D676–D677): "F8 ผ่าน F12 d และ e ผ่านทั้งหมด".
+  - **F8:** the CC1 table, its muted look under *Fixed*, and cell editors on their cells.
+  - **F12 d:** an unticked value comes back when ticked again.
+  - **F12 e:** no `lineRest` box, a 1 m rest by default, 0 at the line, and the warning for a file saved with it off.
+  - **F12 a and c**, then: "F12 a และ c ผ่าน". The field and its default note fit, and 0.5 survives save and reopen
+    and leaves the file when unticked.
+- **Closed:** F8 and F12, removed from the [Windows sheet](plans/OWNER_SITTING_WINDOWS.md). F12 b, at a red, is
+  covered by e. Section F of the sheet is now empty.
 
-## 2026-11-23 — Results tabs at 1024 in Thai; the clamp note's marker (slice C, D634)
+## 2026-11-26 — `lineRest` always on, `lineSetback` 1 m by default (D677)
 
-- **Strip:** measured first, on Linux offscreen at 1024 × 768 with every tab of each level forced visible: Thai Micro
-  605 px, Macro 572 px, English 673 and 483, of a 1008 px Results page. D497's one-level strip had already fixed the
-  scroll NEXT carried from D490's review, so no label changed and no control was added (D634).
-- **Clamp note:** now opens "Not yet validated." / "ยังไม่ผ่านการตรวจสอบความถูกต้อง", as every other Results note does
-  (rule 4); "Safety clamp" stays untranslated.
-- **Test:** `results-tabs-ui` replaces its conditional strip check with one at 1024 × 768 in Thai and English that first
-  asserts the size and language took effect, then per level: no scroll button, no tab past the page, no elided label;
-  and the clamp note's statement in both locales (a third locale fails it until added). Proved to bite: the old
-  locales fail on the note; a 1614 px Thai Micro label fails on the strip.
-- **Verified (Linux only):** desktop build, full `ctest --preset desktop` and `check`. Screenshots taken for the check
-  only, not committed (no contract cites them). The Windows Thai look is the owner's.
+- **Owner:** asked whether to remove `lineRest` and `lineSetback`. The session recommended removing only the switch,
+  because off brings back the standing gap and the 10–14 s crawl (LINE_STOP §1). Then: "ตามแนะนำ
+  ไฟล์ที่บันทึกโดยปิด lineRest เปิดได้โดยไม่สนค่านั้น พร้อมแจ้งเตือน ตั้งค่าเริ่มต้น lineSetback ไว้อย่างเหมาะสม".
+- **Done** ([LINE_SETBACK §9](reference/LINE_SETBACK.md), [LINE_STOP §11](reference/LINE_STOP.md)):
+  - Run settings has no `lineRest` box.
+  - A file's `clampRules.lineRest` is checked and ignored, never written. A file saved with it off opens with
+    `EDIT_LINE_REST_IGNORED` in the message line (Thai and English).
+  - `ClampRules::lineRest` stays engine-only, for rows and the M6 U record.
+- **Default:** an absent `lineSetback` is 1 m (`kDefaultLineSetback`):
+  - the source is SUMO's `jmStoplineGap` at signal stop lines, and the NGSIM look's median is 0.96 m;
+  - at 1 m, the measured options show no red pass and delay within 0.4 %, except W74 on M2.6 (+4–6 %);
+  - the dialog shows 1 with a note when unticked;
+  - an explicit 0 rests at the line.
+- **Rows:**
+  - BA245, BA273 and BA274 amended;
+  - rows that pin the at-the-line law (BA239, BA247, BA262, BA268 and the rest of `linestop`) set `lineSetback` 0;
+  - `signal-ui` checks the missing box, the warning and that Save drops the value.
+- **Verified (Linux only):** `check` passes, `ctest` 378/378; `multra-cli 42` byte-identical before and after. The owner's look is F12 e on the next package (rule 3).
 
-## 2026-11-23 — Slice A: the kept leader order measured and not shipped (D627); long routes bisect (D626)
+## 2026-11-26 — The owner's F8 and F12 findings: cell editors, unused tables, kept values (D676)
 
-- **Brief:** [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md) A. Callgrind, GCC 13.3, Release `-g1`, seed 42; baseline study
-  34,553.6 M Ir, M2.6 4,031.1 M, `multra-engine-benchmark 48 900` 10,226.8 M. Event hashes: every event (`eventJson`) of
-  every shipped project that runs and the study, seeds 42 and 43, identical after every variant.
-- **D627, not shipped:** buckets ordered by (rear, span index), seeded from the fleet's id order and repaired by
-  insertion, the scan stopping at the first pass. The best variant cut the study 8.8 % but cost the benchmark 0.6 %
-  (0.8 % on top of D626), over the 0.5 % bar; code reverted, five variants' numbers in ENGINEERING_NOTES.
-- **D626, shipped:** `closestVehicle` bisects routes of more than 8 parts to the first part not behind the vehicle.
-  The walk over passed parts was 5.7 % of the benchmark. Benchmark −5.9 %, study +0.15 %, M2.6 +0.25 % (D598's
-  bar). New test in `straddlerleader` compares it with the full scan at 501 positions.
-- **Verified (Linux only, desktop preset, GCC 13.3):** full build, `ctest` 368/368, `check` passes. No Windows run.
+- **Owner, on package #153** (`ae07ab7`), with two pictures of the CC1 table:
+  - "เมื่อสร้างตารางใน Distribution และเพื่อมาใช้ Fixed ควรแสดงตารางด้วยสีที่จางลงเพื่อให้ผู้ใช้มองเห็นว่าตารางไม่ถูกใช้"
+  - "การดับเบิลคลิก เพื่อเติมตัวเลขช่องที่ขึ้นมาให้แก้ไขตัวเลขไม่ตรงกับช่องตารางเดิม ตรวจสอบตารางอื่นๆในโปรแกรม ที่มีข้อผิดพลาดแบบเดียวกัน"
+  - "พฤติกรรมเดิมของ W99 ในการไม่ติ้ก lineRest และ lineSetBack รถก็จอดห้างจากเส้นอยู่แล้ว … การตั้ง 2 ค่าที่จะทำให้การตั้งค่าซ้ำซ้อนหรือไม่"
+  - "เมื่อติ้ก lineSetBack และตั้งค่า เป็น 1 … เอาติ้กออก … กลับมาจะติ้กใหม่พบว่าค่า 1 ที่ตั้งไว้ หายไป โปรแกรมควรคงค่านี้ไว้ … ตรวจสอบช่องอื่นๆทั้งหมดในโปรแกรมด้วย"
+- **Fixed in the shell** (D676; no engine or file change):
+  - Reproduced offscreen: the editor of a 99×23 cell was 91×24 at (4, 2). Every table without a delegate of its own
+    now places it on the whole cell, so the fix reaches every table at once.
+  - A disabled table is muted (grey cells and headers, no current-cell frame).
+  - Seventeen places hid a value behind a tick box or a choice and dropped it on Confirm. Each now keeps it for the
+    session and brings it back when ticked again. It is never written to the file.
+  - The W99 fields show 0.35, not 0.34999999999999998.
+- **Answered, no change:** with `lineRest` off, each model rests at its own standstill gap short of the line. For W99
+  that is CC0, measured at a median of 1.40 m (LINE_STOP §1), which is why it looks like `lineRest` plus 1 m. The two
+  are not the same: the off-mode gap is also the gap between queued cars, it applies at every kind of line, and
+  for the prototype and W74 it comes with a 10–14 s crawl. `lineSetback` acts only under `lineRest`.
+- **Rows** in `behaviour-library-ui`: the editor is on its cell; the CC1 curve is kept beside *Fixed*;
+  `lineSetback` 1 survives untick and re-tick.
+- **Verified (Linux only):** `check` passes, `ctest` 378/378; F8 and F12 stay open for a recheck on the next package (rule 3).
 
-## 2026-11-23 — `CMakeLists.txt` split by responsibility (D630, parallel slice B)
+## 2026-11-26 — The node-analysis clamps: diagnosed, E1 fixed, E2 measured and kept out (D672–D675)
 
-- **Brief:** [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md) B. The root file was at 498 of 500 lines.
-- **Moved whole, in place and order:** tool executables → `cmake/tools.cmake`; check tools and `check` →
-  `cmake/check_target.cmake`; `multra-tests` and its groups → `cmake/model_tests.cmake`; tool, CLI and script
-  tests → `cmake/cli_tests.cmake`. Root 498 → 194 lines; the map is in
-  [BUILDING](BUILDING.md#where-the-build-rules-live).
-- **No behaviour change**, on `desktop` (Qt 6) and `headless`: sorted `ctest -N`, `--target help`, sorted
-  `compile_commands.json`, `cmake_install.cmake` and sorted `ninja -t commands` identical before and after;
-  `CTestTestfile.cmake` differs only in each test's backtrace (file and line).
-- Checks (Linux only, GCC 13.3): full build, `ctest` and `check` pass on `headless` (251/251) and `desktop` (368/368).
+- **Owner:** "ไล่หาสาเหตุ clamp บน signalised-node-analysis ต่อ".
+- **Traced** ([evidence](evidence/exact-line-rule.md)), seed 42:
+  - A straight car resting at its red with its front exactly at a 2.73 m connector's start is read as on it by the
+    merge rule `give-way/connector-44/to/connector-42`, so it holds the turner for the whole red (E1).
+  - At green the turner is released while the next straight car, 1.35 s out on the link upstream, is invisible to
+    a rule that scans only its conflict segment (E2), and that car is clamped behind it.
+- **E1's fix, measured with a reverted [patch](archive/patches/exact-line-rule-options.patch):** node analysis clamps
+  4.7 → 0 (prototype), 19.0 → 15.7 (W74), 18.6 → 12.1 (W99). Every other shipped project is identical.
+- **E1 fixed (D673, "ทำ E1 เลย"):** in `simulation.cpp` as measured, plus a guard for a marker at the segment's start. Row
+  PR17; both mutations fail it (no fix, and no guard). E2 (PRIORITY_RULES §1's scan range) is open.
+- **E2's contract** ([RULE_LOOKBACK](reference/RULE_LOOKBACK.md), D674; "เขียน contract E2 และวัดทางเลือก"):
+  - Vissim's manual defines the gap by "the first upstream vehicle", across connectors, with *Look beyond red
+    signals* optional.
+  - Measured with a reverted [patch](archive/patches/rule-lookback-options.patch): G1R (upstream, stopping at a red head)
+    is identical to today except on M2.6 (prototype clamps 0.2 → 0, W99 hard braking 646 → 603); G1 (past red)
+    worsens node analysis by 7.5–13.7 s of delay.
+  - Recommendation: G1R with an index and callgrind first. The owner chose it ("ตามแนะนำ").
+- **G1R built and kept out (D675):** callgrind +3.31 % instructions on M2.6 and +1.80 % on node analysis, against a gain
+  on M2.6 only. G0 stays as a known limit; the code is [a patch](archive/patches/rule-lookback-g1r.patch).
+- **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (378 of 378).
 
+## 2026-11-26 — A set-back at signal heads: `lineSetback`, and a lab for the checks (D670–D671)
 
-## 2026-11-23 — Four slices briefed for parallel sessions
+- **Owner:** "ตามแนะนำ" (H1 + C1 of [LINE_SETBACK](reference/LINE_SETBACK.md)).
+- **Engine:** a behaviour's optional `lineSetback` (m, [0, 10]) moves the line law's target that far short of a signal
+  head under `lineRest` (`setBackHead`). Give-way, Stop, zone and gate lines, the cap, the amber decision and the
+  observers keep the real line.
+- **File:** schema 88 when an owned behaviour carries it; refused below; absent means 0. The *Driving behaviours*
+  dialog has the field on its junction page for every model.
+- **Rows** BA273–BA277 (`linesetback`, a new file). Two mutations each fail a row: no set-back (BA273), and a set-back
+  at give-way lines too (BA275).
+- **Not changed:** M0 and every shipped project (no file carries the key). The exact-line clamps on
+  `signalised-node-analysis` are partly diagnosed: a turner passes its give-way line and enters 0 m ahead of a
+  straight car. Why is still open.
+- **Verified (Linux only):** `multra-cli 42` byte-identical; `check` passes (378 of 378).
+- **The line-stop lab** (D671, the owner's request for W74 and W99 test profiles): `data/projects/line-stop-lab.traffic.json`
+  on the examples menu. It is the four-leg with `w74-lab`, `w74-sumo` and `w99-lab` ready, and every type on `w99-lab`.
+  Built by `tools/line_stop_lab_network.hpp`.
+- **Owner:** [F12](plans/OWNER_SITTING_WINDOWS.md) on the next package, in the lab.
 
-- **User:** "พัฒนาต่อ โดยเปิด Branch และเขียน prompt เพื่อให้ Agent ทำงาน พิจารณาการทำหลายงานพร้อมกันด้วย".
-- Of NEXT's open items, four need no owner choice and touch disjoint files: the leader order kept across
-  ticks (A), the `CMakeLists.txt` split (B), the Results tab strip at 1024 in Thai and the clamp note (C),
-  and ARCHITECTURE's *Editor boundary* prose into the contracts (D). Briefs:
-  [PARALLEL_SESSIONS](plans/PARALLEL_SESSIONS.md); one branch and one cloud session each.
-- To keep four merges trivial: decision numbers 626–641 and BA216–BA223 reserved per slice; only B edits
-  `CMakeLists.txt`; the four oldest PROGRESS entries moved whole to
-  [PROGRESS-LOG-2026-11-21](archive/PROGRESS-LOG-2026-11-21.md) to leave room for four new ones.
-- Docs only; `multra-check-docs` and `multra-check-file-sizes` pass.
+## 2026-11-26 — A set-back at holding lines: sources and the contract (D668–D669)
 
-## 2026-11-23 — M3.2 closed by the owner (D625)
+- **Owner:** "ให้การหยุดแบบ lineRest หยุดห่างจากเส้นหยุด ด้วยระยะที่เหมาะสม ดีหรือไม่", then "ตามแนะนำ" twice (sources, then
+  a contract for a key with default 0).
+- **Sources** ([evidence](evidence/line-setback-sources.md), D668): Vissim 0.5 m before signal heads, SUMO
+  `jmStoplineGap` 1 m (0 at minor lines). Both are program defaults without a field source. NGSIM, on an unverified
+  stop-bar stand-in, gives a median of 0.96 m.
+- **Contract** ([LINE_SETBACK](reference/LINE_SETBACK.md), D669), measured with a reverted
+  [patch](archive/patches/line-setback-options.patch):
+  - at signal heads, 0.5–1 m passes no red and changes delay by under 0.4 % (W74 on M2.6 +4–6 %);
+  - startup lost time rises about 0.1 s per 0.5 m;
+  - at give-way lines it costs 2–22 % of delay.
+  - Recommendation: a behaviour key at signal heads only, default 0.
+- **Found:** on `signalised-node-analysis`, a front resting exactly at a connector's start clamps 4.7 per run
+  (prototype, +7 s delay). It is gone at 0.01 m short; a separate defect, not yet diagnosed.
+- **Verified (Linux only):** `multra-cli 42` byte-identical with the patch and after the revert; `check-docs` passes.
 
-- **Owner:** item 54 "สมจริง"; then, shown each gate piece with its evidence, "ตกลง" to closing M3.2.
-- **D625:** ROADMAP, M3_ACCEPTANCE and NEXT say closed. The one Windows look with no verdict of its own (M3.2.4e merge
-  mouth, M3.2.12 stop lines and tool) was added to M3.2.13 as item 4 rather than read into A2. Still open on their own
-  gates: M3.2.10, M3.2.13, M3.2.8a.1, M3.4, M6; the not-yet-validated marker stays.
-- Docs only; `multra-check-docs` passes.
+## 2026-11-26 — The owner's Windows checks F7, F9, F10 and F11 pass on package #152
 
-## 2026-11-23 — Windows package; branching stays read-only (D624)
+- **Owner, on package #152** (`a18a229`, D643–D665):
+  - **F7:** "ข้อความ error ลงท้ายด้วย "· cc0" และเคอร์เซอร์ยังอยู่ที่ช่อง cc0" (D643's fix holds).
+  - **F9:** "ผ่าน".
+  - **F10:** "ผ่านทั้งหมด" (W99 queues at rest, with and without `reactionTime` 0.5 s).
+  - **F11:** "ผ่านทั้งหมด" (the prototype's first car eases into its stop at a red line).
+- **Left in F:** F8, the CC1 table, on the same package. Removed from the
+  [Windows sheet](plans/OWNER_SITTING_WINDOWS.md); its order line is now `… I.5 → F8 → G1 …`.
+- **Also asked:** whether `lineRest` should stop a set distance short of the line. Sources first ("ตามแนะนำ", D668,
+  [evidence](evidence/line-setback-sources.md)): Vissim 0.5 m, SUMO `jmStoplineGap` 1 m, both program defaults
+  without a field source. On NGSIM, using an unverified stop-bar stand-in, first cars rest a median 0.96 m short.
+  Recommendation: a key with default 0. No code.
+- **Docs** cut NEXT to open items (27,890 → 24,163 characters; history in
+  [archive/NEXT-state-2026-11-26](archive/NEXT-state-2026-11-26.md)).
 
-- **Package:** *Package binaries* run #144 on this branch (`088955e`), both jobs green (their ctest passed on Linux and
-  Windows); artifacts `multra-windows-x64` and `multra-linux-x86_64`, kept to 2026-12-07.
-- **Owner, on the package:** asked whether branching should be adjustable like other conflict areas; after reading
-  Vissim's manual ([review](evidence/vissim-branching-review.md)): "คงไว้แบบนี้ (แนะนำ)". **D624:** branching stays derived
-  and read-only; a visibility key waits for a study and a cited default (Vissim prints none).
-- **Item 54 passed:** the owner, after watching the T-junction's one-lane minor approach on Windows: "สมจริง".
-- Docs only; `multra-check-docs` passes.
+## 2026-11-26 — The approach to a car at rest, measured on NGSIM Lankershim (D666)
 
-## 2026-11-22 — Red-red branching enforced: A64 passes (D623)
+- **Owner:** "ทำเรื่องการชะลอเข้าหาแถวรถต่อ หาแหล่งอ้างอิงก่อน", then "ตามแนะนำ" (measure).
+- **Sources** ([queue-approach-sources](evidence/queue-approach-sources.md)): CAMP's last-second braking (DOT HS 809 574),
+  Rittger's simulator, and Treiber et al. None measures the onset toward a standing queue.
+- **Measured** ([evidence](evidence/queue-approach-ngsim.md)): NGSIM Lankershim, 1.6 million rows. Required deceleration at
+  onset:
+  - the first episode toward a car at rest has a median of 1.42 m/s²;
+  - the last braking phase has a median of 1.88;
+  - toward a line it is 2.07.
 
-- **Owner:** "อ่าน sumo ก่อน", then "ทำตามแนะนำ" on item 53: option (a), the extent being the branching area the editor
-  draws. Read first: Vissim's manual (branching red-red, vehicles see each other) and SUMO's `MSLink.cpp` (same-source
-  sibling lanes are foes, car-following until the foe's back passes the divergence point).
-- **D623:** `compiledBranchings` (`src/model/network/branching_compile.cpp`) gives `Scenario::branchings` from the
-  Connector pairs leaving one lane; `appendVehicleSpans` copies a body whose rear is inside its area onto the sibling
-  (`own = false`). Rows A64, A67–A70 written first; all nine `diverge` rows pass, A64 with 0 overlaps on every seed.
-- **Measured:** completed trips unchanged except the study (−1.5 %); clamps unchanged; `multra-cli 42` byte-identical;
-  three movements beyond their noise, the T-junction's minor → eastbound 9.9 → 14.2 s (owner item 54). The first
-  version compiled through `automaticConflicts` (+18.8 % on the benchmark); compiling only same-lane pairs fixed that:
-  callgrind study +2.5 %, M2.6 +3.1 %, benchmark +2.0 %.
-  [Evidence](evidence/branching-leaders.md).
-- **Verified (Linux, offscreen):** desktop ctest 368/368; docs, sizes, architecture pass; 682 units build without the PCH.
-
-## 2026-11-22 — M3.2's diverge rows written: A64 fails, bodies overlap inside a split (D622)
-
-- **Owner:** "พัฒนาต่อ"; the one NEXT item needing no owner was M3.2's diverge acceptance-fixture row (review O6/R7).
-- **D622:** `tests/diverge_tests.cpp` (`diverge.*`), rows A62–A66 in M3_ACCEPTANCE: one lane splitting by two Connectors.
-  A62 (branching only, nothing compiled), A63 (free flow: departure order kept, no clamp, no overlap), A65 (a branch
-  blocked at the split holds everyone behind it, first-in first-out) and A66 (copied-state replay) pass. **A64 fails:**
-  when a branch queue reaches back into the split, a car to the other branch loses its leader once the leader's rear
-  leaves the shared lane and drives through it where the lanes still overlap (8 of 10 seeds, up to 1.69 m, no clamp).
-  Bodies are checked as rectangles in the plane; station overlap alone over-reports (lanes 11.76 m, bodies about 8 m).
-- **Not done:** the engine is unchanged; the remedy changes runs at every diverge, so it is the owner's choice
-  (OWNER_SITTING item 53; recommended (a), sibling-branch leaders). [Evidence](evidence/diverge-acceptance.md).
-- **Verified (Linux, offscreen):** desktop ctest 368/368 (the new `diverge` group included); docs, file sizes pass.
-
-## 2026-11-22 — Three optimisation passes: the test loop, the Debug build, the live docs (D621)
-
-- **Owner:** /optimize-program three times (the third with "เอกสาร"); each plan answered "แก้ตามแนะนำ". The owner did not
-  revert the W74 split of `types.hpp` (line limit only; NEXT keeps the deferred rebuild split).
-- **Pass 1 (after G7):** the schema-label dump streams case by case, output byte-identical (dump 38.3 → 25.3 s, peak memory
-  2,217 → 603 MB, `schema-labels` 84.2 → 71.5 s); merge groups out of `right_of_way.cpp` (500 → 447 lines); comments and the
-  D592/D610 amendment notes brought in line with D620; one misleading-indentation warning fixed. A pickling change for the
-  Python half was measured and dropped (1.1 s of pickling; fork-shared validation was slower, 40.2 → 66.1 s).
-- **Pass 2, D621:** GCC/Clang Debug builds compile with `-Og`: the desktop suite 331 s (313–336) → 138–143 s, `check`
-  336–356 → 148 s, `multra-cli 42` byte-identical; `-DMULTRA_DEBUG_OG=OFF` restores `-O0`. The engine was not touched:
-  Release runs 0.25 µs per vehicle-tick. Two more warnings fixed; `types.hpp` 497 → 471 (`w74_types.hpp`).
-- **Pass 3 (docs):** NEXT's four stale statements corrected; finished-slice history moved verbatim to
-  [NEXT-state-2026-11-22](archive/NEXT-state-2026-11-22.md) and the `procedures` brief to
-  [PROCEDURE_SCHEMA_SLICE](plans/PROCEDURE_SCHEMA_SLICE.md) (NEXT ~7,100 → ~5,400 tokens); D400–D599 frozen in
-  [RECORD-D400-D599](decisions/RECORD-D400-D599.md) as D486 splits every 200 IDs (RECORD.md ~61,700 → ~5,900 tokens).
-- **Verified (Linux, offscreen):** desktop `check` 367/367 after each pass; docs and sizes pass. Nothing visible changed,
-  so there is no Windows look.
+  Today's law starts at 2.0 and B3 at about 0.77, which is earlier than 84 % of the first onsets.
+- **No code.** The owner kept today's law toward vehicles at rest ("ตามแนะนำ", D667). B is closed with B3P. The staged
+  approach, the higher final braking and the last step to rest are known deviations.
+- **Verified (Linux only):** `check-docs` passes. The scripts are committed beside the evidence; the data is not.

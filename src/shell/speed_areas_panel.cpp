@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "table_layout.hpp"
 #include "speed_areas_panel.hpp"
 #include "../editor/ui_design_tokens.hpp"
@@ -142,6 +143,8 @@ void SpeedAreasPanel::edit(const std::string& id, const std::string& linkId) {
     deceleration->setFont(editorDesign::numericFont()); deceleration->setValue(edited.deceleration.value_or(2));
     deceleration->setEnabled(braking->isChecked()); connect(braking, &QCheckBox::toggled, deceleration, &QWidget::setEnabled);
     form->addRow(braking, deceleration);
+    const auto scope = "speedArea/" + QString::fromStdString(id) + "/"; // F12: unticked numbers kept (field_memory.hpp)
+    if (!id.empty()) rememberField(braking, deceleration, scope + "deceleration");
     // Every lane ticked writes no lane list: the area then also covers lanes added later.
     auto* laneRow = new QWidget(&dialog); auto* laneBox = new QHBoxLayout(laneRow); laneBox->setContentsMargins(0, 0, 0, 0);
     std::vector<std::pair<std::string, QCheckBox*>> lanes;
@@ -169,6 +172,7 @@ void SpeedAreasPanel::edit(const std::string& id, const std::string& linkId) {
         };
         auto* min = spin("min", set != edited.speeds.end() ? set->min : t.desiredSpeed.min);
         auto* max = spin("max", set != edited.speeds.end() ? set->max : t.desiredSpeed.max);
+        if (!id.empty()) { rememberField(on, min, scope + QString::fromStdString(t.id) + "/min"); rememberField(on, max, scope + QString::fromStdString(t.id) + "/max"); }
         form->addRow(on, line); rows.push_back({t.id, on, min, max});
     }
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);

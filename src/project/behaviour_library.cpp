@@ -49,12 +49,16 @@ bool ownsW74Behaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&
         std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.w74.has_value(); });
 }
+bool ownsW99Behaviour(const ProjectDocument& d) { // W99.md §9 (D639)
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.w99.has_value(); });
+}
 bool ownsAmberBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&
         std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.amberDeceleration.has_value(); });
 }
 bool usesBehaviourLibrary(const ProjectDocument& d) {
-    if (assigned(d.network.links) || assigned(d.network.connectors) || ownsW74Behaviour(d)) return true;
+    if (assigned(d.network.links) || assigned(d.network.connectors) || ownsW74Behaviour(d) || ownsW99Behaviour(d)) return true;
     return d.definition && (!d.definition->behaviourNames.empty() || !d.definition->vehicleClasses.empty() ||
                             !d.definition->linkBehaviourTypes.empty());
 }
@@ -70,15 +74,19 @@ void rejectBehaviourLibraryBefore21(const Json& j) {
             if (behaviours[i].is_object() && behaviours[i].contains(key))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key}});
 }
-void rejectW74Before25(const Json& j) {
+namespace {
+void rejectModel(const Json& j, const char* model) {
     if (!j.contains("definition") || !j.at("definition").is_object()) return;
     const auto& definition = j.at("definition");
     if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
     const auto& behaviours = definition.at("behaviours");
     for (std::size_t i = 0; i < behaviours.size(); ++i)
-        if (behaviours[i].is_object() && behaviours[i].contains("model") && behaviours[i].at("model") == kW74BehaviourModel)
+        if (behaviours[i].is_object() && behaviours[i].contains("model") && behaviours[i].at("model") == model)
             throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", at("behaviours", i) + ".model"}});
 }
+}
+void rejectW74Before25(const Json& j) { rejectModel(j, kW74BehaviourModel); }
+void rejectW99Before85(const Json& j) { rejectModel(j, kW99BehaviourModel); } // D639
 // M3.5 (D181): schema 32 exactly when an owned behaviour carries a perception key.
 bool ownsPerceptionBehaviour(const ProjectDocument& d) {
     return d.definition && !d.definition->externalBehaviours &&
@@ -277,15 +285,29 @@ void rejectLateralBefore33(const Json& j) {
             if (behaviours[i].is_object() && behaviours[i].contains(key.name))
                 throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key.name}});
 }
-void rejectAmberBefore28(const Json& j) {
+namespace {
+// An owned behaviour carrying `key` below its floor: EDIT_UNSUPPORTED_FIELD at the key.
+void rejectBehaviourKey(const Json& j, const char* key) {
     if (!j.contains("definition") || !j.at("definition").is_object()) return;
     const auto& definition = j.at("definition");
     if (!definition.contains("behaviours") || !definition.at("behaviours").is_array()) return;
     const auto& behaviours = definition.at("behaviours");
     for (std::size_t i = 0; i < behaviours.size(); ++i)
-        if (behaviours[i].is_object() && behaviours[i].contains("amberDeceleration"))
-            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + ".amberDeceleration"}});
+        if (behaviours[i].is_object() && behaviours[i].contains(key))
+            throw ValidationError({{"EDIT_UNSUPPORTED_FIELD", at("behaviours", i) + "." + key}});
 }
+}
+void rejectAmberBefore28(const Json& j) { rejectBehaviourKey(j, "amberDeceleration"); }
+bool ownsW99Cc1Curve(const ProjectDocument& d) { // W99 §5a (D646)
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.w99 && !b.w99->cc1Curve.empty(); });
+}
+void rejectW99Cc1CurveBefore86(const Json& j) { rejectBehaviourKey(j, "cc1Curve"); }
+bool ownsLineSetback(const ProjectDocument& d) { // LINE_SETBACK (D670)
+    return d.definition && !d.definition->externalBehaviours &&
+        std::any_of(d.definition->behaviours.begin(), d.definition->behaviours.end(), [](const auto& b) { return b.lineSetback.has_value(); });
+}
+void rejectLineSetbackBefore88(const Json& j) { rejectBehaviourKey(j, "lineSetback"); }
 void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
     if (j.contains("behaviours")) {
         const auto& behaviours = list(j, "behaviours");
@@ -299,7 +321,7 @@ void parseBehaviourLibrary(const Json& j, AuthoringDefinition& d) {
             }
             // The model is explicit from schema 21: a missing or unknown model is never read as the prototype.
             if (!b.contains("model") || !b.at("model").is_string() ||
-                (b.at("model") != kPrototypeBehaviourModel && b.at("model") != kW74BehaviourModel))
+                (b.at("model") != kPrototypeBehaviourModel && b.at("model") != kW74BehaviourModel && b.at("model") != kW99BehaviourModel))
                 throw ValidationError({{"UNSUPPORTED_BEHAVIOUR_MODEL", path + ".model"}});
             if (const auto name = text(b, "name", false); !name.empty()) d.behaviourNames[text(b, "id")] = name;
         }
@@ -349,7 +371,8 @@ void addBehaviourLibraryJson(const AuthoringDefinition& d, Json& j) {
         for (auto& b : j["behaviours"]) {
             const auto id = b.at("id").get<std::string>();
             const auto owned = std::find_if(d.behaviours.begin(), d.behaviours.end(), [&](const auto& x) { return x.id == id; });
-            b["model"] = owned != d.behaviours.end() && owned->w74 ? kW74BehaviourModel : kPrototypeBehaviourModel;
+            b["model"] = owned == d.behaviours.end() ? kPrototypeBehaviourModel
+                       : owned->w74 ? kW74BehaviourModel : owned->w99 ? kW99BehaviourModel : kPrototypeBehaviourModel;
             if (const auto name = d.behaviourNames.find(b.at("id").get<std::string>()); name != d.behaviourNames.end())
                 b["name"] = name->second;
         }

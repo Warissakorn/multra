@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "table_layout.hpp"
 #include "speed_decisions_panel.hpp"
 #include "dialog_fit.hpp"
@@ -143,6 +144,10 @@ void SpeedDecisionsPanel::edit(const std::string& id, const std::string& linkId)
         };
         auto* min = spin("min", set != edited.speeds.end() ? set->min : t.desiredSpeed.min);
         auto* max = spin("max", set != edited.speeds.end() ? set->max : t.desiredSpeed.max);
+        if (!id.empty()) { // F12: unticked numbers kept for the session (field_memory.hpp)
+            const auto scope = QString::fromStdString("speedDecision/" + id + "/" + t.id + "/");
+            rememberField(on, min, scope + "min"); rememberField(on, max, scope + "max");
+        }
         form->addRow(on, line); rows.push_back({t.id, on, min, max});
     }
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);

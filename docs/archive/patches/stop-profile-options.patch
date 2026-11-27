@@ -1,0 +1,57 @@
+diff --git a/src/core/line_stop.cpp b/src/core/line_stop.cpp
+index 47e54ea..40a919d 100644
+--- a/src/core/line_stop.cpp
++++ b/src/core/line_stop.cpp
+@@ -2,8 +2,15 @@
+ #include <algorithm>
+ #include <cmath>
+ #include <limits>
++#include <cstdlib>
++#include <string>
++#include "start_up.hpp"
+ 
+ namespace multra {
++thread_local double zzV0 = 0; thread_local bool zzStanding = false;
++static int zzScope() { static const int s = std::getenv("ZZ_SCOPE") ? std::atoi(std::getenv("ZZ_SCOPE")) : 0; return s; } // 1 lines only, 2 standing only // ZZ temporary (B options)
++static int zzB() { static const int b = std::getenv("ZZ_B") ? std::atoi(std::getenv("ZZ_B")) : 0; return b; }
++static double zzT() { static const double t = std::getenv("ZZ_T") ? std::atof(std::getenv("ZZ_T")) : 1.03; return t; }
+ double lineStopAcceleration(double speed, double gap, double comfortable, double maximum, double dt) {
+     // The tick covers (v + v1)/2·dt, then braking at b covers v1²/(2b): their sum is the gap.
+     const double c = gap - speed * dt / 2;
+@@ -13,7 +20,15 @@ double lineStopAcceleration(double speed, double gap, double comfortable, double
+ void applyLineStop(FollowingResult& following, double speed, double line, const std::optional<Leader>& vehicleLeader,
+                    const VehicleType& type, const DriverBehaviour& behaviour, double dt) {
+     if (std::isfinite(line)) {
+-        const double a = lineStopAcceleration(speed, line, type.comfortableDeceleration, type.maxDeceleration, dt);
++        double a = lineStopAcceleration(speed, line, type.comfortableDeceleration, type.maxDeceleration, dt);
++        if (const int o = zzB(); o != 0 && line > 0 && !(zzScope() == 1 && zzStanding) && !(zzScope() == 2 && !zzStanding)) {
++            // ZZ: IDM (Kesting & Treiber 2008 Eq. 2-3) toward the line, s0 = 0, leader at rest (dv = v)
++            const double am = maxAccelerationAt(type, speed), b = type.comfortableDeceleration, T = o == 3 ? 0 : zzT();
++            const double v0 = std::max(zzV0, 0.1), ss = speed * T + speed * speed / (2 * std::sqrt(am * b));
++            double idm = am * (1 - (o == 4 ? 0 : std::pow(speed / v0, 4)) - (ss / line) * (ss / line));
++            if (o >= 2) idm = std::max(idm, -(speed * speed) / (2 * line));
++            a = std::max(-type.maxDeceleration, std::min(a, idm));
++        }
+         if (a < following.acceleration) { following.acceleration = a; following.mode = FollowingMode::braking; }
+     }
+     if (!(behaviour.w74 || behaviour.w99) || speed <= 0 || following.acceleration >= 0) return;
+diff --git a/src/core/simulation.cpp b/src/core/simulation.cpp
+index 7b6000f..b0ff671 100644
+--- a/src/core/simulation.cpp
++++ b/src/core/simulation.cpp
+@@ -27,6 +27,7 @@
+ #include <cstdint>
+ #include <set>
+ namespace multra {
++extern thread_local double zzV0; extern thread_local bool zzStanding;
+ namespace {
+ Scenario canonicalScenario(Scenario scenario) {
+     const auto sort = [](auto& items) { std::sort(items.begin(), items.end(), [](const auto& a, const auto& b) { return a.id < b.id; }); };
+@@ -335,6 +336,7 @@ SimState stepSimulation(SimState&& state, double dt) {
+             if (std::isfinite(standing) && modelLeader && modelLeader->speed == 0) modelLeader.reset();
+         }
+         auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, modelLeader);
++        zzV0 = vehicle.desiredSpeed; zzStanding = std::isfinite(standing) && standing <= std::min({headLine, giveWayLine, gateLine});
+         if (behaviour.lineRest) applyLineStop(following, vehicle.speed, line, vehicleLeader, type, behaviour, dt);
+         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
+             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);

@@ -1,4 +1,5 @@
 #include "priority_lines.hpp"
+#include "line_passage.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -29,7 +30,7 @@ void PriorityLineAccumulator::observe(const SimState& state) {
     std::vector<std::vector<Short>> shortOf(zones_.size());
     for (const auto& v : state.vehicles)
         for (const auto& z : state.index->routeZones[v.routeIndex])
-            if (z.role == ZoneRole::minor && v.distance < z.waitAt)
+            if (z.role == ZoneRole::minor && !pastLine(v.distance, z.waitAt))
                 shortOf[z.zoneIndex].push_back({z.waitAt - v.distance, s.vehicleTypes[v.typeIndex].length, v.id, v.speed < beginSpeed_});
     for (std::size_t i = 0; i < shortOf.size(); ++i) {
         auto& q = shortOf[i];
@@ -53,10 +54,10 @@ void PriorityLineAccumulator::observe(const SimState& state) {
             const double at = role == 0 ? z.waitAt : z.entryAt;
             auto& zone = zones_[z.zoneIndex];
             const auto key = std::tuple{v.id, z.zoneIndex, role};
-            if (v.distance < at || done_.contains(key) || !from) continue;
+            if (!pastLine(v.distance, at) || done_.contains(key) || !from) continue;
             done_.insert(key);
             if (!proved) { ++zone.excluded; continue; } // a route change cannot prove the passage
-            if (from->distance >= at) continue; // already past when first seen
+            if (pastLine(from->distance, at)) continue; // already past when first seen
             const double moved = v.distance - from->distance;
             const double time = moved > 0 ? t - dt + dt * (at - from->distance) / moved : t;
             if (role == 1) { zone.major.push_back(time); continue; }

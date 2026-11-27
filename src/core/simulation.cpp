@@ -5,6 +5,7 @@
 #include "conflicts.hpp"
 #include "detail.hpp"
 #include "following.hpp"
+#include "line_stop.hpp"
 #include "join_anticipation.hpp"
 #include "lanes.hpp"
 #include "lateral.hpp"
@@ -44,6 +45,7 @@ Scenario canonicalScenario(Scenario scenario) {
     sort(scenario.inputs); sort(scenario.signalPrograms); sort(scenario.signalHeads);
     sort(scenario.conflictZones); sort(scenario.parkingLots);
     for (auto& b : scenario.behaviours) b.stopFloor = scenario.clampRules.standingStopFloor && b.amberDeceleration; // LINE_APPROACH §7 (D258)
+    for (auto& b : scenario.behaviours) b.lineRest = scenario.clampRules.lineRest && (b.amberDeceleration || b.w74 || b.w99); // LINE_STOP §5 (D652)
     std::sort(scenario.laneChanges.begin(), scenario.laneChanges.end(), [](const auto& a, const auto& b) {
         if (a.fromRouteId != b.fromRouteId) return a.fromRouteId < b.fromRouteId;
         return a.fromStart != b.fromStart ? a.fromStart < b.fromStart : a.toRouteId < b.toRouteId;
@@ -213,6 +215,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         const double leaderCap = leader ? std::max(0.0, leader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity(); double holdCap = std::numeric_limits<double>::infinity(), headLine = holdCap; // every other hold; the nearest signal-head hold (MERGE_CLAMPS §2 Q)
         double giveWayLine = std::numeric_limits<double>::infinity(); // GIVE_WAY_STOP §2: the nearest rule or zone hold
         double zoneLine = std::numeric_limits<double>::infinity(); // LINE_APPROACH §9 (D596): the nearest zone hold
+        double gateLine = std::numeric_limits<double>::infinity(); // LINE_STOP §2 (D652): a lot's gate, a line too
         // M3.5 (PERCEPTION.md §2-§3): with a look-ahead or an observed-vehicle count, the
         // acceleration follows the PERCEIVED leaders; the physical leader above keeps the hard cap
         // and admission. Neither key: the physical leader, exactly as before.
@@ -249,7 +252,7 @@ SimState stepSimulation(SimState&& state, double dt) {
         // A lot's gate holds like a dead end while the lot is full or its service is still to serve.
         if (!gateHeld.empty())
             if (const auto gap = gateHold(next, vehicle, refs[v].route)) {
-                gateHeld[v] = 1;
+                gateHeld[v] = 1; gateLine = *gap;
                 holdCap = std::min(holdCap, *gap);
                 if (!leader || *gap < leader->gap) leader = Leader{*gap, 0, 0};
             }
@@ -286,6 +289,9 @@ SimState stepSimulation(SimState&& state, double dt) {
             for (auto i = giveWay ? buckets.start[conflict + 1] : buckets.start[conflict]; i < buckets.start[conflict + 1]; ++i) {
                 const auto& span = spans[buckets.items[i]];
                 if (span.vehicleId == vehicle.id) continue;
+                // D673 (D672 E1, as D653 for observers): a front exactly at the conflict segment's start has not
+                // entered it, unless the marker itself stands there.
+                if (span.front <= 1e-9 && rule.conflictPosition > 1e-9) continue;
                 if (blocks) { // D606: only the marker's classes block; vehicles are in id order
                     const auto at = std::lower_bound(vehicles.begin(), vehicles.end(), span.vehicleId, [](const auto& x, std::uint64_t id) { return x.id < id; });
                     if (at == vehicles.end() || at->id != span.vehicleId || !(*blocks)[refs[static_cast<std::size_t>(at - vehicles.begin())].type]) continue;
@@ -316,14 +322,33 @@ SimState stepSimulation(SimState&& state, double dt) {
             holdCap = std::min(holdCap, *hold); giveWayLine = std::min(giveWayLine, *hold); zoneLine = std::min(zoneLine, *hold);
             if (!leader || *hold < leader->gap) leader = Leader{*hold, 0, 0, true}; // D596: rest at the line
         }
-        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, leader);
+        // LINE_STOP §2 (D652): with lineRest a holding line is not a leader. The model follows vehicles (perceived
+        // ones under M3.5); the nearest holding line has its own law, which ends at the line. A dead end is
+        // not one: its approach is the lane change's (LINE_STOP §6), so it stays a leader as before.
+        // LINE_QUEUE §2 (D655): a vehicle at rest ahead is stopped behind by the same law, at its rear less the
+        // standstill gap; the model follows moving vehicles only. W74 and W99 (D656), the prototype (D658).
+        const bool queueStop = behaviour.lineRest;
+        const double standing = queueStop && vehicleLeader && vehicleLeader->speed == 0
+            ? std::max(0.0, vehicleLeader->gap - standstillGap(behaviour)) : std::numeric_limits<double>::infinity();
+        const double line = std::min({headLine, giveWayLine, gateLine, standing});
+        const bool lineStop = behaviour.lineRest && std::isfinite(line);
+        // LINE_SETBACK §2 (D670): the law aims lineSetback short of a signal head; caps, decisions and observers keep the line.
+        const double lawHead = setBackHead(headLine, behaviour), lawLine = std::min({lawHead, giveWayLine, gateLine, standing});
+        const LineTarget lineTarget{std::isfinite(standing) && standing <= std::min({lawHead, giveWayLine, gateLine}), vehicle.desiredSpeed};
+        auto modelLeader = leader;
+        if (lineStop && leader && line <= leader->gap + 1e-9) {
+            modelLeader = perceivesAhead(sight) ? (perceived.empty() ? std::nullopt : std::optional<Leader>(perceived.front().leader)) : vehicleLeader;
+            if (std::isfinite(standing) && modelLeader && modelLeader->speed == 0) modelLeader.reset();
+        }
+        auto following = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, modelLeader);
+        if (behaviour.lineRest) applyLineStop(following, vehicle.speed, lawLine, vehicleLeader, type, behaviour, dt, lineTarget);
         if (vehicleLeader && (!leader || vehicleLeader->gap <= leader->gap + 1e-9)) // LINE_APPROACH §8 (D583)
             standingVehicleFloor(following, vehicle.speed, *vehicleLeader, type, behaviour);
         anticipate(following, scenario, vehicles, refs, vehicle, type, behaviour, perceived); if (!joins.empty()) anticipateJoin(following, scenario, index, vehicles, refs, joins, v, type, behaviour);
         if (yields) {
             // Both from the same previous state; the kept result's state is the one stored, and
             // on a tie the vehicle ahead is kept (strict <), W74.md §7.
-            auto held = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour,
+            auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour,
                                Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration});
             // Cooperative braking never asks for more than the behaviour's maximum (M3.2.8c).
             if (courtesy[v].moving)
@@ -331,17 +356,28 @@ SimState stepSimulation(SimState&& state, double dt) {
             if (held.acceleration < following.acceleration) following = held;
         }
         if (std::isfinite(deadEnd) && leader->gap < deadEnd) // D456: the dead end behind a nearer leader
-            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
+            if (auto held = follow(vehicle.speed, vehicle, vehicle.w74State, vehicle.acceleration, dt, type, behaviour, Leader{deadEnd, 0, 0}); held.acceleration < following.acceleration) following = held;
         if (const auto delay = reactionTicks(sight, dt)) {
+            // REACTION_STOP §6 (D661): under lineRest a start must fit the delay, and the stop laws are not delayed.
+            if (behaviour.lineRest) holdDelayedStart(following, vehicle.speed, vehicleLeader, static_cast<double>(delay) * dt, type, behaviour);
             decisions.push_back({v, delay, following});
             auto current = vehicleLeader && (!leader || vehicleLeader->gap < leader->gap) ? vehicleLeader : leader;
             if (yields && (!current || courtesy[v].gap < current->gap))
                 current = Leader{courtesy[v].gap, courtesy[v].speed, courtesy[v].acceleration};
             following = delayedAction(vehicle, delay, following, type, behaviour, current);
+            if (behaviour.lineRest) applyDelayedLineStop(following, vehicle.speed, lawLine, vehicleLeader, type, behaviour, dt, lineTarget);
         }
         // START_UP §3 (D608): a lapse of attention keeps last tick's acceleration, emergencies excepted.
         if (inattentive(behaviour, next.seed, vehicle, startTick, dt)) [[unlikely]]
             following.acceleration = inattentiveAcceleration(vehicle, following.acceleration, type);
+        // LINE_QUEUE §2 rule 3 (D655): at rest at its target behind a vehicle at rest, it waits; an exact stop's
+        // residue would otherwise inch it forward tick on, tick off.
+        if (queueStop && vehicle.speed == 0 && vehicleLeader && vehicleLeader->speed == 0 &&
+            vehicleLeader->gap - standstillGap(behaviour) <= 1e-6) following.acceleration = std::min(0.0, following.acceleration);
+        // PROTOTYPE_QUEUE §2 rule 2 (D658): the prototype's desired gap grows as sqrt(v), so from rest it waits until
+        // its gap admits the behaviour's speedThreshold; restarting at s0 would brake into the cap at once.
+        if (queueStop && !behaviour.w74 && !behaviour.w99 && vehicle.speed == 0 && vehicleLeader && following.acceleration > 0 &&
+            vehicleLeader->gap < desiredGap(behaviour, vehicle.driverFactor, behaviour.speedThreshold)) following.acceleration = 0;
         // Retune changes the target, not speed; W74 otherwise holds an excessive free speed.
         double target = behaviour.curveLateralAcceleration ? speedTarget(scenario, parts, vehicle, type, behaviour, dt) : vehicle.desiredSpeed; // M3.6 (D212)
         double braking = type.comfortableDeceleration;
@@ -359,12 +395,14 @@ SimState stepSimulation(SimState&& state, double dt) {
         auto& move = moves[v];
         move = {motion.distance, aboveTarget ? motion.speed : std::min(target, motion.speed), following.acceleration, following.mode, false, following.w74};
         const double allowedDistance = tickCap(scenario, vehicles, refs, vehicle, parts, spans, buckets, &lateral, vehicleLeader, leaderCap, holdCap, giveWayLine, move.distance, dt); // MERGE_CLAMPS §2
+        if (lineStop && allowedDistance >= line - 1e-9 && move.distance > allowedDistance && move.distance <= allowedDistance + 1e-6)
+            move = {allowedDistance, 0, -vehicle.speed / dt, FollowingMode::braking, false, following.w74}; // LINE_STOP §2: D596's finish at any line
         if (move.distance > allowedDistance) { // GIVE_WAY_STOP §2 (D240): a stop within the maximum at a binding give-way line is braking; §2 Q (D251) at a signal head too, with amberDeceleration
-            const bool standingBody = behaviour.stopFloor && !behaviour.w74 && vehicleLeader && vehicleLeader->speed == 0 && leaderCap == allowedDistance; // §8 (D583)
+            const bool standingBody = behaviour.stopFloor && !behaviour.w74 && !behaviour.w99 && vehicleLeader && vehicleLeader->speed == 0 && leaderCap == allowedDistance; // §8 (D583)
             // D596: at a zone's line with only a rounding residue of speed left (the law's own stop ended
             // exactly there), coming to rest is not an emergency stop.
             if (zoneLine == allowedDistance && vehicle.speed < 1e-6) move = {allowedDistance, 0, -vehicle.speed / dt, FollowingMode::braking, false, following.w74};
-            else if (const auto a = giveWayLine == allowedDistance || standingBody || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
+            else if (const auto a = giveWayLine == allowedDistance || standingBody || (lineStop && allowedDistance >= line - 1e-9) || (scenario.clampRules.redLineStop && behaviour.amberDeceleration && headLine == allowedDistance) ? stopAtLine(vehicle.speed, allowedDistance, type) : std::nullopt) {
                 auto stop = integrate(vehicle.speed, *a, dt);
                 // D596: a stop that ends at a zone's line rests there, without a rounding residue of
                 // speed a later tick would read as still moving (and as unable to stop).

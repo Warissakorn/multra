@@ -290,13 +290,21 @@ Pick one per session, as the user asks. Rows and contract come first for engine 
     check is ≈49 M Ir and register allocation around the inlined scan ≈+50 M, against a ≈60 M saving
     where queues are one or two long. A per-bucket order stored in `SimState` was not built: it needs
     the `types.hpp` split and an id-to-span map per tick, and would still pay the per-item check after
-    every move. Also seen: insertion rebuilds every bucket after
-    each inserted arrival (`insertion.cpp`), so `bucketSpans` runs about twice per tick.
+    every move. Also seen: insertion rebuilt every bucket after
+    each inserted arrival (`insertion.cpp`), so `bucketSpans` ran about twice per tick; D635 drops the rebuild after the tick's last arrival.
 - **Leader search bisects long routes (D626, 2026-11-23):** `closestVehicle` walked every route part
   behind the vehicle (`part.start + part.length < distance`: 583 M Ir, 5.7 % of `48 900`). Routes of more
   than 8 parts now `partition_point` to the first part not wholly behind, as `frontPart` (D598); short
   ones keep the scan. Benchmark 10,226.8 → 9,623.7 M Ir (−5.9 %), study +0.15 %, M2.6 +0.25 %; event
   hashes identical.
+- **Insertion rebuilds buckets only for a later candidate (D635, 2026-11-23, GCC 13.3, Release `-g1`, seed 42):**
+  after an arrival `insertArrivals` rebuilt every bucket, but after the tick's last arrival nothing read them:
+  `stepSimulation` resolves the snapshot again whenever the fleet grew. Benchmark `48 900` 9,623.9 → 9,546.0 M Ir
+  (−0.81 %); `stepSimulation` inclusive on the study 31,837.0 → 31,821.7 M (−0.05 %) and M2.6 3,532.6 → 3,529.5 M
+  (−0.09 %), measured under a scratch harness that also hashes every event, so its totals are not comparable with the
+  entries above. Event hashes (every shipped project that runs and the study, seeds 42 and 43) identical.
+  Left: an arrival tick still resolves refs, spans and buckets twice (insertion's over the survivors, then the
+  step's over the merged fleet); reusing insertion's would need the snapshot permuted into id order.
 - **Not booked:** `compileDocument` (paid once per Run) and the `push_back` work left in
   `occupiedSpans`. The per-tick fleet sort is already a merge.
 - **Measure the engine with callgrind, not the clock,** when resolving a few percent: wall time

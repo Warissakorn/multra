@@ -246,7 +246,7 @@ TEST(lanechange, ba194_a_follower_opens_a_gap_anywhere_in_the_span) {
     CHECK(decideLaneChanges(*s.scenario, *s.index, s.vehicles, refs, spans,
                             bucketSpans(spans, s.scenario->segments.size()), {}, s.tick).empty());
     const auto& me = *find(s, 1);
-    CHECK(!deadEndGoverns(*s.index, me.routeIndex, me, s.scenario->vehicleTypes[me.typeIndex], s.scenario->behaviours.front()));
+    CHECK(!deadEndGoverns(*s.index, me.routeIndex, me, s.scenario->vehicleTypes[me.typeIndex], s.scenario->behaviours.front(), s.scenario->timeStep));
     double at = -1, hardest = 0;
     Tally t;
     for (int i = 0; i < 600 && find(s, 1) && routeOf(s, 1) == "stubA"; ++i) {

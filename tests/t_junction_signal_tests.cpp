@@ -100,7 +100,11 @@ TEST(tjunction_signal, a_congested_major_road_lets_headway_decide) {
     // variant some tick has a major vehicle within `headway` of the crossing entry yet outside the
     // gap-time window -- the only ticks in which headway alone decides a block.
     fixture::TJunctionOptions o; o.congestedMajor = true; o.headway = 12;
-    const auto t = fixture::tJunction(o);
+    auto t = fixture::tJunction(o);
+    // D662: the variant's queue backs up through the junction only at the spacing it had when the M3.2.7c evidence
+    // was measured, before LINE_STOP (D652). Under lineRest the prototype's queue rests 6 m per car (PROTOTYPE_QUEUE)
+    // and ends about 2 m short of the crossing entry, so the archived variant runs with the switch off.
+    t.document.definition->clampRules.lineRest = false;
     const auto s0 = compiled(t);
     const auto crossing = zoneOn(s0, t.crossingTurn);
     auto s = createSimulation(s0, 42);

@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "editor_interaction.hpp"
 #include "editor_window.hpp"
 #include "dialog_fit.hpp"
@@ -60,6 +61,7 @@ void EditorWindow::editDecision(const std::string& id) {
     };
     connect(place,&QComboBox::currentIndexChanged,&dialog,[&]{syncPosition();});
     connect(positioned,&QCheckBox::toggled,&dialog,[&]{syncPosition();});syncPosition();setFormNumber(position,value.position.value_or(0));
+    if(!id.empty())rememberField(positioned,position,QString::fromStdString("decision/"+id+"/position")); // F12 (field_memory.hpp)
     placeRow->addRow(positioned);placeRow->addRow(text("editorDecisionPositionLabel"),position);placeRow->addRow(serving);
     // M2.1.2: counted turning volumes per interval, pasted per row as they come off a count sheet,
     // over intervals of one length from a start time -- the M2.2 input dialog's convention.

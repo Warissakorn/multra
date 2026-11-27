@@ -36,10 +36,13 @@ bool inRange(double v, Range range) {
     return false;
 }
 }
-W74Traits w74Traits(std::uint32_t seed, std::uint64_t vehicleId, double driverFactor) {
+double w74Uniform(std::uint32_t seed, std::uint64_t vehicleId, std::uint64_t index) {
     const auto mix = detail::splitmix64Mix;
     const std::uint64_t base = mix(static_cast<std::uint64_t>(seed)) ^ (vehicleId * 0x9E3779B97F4A7C15ULL);
-    const auto u = [&](std::uint64_t i) { return static_cast<double>(mix(base ^ i) >> 11) * 0x1p-53; };
+    return static_cast<double>(mix(base ^ index) >> 11) * 0x1p-53;
+}
+W74Traits w74Traits(std::uint32_t seed, std::uint64_t vehicleId, double driverFactor) {
+    const auto u = [&](std::uint64_t i) { return w74Uniform(seed, vehicleId, i); };
     double sum = 0; // Irwin-Hall over indices 3..14, added in ascending order
     for (std::uint64_t i = 3; i <= 14; ++i) sum += u(i);
     return {driverFactor, u(0), u(1), std::clamp(0.5 + 0.15 * (sum - 6), 0.0, 1.0), u(2)};

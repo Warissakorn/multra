@@ -1,6 +1,8 @@
 #include "stop_lines.hpp"
+#include "line_passage.hpp"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <set>
 
 namespace multra {
@@ -94,10 +96,10 @@ void StopLineAccumulator::observe(const SimState& state) {
     const auto crossed = [&](std::uint64_t id, std::size_t h, std::uint32_t route, double distance) {
         const auto p = before.find(id);
         const double at = heads_[h].atRoute[route];
-        if (p == before.end() || std::isnan(at) || distance < at) return false;
+        if (p == before.end() || std::isnan(at) || !pastLine(distance, at)) return false;
         double prior = heads_[h].atRoute[p->second.route];
         if (std::isnan(prior)) prior = at; // a suffix selected before this line
-        return p->second.distance < prior || (sources.contains(id) && p->second.distance == 0 && prior == 0);
+        return !pastLine(p->second.distance, prior) || (sources.contains(id) && p->second.distance == 0 && prior == 0);
     };
     const auto count = [&](std::uint64_t id, std::size_t h) {
         auto& head = heads_[h];
@@ -119,7 +121,7 @@ void StopLineAccumulator::observe(const SimState& state) {
             if (std::isnan(at)) continue;
             const auto key = std::pair{v.id, h};
             const auto was = open_.find(key);
-            if (at > v.distance) {
+            if (!pastLine(v.distance, at)) {
                 auto tally = was == open_.end() ? Tally{} : was->second;
                 if (v.speed < beginSpeed_) (heads_[h].green ? tally.green : tally.red) += dt;
                 now.emplace(key, tally);
@@ -128,10 +130,8 @@ void StopLineAccumulator::observe(const SimState& state) {
     for (const auto& event : state.events) if (const auto* a = std::get_if<ArrivedEvent>(&event)) {
         if (std::any_of(state.vehicles.begin(), state.vehicles.end(), [&](const auto& v) { return v.id == a->vehicleId; })) continue;
         const auto route = slot(a->routeId);
-        const auto& parts = state.index->parts[route];
-        const double end = parts.back().start + parts.back().length;
-        for (std::size_t h = 0; h < heads_.size(); ++h)
-            if (crossed(a->vehicleId, h, route, end)) count(a->vehicleId, h);
+        for (std::size_t h = 0; h < heads_.size(); ++h) // an arrival is past every line on its route (D653)
+            if (crossed(a->vehicleId, h, route, std::numeric_limits<double>::infinity())) count(a->vehicleId, h);
     }
     open_ = std::move(now);
     previous_.clear();

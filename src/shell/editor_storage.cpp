@@ -1,4 +1,5 @@
 #include "editor_storage.hpp"
+#include "../project/clamp_rules.hpp"
 #include <nlohmann/json.hpp>
 #include <QBuffer>
 #include <QFile>
@@ -7,12 +8,16 @@
 #include <QFileInfo>
 #include <QDir>
 namespace multra {
-ProjectDocument readEditorDocument(const QString& file) {
+ProjectDocument readEditorDocument(const QString& file, bool* lineRestIgnored) {
     QFile input(file);
     if(!input.open(QIODevice::ReadOnly) || input.size()>static_cast<qint64>(kEditorDocumentByteLimit))throw std::runtime_error("EDIT_FILE_READ");
     const auto bytes=input.readAll();
     ProjectDocument document;
-    try {document=parseDocument(Json::parse(bytes.constData(),bytes.constData()+bytes.size()));}
+    try {
+        const auto json=Json::parse(bytes.constData(),bytes.constData()+bytes.size());
+        document=parseDocument(json);
+        if(lineRestIgnored)*lineRestIgnored=fileTurnsLineRestOff(json);
+    }
     catch(const Json::exception&){throw std::runtime_error("EDIT_FILE_FORMAT");}
     if(!document.background.pngBase64->empty()) {
         auto encoded=QByteArray::fromBase64Encoding(QByteArray::fromStdString(*document.background.pngBase64),QByteArray::AbortOnBase64DecodingErrors);

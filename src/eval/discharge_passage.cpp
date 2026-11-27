@@ -21,7 +21,7 @@ std::map<std::uint64_t,DischargeMotion> dischargeMotions(
         auto& m=result[a->vehicleId];const auto r=slot(a->routeId);
         if(m.end||r==unknown) {m.ambiguous=true;continue;}
         const auto& parts=index.parts[r];
-        m.end=DischargePosition{r,unknown,parts.back().start+parts.back().length};
+        m.end=DischargePosition{r,unknown,parts.back().start+parts.back().length};m.arrived=true;
         if(!near(a->time,state.time))m.ambiguous=true;
     }
     for(const auto& e:state.events)if(const auto* d=std::get_if<DepartedEvent>(&e)) {

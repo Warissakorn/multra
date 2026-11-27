@@ -1,3 +1,4 @@
+#include "field_memory.hpp"
 #include "junction_recipe_dialog.hpp"
 #include "dialog_fit.hpp"
 #include <QCheckBox>
@@ -12,12 +13,18 @@
 #include <QTableWidget>
 #include <QVBoxLayout>
 #include <algorithm>
+#include <map>
 namespace multra {
-std::optional<JunctionLeg> editJunctionLeg(QWidget* parent,JunctionLeg value,DrivingSide side,const CatalogText& text) {
+std::optional<JunctionLeg> editJunctionLeg(QWidget* parent,JunctionLeg value,DrivingSide side,const CatalogText& text,const std::string& memoryKey) {
+    // F12 (owner, 2026-11-26): lanes unticked away are kept for the session under the arm, and come
+    // back when the override is ticked again. Never written to the file.
+    auto& unticked=keptObjects<std::vector<JunctionLane>>(); // cleared when another project opens (field_memory.hpp)
+    const auto kept=unticked.find(memoryKey);
+    const auto shownLanes=value.lanes?*value.lanes:kept!=unticked.end()?kept->second:std::vector<JunctionLane>{};
     QDialog dialog(parent);dialog.setObjectName("editorJunctionLegDialog");dialog.setWindowTitle(text("editorJunctionLegValues"));
     auto* body=scrollingBody(dialog);auto* layout=new QVBoxLayout(body);auto* note=new QLabel(text("editorJunctionSiteOrder"),body);note->setWordWrap(true);layout->addWidget(note);
     auto* override=new QCheckBox(text("editorJunctionLaneOverride"),body);override->setObjectName("editorJunctionLaneOverride");override->setChecked(value.lanes.has_value());layout->addWidget(override);
-    std::function<void()> validate=[]{};const auto lanes=junctionLaneWidgets(body,value.lanes.value_or(std::vector<JunctionLane>{}),side,"editorJunctionLegLanes",text,[&]{validate();});layout->addWidget(lanes.body);
+    std::function<void()> validate=[]{};const auto lanes=junctionLaneWidgets(body,shownLanes,side,"editorJunctionLegLanes",text,[&]{validate();});layout->addWidget(lanes.body);
     auto* lengthsTable=new QTableWidget(0,2,body);lengthsTable->setObjectName("editorJunctionLengths");lengthsTable->setHorizontalHeaderLabels({text("editorJunctionStorage"),text("editorJunctionTaper")});layout->addWidget(lengthsTable);
     const auto add=[&](std::optional<double> storage,std::optional<double> taper) {
         const int row=lengthsTable->rowCount();lengthsTable->insertRow(row);auto* s=junctionNumber(lengthsTable,storage,"editorJunctionStorageValue");auto* t=junctionNumber(lengthsTable,taper,"editorJunctionTaperValue");lengthsTable->setCellWidget(row,0,s);lengthsTable->setCellWidget(row,1,t);
@@ -41,7 +48,9 @@ std::optional<JunctionLeg> editJunctionLeg(QWidget* parent,JunctionLeg value,Dri
     validate=[&] {lanes.body->setEnabled(override->isChecked());try {NodeJunction r;r.templateId="draft";r.legs["leg"]=read();const auto errors=junctionRecipeIssues(r,"junction");issues->setText(junctionIssueText(errors,text));buttons->button(QDialogButtonBox::Ok)->setEnabled(errors.empty());}catch(const std::exception&){issues->setText(text("EDIT_NODE_INVALID"));buttons->button(QDialogButtonBox::Ok)->setEnabled(false);}};
     QObject::connect(override,&QCheckBox::toggled,&dialog,[&]{validate();});QObject::connect(plus,&QPushButton::clicked,&dialog,[&]{add({},{});validate();});QObject::connect(minus,&QPushButton::clicked,&dialog,[&]{if(lengthsTable->currentRow()>=0)lengthsTable->removeRow(lengthsTable->currentRow());validate();});
     QObject::connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);QObject::connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);
-    validate();dialog.resize(740,570);if(dialog.exec()!=QDialog::Accepted)return std::nullopt;return read();
+    validate();dialog.resize(740,570);if(dialog.exec()!=QDialog::Accepted)return std::nullopt;
+    if(!override->isChecked()&&value.lanes)unticked[memoryKey]=*value.lanes;
+    return read();
 }
 std::optional<JunctionSignal> editJunctionTiming(QWidget* parent,JunctionSignal value,const CatalogText& text) {
     QDialog dialog(parent);dialog.setObjectName("editorJunctionTimingDialog");dialog.setWindowTitle(text("editorJunctionTiming"));auto* body=scrollingBody(dialog);auto* layout=new QVBoxLayout(body);auto* form=new QFormLayout;layout->addLayout(form);

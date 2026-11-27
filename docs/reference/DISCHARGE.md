@@ -16,6 +16,11 @@ end-of-tick front-crossing time, and membership in the queue at Go. Classes are
 not assigned yet: records retain every vehicle type; selection affects estimator
 samples only, and no PCU conversion occurs.
 
+A front exactly at the head has not passed it (D653, `pastLine` in
+`src/eval/line_passage.hpp`). A vehicle resting at its line under LINE_STOP is upstream at Go and
+crosses when it leaves. A head at a route's start is passed on insertion, and an arrival is past
+every head on its route. The stop-line diagnostic uses the same rule.
+
 At Go, upstream vehicles are sorted by distance to the head, then ID. The initial
 queue is the contiguous prefix below `QueueDefinition.beginSpeed`, with each gap
 from the head or preceding vehicle rear at most `maxGap`. This uses the project's

@@ -1,7 +1,8 @@
 name: Native C++
 # A push to a branch with an open pull request used to run every job twice (push and
 # pull_request on the same commit). Branches are covered by their pull request; main by push.
-# Run it by hand from the Actions tab for a branch without one.
+# Run it by hand from the Actions tab for a branch without one. A session branch (claude/**) also
+# gets the sanitizer alone on every push, from early.yml (D678, amended).
 on:
   push:
     branches: [main]

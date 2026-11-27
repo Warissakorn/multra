@@ -10,6 +10,7 @@
 #include <QLineEdit>
 #include <QPainter>
 #include <QScrollBar>
+#include <QStyledItemDelegate>
 #include <QPointer>
 #include <QTableView>
 #include <algorithm>
@@ -100,9 +101,26 @@ private:
     QPointer<QTableView> table_;QPointer<QItemSelectionModel> watched_;
 };
 }
+// F8 (owner, 2026-11-26): a cell's editor covers its cell exactly. Qt places it on the item's text
+// rect, which the item padding of the style sheet insets, and the field rule pins its height at
+// 24 px; the editor then sat 4 px right and 2 px down of a 23 px cell and spilled past it. The
+// property lets the style sheet drop the field's pinned height, padding and radius for it.
+class CellEditors:public QStyledItemDelegate {
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+    QWidget* createEditor(QWidget* parent,const QStyleOptionViewItem& option,const QModelIndex& index) const override {
+        auto* editor=QStyledItemDelegate::createEditor(parent,option,index);
+        if(editor)editor->setProperty("cellEditor",true);
+        return editor;
+    }
+    void updateEditorGeometry(QWidget* editor,const QStyleOptionViewItem& option,const QModelIndex&) const override { editor->setGeometry(option.rect); }
+};
 void makeSpreadsheetTable(QTableView* table) {
     if(table->property("editorSpreadsheet").toBool())return;
     table->setProperty("editorSpreadsheet",true);
+    // Only Qt's own delegate is replaced; a table with a delegate of its own keeps it.
+    if(table->itemDelegate()&&table->itemDelegate()->metaObject()==&QStyledItemDelegate::staticMetaObject)
+        table->setItemDelegate(new CellEditors(table));
     // A block of cells only where several things may be selected. A single-selection table picks
     // one object by its row, and Qt's selectRow() is a no-op there in cell mode.
     if(table->selectionMode()==QAbstractItemView::ExtendedSelection||table->selectionMode()==QAbstractItemView::MultiSelection) {

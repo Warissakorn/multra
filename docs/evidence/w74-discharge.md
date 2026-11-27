@@ -81,3 +81,77 @@ Paired per-seed difference of the seed's mean headway against dt 0.1 (n = 40):
 - Startup lost time is reported with its sign, as defined; negative values are the
   estimator's definition at these ranks, not an error.
 - Nothing here bounds the sensitivity or calibrates anything; M0/M6 gates are unchanged.
+
+## After D652 and D653 (2026-11-24)
+
+The same tool, re-run on today's project:
+- **Inputs:**
+  - four-leg SHA-256 `fca6bbfa…96222`;
+  - `default.json` `5c196dba…f65f`;
+  - the same W74 fixture file.
+- **Build:** Release, `-O3 -DNDEBUG -g1 -std=c++20 -fno-fast-math -ffp-contract=off`, GCC 13.3.0.
+- **What changed since the table above:**
+  - **D652:** every W74 behaviour, and the project's prototype, stops at the line.
+  - **D653:** a front exactly at the line has not passed it.
+- **Comparability.** The project now has 123 cycles per run, so the table above is not comparable row for row.
+- **Runs:** [`w74-discharge-runs-d653.csv`](w74-discharge-runs-d653.csv).
+- **Repeatability.** Two runs give byte-identical per-cycle CSVs. SHA-256:
+  `31aeb91d6972be43cbc967a0061312aba8208dc01011c8c1a9faa9a814f18f00`.
+
+| Model | dt (s) | Available headways / cycles | Mean headway mean / median / SD (s) | Startup lost time mean / median / SD (s) | Safety clamps per run, mean (min–max) |
+|---|---|---|---|---|---|
+| prototype | 0.1 | 1,323 / 4,920 | 2.113 / 2.100 / 0.047 | −0.602 / −0.600 / 0.128 | 0.00 (0–0) |
+| prototype | 0.25 | 1,309 / 4,920 | 2.119 / 2.083 / 0.053 | −0.511 / −0.417 / 0.146 | 0.00 (0–0) |
+| prototype | 0.5 | 1,265 / 4,920 | 2.114 / 2.167 / 0.080 | −0.250 / −0.333 / 0.208 | 0.00 (0–0) |
+| w74 | 0.1 | 1,617 / 4,920 | 3.229 / 3.233 / 0.124 | −1.699 / −1.700 / 0.304 | 9.35 (3–16) |
+| w74 | 0.25 | 1,629 / 4,920 | 3.265 / 3.250 / 0.113 | −1.630 / −1.667 / 0.284 | 10.47 (2–19) |
+| w74 | 0.5 | 1,595 / 4,920 | 3.330 / 3.333 / 0.162 | −1.582 / −1.667 / 0.398 | 15.07 (10–23) |
+
+**Paired per-seed difference** against dt 0.1:
+
+| Model | dt 0.25 − 0.1 (s) | dt 0.5 − 0.1 (s) |
+|---|---|---|
+| prototype | +0.007 ± 0.010 [−0.011, +0.035], 33/40 positive | +0.002 ± 0.016 [−0.034, +0.033], 24/40 positive |
+| w74 | +0.036 ± 0.024 [−0.028, +0.082], 37/40 positive | +0.100 ± 0.033 [+0.033, +0.179], 40/40 positive |
+
+**The switch off** (a schema-87 copy with `lineRest: false`):
+- **Engine unchanged.** With the old measurement it gives the D650-era per-cycle CSV byte for byte
+  (`ed764e2a…72b2e`).
+- **With D653's measurement:**
+
+  | dt (s) | W74 headway (s) | W74 startup lost time (s) | Prototype startup lost time (s) |
+  |---|---|---|---|
+  | 0.1 | 3.132 | −1.117 | −0.108 |
+  | 0.25 | 3.198 | −1.157 | −0.086 |
+  | 0.5 | 3.307 | −1.246 | −0.153 |
+
+- **Unchanged with the switch on:** W74's clamps are 9.4–15.1 per run either way, and its headway still rises
+  with dt. Stopping at the line does not touch the emergency `dv²` start inside `ABX`.
+- **Changed with the switch on:**
+  - The prototype's headway is flat across dt (it was +0.075 s at dt 0.5 with the switch off).
+  - W74's discharge is slower by about 0.1 s.
+  - Startup lost time is more negative for both: a car at the line crosses one tick after Go, with no reaction
+    time at green (D369).
+
+Nothing here bounds or calibrates anything; the unvalidated marker stays.
+
+## After D656
+
+D656 (LINE_QUEUE Q2): under `lineRest`, a W74 vehicle behind a vehicle at rest stops with LINE_STOP's law at
+its rear less the standstill gap. The same sweep is re-run. Runs:
+[`w74-discharge-runs-d656.csv`](w74-discharge-runs-d656.csv).
+
+| Model | dt (s) | Available headways / cycles | Mean headway mean / median / SD (s) | Startup lost time mean (s) | Clamps per run, mean (min–max) |
+|---|---|---|---|---|---|
+| w74 | 0.1 | 1,698 / 4,920 | 3.256 / 3.267 / 0.103 | −1.768 | 9.80 (4–18) |
+| w74 | 0.25 | 1,713 / 4,920 | 3.315 / 3.333 / 0.110 | −1.782 | 12.28 (5–19) |
+| w74 | 0.5 | 1,678 / 4,920 | 3.387 / 3.333 / 0.145 | −1.792 | 13.93 (6–19) |
+
+- **Paired dt differences:** +0.059 / +0.131 s, 40/40 seeds positive.
+- **Against D653:**
+  - Headway is 0.03–0.06 s slower.
+  - Startup lost time is about −1.77 s at every dt (D653: −1.70 to −1.58).
+  - Clamps are 9.4 / 10.5 / 15.1 → 9.8 / 12.3 / 13.9.
+- **Repeatability.** Two runs give byte-identical CSVs. SHA-256:
+  `3e8db3e34ab237322dc69425716bc2607b01a5047dfa2393b46529c1d2744ec8`.
+- **The prototype arm** is unchanged.
