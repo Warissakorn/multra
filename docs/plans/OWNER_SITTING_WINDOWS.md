@@ -7,10 +7,10 @@ Older looks were carved out to [OWNER_LOOKS_CARVED](OWNER_LOOKS_CARVED.md) (ROAD
 and never reused; an item that took in an older one says so.
 
 **Order for one sitting** (gates and blockers first; OWNER_SITTING A2 passed 2026-11-21, D612): E32 → OWNER_SITTING B46 with item 42, B48 and item 50 → C16 → C17, C18 →
-I.5 → F12 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
+I.5 → G1 → H1 → C12 (optional). Answered 2026-11-20 and moved to [PROGRESS](../PROGRESS.md): C14, C15,
 E33, E34 (with F4), E35 (with C1, C7, E18; one defect kept in NEXT), E36 (with E5, E8) and B45 (with E13–15). Answered
 2026-11-22: P51 and P52 (words in PROGRESS; their findings D620). Answered 2026-11-26 on package #152: F7, F9, F10 and F11, all passed (words in
-PROGRESS). Answered 2026-11-27 on #155: F8 passed; F12 b, d and e passed (a and c remain).
+PROGRESS). Answered 2026-11-27 on #155: F8 and F12 (a–e), all passed.
 
 ---
 
@@ -52,17 +52,6 @@ PROGRESS). Answered 2026-11-27 on #155: F8 passed; F12 b, d and e passed (a and 
     field. Are tables, notes, scrollbars and fixed footers readable without clipping? *Owner:*
 
 ## F — Dialogs
-
-12. **The `lineSetback` field** (listed 2026-11-26; D669–D670, D677;
-    [LINE_SETBACK](../reference/LINE_SETBACK.md) §7, §9). Package: run
-    [#155](https://github.com/Warissakorn/multra/actions/runs/45808562900) (`fca6669`), artifact `multra-windows-x64`.
-    b, d and e passed on #155 (words in PROGRESS); two items remain.
-    - **a. The field.** Edit a behaviour in *Driving behaviours*, for the prototype, W74 and W99 in turn. On the
-      junction page, are the `lineSetback` box, its field and the default note shown in full, without clipping, in Thai
-      and English at 100/150 %?
-    - **c. Save and reopen.** In the line-stop lab, tick `lineSetback`, enter 0.5, save, close and reopen. Is it still
-      0.5? Untick it and save: does the file no longer carry it?
-    - Report the words for a and c. Linux closes none of these (rule 3). *Owner:*
 
 ## G — Object interchange
 

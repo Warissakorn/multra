@@ -5,14 +5,16 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
-## 2026-11-27 — The owner's Windows checks F8 and F12 d–e pass on package #155
+## 2026-11-27 — The owner's Windows checks F8 and F12 pass on package #155
 
 - **Owner, on package #155** (`fca6669`, D676–D677): "F8 ผ่าน F12 d และ e ผ่านทั้งหมด".
   - **F8:** the CC1 table, its muted look under *Fixed*, and cell editors on their cells.
   - **F12 d:** an unticked value comes back when ticked again.
   - **F12 e:** no `lineRest` box, a 1 m rest by default, 0 at the line, and the warning for a file saved with it off.
-- **Closed:** F8, removed from the [Windows sheet](plans/OWNER_SITTING_WINDOWS.md). F12 keeps a (the field fits) and c
-  (save and reopen), which have no words yet. F12 b, at a red, is covered by e.
+  - **F12 a and c**, then: "F12 a และ c ผ่าน". The field and its default note fit, and 0.5 survives save and reopen
+    and leaves the file when unticked.
+- **Closed:** F8 and F12, removed from the [Windows sheet](plans/OWNER_SITTING_WINDOWS.md). F12 b, at a red, is
+  covered by e. Section F of the sheet is now empty.
 
 ## 2026-11-26 — `lineRest` always on, `lineSetback` 1 m by default (D677)
 
