@@ -41,8 +41,9 @@ E32, B46 with item 42, B48, item 50, C16, C17/C18, I.5, G1, H1, then C12 (option
 ## Editor and tests
 
 - **UI_GEOMETRY ([§5](reference/UI_GEOMETRY.md), D680–D683).** The sweep now selects before it triggers (124 dialog
-  views per scale) and checks widgets set on cells; 0 findings. Next: dialogs opened from panels rather than actions,
-  and the actions the sweep's "Not reached" line still lists.
+  views per scale) and checks widgets set on cells; 0 findings. Next: the 34 actions the sweep's "Not reached" line
+  lists (Edit conflict area is among them on a project that has one: diagnose why a table's first row does not enable
+  it), then dialogs opened from panels.
 - **The owner's Windows look (D683):** fields in tables now fill their cells, square, and a narrow column widens to its
   field (decision flows, OD grid, junction template roles, controller, parking lot). Add it to the next package.
 - **Not chosen, ask first:** sorting by header click; cell selection in one-object lists (D490).

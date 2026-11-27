@@ -93,8 +93,12 @@ The owner chose "UI_GEOMETRY U1, U2" on 2026-11-27.
       included, instead of running past the cell.
   - After the fix: **0 findings** at scales 1, 1.5 and 2. Forcing row UG6: a widget taller than its row is caught; a
     combo on a cell under the editor style passes.
-- **Not reached:** dialogs opened from panels rather than actions, and actions that need a selection the sweep does
-  not make (a conflict area drawn, a parking lot or Node a project lacks).
+- **Not reached (measured, D683):** dialogs opened from panels rather than actions, and 34 actions the sweep prints as
+  never enabled. Among them: the Edit actions of conflict areas, counters, sections, speed decisions and areas, cross
+  sections, street segments, zone connectors and modes; the Node actions; OD matrix edit; templates; and results
+  copy/export.
+  - `four-leg-signalised` has conflict areas, so a first-row selection in a table does not always enable its panel's
+    actions. Why is not yet diagnosed: the table may fill only when its tab is shown.
 - **A defect found (D681):** U1's layout pass made `junction-recipe-ui`'s dialogs active before the test drove them.
   *Add lane* in the junction lane override then recursed through `EditorInteraction`'s table focus rule until the
   stack overflowed. The rule is fixed.

@@ -35,6 +35,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
     table now fills its cell, and a field's minimum width widens its column. 0 findings at 1×, 1.5× and 2×; UG6 forces it;
   - a decision's position clamped by a shorter Link is kept and comes back on a longer one;
   - recovery and Compare now say when a file's `lineRest` off is not used.
+  - **Verified (Linux only):** `check` passes, `ctest` 382/382. Not run locally: the sanitizer tree (not built here;
+    `early (sanitizer)` runs on the push). 34 actions are still not reached (UI_GEOMETRY §5).
 - **Then the tree was trimmed (D682, the owner's "R1-R5 ตามแนะนำ"; recorded small, as its own rule now says):**
   - 26 files and 3.0 MB left the tree: images and raw evidence, each recoverable with `git show 82f5e8d0:<path>`;
   - the measuring patches moved to `docs/archive/patches/`;
