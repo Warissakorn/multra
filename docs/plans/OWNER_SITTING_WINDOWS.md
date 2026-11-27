@@ -53,6 +53,8 @@ PROGRESS). Answered 2026-11-27 on #155: F8 and F12 (a–e), all passed.
 
 ## F — Dialogs
 
+None open: F7–F12 passed on 2026-11-26 and 2026-11-27 (words in [PROGRESS](../PROGRESS.md)).
+
 ## G — Object interchange
 
 1. **M1.23.1 object table CSV** (listed 2026-10-27, D365). On packaged Windows, open a project,
