@@ -90,7 +90,10 @@ The owner chose "UI_GEOMETRY U1, U2" on 2026-11-27.
   - Fixed:
     - a field in a table fills its cell's height (`editor_style.cpp`);
     - a field's minimum width (`EditorInteraction`, so the value is not clipped) now widens its column, grid line
-      included, instead of running past the cell.
+      included, instead of running past the cell;
+    - a Stretch column ignores a set width, so for one the header's minimum section size is raised instead. PR #233's
+      Windows run found the case: Thai headers left the controller's group-name column 23 px for a 35 px field.
+      Forcing row UG7 squeezes a Stretch column and failed before this (a 57 px field on a 23 px cell).
   - After the fix: **0 findings** at scales 1, 1.5 and 2. Forcing row UG6: a widget taller than its row is caught; a
     combo on a cell under the editor style passes.
 - **Not reached (measured, D683):** dialogs opened from panels rather than actions, and 34 actions the sweep prints as

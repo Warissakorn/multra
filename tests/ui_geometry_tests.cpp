@@ -1,12 +1,14 @@
 // UI_GEOMETRY (D680): each check of ui_geometry_support.hpp fires on a dialog built to break it, and a plain form passes.
-// Rows UG1-UG6; the forcing rows are what make "no findings" on the real dialogs mean something.
+// Rows UG1-UG7; the forcing rows are what make "no findings" on the real dialogs mean something.
 #include "ui_geometry_support.hpp"
 #include "../src/shell/editor_style.hpp"
+#include "../src/shell/editor_interaction.hpp"
 #include "../src/shell/table_grid.hpp"
 #include <QApplication>
 #include <QComboBox>
 #include <QDialog>
 #include <QFormLayout>
+#include <QHeaderView>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
@@ -68,6 +70,21 @@ int main(int argc, char** argv) {
             const auto found = uiGeometry::findings(d);
             for (const auto& f : found) std::cerr << f << '\n';
             require(found.empty(), "UG6: a combo on a cell under the editor style does not fill it");
+        }
+        {   // UG7 (D683, PR #233 on Windows): a field in a Stretch column that its neighbours squeeze below the
+            // field's minimum width still covers its cell. Windows' Thai headers did this to the controller's group name.
+            multra::installEditorInteraction();
+            QDialog d; d.setStyleSheet(multra::editorStyleSheet()); auto* box = new QVBoxLayout(&d);
+            auto* t = new QTableWidget(1, 2, &d); multra::makeSpreadsheetTable(t); box->addWidget(t);
+            t->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); t->setColumnWidth(0, 260);
+            t->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+            auto* name = new QLineEdit("Group 1"); t->setCellWidget(0, 1, name);
+            d.resize(320, 200); d.show(); QApplication::processEvents();
+            require(name->minimumWidth() > 0, "UG7: the field rule did not set a minimum width");
+            require(t->viewport()->width() - 260 < name->minimumWidth(), "UG7: the fixed column left the Stretch column room (forcing failed)");
+            const auto found = uiGeometry::findings(d);
+            for (const auto& f : found) std::cerr << f << '\n';
+            require(!has(found, "G1"), "UG7: a field in a squeezed Stretch column runs past its cell");
         }
         {   // UG5: a plain form under the editor style passes.
             QDialog d; d.setStyleSheet(multra::editorStyleSheet()); auto* form = new QFormLayout(&d);

@@ -297,9 +297,15 @@ private:
                 // D683: a field set on a cell widens its column to that width, rather than run past its cell.
                 if(auto* table=widget->parentWidget()?qobject_cast<QTableView*>(widget->parentWidget()->parentWidget()):nullptr;
                    table&&widget->parentWidget()==table->viewport())
-                    if(const auto cell=cellOf(table,widget);cell.isValid()&&table->columnWidth(cell.column())<widget->minimumWidth()+(table->showGrid()?1:0)&&
-                       table->horizontalHeader()->sectionResizeMode(cell.column())!=QHeaderView::Stretch)
-                        table->setColumnWidth(cell.column(),widget->minimumWidth()+(table->showGrid()?1:0)); // the grid line is not the cell's
+                    if(const auto cell=cellOf(table,widget);cell.isValid()) {
+                        const int need=widget->minimumWidth()+(table->showGrid()?1:0); // the grid line is not the cell's
+                        auto* header=table->horizontalHeader();
+                        // A Stretch column ignores setColumnWidth; its floor is the header's minimum section size, so a
+                        // neighbour that fills the table (Thai headers on Windows) cannot squeeze it past the field.
+                        if(header->sectionResizeMode(cell.column())==QHeaderView::Stretch) {
+                            if(header->minimumSectionSize()<need)header->setMinimumSectionSize(need);
+                        } else if(table->columnWidth(cell.column())<need)table->setColumnWidth(cell.column(),need);
+                    }
             }
         }
         if(event->type()==QEvent::Resize && static_cast<QResizeEvent*>(event)->size().width()!=
