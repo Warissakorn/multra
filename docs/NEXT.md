@@ -27,8 +27,7 @@ Detail lives in the linked contracts; the whole file before the last cut is
   - one package per owner sitting, at most five owner items a round;
   - one pull request per topic;
   - a small fix is recorded as in AGENTS' working rules (D682).
-- **PR [#232](https://github.com/Warissakorn/multra/pull/232)** carries this branch (D635–D682) and waits for the
-  owner to merge.
+- **Merged to `main`:** PR #232 (D635–D682), #233 (D683) and #234 (D684). No pull request is open.
 
 ## Owner (Windows sheet, in order)
 
