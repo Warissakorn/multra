@@ -48,6 +48,8 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
     table now fills its cell, and a field's minimum width widens its column. 0 findings at 1×, 1.5× and 2×; UG6 forces it;
   - a decision's position clamped by a shorter Link is kept and comes back on a longer one;
   - recovery and Compare now say when a file's `lineRest` off is not used.
+  - Follow-up from PR #233's Windows CI: a field in a Stretch column that Thai headers squeezed (the controller's
+    group name, 35 px field on a 23 px cell) now raises the header's minimum section size. UG7 forces it on Linux.
   - **Verified (Linux only):** `check` passes, `ctest` 382/382. Not run locally: the sanitizer tree (not built here;
     `early (sanitizer)` runs on the push). 34 actions are still not reached (UI_GEOMETRY §5).
 - **Then the tree was trimmed (D682, the owner's "R1-R5 ตามแนะนำ"; recorded small, as its own rule now says):**
