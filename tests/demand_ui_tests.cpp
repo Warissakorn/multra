@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QStandardPaths>
 #include <QAction>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialog>
 #include <QDoubleSpinBox>
@@ -436,6 +437,19 @@ int main(int argc,char** argv) {
             auto* dialog=qobject_cast<QDialog*>(QApplication::activeModalWidget());
             require(dialog,"Decision dialog did not reopen");
             require(dialog->findChild<QLineEdit*>("editorDecisionCounts0")->text()=="30 10","Stored counts were not shown back");
+            // D683: a shorter Link clamps the position without losing it; the longer one brings it back.
+            auto* place=dialog->findChild<QComboBox*>("editorDecisionLink");
+            auto* position=dialog->findChild<QDoubleSpinBox*>("editorDecisionPosition");
+            place->setCurrentIndex(place->findData(QString::fromStdString(west)));
+            dialog->findChild<QCheckBox*>("editorDecisionPositioned")->setChecked(true);position->setValue(85);
+            require(position->value()==85,"The position field did not take 85 m on the 90 m Link");
+            place->setCurrentIndex(place->findData(QString::fromStdString(north)));
+            require(position->value()<80.001,"The 80 m Link did not clamp the position");
+            place->setCurrentIndex(place->findData(QString::fromStdString(west)));
+            require(position->value()==85,"The clamp overwrote the kept position");
+            place->setCurrentIndex(place->findData(QString::fromStdString(north)));position->setValue(30);
+            place->setCurrentIndex(place->findData(QString::fromStdString(west)));
+            require(position->value()==30,"An edit after the clamp was not kept");
             dialog->reject();
         });
         action(w,"editorEditDecision");

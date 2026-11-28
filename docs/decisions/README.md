@@ -151,3 +151,4 @@ For continuous vehicle-pose work, also read [VEHICLE_POSE](../reference/VEHICLE_
 [D680](RECORD.md#d680) — UI_GEOMETRY U1 + U2: geometry checks in every dialog test and a sweep of every action's dialogs; 0 findings, and the F8 defect is caught when reintroduced
 [D681](RECORD.md#d681) — U1 found a crash: *Add lane* in the junction lane override recursed through the table focus rule; fixed
 [D682](RECORD.md#d682) — the tree trimmed (R1–R5): 26 files and 3.0 MB out, NEXT cut to about 5,900 characters, small changes recorded small
+[D683](RECORD.md#d683) — the sweep selects before it triggers (124 dialog views); fields set on cells fill them; a clamped decision position is kept; Compare and recovery warn about `lineRest` off

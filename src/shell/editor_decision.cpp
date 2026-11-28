@@ -58,6 +58,7 @@ void EditorWindow::editDecision(const std::string& id) {
         double length=0;for(const auto& l:network.links)if(l.id==place->currentData().toString().toStdString())length=polylineLength(l.geometry);
         positioned->setEnabled(length>0);position->setRange(0,std::max(0.,length-1e-6));position->setEnabled(length>0 && positioned->isChecked());
         serving->setEnabled(length>0 && !positioned->isChecked());
+        if(!id.empty())refitField(position,QString::fromStdString("decision/"+id+"/position")); // D683
     };
     connect(place,&QComboBox::currentIndexChanged,&dialog,[&]{syncPosition();});
     connect(positioned,&QCheckBox::toggled,&dialog,[&]{syncPosition();});syncPosition();setFormNumber(position,value.position.value_or(0));

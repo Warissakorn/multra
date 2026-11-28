@@ -74,9 +74,34 @@ The owner chose "UI_GEOMETRY U1, U2" on 2026-11-27.
   - With D676's cell-editor delegate removed, the sweep reports G1 on `editorCatalogSpeedCurve` and
     `editorCatalogAccelerationCurve` with every box ticked: "editor 4,2 91x24 on cell 0,0 99x23", the owner's F8 finding.
   - With it in place, the sweep passes.
-- **Not reached:** dialogs whose action needs a selected object (Link, Connector, conflict area, zone, Node, counter,
-  speed decision, OD matrix and others; about 40 actions are disabled without a selection), and dialogs opened from
-  panels rather than actions. Selecting one object of each kind before the sweep is the next extension.
+- **Selections (D683):** after the actions enabled with nothing selected, the sweep selects on the canvas the first
+  Link, the first Connector and the first two Links, then in each table of the window its first row and, where several
+  rows may be selected, its first two. After each selection it triggers the actions that became enabled.
+  - An action that edits instead of opening a dialog (Reverse, Opposite, Number nodes) is undone at once, so each
+    selection sees the project as opened.
+  - The example-project actions are skipped: they open another project.
+  - Reached: 222 actions and 124 dialog views per scale (104 before).
+- **G1 for cell widgets (D683):** a widget set on a cell (`setCellWidget`) must cover its cell, like a delegate's
+  editor. The check runs the view's deferred layout first.
+  - First measurement: 376 findings per scale in 6 dialogs:
+    - combos 24 px tall in 23 px rows (junction template roles: the D679 note);
+    - spin boxes and line edits 24 px tall, top-aligned in 28 px rows (decision flows, OD grid, controller, parking lot);
+    - spin boxes wider than their column (decision flows 112 in 99 px, OD 109 in 108 px).
+  - Fixed:
+    - a field in a table fills its cell's height (`editor_style.cpp`);
+    - a field's minimum width (`EditorInteraction`, so the value is not clipped) now widens its column, grid line
+      included, instead of running past the cell;
+    - a Stretch column ignores a set width, so for one the header's minimum section size is raised instead. PR #233's
+      Windows run found the case: Thai headers left the controller's group-name column 23 px for a 35 px field.
+      Forcing row UG7 squeezes a Stretch column and failed before this (a 57 px field on a 23 px cell).
+  - After the fix: **0 findings** at scales 1, 1.5 and 2. Forcing row UG6: a widget taller than its row is caught; a
+    combo on a cell under the editor style passes.
+- **Not reached (measured, D683):** dialogs opened from panels rather than actions, and 34 actions the sweep prints as
+  never enabled. Among them: the Edit actions of conflict areas, counters, sections, speed decisions and areas, cross
+  sections, street segments, zone connectors and modes; the Node actions; OD matrix edit; templates; and results
+  copy/export.
+  - `four-leg-signalised` has conflict areas, so a first-row selection in a table does not always enable its panel's
+    actions. Why is not yet diagnosed: the table may fill only when its tab is shown.
 - **A defect found (D681):** U1's layout pass made `junction-recipe-ui`'s dialogs active before the test drove them.
   *Add lane* in the junction lane override then recursed through `EditorInteraction`'s table focus rule until the
   stack overflowed. The rule is fixed.

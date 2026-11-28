@@ -28,6 +28,17 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
   still driving the dialog.
 - **Not reached:** about 40 dialogs that need a selected object. That is the next extension, listed in NEXT.
 - **Verified (Linux only):** `check` passes, `ctest` 382/382.
+- **Then UI_GEOMETRY §5's next extension and the D679 leftovers (D683; the owner: "เริ่มจาก UI_GEOMETRY §5 กับบั๊กเล็ก D679 เลย"):**
+  - the sweep selects a Link, a Connector, two Links and each table's first rows before triggering actions, and undoes
+    an action that edits: 222 actions and 124 dialog views per scale (104 before);
+  - G1 now checks widgets set on cells too. It found 376 per scale in 6 dialogs, the D679 combo among them. A field in a
+    table now fills its cell, and a field's minimum width widens its column. 0 findings at 1×, 1.5× and 2×; UG6 forces it;
+  - a decision's position clamped by a shorter Link is kept and comes back on a longer one;
+  - recovery and Compare now say when a file's `lineRest` off is not used.
+  - Follow-up from PR #233's Windows CI: a field in a Stretch column that Thai headers squeezed (the controller's
+    group name, 35 px field on a 23 px cell) now raises the header's minimum section size. UG7 forces it on Linux.
+  - **Verified (Linux only):** `check` passes, `ctest` 382/382. Not run locally: the sanitizer tree (not built here;
+    `early (sanitizer)` runs on the push). 34 actions are still not reached (UI_GEOMETRY §5).
 - **Then the tree was trimmed (D682, the owner's "R1-R5 ตามแนะนำ"; recorded small, as its own rule now says):**
   - 26 files and 3.0 MB left the tree: images and raw evidence, each recoverable with `git show 82f5e8d0:<path>`;
   - the measuring patches moved to `docs/archive/patches/`;

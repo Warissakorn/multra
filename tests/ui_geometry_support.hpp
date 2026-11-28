@@ -1,5 +1,5 @@
 #pragma once
-// UI_GEOMETRY U1 (D680): what a dialog lays out, checked on Linux. G1 a cell editor covers its cell (the sweep only); G2 a visible
+// UI_GEOMETRY U1 (D680): what a dialog lays out, checked on Linux. G1 a cell editor or cell widget covers its cell (the sweep only); G2 a visible
 // widget stays inside its visible parent (outside scroll areas); G3 visible siblings in one layout do not overlap;
 // G4 a label or button shows its whole text. With MULTRA_UI_GEOMETRY_REPORT set to a file, findings are appended
 // there and the check passes (the measuring mode of UI_GEOMETRY §3); otherwise the first finding throws.
@@ -97,8 +97,21 @@ inline std::vector<std::string> findings(QWidget& root, bool editCells = true) {
     }
     // G1: the first editable cell of each visible table gets an editor on exactly its cell; it is then reverted.
     for (auto* view : editCells ? root.findChildren<QTableView*>() : QList<QTableView*>{}) {
-        if (!view->isVisibleTo(&root) || !view->isEnabled() || !view->model() || view->editTriggers() == QAbstractItemView::NoEditTriggers) continue;
+        if (!view->isVisibleTo(&root) || !view->model()) continue;
         auto* model = view->model();
+        // G1 for a widget set on a cell (a combo or a box in a table, D683): it covers its cell too. The view places
+        // its cell widgets in a deferred layout, so that layout runs first.
+        view->doItemsLayout(); QApplication::processEvents();
+        for (int r = 0; r < model->rowCount() && r < 50; ++r)
+            for (int c = 0; c < model->columnCount(); ++c)
+                if (auto* cell = view->indexWidget(model->index(r, c)); cell && cell->isVisible() && !view->isColumnHidden(c)) {
+                    const QRect want = view->visualRect(model->index(r, c));
+                    if (want.isValid() && cell->geometry() != want)
+                        add("G1", view, QString("cell widget %1 %2,%3 %4x%5 on cell %6,%7 %8x%9, minimum width %10").arg(cell->metaObject()->className())
+                            .arg(cell->x()).arg(cell->y()).arg(cell->width()).arg(cell->height()).arg(want.x()).arg(want.y())
+                            .arg(want.width()).arg(want.height()).arg(cell->minimumWidth()));
+                }
+        if (!view->isEnabled() || view->editTriggers() == QAbstractItemView::NoEditTriggers) continue;
         for (int r = 0; r < model->rowCount() && r < 50; ++r) {
             bool done = false;
             for (int c = 0; c < model->columnCount(); ++c) {

@@ -91,12 +91,14 @@ void EditorWindow::recoverFile(const QString& file) {
     if(file==recoverySession_->file)throw RecoveryError("RECOVERY_BUSY");
     auto lock=std::make_unique<QLockFile>(file+".lock");lock->setStaleLockTime(0);
     if(!lock->tryLock())throw RecoveryError("RECOVERY_BUSY");
-    auto document=readEditorDocument(file);
+    bool lineRestIgnored=false;
+    auto document=readEditorDocument(file,&lineRestIgnored);
     // Restored documents are untitled, so Save asks for a destination before replacing anything.
     clearRecovery();clearRun();macro_->discard();meso_->discard();history_.reset(std::move(document));history_.markUnsaved();file_.clear();clearFieldMemory(); // D678
     conflicts_->invalidate();
     recoverySession_->lock=std::move(lock);recoverySession_->file=file;recoverySession_->autosavedRevision.reset();startAutosave();
     canvas_->select("");refresh();canvas_->fitNetwork();error_->setText(text("editorRecovered"));
+    if(lineRestIgnored)error_->setText(text("editorRecovered")+" "+text("EDIT_LINE_REST_IGNORED")); // D683, as Open says (D677)
 }
 QString EditorWindow::recoveryCandidate(const QString& id) const {
     if(id.isEmpty() || id.size()>255 || id.contains('/') || id.contains('\\') || id.contains(':') ||

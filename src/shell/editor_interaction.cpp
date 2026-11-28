@@ -32,6 +32,16 @@
 #include <vector>
 
 namespace multra {
+namespace {
+// D681: the cell a widget set on a table cell stands for, by the table's own record, not by where it sits.
+QModelIndex cellOf(const QTableView* table,const QWidget* widget) {
+    if(auto* model=table->model())
+        for(int r=0;r<model->rowCount();++r)
+            for(int c=0;c<model->columnCount();++c)
+                if(table->indexWidget(model->index(r,c))==widget)return model->index(r,c);
+    return {};
+}
+}
 void setReflowPolicy(QLabel* label, QSizePolicy::Policy horizontal) {
     auto policy=label->sizePolicy();policy.setHorizontalPolicy(horizontal);
     policy.setVerticalPolicy(QSizePolicy::Preferred);policy.setHeightForWidth(label->wordWrap());
@@ -241,11 +251,7 @@ private:
                     // D681: a cell widget names its own cell. Its geometry does not until the table lays it out: a
                     // row just added (junction lanes) mapped to another row, whose widget took focus and mapped back,
                     // without end. A delegate's editor (no cell widget) still goes by where it sits.
-                    QModelIndex index;
-                    if(auto* model=table->model())
-                        for(int r=0;r<model->rowCount()&&!index.isValid();++r)
-                            for(int c=0;c<model->columnCount();++c)
-                                if(table->indexWidget(model->index(r,c))==editor){index=model->index(r,c);break;}
+                    QModelIndex index=cellOf(table,editor);
                     if(!index.isValid())index=table->indexAt(editor->geometry().center());
                     static bool moving=false; // setCurrentIndex may move focus to another cell widget
                     if(!moving&&index.isValid()&&index!=table->currentIndex()){moving=true;table->setCurrentIndex(index);moving=false;}
@@ -288,6 +294,18 @@ private:
                     widget->setProperty("editorOriginalMinimumWidth",widget->minimumWidth());
                 widget->setMinimumWidth(std::max(widget->property("editorOriginalMinimumWidth").toInt(),
                     std::min(widget->minimumSizeHint().width(),widget->maximumWidth())));
+                // D683: a field set on a cell widens its column to that width, rather than run past its cell.
+                if(auto* table=widget->parentWidget()?qobject_cast<QTableView*>(widget->parentWidget()->parentWidget()):nullptr;
+                   table&&widget->parentWidget()==table->viewport())
+                    if(const auto cell=cellOf(table,widget);cell.isValid()) {
+                        const int need=widget->minimumWidth()+(table->showGrid()?1:0); // the grid line is not the cell's
+                        auto* header=table->horizontalHeader();
+                        // A Stretch column ignores setColumnWidth; its floor is the header's minimum section size, so a
+                        // neighbour that fills the table (Thai headers on Windows) cannot squeeze it past the field.
+                        if(header->sectionResizeMode(cell.column())==QHeaderView::Stretch) {
+                            if(header->minimumSectionSize()<need)header->setMinimumSectionSize(need);
+                        } else if(table->columnWidth(cell.column())<need)table->setColumnWidth(cell.column(),need);
+                    }
             }
         }
         if(event->type()==QEvent::Resize && static_cast<QResizeEvent*>(event)->size().width()!=

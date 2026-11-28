@@ -16,6 +16,9 @@ namespace multra {
 // recorded under `key` before, if any. Every later edit of the field is recorded.
 void rememberField(QCheckBox* on, QAbstractSpinBox* field, const QString& key);
 void rememberField(QCheckBox* on, QLineEdit* field, const QString& key);
+// After the field's range changed: shows the value kept under `key` when the new range holds it. A
+// narrower range clamps the field without overwriting what is kept (D683), so a wider one brings it back.
+void refitField(QAbstractSpinBox* field, const QString& key);
 // The same for a field or table that a choice other than a tick box puts in use (`used`), e.g.
 // CC1's Fixed value beside its Distribution curve. A table is kept cell by cell, rows included.
 void rememberField(bool used, QLineEdit* field, const QString& key);
