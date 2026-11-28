@@ -69,7 +69,7 @@ TEST(demandcounts, a_placed_entry_decision_sends_its_counts) { // VC2, placed on
             if (lane.id == c.laneChain.back()) exitOf[id] = link.id;
     }
     std::map<std::pair<std::string, double>, double> byExit; // (exit, interval start) -> vehicles
-    for (const auto& i : expandRouteless(w.d.network, def, withRoutingDecisions(def)).inputs)
+    for (const auto& i : RoutelessDemand(w.d.network, def).expand(withRoutingDecisions(def)).inputs)
         for (const auto& p : i.intervals) byExit[{exitOf[i.routeId], p.startTime}] += vehicles(p);
     test::near(byExit[{w.east, 0}], 30, 1e-9); test::near(byExit[{w.east, 900}], 6, 1e-9);
     test::near(byExit[{w.north, 0}], 12, 1e-9); test::near(byExit[{w.north, 900}], 24, 1e-9);

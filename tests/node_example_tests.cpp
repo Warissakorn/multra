@@ -61,7 +61,7 @@ TEST(nodeexample, each_movement_has_a_signalised_section_and_a_route) {
     for (const auto& entry : t.entries) CHECK(std::count_if(movements.begin(), movements.end(), [&](const auto& m) { return m.first == entry; }) == 3);
     // Every decision destination becomes a path, the far turn into the major's pocket included (D501,
     // D513): none is dropped from the routeless walk, and nothing blocks a run.
-    const auto issues = routelessIssues(d.network, *d.definition);
+    const auto issues = RoutelessDemand(d.network, *d.definition).issues();
     CHECK(issues.blocking.empty() && issues.advisory.empty());
     const auto placed = placedDecisions(d.network, *d.definition);
     CHECK(placed.size() == 4);

@@ -355,7 +355,7 @@ AuthoringDefinition withRoutingDecisions(AuthoringDefinition d) {
                                            [&](const auto& x) { return x.id == input.routingDecisionId; });
         if (decision == d.routingDecisions.end()) continue; // routingDecisionIssues names it
         // A PLACED decision (M2.1.1) acts where it sits: the input becomes a routeless input on
-        // its Link, and expandRouteless meets the decision there on the network walk.
+        // its Link, and RoutelessDemand::expand meets the decision there on the network walk.
         if (!decision->linkId.empty()) {
             auto routeless = input; routeless.routingDecisionId.clear(); routeless.linkId = decision->linkId;
             inputs.push_back(std::move(routeless)); continue;
@@ -422,9 +422,9 @@ void validateAuthoredDemand(const ProjectDocument& d) {
     if (auto areas = speedAreaSpecIssues(d.network, *d.definition); !areas.empty()) throw ValidationError(std::move(areas)); // B-6 §7
     if (auto signals = signalControlIssues(d.network, *d.definition); !signals.empty()) throw ValidationError(std::move(signals));
     // Routeless inputs (M2.1.1) are walked here too; one whose walk fails is left out and named
-    // by routelessIssues on Run, so an edit to the network is never refused because of it.
-    RoutelessWalks walks(d.network, *d.definition);
-    auto checked = expandRouteless(walks, withRoutingDecisions(*d.definition));
+    // by RoutelessDemand::issues on Run, so an edit to the network is never refused because of it.
+    RoutelessDemand walks(d.network, *d.definition);
+    auto checked = walks.expand(withRoutingDecisions(*d.definition));
     for (auto& input : checked.inputs)
         if (!input.compositionId.empty() && !checked.vehicleTypes.empty())
             input.vehicleTypeId = checked.vehicleTypes.front().id;

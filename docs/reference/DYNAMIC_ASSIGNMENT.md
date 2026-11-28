@@ -348,7 +348,7 @@ This lifts §11.1's refusal of placed decisions. It was written after reading th
 before any A2b code.
 
 **What the compile gives.**
-- `expandRouteless` already tags each routeless definition route with family names (`familyName`,
+- `expandRouteless` (since D684 `RoutelessDemand::expand`) already tags each routeless definition route with family names (`familyName`,
   `src/model/network/routeless.cpp`):
   - unplaced positionless entries: `<decision>><final object of the entry's chain>`;
   - positioned entries: `<decision>>route-<k>`.

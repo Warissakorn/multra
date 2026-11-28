@@ -50,7 +50,7 @@ TEST(routeless, a_placed_decision_on_the_entry_follows_each_intervals_counts) {
     putRoutingDecision(w.d, decision);
     putInput(w.d, {"in", "", "car", 1000, 0, 1800, {}, {}, {}, {}, w.upstream});
     auto& def = *w.d.definition;
-    CHECK(routelessIssues(w.d.network, def).blocking.empty());
+    CHECK(RoutelessDemand(w.d.network, def).issues().blocking.empty());
     // Which exit each runtime route ends on, from the walk in the first interval.
     const auto first = routelessChains(w.d.network, w.upstream, placedDecisions(w.d.network, def, nullptr, 450.0));
     CHECK(first.byDestination);
@@ -63,7 +63,7 @@ TEST(routeless, a_placed_decision_on_the_entry_follows_each_intervals_counts) {
         for (const auto& link : w.d.network.links) for (const auto& lane : link.lanes)
             if (lane.id == c.laneChain.back()) exitOf[id] = link.id;
     }
-    const auto expanded = expandRouteless(w.d.network, def, withRoutingDecisions(def));
+    const auto expanded = RoutelessDemand(w.d.network, def).expand(withRoutingDecisions(def));
     std::map<std::pair<std::string, double>, double> byExit; // (exit, interval start) -> veh/h
     for (const auto& i : expanded.inputs) {
         CHECK(exitOf.count(i.routeId) == 1); // one runtime route per path, shared by both intervals

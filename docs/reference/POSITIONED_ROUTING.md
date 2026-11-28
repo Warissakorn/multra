@@ -35,6 +35,19 @@ station decisions affect the routeless streams, as legacy placed decisions do.
 Inputs mark source lanes; decisions mark recognition stations. Demand preview labels
 provisional path allocations as chosen at the routing line, without a booked destination.
 
+## Interface of the compile step (D684)
+
+`src/project/demand_paths.hpp` gives the routeless demand of one document as one module, `RoutelessDemand`:
+- **Construct** it from a Network and an AuthoringDefinition, which must both outlive it. A temporary definition does
+  not compile.
+- **`issues()`** gives the blocking problems (Run refuses) and the advisories of every routeless input.
+- **`expand(resolved, families)`** gives one input per complete path on `link:<id>/path-k` routes.
+- **`sections()` / `builtSections()`** share the Network's runtime sections with the caller's `buildScenario`.
+
+Both calls share every walk (D140), and the object is never kept between calls (D28). `placedDecisions` stays public
+as the authoring-to-model adapter, so tests can feed `routelessChains` directly. The table, the destination memo and
+the per-slice walks are private.
+
 ## Runtime interface
 
 Project compilation derives `RouteDecision { id, fromRouteId, at, intervals, choices }`.
