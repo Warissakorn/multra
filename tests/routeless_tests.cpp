@@ -135,7 +135,7 @@ TEST(routeless, a_placed_decision_splits_by_destination) {
     CHECK(byExit.size() == 2);
     test::near(byExit[w.eastExit], 0.75); test::near(byExit[w.northExit], 0.25);
     CHECK(r.advisories.empty());
-    const auto issues = routelessIssues(w.d.network, def);
+    const auto issues = RoutelessDemand(w.d.network, def).issues();
     CHECK(issues.blocking.empty()); CHECK(issues.advisory.empty());
     // An input naming a placed decision is a routeless input on its Link. The pocket Link is fed
     // from upstream, and the engine starts no input part way into the network, so this uses a
@@ -196,7 +196,7 @@ TEST(routeless, problems_are_named_and_block_run) {
     CHECK(routingDecisionIssues(*loose.definition).at(0).code == "ROUTING_DECISION_NEEDS_LINK");
     // An input on a Link that does not exist.
     auto unknown = w.d; putInput(unknown, {"ghost", "", "car", 100, 0, 900, {}, {}, {}, {}, "no-such-link"});
-    const auto blocking = routelessIssues(unknown.network, *unknown.definition).blocking;
+    const auto blocking = RoutelessDemand(unknown.network, *unknown.definition).issues().blocking;
     CHECK(blocking.size() == 1); CHECK(blocking[0].code == "UNKNOWN_LINK");
     test::throws([&] { compileDocument(unknown, data()); }, "UNKNOWN_LINK");
     // A route and a Link on one input is two answers to one question.

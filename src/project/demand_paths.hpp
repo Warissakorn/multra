@@ -15,31 +15,28 @@ std::vector<PlacedDecision> placedDecisions(const Network&, const AuthoringDefin
                                             std::vector<ValidationIssue>* issues = nullptr,
                                             std::optional<double> at = std::nullopt,
                                             const std::string& vehicleTypeId = {});
-// The same over a table already built for this Network (D140). A destination's reachable chains
-// depend on the Network and the two Links only, never on the time or type, so one expansion
-// that places decisions per slice and type resolves each (decision Link, destination) once in
-// `memo`. Like the table, a memo belongs to one walk over one unchanged Network.
-using DestinationChainMemo = std::map<std::pair<std::string, std::string>, std::vector<std::vector<std::string>>>;
-std::vector<PlacedDecision> placedDecisions(const Network&, const ConnectorPathTable&, const AuthoringDefinition&,
-                                            std::vector<ValidationIssue>* issues = nullptr,
-                                            std::optional<double> at = std::nullopt,
-                                            const std::string& vehicleTypeId = {},
-                                            DestinationChainMemo* memo = nullptr);
-// Every input with a linkId (or naming a placed decision, which withRoutingDecisions turns into
-// one) becomes one input per complete path, each on an already-expanded runtime route
-// `link:<id>/path-k` that buildScenario passes through. An input whose walk has a problem is left
-// out -- routelessIssues names it and Run refuses, while an edit still goes through.
-ScenarioDefinition expandRouteless(const Network&, const AuthoringDefinition& authored,
-                                   ScenarioDefinition resolved);
 struct RoutelessIssues { std::vector<ValidationIssue> blocking, advisory; };
-RoutelessIssues routelessIssues(const Network&, const AuthoringDefinition&);
-// The placed decisions and walks that routelessIssues and expandRouteless both need, computed
-// once when one caller runs both over the same Network and definition (compileDocument). They
-// depend on nothing else, so sharing them changes no result. Like DestinationChainMemo, it
-// belongs to one call over one unchanged document and is never kept between calls (D28).
-class RoutelessWalks {
+// D551 (DYNAMIC_ASSIGNMENT §15): each routeless route's family names (`<decision>><final object>` or `<decision>>route-k`).
+using RouteFamilies = std::map<std::string, std::vector<std::string>>;
+// The routeless demand of one document (M2.1.1, D140, D684): it checks the inputs with a linkId (or naming a placed
+// decision) and expands them to runtime routes, sharing every walk between the two. It belongs to one call over one
+// unchanged Network and definition, which must outlive it, and is never kept between calls (D28).
+class RoutelessDemand {
 public:
-    RoutelessWalks(const Network&, const AuthoringDefinition&);
+    RoutelessDemand(const Network&, const AuthoringDefinition&);
+    RoutelessDemand(const Network&, AuthoringDefinition&&) = delete; // a temporary definition would dangle
+    // Blocking problems (Run refuses; an edit still goes through) and advisories of every routeless input.
+    RoutelessIssues issues();
+    // Every routeless input becomes one input per complete path, each on an already-expanded runtime route
+    // `link:<id>/path-k` that buildScenario passes through. An input whose walk has a problem is left out, as `issues`
+    // names it. `families`, when given, receives each routeless route's family names; nothing else changes.
+    ScenarioDefinition expand(ScenarioDefinition resolved, RouteFamilies* families = nullptr);
+    // runtimeSections of the Network, built on first use; `builtSections` is null until then, so a caller that must
+    // check the Network first never builds it early (compileScenario).
+    const RuntimeSections& sections();
+    const RuntimeSections* builtSections() const { return sections_ ? &*sections_ : nullptr; }
+private:
+    using ChainMemo = std::map<std::pair<std::string, std::string>, std::vector<std::vector<std::string>>>;
     // The decision flow breakpoints and one representative time per slice between them (M2.1.2).
     const std::vector<double>& points() const { return points_; }
     const std::vector<std::optional<double>>& times() const { return times_; }
@@ -47,28 +44,16 @@ public:
     const std::vector<std::vector<PlacedDecision>>& placed(const std::string& vehicleTypeId);
     // The walk from linkId through slice `slice` of placed(vehicleTypeId).
     const RoutelessResult& walk(const std::string& linkId, const std::string& vehicleTypeId, std::size_t slice);
-    // runtimeSections of the Network, built on first use; `builtSections` is null until then,
-    // so a caller that must check the Network first never builds it early (compileScenario).
-    const RuntimeSections& sections();
-    const RuntimeSections* builtSections() const { return sections_ ? &*sections_ : nullptr; }
     const Network& network;
     const AuthoringDefinition& definition;
     const ConnectorPathTable table; // lazy itself: free for a project that never walks
-    DestinationChainMemo memo;
-private:
+    ChainMemo memo; // a destination's reachable chains depend on the Network and two Links only (D140)
     std::vector<double> points_;
     std::vector<std::optional<double>> times_;
     std::optional<RuntimeSections> sections_;
     std::map<std::string, std::vector<std::vector<PlacedDecision>>> placed_;
     std::map<std::tuple<std::string, std::string, std::size_t>, RoutelessResult> walks_;
 };
-// The same two over walks already shared by the caller; `walks` must be over the same Network
-// and definition passed here.
-// D551 (DYNAMIC_ASSIGNMENT §15): `families`, when given, receives each routeless route's family names
-// (`<decision>><final object>` or `<decision>>route-k`); nothing else changes.
-using RouteFamilies = std::map<std::string, std::vector<std::string>>;
-ScenarioDefinition expandRouteless(RoutelessWalks& walks, ScenarioDefinition resolved, RouteFamilies* families = nullptr);
-RoutelessIssues routelessIssues(RoutelessWalks& walks);
 // M2.1.2: an input's periods (inputPeriods) cut at every breakpoint inside them, each piece at
 // its period's volume. Pieces of zero length are not produced.
 std::vector<VolumeInterval> cutPeriods(const VehicleInput&, const std::vector<double>& breakpoints);

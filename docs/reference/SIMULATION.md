@@ -112,7 +112,7 @@ an explicit numerical limit, not a calibrated behaviour.
 
 A vehicle input may name a Link (`linkId`) instead of a route, and a routing decision may be
 placed on a Link (`linkId`), with rows that are destination Links (`destinationLinkId`) or
-routes. Both are expanded at compile time (`routelessChains`, `expandRouteless`) into static core
+routes. Both are expanded at compile time (`routelessChains`, `RoutelessDemand::expand`) into static core
 routes `link:<id>/path-k` and one input per complete path, at volume × probability:
 
 - **Free walk:** every Connector path leaving the vehicle's lane is one way out. Leaving the

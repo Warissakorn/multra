@@ -47,14 +47,15 @@ std::vector<Diagnostic> runDiagnostics(const ProjectDocument& d, const std::file
             return od; // expansion is deliberately refused; retain the structured cell diagnostic
         for(const auto& gap:odDemandGaps(d))od.push_back({"OD_SKIPPED_DEMAND",gap.path,{},{},DiagnosticSeverity::advisory});
         const auto expanded=withOdDemand(d,matrixModes(d,data));const auto& def=expanded;
-        const auto routeless=routelessIssues(d.network,def);
+        RoutelessDemand demand(d.network,def); // D684: one walk for both the check and the expansion
+        const auto routeless=demand.issues();
         if (std::any_of(routeless.blocking.begin(), routeless.blocking.end(),
                         [](const auto& issue) { return issue.code == "ROUTE_SEARCH_LIMIT"; })) {
             for (const auto& issue : routeless.blocking) od.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::runtime});
             for (const auto& issue : routeless.advisory) od.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
             return od;
         }
-        auto rows=runtimeDiagnostics(d.network,expandRouteless(d.network,def,resolveCatalogs(def,data)));
+        auto rows=runtimeDiagnostics(d.network,demand.expand(resolveCatalogs(def,data)));
         rows.insert(rows.begin(),od.begin(),od.end());
         for(const auto& issue:demandAdvisories(d.network,def))
             rows.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
@@ -90,10 +91,10 @@ RunSnapshot compileDocument(const ProjectDocument& d, const std::filesystem::pat
     if(auto issues=compositionIssues(authored,data,manifest);!issues.empty())throw ValidationError(std::move(issues));
     // Resolve once: every part of this snapshot uses the same catalog values.
     // The check and the expansion walk the same routeless paths; walk them once.
-    RoutelessWalks walks(d.network,authored);
-    if(auto issues=routelessIssues(walks).blocking;!issues.empty())throw ValidationError(std::move(issues));
+    RoutelessDemand walks(d.network,authored);
+    if(auto issues=walks.issues().blocking;!issues.empty())throw ValidationError(std::move(issues));
     std::map<std::string, std::vector<std::string>> families;
-    auto definition=expandRouteless(walks,resolveCatalogs(authored,data,manifest),&families);
+    auto definition=walks.expand(resolveCatalogs(authored,data,manifest),&families);
     // M3.3.2b (D127): road assignments become per-segment selections; the library is authoring
     // data, sliced away by resolveCatalogs, so it is read from the document itself.
     definition.segmentBehaviours=compileBehaviourAssignments(d.network,*d.definition);

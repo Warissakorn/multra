@@ -133,7 +133,8 @@ TEST(mesodemand, me13_refusals_name_their_object) { // ME13
     VehicleInput sent; sent.vehicleTypeId = "car"; sent.vehiclesPerHour = 100; sent.endTime = 3600;
     sent.routingDecisionId = putRoutingDecision(lost, nowhere);
     putInput(lost, sent);
-    const auto walkIssues = routelessIssues(lost.network, withRoutingDecisions(*lost.definition)).blocking;
+    const auto lostDecisions = withRoutingDecisions(*lost.definition);
+    const auto walkIssues = RoutelessDemand(lost.network, lostDecisions).issues().blocking;
     CHECK(!walkIssues.empty()); // forcing
     const auto lm = mesoDemand(lost, data(), g);
     for (const auto& issue : walkIssues) CHECK(issueAt(lm.issues, issue.code, "definition." + issue.path));
@@ -257,7 +258,7 @@ TEST(mesodemand, me18_a_placed_decision_hands_its_stubs_to_the_full_paths) { // 
     putInput(d, cars);
     // The forcing: Micro's expansion gives stubs (a lane that cannot reach its destination).
     const auto expanded = withRoutingDecisions(*d.definition);
-    const auto micro = expandRouteless(d.network, expanded, resolveCatalogs(expanded, data()));
+    const auto micro = RoutelessDemand(d.network, expanded).expand(resolveCatalogs(expanded, data()));
     CHECK(!micro.routeDeadEnds.empty());
     const auto g = mesoNetwork(d, data()).graph;
     const auto m = mesoDemand(d, data(), g);

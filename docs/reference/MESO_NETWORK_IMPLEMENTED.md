@@ -64,7 +64,7 @@ section here. Every Meso result carries the not-validated marker (rule 4).
 ## 16. M11.3b as implemented (D296)
 
 - **The expansion is Micro's.**
-  - `mesoDemand` runs `routelessIssues` and `expandRouteless` over the routeless inputs, after
+  - `mesoDemand` runs `RoutelessDemand::issues` and `expand` (D684; then `routelessIssues` and `expandRouteless`) over the routeless inputs, after
     `resolveCatalogs`, as `compileDocument` does. Lane splits, slice shares and typed routing are
     therefore Micro's, with no second copy.
   - Each part returns to its authored input by id (`<id>/type-…` included), so a composition's

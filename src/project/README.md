@@ -59,7 +59,7 @@ keeps its schema and bytes.
 | `load.*` | `loadScenario`, `findDataDirectory`, `parseSeedList`; load errors carry the file and a translatable code | [SIMULATION](../../docs/reference/SIMULATION.md) |
 | `run.*` | `resolveCatalogs` and compilation for a run: compositions expanded to one input per type | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
 | `demand_catalog.*` | Resolving authored catalog ownership; the type a new input starts from | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
-| `demand_paths.*` | Glue between authored demand and the routeless walk: placed decisions, `expandRouteless` | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
+| `demand_paths.*` | Glue between authored demand and the routeless walk: placed decisions; `RoutelessDemand`, one module that checks (`issues`) and expands (`expand`) the routeless demand of one document, sharing every walk (D684) | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
 | `demand_preview.*` | Expected counts from the same compiled snapshot as Run, without arrivals | [DEMAND_CATALOGS](../../docs/reference/DEMAND_CATALOGS.md) |
 | `station_routing.*` | Physical stations to route distances; clips awareness-dependent lateral spans | [POSITIONED_ROUTING](../../docs/reference/POSITIONED_ROUTING.md) |
 | `od_demand.*` | `withOdDemand`: OD matrices added as ordinary routes and inputs before compilation; their Run-tier checks | [ZONES_AND_PARKING §3](../../docs/reference/ZONES_AND_PARKING.md) |

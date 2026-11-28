@@ -5,6 +5,19 @@ Newest entry at the top: what changed and why. The rules are in [AGENTS](../AGEN
 
 ---
 
+## 2026-11-28 — `demand_paths` deepened to one `RoutelessDemand` module (D684)
+
+- **Owner:** asked for a codebase-design reading of routing, then "ทำตามแนะนำ".
+- **Why:**
+  - `demand_paths.hpp` offered three ways to do each of its two jobs (check and expand the routeless demand);
+  - `RoutelessWalks` exposed its caches as public fields, and only a comment required them to be over the same document;
+  - `runDiagnostics` used the fresh overloads, so it walked the network twice.
+- **Now:** `RoutelessDemand(network, definition)` with `issues()` and `expand()`. The caches are private, and a
+  temporary definition does not compile. The model's `routelessChains` was already deep and is unchanged.
+- **Callers:** `run.cpp` (diagnostics now walks once), `definition.cpp`, `diagnostics.cpp`, `meso_input.cpp`, and ten
+  test call sites.
+- **Verified (Linux only):** `check` passes, `ctest` 382/382, `multra-cli 42` byte-identical. No timing is claimed for the single walk; the sanitizer runs on the push.
+
 ## 2026-11-27 — Dialog geometry checked on Linux: UI_GEOMETRY U1 and U2, and a crash it found (D680–D681)
 
 - **Owner:** "UI_GEOMETRY U1, U2".

@@ -89,11 +89,11 @@ MesoDemand mesoDemand(const ProjectDocument& d, const std::filesystem::path& dat
     // M11.3b (D296): routeless inputs and placed decisions, as Micro expands them (per vehicle type,
     // lane split and slice shares included), mapped back from lanes to Links and Connectors.
     if (!routeless.empty()) {
-        RoutelessWalks walks(d.network, expanded);
-        for (const auto& issue : routelessIssues(walks).blocking) report(issue.code, "definition." + issue.path);
+        RoutelessDemand walks(d.network, expanded);
+        for (const auto& issue : walks.issues().blocking) report(issue.code, "definition." + issue.path);
         auto resolved = resolveCatalogs(expanded, data, manifest);
         std::erase_if(resolved.inputs, [](const auto& i) { return i.linkId.empty(); });
-        const auto scenario = expandRouteless(walks, std::move(resolved));
+        const auto scenario = walks.expand(std::move(resolved));
         // The authored input a resolved part came from: its own id, or the longest `<id>/` prefix.
         const auto parent = [&](const std::string& id) -> const VehicleInput* {
             const VehicleInput* best = nullptr;

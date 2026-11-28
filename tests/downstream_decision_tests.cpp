@@ -85,7 +85,7 @@ TEST(routeless, a_downstream_decision_holds_its_proportions_exactly) { // A40
     CHECK(std::any_of(s.inputs.begin(), s.inputs.end(), [&](const auto& i) { return isStub(s, i.routeId) && i.vehiclesPerHour > 0; }));
     const auto exits = byExit(w, s);
     test::near(exits.at(w.left), 360, 1e-9); test::near(exits.at(w.right), 240, 1e-9);
-    const auto issues = routelessIssues(w.d.network, *w.d.definition);
+    const auto issues = RoutelessDemand(w.d.network, *w.d.definition).issues();
     CHECK(issues.blocking.empty()); CHECK(issues.advisory.empty());
 }
 TEST(routeless, a_downstream_stub_changes_on_the_decision_link_and_arrives_on_its_movement) { // A41, A42

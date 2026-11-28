@@ -40,7 +40,7 @@ bool endsOn(const Network& n, const std::string& laneId, const std::string& link
 TEST(pocketdecision, every_destination_gets_a_full_chain) {
     for (const auto side : {DrivingSide::left, DrivingSide::right}) {
         const auto [d, entries] = pocketed(side);
-        const auto issues = routelessIssues(d.network, *d.definition);
+        const auto issues = RoutelessDemand(d.network, *d.definition).issues();
         CHECK(issues.blocking.empty() && issues.advisory.empty());
         const auto placed = placedDecisions(d.network, *d.definition);
         for (const auto& decision : d.definition->routingDecisions) {

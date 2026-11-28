@@ -55,13 +55,12 @@ std::vector<ValidationIssue> demandAdvisories(const Network& n,const AuthoringDe
 std::string routelessRouteId(const std::string& linkId, std::size_t k, std::size_t n) {
     return n == 1 ? "link:" + linkId : "link:" + linkId + "/path-" + std::to_string(k + 1);
 }
-std::vector<PlacedDecision> placedDecisions(const Network& network, const AuthoringDefinition& d,
-                                            std::vector<ValidationIssue>* issues, std::optional<double> time,const std::string& type) {
-    return placedDecisions(network, ConnectorPathTable(network), d, issues, time, type);
-}
+namespace {
+// D140: a destination's reachable chains, by (decision Link, destination), for one walk over one unchanged Network.
+using ChainMemo = std::map<std::pair<std::string, std::string>, std::vector<std::vector<std::string>>>;
 std::vector<PlacedDecision> placedDecisions(const Network& network, const ConnectorPathTable& table, const AuthoringDefinition& d,
                                             std::vector<ValidationIssue>* issues, std::optional<double> time,const std::string& type,
-                                            DestinationChainMemo* memo) {
+                                            ChainMemo* memo = nullptr) {
     const auto reachable = [&](std::vector<std::vector<std::string>> chains) {
         std::erase_if(chains, [&](const auto& c) { return routeLaneChains(network, table, c).empty(); });
         return chains;
@@ -84,7 +83,7 @@ std::vector<PlacedDecision> placedDecisions(const Network& network, const Connec
             if (!entry.destinationLinkId.empty()) {
                 if (!hasLink(network, entry.destinationLinkId)) { report("UNKNOWN_LINK", at); continue; }
                 const std::pair key{decision.linkId, entry.destinationLinkId};
-                if (const auto found = memo ? memo->find(key) : DestinationChainMemo::iterator{}; memo && found != memo->end())
+                if (const auto found = memo ? memo->find(key) : ChainMemo::iterator{}; memo && found != memo->end())
                     chains = found->second;
                 else {
                     try { chains = reachable(routeShortestChains(network, table, decision.linkId, entry.destinationLinkId)); }
@@ -106,6 +105,11 @@ std::vector<PlacedDecision> placedDecisions(const Network& network, const Connec
         result.push_back(std::move(placed));
     }
     return result;
+}
+}
+std::vector<PlacedDecision> placedDecisions(const Network& network, const AuthoringDefinition& d,
+                                            std::vector<ValidationIssue>* issues, std::optional<double> time,const std::string& type) {
+    return placedDecisions(network, ConnectorPathTable(network), d, issues, time, type);
 }
 namespace {
 // M2.1.2: the times at which the placed decisions' flows change, and one representative time per
@@ -136,30 +140,27 @@ std::vector<VolumeInterval> cutPeriods(const VehicleInput& input, const std::vec
     }
     return pieces;
 }
-RoutelessWalks::RoutelessWalks(const Network& n, const AuthoringDefinition& d) : network(n), definition(d), table(n) {
+RoutelessDemand::RoutelessDemand(const Network& n, const AuthoringDefinition& d) : network(n), definition(d), table(n) {
     auto cut = slices(d);
     points_ = std::move(cut.points);
     times_ = std::move(cut.times);
 }
-const std::vector<std::vector<PlacedDecision>>& RoutelessWalks::placed(const std::string& type) {
+const std::vector<std::vector<PlacedDecision>>& RoutelessDemand::placed(const std::string& type) {
     auto [it, fresh] = placed_.try_emplace(type);
     if (fresh) for (const auto& t : times_) it->second.push_back(placedDecisions(network, table, definition, nullptr, t, type, &memo));
     return it->second;
 }
-const RoutelessResult& RoutelessWalks::walk(const std::string& linkId, const std::string& type, std::size_t slice) {
+const RoutelessResult& RoutelessDemand::walk(const std::string& linkId, const std::string& type, std::size_t slice) {
     auto [it, fresh] = walks_.try_emplace({linkId, type, slice});
     if (fresh) it->second = routelessChains(network, table, linkId, placed(type)[slice]);
     return it->second;
 }
-const RuntimeSections& RoutelessWalks::sections() {
+const RuntimeSections& RoutelessDemand::sections() {
     if (!sections_) sections_ = runtimeSections(network);
     return *sections_;
 }
-RoutelessIssues routelessIssues(const Network& network, const AuthoringDefinition& d) {
-    RoutelessWalks walks(network, d); // one walk over one unchanged Network (D140)
-    return routelessIssues(walks);
-}
-RoutelessIssues routelessIssues(RoutelessWalks& walks) {
+RoutelessIssues RoutelessDemand::issues() {
+    auto& walks = *this;
     const auto& network = walks.network;
     const auto& d = walks.definition;
     RoutelessIssues result;
@@ -199,12 +200,8 @@ RoutelessIssues routelessIssues(RoutelessWalks& walks) {
     }
     return result;
 }
-ScenarioDefinition expandRouteless(const Network& network, const AuthoringDefinition& authored,
-                                   ScenarioDefinition resolved) {
-    RoutelessWalks walks(network, authored); // one expansion over one unchanged Network (D140)
-    return expandRouteless(walks, std::move(resolved));
-}
-ScenarioDefinition expandRouteless(RoutelessWalks& shared, ScenarioDefinition resolved, RouteFamilies* familiesOut) {
+ScenarioDefinition RoutelessDemand::expand(ScenarioDefinition resolved, RouteFamilies* familiesOut) {
+    auto& shared = *this;
     const auto& network = shared.network;
     const auto& authored = shared.definition;
     // M2.7b: every signal group becomes an ordinary core program here, the one compile step
@@ -281,7 +278,7 @@ ScenarioDefinition expandRouteless(RoutelessWalks& shared, ScenarioDefinition re
                 appendStationRouting(network,table,authored,type,stationRoutes,resolved);
             }
         }
-        if (w.failed) continue; // routelessIssues names it
+        if (w.failed) continue; // issues() names it
         // The Link total divided across its lanes, as for a route (M1.26, M1.26.1).
         std::size_t lanes = 0;
         for (const auto& l : network.links) if (l.id == input.linkId) lanes = l.lanes.size();

@@ -54,7 +54,7 @@ std::vector<Diagnostic> documentDiagnostics(const ProjectDocument& document) {
             result.push_back({issue.code,issue.path,{},{},DiagnosticSeverity::advisory});
         // Inputs naming a routing decision (M2.4) name no route of their own until expanded.
         const ScenarioDefinition definition =
-            expandRouteless(document.network, *document.definition, withRoutingDecisions(*document.definition));
+            RoutelessDemand(document.network, *document.definition).expand(withRoutingDecisions(*document.definition));
         const bool catalogs = !definition.vehicleTypes.empty() && !definition.behaviours.empty();
         bool withheld = false;
         for (auto& row : runtimeDiagnostics(document.network, definition)) {
